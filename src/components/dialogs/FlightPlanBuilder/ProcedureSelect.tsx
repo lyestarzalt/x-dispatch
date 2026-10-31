@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Select,
@@ -51,23 +51,44 @@ export function ProcedureSelect({
     );
   }, [procedures, runway, labelFor]);
 
+  // Radix mounts every item even while the list is closed, so that the trigger
+  // can show the chosen item's text. A hundred procedures re-rendered on every
+  // planner render adds up, so the items only mount while the list is open and
+  // the trigger text is written here instead.
+  const [open, setOpen] = useState(false);
+  const selectedKey = value ? choiceKey(value) : NONE;
+  const selected = value ? options.find((o) => choiceKey(o) === selectedKey) : undefined;
+  const label = (o: { label: string; transition: string | null }) => (
+    <>
+      {o.label}
+      {o.transition && <span className="text-muted-foreground ml-2">{o.transition}</span>}
+    </>
+  );
+
   return (
     <Select
-      value={value ? choiceKey(value) : NONE}
+      value={selectedKey}
       onValueChange={(v) => onChange(options.find((o) => choiceKey(o) === v))}
       disabled={options.length === 0}
+      open={open}
+      onOpenChange={setOpen}
     >
       <SelectTrigger className={className ?? 'h-9 font-mono text-xs'}>
-        <SelectValue placeholder={placeholder} />
+        <SelectValue placeholder={placeholder}>
+          {value ? selected && label(selected) : t('planBuilder.noProcedure')}
+        </SelectValue>
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value={NONE}>{t('planBuilder.noProcedure')}</SelectItem>
-        {options.map((o) => (
-          <SelectItem key={choiceKey(o)} value={choiceKey(o)} className="font-mono text-xs">
-            {o.label}
-            {o.transition && <span className="text-muted-foreground ml-2">{o.transition}</span>}
-          </SelectItem>
-        ))}
+        {open && (
+          <>
+            <SelectItem value={NONE}>{t('planBuilder.noProcedure')}</SelectItem>
+            {options.map((o) => (
+              <SelectItem key={choiceKey(o)} value={choiceKey(o)} className="font-mono text-xs">
+                {label(o)}
+              </SelectItem>
+            ))}
+          </>
+        )}
       </SelectContent>
     </Select>
   );

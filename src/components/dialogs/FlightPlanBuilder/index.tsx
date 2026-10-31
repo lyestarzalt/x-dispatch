@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   AlertTriangle,
@@ -121,7 +121,7 @@ interface FlightPlanBuilderProps {
   airports: Airport[];
 }
 
-export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) {
+function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) {
   const { t } = useTranslation();
   const units = useUnits();
   const isOpen = usePlanBuilderStore((s) => s.isOpen);
@@ -1191,3 +1191,9 @@ export default function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) 
     </div>
   );
 }
+
+// The planner stays mounted beside the map, and the Map component renders on
+// many store changes that have nothing to do with it. Its only prop is the
+// airport list, which is stable between data loads, so a memo keeps those
+// renders out of the planner tree.
+export default memo(FlightPlanBuilder);
