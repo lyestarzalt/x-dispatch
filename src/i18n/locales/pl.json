@@ -124,11 +124,13 @@
       "airways": "Wczytywanie dróg lotniczych...",
       "airwaysDone": "Drogi lotnicze wczytane",
       "complete": "Wszystkie dane wczytane",
-      "failed": "Wczytywanie nie powiodło się"
+      "failed": "Wczytywanie nie powiodło się",
+      "airportList": "Wczytywanie listy lotnisk..."
     },
     "details": {
       "globalAirports": "Global Airports"
-    }
+    },
+    "stillWorking": "Nadal trwa, {{seconds}} s od ostatniej aktualizacji"
   },
   "stands": {
     "sizeClass": "Kod {{code}}, rozpiętość do {{m}} m",

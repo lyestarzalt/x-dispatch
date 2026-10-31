@@ -12,10 +12,13 @@ import { useAppVersion } from '@/hooks/useAppVersion';
 import { cn } from '@/lib/utils/helpers';
 import type { LoadingDetail, LoadingProgress } from '@/types/xplane';
 import {
+  type LoadingPhase,
   calculateLoadingProgress,
   clampDisplayedProgress,
   getLoadingDetailLabel,
   getLoadingMessage,
+  loadingBadgeKey,
+  stalledForSeconds,
 } from './progress';
 
 interface LoadingStep {
@@ -49,8 +52,13 @@ export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingSc
   const [displayedProgress, setDisplayedProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [errorHint, setErrorHint] = useState<string | null>(null);
-  const [phase, setPhase] = useState<'verifying' | 'loading'>('verifying');
+  const [phase, setPhase] = useState<LoadingPhase>(null);
   const [verifyComplete, setVerifyComplete] = useState(false);
+  // Once the data steps are done the airport list is fetched before the app
+  // shows; the screen stays up meanwhile and says so.
+  const [awaitingAirports, setAwaitingAirports] = useState(false);
+  const [lastUpdateAt, setLastUpdateAt] = useState(() => Date.now());
+  const [now, setNow] = useState(() => Date.now());
 
   // Use refs to avoid stale closure issues
   const onCompleteRef = useRef(onComplete);
@@ -69,6 +77,7 @@ export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingSc
     // Handle progress events
     function handleProgress(progress: LoadingProgress) {
       setCurrentProgress(progress);
+      setLastUpdateAt(Date.now());
       const message = getLoadingMessage(progress, tRef.current);
 
       if (progress.phase) {
@@ -84,6 +93,7 @@ export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingSc
 
       if (progress.step === 'complete') {
         setDisplayedProgress((prev) => clampDisplayedProgress(prev, 100, true));
+        setAwaitingAirports(true);
         onCompleteRef.current(!parsedRef.current);
         return;
       }
@@ -150,6 +160,7 @@ export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingSc
           dataStatus?.airspaces?.count > 0 &&
           dataStatus?.airways?.count > 0
         ) {
+          setAwaitingAirports(true);
           onCompleteRef.current(!parsedRef.current);
           return;
         }
@@ -158,6 +169,7 @@ export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingSc
 
         // If loading returned success with status, data was loaded
         if (result.success && (result.status?.airports?.count ?? 0) > 0) {
+          setAwaitingAirports(true);
           onCompleteRef.current(!parsedRef.current);
           return;
         }
@@ -186,11 +198,20 @@ export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingSc
     return () => clearTimeout(timer);
   }, [verifyComplete]);
 
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   const hasError = !!error;
   const isVerifying = phase === 'verifying' && !hasError;
-  const currentMessage = currentProgress
-    ? getLoadingMessage(currentProgress, t)
-    : t('loading.initializing');
+  const badgeKey = loadingBadgeKey({ phase, verifyComplete, awaitingAirports });
+  const currentMessage = awaitingAirports
+    ? t('loading.messages.airportList')
+    : currentProgress
+      ? getLoadingMessage(currentProgress, t)
+      : t('loading.initializing');
+  const stalledSeconds = hasError ? null : stalledForSeconds(lastUpdateAt, now);
 
   return (
     <div className="bg-background flex h-full w-full items-center justify-center px-6">
@@ -212,7 +233,7 @@ export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingSc
           ) : (
             <Badge variant="info" className="gap-1.5">
               <Spinner className="size-3" />
-              {isVerifying ? t('loading.verifying') : t('loading.badge')}
+              {t(badgeKey)}
             </Badge>
           )}
         </div>
@@ -220,6 +241,11 @@ export default function LoadingScreen({ onComplete, onConfigurePath }: LoadingSc
         <div className="mb-5">
           <div className="mb-2 flex items-center justify-between gap-4">
             <p className="xp-label text-foreground min-w-0 truncate">{currentMessage}</p>
+            {stalledSeconds !== null && (
+              <span className="text-muted-foreground shrink-0 text-xs">
+                {t('loading.stillWorking', { seconds: stalledSeconds })}
+              </span>
+            )}
             <span className="text-muted-foreground font-mono text-xs tabular-nums">
               {Math.floor(displayedProgress)}%
             </span>

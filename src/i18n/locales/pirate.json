@@ -124,11 +124,13 @@
       "airways": "Loadin' airways...",
       "airwaysDone": "Airways loaded",
       "complete": "All data loaded",
-      "failed": "Loadin' failed"
+      "failed": "Loadin' failed",
+      "airportList": "Haulin' in the airport list..."
     },
     "details": {
       "globalAirports": "Global Airports"
-    }
+    },
+    "stillWorking": "Still at it, {{seconds}} s since the last word from below deck"
   },
   "stands": {
     "sizeClass": "Code {{code}}, wings to {{m}} m",

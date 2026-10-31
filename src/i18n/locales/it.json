@@ -124,11 +124,13 @@
       "airways": "Caricamento aerovie...",
       "airwaysDone": "Aerovie caricate",
       "complete": "Tutti i dati caricati",
-      "failed": "Caricamento non riuscito"
+      "failed": "Caricamento non riuscito",
+      "airportList": "Caricamento dell'elenco degli aeroporti..."
     },
     "details": {
       "globalAirports": "Global Airports"
-    }
+    },
+    "stillWorking": "Ancora in corso, {{seconds}} s dall'ultimo aggiornamento"
   },
   "stands": {
     "sizeClass": "Codice {{code}}, apertura alare fino a {{m}} m",

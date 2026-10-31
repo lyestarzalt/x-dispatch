@@ -124,11 +124,13 @@
       "airways": "Loading airways...",
       "airwaysDone": "Airways loaded",
       "complete": "All data loaded",
-      "failed": "Loading failed"
+      "failed": "Loading failed",
+      "airportList": "Loading the airport list..."
     },
     "details": {
       "globalAirports": "Global Airports"
-    }
+    },
+    "stillWorking": "Still working, {{seconds}} s since the last update"
   },
   "stands": {
     "sizeClass": "Code {{code}}, wingspan to {{m}} m",
