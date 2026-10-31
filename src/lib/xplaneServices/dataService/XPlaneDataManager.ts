@@ -36,6 +36,7 @@ import {
   syncAirportCache,
 } from './airports';
 import {
+  getProcedureIndexCachePath,
   getStoredXPlaneVersion,
   getXPlanePath,
   setStoredXPlaneVersion,
@@ -86,9 +87,9 @@ import {
   getFixDataPath,
   getHoldDataPath,
   getNavDataPath,
-  listProcedureIcaos,
   validateXPlanePath,
 } from './paths';
+import { loadProcedureIcaos } from './procedureIndexCache';
 import type {
   Airport,
   AirportProgressCallback,
@@ -510,9 +511,10 @@ export class XPlaneDataManager {
     let procedureIcaos: Set<string> | undefined;
     if (xplanePath) {
       const start = Date.now();
-      procedureIcaos = listProcedureIcaos(xplanePath);
+      const index = loadProcedureIcaos(xplanePath, getProcedureIndexCachePath());
+      procedureIcaos = index.icaos;
       logger.data.info(
-        `Scanned CIFP for procedures: ${procedureIcaos.size} airports in ${Date.now() - start}ms`
+        `${index.cached ? 'Loaded cached' : 'Scanned'} CIFP procedure index: ${procedureIcaos.size} airports in ${Date.now() - start}ms`
       );
     }
     return getAllAirportsFromDb(procedureIcaos);
