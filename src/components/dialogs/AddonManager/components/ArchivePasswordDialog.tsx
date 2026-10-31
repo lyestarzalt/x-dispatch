@@ -48,6 +48,7 @@ function PasswordForm({ prompt, maxAttempts, onSubmit, onCancel }: PasswordFormP
 
   return (
     <form
+      className="min-w-0"
       onSubmit={(e) => {
         e.preventDefault();
         if (password) onSubmit(password);
@@ -58,7 +59,7 @@ function PasswordForm({ prompt, maxAttempts, onSubmit, onCancel }: PasswordFormP
           <KeyRound className="h-4 w-4" />
           {t('addonManager.installer.password.title')}
         </DialogTitle>
-        <DialogDescription className="min-w-0 truncate">
+        <DialogDescription className="break-words">
           {t('addonManager.installer.password.description', { name: fileName(prompt.path) })}
         </DialogDescription>
       </DialogHeader>
