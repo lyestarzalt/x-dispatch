@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.10.0] - 2026-10-31
+
 ### Added
 
 - **The add-on installer opens every kind of download.** Drop a .zip, .7z or .rar, a split download (`.7z.001`, `.part1.rar`), an archive with another archive inside, a password-protected archive (the app asks for the password), or a plain folder. An archive whose name lies about its format still opens. Several files dropped or picked together are read as one drop.
@@ -368,7 +370,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Releases up to 2.2.0 are listed on the [website changelog](https://x-dispatch.app/changelog/).
 
-[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.9.0...HEAD
+[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.10.0...HEAD
+[2.10.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.9.0...v2.10.0
 [2.9.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.8.2...v2.9.0
 [2.8.2]: https://github.com/lyestarzalt/x-dispatch/compare/v2.8.1...v2.8.2
 [2.8.1]: https://github.com/lyestarzalt/x-dispatch/compare/v2.8.0...v2.8.1
