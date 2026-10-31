@@ -1,8 +1,10 @@
 // @vitest-environment jsdom
 /**
- * A procedure select at a large airport has about a hundred entries. The
- * planner stays mounted while it is open, so every planner render would
- * re-render all of them unless the closed select keeps its options unmounted.
+ * A procedure select at a large airport has about a hundred entries, which
+ * Radix keeps mounted so the closed trigger can show the choice and typing a
+ * letter can search them. The component is memoised for that reason; a parent
+ * Profiler cannot see a memo bail-out, so what is tested here is the behaviour
+ * Radix provides once it owns the items.
  */
 import { act } from 'react';
 import { type Root, createRoot } from 'react-dom/client';
@@ -10,7 +12,6 @@ import { initReactI18next } from 'react-i18next';
 import i18next from 'i18next';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ResolvedProcedure } from '@/types/navigation';
-import { countMountedComponents } from '../../../../tests/helpers/reactFibers';
 import { ProcedureSelect } from './ProcedureSelect';
 
 const procedures: ResolvedProcedure[] = Array.from({ length: 100 }, (_, i) => ({
@@ -38,31 +39,19 @@ afterEach(() => {
   container.remove();
 });
 
-describe('ProcedureSelect', () => {
-  it('mounts no option items while closed', () => {
-    act(() => {
-      root.render(
-        <ProcedureSelect
-          procedures={procedures}
-          runway="04L"
-          value={undefined}
-          placeholder="Choose"
-          onChange={() => {}}
-        />
-      );
-    });
-    expect(countMountedComponents(container, 'SelectItem')).toBe(0);
-  });
+const noop = () => {};
+const chosen = { name: 'SID004', transition: 'TR4' };
 
+describe('ProcedureSelect', () => {
   it('shows the chosen procedure and transition on the trigger while closed', () => {
     act(() => {
       root.render(
         <ProcedureSelect
           procedures={procedures}
           runway="04L"
-          value={{ name: 'SID004', transition: 'TR4' }}
+          value={chosen}
           placeholder="Choose"
-          onChange={() => {}}
+          onChange={noop}
         />
       );
     });
@@ -79,7 +68,7 @@ describe('ProcedureSelect', () => {
           runway="04L"
           value={undefined}
           placeholder="Choose"
-          onChange={() => {}}
+          onChange={noop}
         />
       );
     });
@@ -87,7 +76,7 @@ describe('ProcedureSelect', () => {
     expect(trigger?.textContent).toContain('planBuilder.noProcedure');
   });
 
-  it('still jumps to a procedure when a letter is typed on the closed, focused select', () => {
+  it('jumps to a procedure when a letter is typed on the closed select', () => {
     const onChange = vi.fn();
     act(() => {
       root.render(
@@ -103,14 +92,9 @@ describe('ProcedureSelect', () => {
     const trigger = container.querySelector<HTMLButtonElement>('button[role="combobox"]');
     if (!trigger) throw new Error('no trigger');
     act(() => trigger.focus());
-    // Typeahead needs the items in Radix's collection; a focused trigger mounts them
-    expect(countMountedComponents(container, 'SelectItem')).toBeGreaterThan(0);
     act(() => {
       trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'S', bubbles: true }));
     });
     expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ name: 'SID000' }));
-
-    act(() => trigger.blur());
-    expect(countMountedComponents(container, 'SelectItem')).toBe(0);
   });
 });

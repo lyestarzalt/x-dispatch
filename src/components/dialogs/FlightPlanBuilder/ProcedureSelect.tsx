@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Select,
@@ -24,8 +24,16 @@ interface ProcedureSelectProps {
   labelFor?: (procedure: ResolvedProcedure) => string;
 }
 
-/** One entry per procedure name and transition, filtered to the chosen runway. */
-export function ProcedureSelect({
+/**
+ * One entry per procedure name and transition, filtered to the chosen runway.
+ *
+ * A large airport has about a hundred entries, and the planner re-renders often
+ * while it is open. Radix keeps every item mounted (the closed trigger shows the
+ * chosen item's text, and typing a letter searches them), so the component is
+ * memoised and every call site passes stable props; the items then render only
+ * when the procedures, the runway or the choice change.
+ */
+export const ProcedureSelect = memo(function ProcedureSelect({
   procedures,
   runway,
   value,
@@ -51,51 +59,24 @@ export function ProcedureSelect({
     );
   }, [procedures, runway, labelFor]);
 
-  // Radix mounts every item even while the list is closed, so that the trigger
-  // can show the chosen item's text. A hundred procedures re-rendered on every
-  // planner render adds up, so the items only mount while the list is open or
-  // the trigger has focus (typing a letter on the closed select searches them),
-  // and the trigger text is written here instead.
-  const [open, setOpen] = useState(false);
-  const [focused, setFocused] = useState(false);
-  const selectedKey = value ? choiceKey(value) : NONE;
-  const selected = value ? options.find((o) => choiceKey(o) === selectedKey) : undefined;
-  const label = (o: { label: string; transition: string | null }) => (
-    <>
-      {o.label}
-      {o.transition && <span className="text-muted-foreground ml-2">{o.transition}</span>}
-    </>
-  );
-
   return (
     <Select
-      value={selectedKey}
+      value={value ? choiceKey(value) : NONE}
       onValueChange={(v) => onChange(options.find((o) => choiceKey(o) === v))}
       disabled={options.length === 0}
-      open={open}
-      onOpenChange={setOpen}
     >
-      <SelectTrigger
-        className={className ?? 'h-9 font-mono text-xs'}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-      >
-        <SelectValue placeholder={placeholder}>
-          {value ? selected && label(selected) : t('planBuilder.noProcedure')}
-        </SelectValue>
+      <SelectTrigger className={className ?? 'h-9 font-mono text-xs'}>
+        <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
-        {(open || focused) && (
-          <>
-            <SelectItem value={NONE}>{t('planBuilder.noProcedure')}</SelectItem>
-            {options.map((o) => (
-              <SelectItem key={choiceKey(o)} value={choiceKey(o)} className="font-mono text-xs">
-                {label(o)}
-              </SelectItem>
-            ))}
-          </>
-        )}
+        <SelectItem value={NONE}>{t('planBuilder.noProcedure')}</SelectItem>
+        {options.map((o) => (
+          <SelectItem key={choiceKey(o)} value={choiceKey(o)} className="font-mono text-xs">
+            {o.label}
+            {o.transition && <span className="text-muted-foreground ml-2">{o.transition}</span>}
+          </SelectItem>
+        ))}
       </SelectContent>
     </Select>
   );
-}
+});
