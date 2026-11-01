@@ -450,8 +450,20 @@
   "settings": {
     "title": "Ship's Settings",
     "subtitle": "Set yer preferences",
+    "launcher": {
+      "title": "Voyage Riggin’",
+      "description": "How X-Dispatch sets X-Plane a-sail an’ parleys with her",
+      "connection": "Hailin’ line",
+      "webApiPort": "X-Plane web API port",
+      "webApiPortDesc": "X-Dispatch hails X-Plane on this port an’ hands it to X-Plane every cold start. Change it only if some other scallywag already holds port {{default}}.",
+      "webApiPortInvalid": "Give a number betwixt {{min}} an’ {{max}}.",
+      "webApiPortReset": "Back to {{port}}",
+      "webApiPortRestart": "Restart X-Plane after changin’ the port. An X-Plane ye launch by hand must sail with --web_server_port={{port}}.",
+      "behavior": "Launchin’ manners"
+    },
     "tabs": {
       "xplane": "X-Plane",
+      "launcher": "Voyage Riggin’",
       "addons": "Extra Gear",
       "data": "Chart Data",
       "appearance": "Look & Trim",

@@ -450,8 +450,20 @@
   "settings": {
     "title": "设置",
     "subtitle": "调整偏好设置",
+    "launcher": {
+      "title": "飞行准备",
+      "description": "X-Dispatch 如何启动 X-Plane 并与之通信",
+      "connection": "连接",
+      "webApiPort": "X-Plane Web API 端口",
+      "webApiPortDesc": "X-Dispatch 通过此端口连接 X-Plane，并在每次冷启动时将其传给 X-Plane。仅当其他程序已占用端口 {{default}} 时才需要更改。",
+      "webApiPortInvalid": "请输入 {{min}} 到 {{max}} 之间的数字。",
+      "webApiPortReset": "恢复为 {{port}}",
+      "webApiPortRestart": "更改端口后请重启 X-Plane。手动启动的 X-Plane 必须带上 --web_server_port={{port}} 参数。",
+      "behavior": "启动行为"
+    },
     "tabs": {
       "xplane": "X-Plane",
+      "launcher": "飞行准备",
       "addons": "附加组件",
       "data": "导航数据",
       "appearance": "外观",

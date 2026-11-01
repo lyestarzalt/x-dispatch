@@ -319,6 +319,7 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
     xplaneServiceAPI: {
       // REST API (via main process)
       isAPIAvailable: () => t.invoke('xplaneService:isAPIAvailable'),
+      setPort: (port: number) => t.invoke('xplaneService:setPort', port),
       getCapabilities: () => t.invoke('xplaneService:getCapabilities'),
       startFlight: (payload: unknown) => t.invoke('xplaneService:startFlight', payload),
       getDataref: (name: string) => t.invoke('xplaneService:getDataref', name),

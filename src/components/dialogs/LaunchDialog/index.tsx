@@ -17,7 +17,6 @@ import { isValidAirStartSpeed } from '@/lib/utils/airStartSpeed';
 import { cn } from '@/lib/utils/helpers';
 import { toastError } from '@/lib/utils/toastError';
 import { uuid } from '@/lib/utils/uuid';
-import { XPLANE_WEB_API_PORT } from '@/lib/xplaneServices/client/port';
 import type { PortHolder } from '@/lib/xplaneServices/client/portHolder';
 import type { LaunchErrorCode } from '@/lib/xplaneServices/launch';
 import {
@@ -73,7 +72,7 @@ function launchErrorMessage(
     // when it started, and it will not retry until restarted. Naming the holder
     // is only possible while it still has the port.
     case 'ALREADY_RUNNING': {
-      const port = XPLANE_WEB_API_PORT;
+      const port = useSettingsStore.getState().launcher.webApiPort;
       if (portHolder?.isXPlane) return t('launcher.spawnErrorApiHeldByXPlane', { port });
       if (portHolder) return t('launcher.spawnErrorApiHeldBy', { port, name: portHolder.name });
       return t('launcher.spawnErrorApiUnreachable', { port });

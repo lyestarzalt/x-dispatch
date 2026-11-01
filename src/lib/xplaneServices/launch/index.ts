@@ -11,6 +11,7 @@ import type { Aircraft, WeatherPreset } from '@/types/aircraft';
 import { XPLANE_WEB_API_PORT } from '../client/port';
 import { type PortHolder, findPortHolder } from '../client/portHolder';
 import { isXPlaneProcessRunning } from '../client/processCheck';
+import { getXPlaneService } from '../client/service';
 import { scanAircraftDirectory } from './acfParser';
 import { RESERVED_XP_ARG, filterReservedXpArgs } from './cliArgs';
 import { validateNewFlight } from './flightInit/schema';
@@ -149,16 +150,17 @@ class XPlaneLauncher {
       return { success: false, error: (error as Error).message, code: 'INVALID_CONFIG' };
     }
     try {
+      const webApiPort = getXPlaneService().getPort();
       const isRunning = await isXPlaneProcessRunning();
       if (isRunning) {
-        const portHolder = await findPortHolder(XPLANE_WEB_API_PORT);
+        const portHolder = await findPortHolder(webApiPort);
         const holder = portHolder ? `${portHolder.name} (${portHolder.pid})` : 'nobody';
         logger.launcher.warn(
-          `X-Plane process is running but the renderer saw no web API; port ${XPLANE_WEB_API_PORT} held by ${holder}`
+          `X-Plane process is running but the renderer saw no web API; port ${webApiPort} held by ${holder}`
         );
         return {
           success: false,
-          error: `X-Plane is running but its web API is not reachable on port ${XPLANE_WEB_API_PORT}. Restart X-Plane.`,
+          error: `X-Plane is running but its web API is not reachable on port ${webApiPort}. Restart X-Plane.`,
           code: 'ALREADY_RUNNING',
           ...(portHolder ? { portHolder } : {}),
         };
@@ -177,9 +179,12 @@ class XPlaneLauncher {
       logger.launcher.info(`Flight JSON: ${JSON.stringify(flightJson)}`);
 
       const xplaneArgs = [`${RESERVED_XP_ARG}=${jsonPath}`];
+      if (webApiPort !== XPLANE_WEB_API_PORT) {
+        xplaneArgs.push(`--web_server_port=${webApiPort}`);
+      }
 
       if (extraArgs?.length) {
-        xplaneArgs.push(...extraArgs);
+        xplaneArgs.push(...filterReservedXpArgs(extraArgs));
       }
 
       const cliXpArgs = filterReservedXpArgs(getCliFlags().xpArgs);

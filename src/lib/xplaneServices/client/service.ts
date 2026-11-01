@@ -69,15 +69,41 @@ export class XPlaneService {
   private streamSubscribers = new Map<string, StreamSubscriber>();
   private trafficSubscribers = new Map<string, (snapshot: TrafficSnapshot) => void>();
 
+  private openStream(): void {
+    this.wsClient.connect(
+      (state) => this.streamSubscribers.forEach((s) => s.onUpdate(state)),
+      (connected) => this.streamSubscribers.forEach((s) => s.onConnectionChange?.(connected)),
+      () => this.streamSubscribers.forEach((s) => s.onStateClear?.())
+    );
+  }
+
+  private applyTraffic(): void {
+    const any = this.trafficSubscribers.size > 0;
+    this.wsClient.setTrafficEnabled(
+      any,
+      any ? (snapshot) => this.trafficSubscribers.forEach((cb) => cb(snapshot)) : null
+    );
+  }
+
+  /**
+   * Switch every client to another port without losing stream subscribers:
+   * the socket reopens on the new port for whoever was listening.
+   */
+  setPort(port: number): void {
+    if (port === this.apiPort) return;
+    this.wsClient.disconnect();
+    this.apiPort = port;
+    this.wsClient = new XPlaneWebSocketClient(port);
+    this.wsClient.setSink(recorderSink);
+    if (this.streamSubscribers.size > 0) this.openStream();
+    this.applyTraffic();
+  }
+
   startStateStream(subscriberId: string, callbacks: StreamSubscriber): void {
     const first = this.streamSubscribers.size === 0;
     this.streamSubscribers.set(subscriberId, callbacks);
     if (first) {
-      this.wsClient.connect(
-        (state) => this.streamSubscribers.forEach((s) => s.onUpdate(state)),
-        (connected) => this.streamSubscribers.forEach((s) => s.onConnectionChange?.(connected)),
-        () => this.streamSubscribers.forEach((s) => s.onStateClear?.())
-      );
+      this.openStream();
     } else if (this.wsClient.isConnected()) {
       callbacks.onConnectionChange?.(true);
     }
@@ -106,11 +132,7 @@ export class XPlaneService {
     } else {
       this.trafficSubscribers.delete(subscriberId);
     }
-    const any = this.trafficSubscribers.size > 0;
-    this.wsClient.setTrafficEnabled(
-      any,
-      any ? (snapshot) => this.trafficSubscribers.forEach((cb) => cb(snapshot)) : null
-    );
+    this.applyTraffic();
   }
 
   /** Remove a client (window or tablet) from every stream it joined. */

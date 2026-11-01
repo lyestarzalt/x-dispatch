@@ -450,8 +450,20 @@
   "settings": {
     "title": "Settings",
     "subtitle": "Configure your preferences",
+    "launcher": {
+      "title": "Flight Setup",
+      "description": "How X-Dispatch starts X-Plane and talks to it",
+      "connection": "Connection",
+      "webApiPort": "X-Plane web API port",
+      "webApiPortDesc": "X-Dispatch connects to X-Plane on this port and passes it to X-Plane on every cold start. Change it only if another program already uses port {{default}}.",
+      "webApiPortInvalid": "Enter a number between {{min}} and {{max}}.",
+      "webApiPortReset": "Reset to {{port}}",
+      "webApiPortRestart": "Restart X-Plane after changing the port. An X-Plane you start by hand must be launched with --web_server_port={{port}}.",
+      "behavior": "Launch behaviour"
+    },
     "tabs": {
       "xplane": "X-Plane",
+      "launcher": "Flight Setup",
       "addons": "Add-ons",
       "data": "Nav Data",
       "appearance": "Appearance",

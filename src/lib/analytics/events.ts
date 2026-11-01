@@ -249,6 +249,7 @@ export const ANALYTICS_WEATHER_PRESETS = [
 
 export const ANALYTICS_SETTINGS_TABS = [
   'xplane',
+  'launcher',
   'data',
   'appearance',
   'flight-strip',

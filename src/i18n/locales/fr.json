@@ -450,8 +450,20 @@
   "settings": {
     "title": "Paramètres",
     "subtitle": "Configurez vos préférences",
+    "launcher": {
+      "title": "Préparation du vol",
+      "description": "Comment X-Dispatch démarre X-Plane et communique avec lui",
+      "connection": "Connexion",
+      "webApiPort": "Port de l’API web X-Plane",
+      "webApiPortDesc": "X-Dispatch se connecte à X-Plane sur ce port et le transmet à X-Plane à chaque démarrage à froid. Ne le changez que si un autre programme utilise déjà le port {{default}}.",
+      "webApiPortInvalid": "Saisissez un nombre entre {{min}} et {{max}}.",
+      "webApiPortReset": "Rétablir {{port}}",
+      "webApiPortRestart": "Redémarrez X-Plane après avoir changé le port. Un X-Plane lancé à la main doit l’être avec --web_server_port={{port}}.",
+      "behavior": "Comportement au lancement"
+    },
     "tabs": {
       "xplane": "X-Plane",
+      "launcher": "Préparation du vol",
       "addons": "Extensions",
       "data": "Données Nav",
       "appearance": "Apparence",

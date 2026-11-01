@@ -450,8 +450,20 @@
   "settings": {
     "title": "設定",
     "subtitle": "設定をカスタマイズ",
+    "launcher": {
+      "title": "フライト準備",
+      "description": "X-Dispatch が X-Plane を起動し、通信する方法",
+      "connection": "接続",
+      "webApiPort": "X-Plane Web API ポート",
+      "webApiPortDesc": "X-Dispatch はこのポートで X-Plane に接続し、コールドスタートのたびに X-Plane へ渡します。別のプログラムがポート {{default}} を使用している場合のみ変更してください。",
+      "webApiPortInvalid": "{{min}} から {{max}} の間の数値を入力してください。",
+      "webApiPortReset": "{{port}} に戻す",
+      "webApiPortRestart": "ポートを変更したら X-Plane を再起動してください。手動で起動する X-Plane は --web_server_port={{port}} を付けて起動する必要があります。",
+      "behavior": "起動時の動作"
+    },
     "tabs": {
       "xplane": "X-Plane",
+      "launcher": "フライト準備",
       "addons": "アドオン",
       "data": "ナビデータ",
       "appearance": "外観",

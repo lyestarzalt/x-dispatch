@@ -355,6 +355,7 @@ declare global {
     // REST + WebSocket (REST goes through IPC to avoid CORS)
     xplaneServiceAPI: {
       isAPIAvailable: () => Promise<boolean>;
+      setPort: (port: number) => Promise<void>;
       getCapabilities: () => Promise<{
         api: { versions: string[] };
         'x-plane': { version: string };

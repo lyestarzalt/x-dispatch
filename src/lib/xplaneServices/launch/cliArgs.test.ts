@@ -20,6 +20,10 @@ describe('filterReservedXpArgs', () => {
     expect(filterReservedXpArgs([` ${reserved}=/tmp/evil.json`])).toEqual([]);
   });
 
+  it('drops a hand-typed web server port, which the setting owns', () => {
+    expect(filterReservedXpArgs(['--web_server_port=8088', '--no_sound'])).toEqual(['--no_sound']);
+  });
+
   it('returns a new array (does not mutate input)', () => {
     const input = ['--no_sound', `${reserved}=/x`];
     const out = filterReservedXpArgs(input);

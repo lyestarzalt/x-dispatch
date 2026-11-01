@@ -36,6 +36,7 @@ import type {
   VerticalSpeedUnit,
 } from '@/lib/utils/units';
 import { uuid } from '@/lib/utils/uuid';
+import { XPLANE_WEB_API_PORT } from '@/lib/xplaneServices/client/port';
 
 export type FontSize = 'small' | 'medium' | 'large';
 
@@ -181,6 +182,8 @@ export interface FlightsSettings {
 export interface LauncherSettings {
   closeOnLaunch: boolean;
   customLaunchArgs: string[];
+  /** Port of X-Plane's web server; passed to X-Plane on cold start and used by every client. */
+  webApiPort: number;
 }
 
 export interface SupportSettings {
@@ -299,6 +302,7 @@ const DEFAULT_GRAPHICS_SETTINGS: GraphicsSettings = {
 const DEFAULT_LAUNCHER_SETTINGS: LauncherSettings = {
   closeOnLaunch: false,
   customLaunchArgs: [],
+  webApiPort: XPLANE_WEB_API_PORT,
 };
 
 const DEFAULT_FLIGHTS_SETTINGS: FlightsSettings = {
@@ -551,7 +555,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'xplane-viz-settings',
-      version: 41,
+      version: 42,
       migrate: (persistedState, version) => migrateSettings(persistedState, version),
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -841,6 +845,12 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
     const graphics = { ...DEFAULT_GRAPHICS_SETTINGS, ...state.graphics };
     if ((graphics.ownshipColor as string) === 'orange') graphics.ownshipColor = 'red';
     state = { ...state, graphics };
+  }
+  if (version < 42) {
+    state = {
+      ...state,
+      launcher: { ...DEFAULT_LAUNCHER_SETTINGS, ...state.launcher },
+    };
   }
 
   return state as SettingsState;

@@ -2468,6 +2468,13 @@ function registerIpcHandlers() {
 
   // X-Plane API handlers (REST + WebSocket)
   // REST goes through main process to avoid CORS issues with localhost
+  handle('xplaneService:setPort', async (_, port: unknown) => {
+    const n = Number(port);
+    if (!Number.isInteger(n) || n < 1 || n > 65535) return;
+    const { getXPlaneService } = await getXPlaneModule();
+    getXPlaneService().setPort(n);
+  });
+
   handle('xplaneService:isAPIAvailable', async () => {
     try {
       const { getXPlaneService } = await getXPlaneModule();

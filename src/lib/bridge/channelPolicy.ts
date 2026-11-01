@@ -109,6 +109,7 @@ export const REMOTE_ALLOWED_CHANNELS: readonly string[] = [
   'xplaneService:isAPIAvailable',
   'xplaneService:isStreamConnected',
   'xplaneService:setDataref',
+  'xplaneService:setPort',
   'xplaneService:setTrafficEnabled',
   'xplaneService:startFlight',
   'xplaneService:startStateStream',

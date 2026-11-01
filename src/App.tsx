@@ -23,6 +23,7 @@ import { useFlightStripWindowSync } from './hooks/useFlightStripWindowSync';
 import { useNativeShell } from './hooks/useNativeShell';
 import { useSharedPlanSync } from './hooks/useSharedPlanSync';
 import { useTaxiGuidancePublisher } from './hooks/useTaxiGuidancePublisher';
+import { useXPlanePortSync } from './hooks/useXPlanePortSync';
 import './i18n';
 import { startupBucket } from './lib/analytics/buckets';
 import type { Airport } from './lib/xplaneServices/dataService';
@@ -39,6 +40,7 @@ initializeFontSize();
 
 function AppContent() {
   useFlightStripWindowSync();
+  useXPlanePortSync();
   useTaxiGuidancePublisher();
   useSharedPlanSync();
   useNativeShell();

@@ -450,8 +450,20 @@
   "settings": {
     "title": "Настройки",
     "subtitle": "Настройте параметры приложения",
+    "launcher": {
+      "title": "Подготовка полёта",
+      "description": "Как X-Dispatch запускает X-Plane и взаимодействует с ним",
+      "connection": "Подключение",
+      "webApiPort": "Порт веб-API X-Plane",
+      "webApiPortDesc": "X-Dispatch подключается к X-Plane через этот порт и передаёт его X-Plane при каждом холодном запуске. Меняйте его только если порт {{default}} уже занят другой программой.",
+      "webApiPortInvalid": "Введите число от {{min}} до {{max}}.",
+      "webApiPortReset": "Вернуть {{port}}",
+      "webApiPortRestart": "После смены порта перезапустите X-Plane. X-Plane, запущенный вручную, должен стартовать с --web_server_port={{port}}.",
+      "behavior": "Поведение при запуске"
+    },
     "tabs": {
       "xplane": "X-Plane",
+      "launcher": "Подготовка полёта",
       "addons": "Дополнения",
       "data": "Нав. данные",
       "appearance": "Внешний вид",

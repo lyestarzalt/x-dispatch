@@ -9,14 +9,16 @@ import {
   LifeBuoy,
   Monitor,
   Palette,
-  Plane,
   PlaneLanding,
+  Rocket,
   Ruler,
   ScrollText,
   Star,
   Tablet,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
+import { XPlaneMark } from '@/components/icons/XPlaneMark';
 import {
   Dialog,
   DialogContent,
@@ -38,6 +40,7 @@ import {
   FlightStripSection,
   FlightsSection,
   GraphicsSection,
+  LauncherSection,
   LogsSection,
   NavigationDataSection,
   SimbriefSection,
@@ -53,6 +56,7 @@ interface SettingsDialogProps {
 }
 
 type TabId =
+  | 'launcher'
   | 'xplane'
   | 'data'
   | 'appearance'
@@ -70,12 +74,13 @@ type TabId =
 
 interface TabConfig {
   id: TabId;
-  icon: typeof Plane;
+  icon: LucideIcon;
   labelKey: string;
 }
 
 const TABS: TabConfig[] = [
-  { id: 'xplane', icon: Plane, labelKey: 'settings.tabs.xplane' },
+  { id: 'xplane', icon: XPlaneMark, labelKey: 'settings.tabs.xplane' },
+  { id: 'launcher', icon: Rocket, labelKey: 'settings.tabs.launcher' },
   { id: 'data', icon: Database, labelKey: 'settings.tabs.data' },
   { id: 'appearance', icon: Palette, labelKey: 'settings.tabs.appearance' },
   { id: 'flight-strip', icon: GalleryHorizontal, labelKey: 'settings.tabs.flightStrip' },
@@ -166,6 +171,17 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               <div className="p-6">
                 <SectionErrorBoundary name="X-Plane Settings">
                   <XPlaneSection />
+                </SectionErrorBoundary>
+              </div>
+            </TabsContent>
+
+            <TabsContent
+              value="launcher"
+              className="absolute inset-0 mt-0 overflow-y-auto data-[state=inactive]:hidden"
+            >
+              <div className="p-6">
+                <SectionErrorBoundary name="Flight Setup Settings">
+                  <LauncherSection />
                 </SectionErrorBoundary>
               </div>
             </TabsContent>

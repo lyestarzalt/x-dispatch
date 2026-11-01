@@ -679,6 +679,20 @@ describe('flight strip settings', () => {
   });
 });
 
+describe('launcher web API port at v42', () => {
+  it('adds the default port and keeps the other launcher settings', () => {
+    const result = migrateSettings(
+      { launcher: { closeOnLaunch: true, customLaunchArgs: ['--no_sound'] } },
+      41
+    );
+    expect(result.launcher).toEqual({
+      closeOnLaunch: true,
+      customLaunchArgs: ['--no_sound'],
+      webApiPort: 8086,
+    });
+  });
+});
+
 describe('own-aircraft colour at v39', () => {
   it('replaces a scheme that no longer exists with the default and keeps a known one', () => {
     const blob = (ownshipColor: string) => ({
