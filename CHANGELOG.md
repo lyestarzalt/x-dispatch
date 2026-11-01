@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Flight Setup has its own settings tab.** Close after launch and the launch arguments moved there from the X-Plane tab, next to a new setting for the port X-Plane's web server uses. Change it when another program already has port 8086: X-Dispatch connects on the new port and starts X-Plane with it, so the two always agree.
+
+### Changed
+
+- **The X-Plane settings tab shows the X-Plane mark** instead of a generic aeroplane icon.
+
+### Fixed
+
+- **A clear message when X-Plane is running but X-Dispatch cannot reach it.** When X-Plane starts while another program holds its web server port, it runs without the connection X-Dispatch needs, so there is no Change Flight button, no Flight Strip and no aircraft on the map. Pressing Launch used to answer "use the Change Flight button". It now names the program holding the port when one still does, or explains that the port was taken when X-Plane started, and says to restart X-Plane. If X-Plane only finished starting a moment ago, the flight goes through as a Change Flight instead.
+
 ## [2.10.0] - 2026-10-31
 
 ### Added
