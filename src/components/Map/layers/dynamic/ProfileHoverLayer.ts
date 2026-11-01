@@ -29,7 +29,7 @@ function addLayerIfReady(map: maplibregl.Map): void {
     },
     paint: {
       'icon-color': '#ffffff',
-      'icon-halo-color': '#1DA0F2',
+      'icon-halo-color': '#0FB5E8',
       'icon-halo-width': 1.5,
     },
   });

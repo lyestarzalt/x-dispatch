@@ -40,10 +40,10 @@ export function AppLogo({ size = 'md', className, withBackground = false }: AppL
         )}
         <linearGradient id={`xf-${id}`} x1="50%" y1="0%" x2="50%" y2="100%">
           <stop offset="0%" stopColor="#D4EEFB" />
-          <stop offset="12%" stopColor="#A5D9FA" />
+          <stop offset="12%" stopColor="#8AD4F1" />
           <stop offset="30%" stopColor="#5DC2F7" />
-          <stop offset="50%" stopColor="#1DA0F2" />
-          <stop offset="72%" stopColor="#1678B5" />
+          <stop offset="50%" stopColor="#0FB5E8" />
+          <stop offset="72%" stopColor="#06739F" />
           <stop offset="100%" stopColor="#0C4A78" />
         </linearGradient>
         <linearGradient id={`xs-${id}`} x1="20%" y1="0%" x2="80%" y2="60%">
@@ -52,16 +52,16 @@ export function AppLogo({ size = 'md', className, withBackground = false }: AppL
           <stop offset="60%" stopColor="#fff" stopOpacity={0} />
         </linearGradient>
         <linearGradient id={`rt-${id}`} x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#0F5079" />
-          <stop offset="30%" stopColor="#4AB3F5" />
-          <stop offset="50%" stopColor="#A5D9FA" />
-          <stop offset="70%" stopColor="#4AB3F5" />
-          <stop offset="100%" stopColor="#0F5079" />
+          <stop offset="0%" stopColor="#015C7D" />
+          <stop offset="30%" stopColor="#3BBEEE" />
+          <stop offset="50%" stopColor="#8AD4F1" />
+          <stop offset="70%" stopColor="#3BBEEE" />
+          <stop offset="100%" stopColor="#015C7D" />
         </linearGradient>
         <linearGradient id={`rb-${id}`} x1="100%" y1="0%" x2="0%" y2="0%">
-          <stop offset="0%" stopColor="#07283D" />
-          <stop offset="50%" stopColor="#1678B5" />
-          <stop offset="100%" stopColor="#07283D" />
+          <stop offset="0%" stopColor="#003A52" />
+          <stop offset="50%" stopColor="#06739F" />
+          <stop offset="100%" stopColor="#003A52" />
         </linearGradient>
         <filter id={`rg-${id}`} x="-40%" y="-40%" width="180%" height="180%">
           <feGaussianBlur in="SourceGraphic" stdDeviation="18" result="b" />
@@ -87,7 +87,7 @@ export function AppLogo({ size = 'md', className, withBackground = false }: AppL
         cy="512"
         r="380"
         fill="none"
-        stroke="#1DA0F2"
+        stroke="#0FB5E8"
         strokeWidth="20"
         opacity={0.15}
         filter={`url(#wg-${id})`}
@@ -97,7 +97,7 @@ export function AppLogo({ size = 'md', className, withBackground = false }: AppL
         cy="512"
         r="380"
         fill="none"
-        stroke="#1DA0F2"
+        stroke="#0FB5E8"
         strokeWidth="8"
         opacity={0.5}
         filter={`url(#rg-${id})`}
@@ -123,7 +123,7 @@ export function AppLogo({ size = 'md', className, withBackground = false }: AppL
         cy="512"
         r="374"
         fill="none"
-        stroke="#4AB3F5"
+        stroke="#3BBEEE"
         strokeWidth="0.5"
         opacity={0.15}
       />
@@ -137,7 +137,7 @@ export function AppLogo({ size = 'md', className, withBackground = false }: AppL
           height="640"
           rx="14"
           transform="rotate(32)"
-          fill="#1DA0F2"
+          fill="#0FB5E8"
         />
         <rect
           x="-76"
@@ -146,7 +146,7 @@ export function AppLogo({ size = 'md', className, withBackground = false }: AppL
           height="640"
           rx="14"
           transform="rotate(-32)"
-          fill="#1DA0F2"
+          fill="#0FB5E8"
         />
       </g>
 

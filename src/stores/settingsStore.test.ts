@@ -376,6 +376,7 @@ describe('migrateSettings', () => {
       locked: false,
       alwaysOnTop: true,
       autoOpen: false,
+      wheelAdjust: true,
       fields: {
         aircraft: true,
         attitude: true,
@@ -676,6 +677,28 @@ describe('flight strip settings', () => {
     setFlightStripScale(5);
     setFlightStripOpacity(0);
     expect(useSettingsStore.getState().flightStrip).toMatchObject({ scale: 2, opacity: 0.3 });
+  });
+});
+
+describe('flight strip wheel at v43', () => {
+  it('turns the wheel on for existing strips', () => {
+    const result = migrateSettings({ flightStrip: { scale: 1.5, locked: true } }, 42);
+    expect(result.flightStrip).toMatchObject({ scale: 1.5, locked: true, wheelAdjust: true });
+  });
+});
+
+describe('launcher web API port at v42', () => {
+  it('adds the default port and keeps the other launcher settings', () => {
+    const result = migrateSettings(
+      { launcher: { closeOnLaunch: true, customLaunchArgs: ['--no_sound'] } },
+      41
+    );
+    expect(result.launcher).toEqual({
+      closeOnLaunch: true,
+      customLaunchArgs: ['--no_sound'],
+      webApiPort: 8086,
+      launchEnv: [],
+    });
   });
 });
 

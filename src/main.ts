@@ -143,6 +143,7 @@ import {
 } from './lib/xplaneServices/dataService/config';
 import { loadRequiredStartupData } from './lib/xplaneServices/dataService/startupLoader';
 import type { LaunchResult } from './lib/xplaneServices/launch';
+import { parseLaunchEnv } from './lib/xplaneServices/launch/launchEnv';
 import { registerXPlaneLogIPC } from './lib/xplaneServices/log/ipc';
 import { ResolvedAirportProcedures } from './types/navigation';
 import type { LoadingProgress, PlaneState } from './types/xplane';
@@ -2390,7 +2391,7 @@ function registerIpcHandlers() {
 
   handle(
     'launcher:launch',
-    async (_, payload: unknown, extraArgs?: string[]): Promise<LaunchResult> => {
+    async (_, payload: unknown, extraArgs?: string[], env?: unknown): Promise<LaunchResult> => {
       const xplanePath = dataManager.getXPlanePath();
       if (!xplanePath) {
         return {
@@ -2417,7 +2418,11 @@ function registerIpcHandlers() {
 
       try {
         const { getLauncher } = await getLauncherModule();
-        const result = await getLauncher(xplanePath).launch(flightPayload, extraArgs);
+        const result = await getLauncher(xplanePath).launch(
+          flightPayload,
+          extraArgs,
+          parseLaunchEnv(env)
+        );
         if (result.success) {
           logger.launcher.info('[User] Launch successful');
         } else {
@@ -2468,6 +2473,13 @@ function registerIpcHandlers() {
 
   // X-Plane API handlers (REST + WebSocket)
   // REST goes through main process to avoid CORS issues with localhost
+  handle('xplaneService:setPort', async (_, port: unknown) => {
+    const n = Number(port);
+    if (!Number.isInteger(n) || n < 1 || n > 65535) return;
+    const { getXPlaneService } = await getXPlaneModule();
+    getXPlaneService().setPort(n);
+  });
+
   handle('xplaneService:isAPIAvailable', async () => {
     try {
       const { getXPlaneService } = await getXPlaneModule();
@@ -2561,6 +2573,16 @@ function registerIpcHandlers() {
     } catch (error) {
       logger.main.error('Failed to set X-Plane dataref', error);
       return { success: false, error: (error as Error).message };
+    }
+  });
+
+  handle('xplaneService:commandExists', async (_, commandName: unknown) => {
+    if (!commandName || typeof commandName !== 'string') return false;
+    try {
+      const { getXPlaneService } = await getXPlaneModule();
+      return getXPlaneService().commandExists(commandName);
+    } catch {
+      return false;
     }
   });
 

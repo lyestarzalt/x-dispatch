@@ -113,7 +113,7 @@ export const LABEL_BADGE_COLORS: Record<WaypointLabelKind, string> = {
   sid: ROUTE_KIND_COLORS.sid,
   star: ROUTE_KIND_COLORS.star,
   approach: ROUTE_KIND_COLORS.approach,
-  airport: '#1DA0F2',
+  airport: '#0FB5E8',
 };
 
 export function labelBadgeImageId(kind: WaypointLabelKind): string {

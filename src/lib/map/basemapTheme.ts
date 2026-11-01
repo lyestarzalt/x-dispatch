@@ -34,7 +34,7 @@ export function getBasemapTheme(url: string): BasemapTheme {
 }
 
 /** Brand cyan = `--info`. Used for the airport dot fill across every theme. */
-export const AIRPORT_DOT_FILL = '#1DA0F2';
+export const AIRPORT_DOT_FILL = '#0FB5E8';
 /** Dark hairline drawn around the dot — provides contrast on white/snow/cloud terrain. */
 export const AIRPORT_DOT_STROKE = '#0d1a26';
 /** White halo ring rendered beneath the dot — provides contrast on dark/forest/ocean terrain. */

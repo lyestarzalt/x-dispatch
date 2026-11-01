@@ -20,6 +20,7 @@ import type { RemoteAccessStatus } from '@/lib/remote/types';
 import type { StartupFailureReport } from '@/lib/startup/startupFallback';
 import type { GuidanceRoutes } from '@/lib/taxiGuidance/windowRoutes';
 import type { FlightInit } from '@/lib/xplaneServices/client/generated/xplaneApi';
+import type { LaunchEnvVar } from '@/lib/xplaneServices/launch/launchEnv';
 import type {
   XPLogReadResult,
   openXPlaneLogExternally as openXPlaneLogExternallyFn,
@@ -288,8 +289,8 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
       scanAircraft: () => t.invoke('launcher:scanAircraft'),
       getAircraft: () => t.invoke('launcher:getAircraft'),
       getWeatherPresets: () => t.invoke('launcher:getWeatherPresets'),
-      launch: (payload: FlightInit, extraArgs?: string[]) =>
-        t.invoke('launcher:launch', payload, extraArgs),
+      launch: (payload: FlightInit, extraArgs?: string[], env?: LaunchEnvVar[]) =>
+        t.invoke('launcher:launch', payload, extraArgs, env),
       getAircraftImage: (imagePath: string) => t.invoke('launcher:getAircraftImage', imagePath),
     },
 
@@ -319,11 +320,13 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
     xplaneServiceAPI: {
       // REST API (via main process)
       isAPIAvailable: () => t.invoke('xplaneService:isAPIAvailable'),
+      setPort: (port: number) => t.invoke('xplaneService:setPort', port),
       getCapabilities: () => t.invoke('xplaneService:getCapabilities'),
       startFlight: (payload: unknown) => t.invoke('xplaneService:startFlight', payload),
       getDataref: (name: string) => t.invoke('xplaneService:getDataref', name),
       setDataref: (name: string, value: number | number[]) =>
         t.invoke('xplaneService:setDataref', name, value),
+      commandExists: (name: string) => t.invoke('xplaneService:commandExists', name),
       activateCommand: (name: string, duration?: number) =>
         t.invoke('xplaneService:activateCommand', name, duration ?? 0),
       // WebSocket streaming

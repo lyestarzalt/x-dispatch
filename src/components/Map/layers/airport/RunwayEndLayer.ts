@@ -10,7 +10,7 @@ import { BaseLayerRenderer } from './BaseLayerRenderer';
 const COLORS = {
   default: '#64748b',
   hover: '#94a3b8',
-  selected: '#1DA0F2',
+  selected: '#0FB5E8',
 } as const;
 
 /**

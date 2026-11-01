@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
-import { AlertCircle, Check, FolderOpen, Pencil, Plane, Trash2 } from 'lucide-react';
+import { AlertCircle, Check, FolderOpen, Pencil, Trash2 } from 'lucide-react';
+import { XPlaneMark } from '@/components/icons/XPlaneMark';
 import { DesktopOnly } from '@/components/remote/DesktopOnly';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -9,22 +10,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import { Switch } from '@/components/ui/switch';
 import { errorMessage } from '@/lib/utils/errors';
 import { cn } from '@/lib/utils/helpers';
 import { appKeys, useActiveInstallation, useInstallations } from '@/queries';
-import { useSettingsStore } from '@/stores/settingsStore';
 import { SettingsHeader } from '../primitives';
 import type { SettingsSectionProps } from '../types';
-import LaunchArgsSection from './LaunchArgsSection';
 
 export default function XPlaneSection({ className }: SettingsSectionProps) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { data: installations = [] } = useInstallations();
   const { data: activeInstallation } = useActiveInstallation();
-  const closeOnLaunch = useSettingsStore((s) => s.launcher.closeOnLaunch);
-  const updateLauncherSettings = useSettingsStore((s) => s.updateLauncherSettings);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -139,7 +135,7 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
   return (
     <div className={cn('space-y-6', className)}>
       <SettingsHeader
-        icon={Plane}
+        icon={XPlaneMark}
         title={t('settings.xplane.title')}
         description={t('settings.xplane.description')}
       />
@@ -296,23 +292,6 @@ export default function XPlaneSection({ className }: SettingsSectionProps) {
           </Button>
         </DesktopOnly>
       )}
-
-      {/* Launch Behavior */}
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium">{t('settings.xplane.closeOnLaunch')}</p>
-          <p className="text-muted-foreground text-xs">
-            {t('settings.xplane.closeOnLaunchDescription')}
-          </p>
-        </div>
-        <Switch
-          checked={closeOnLaunch}
-          onCheckedChange={(checked) => updateLauncherSettings({ closeOnLaunch: checked })}
-        />
-      </div>
-
-      {/* Launch Arguments */}
-      <LaunchArgsSection />
     </div>
   );
 }

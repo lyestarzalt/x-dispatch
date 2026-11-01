@@ -36,6 +36,8 @@ import type {
   VerticalSpeedUnit,
 } from '@/lib/utils/units';
 import { uuid } from '@/lib/utils/uuid';
+import { XPLANE_WEB_API_PORT } from '@/lib/xplaneServices/client/port';
+import type { LaunchEnvVar } from '@/lib/xplaneServices/launch/launchEnv';
 
 export type FontSize = 'small' | 'medium' | 'large';
 
@@ -144,6 +146,8 @@ export interface FlightStripSettings {
   fields: FlightStripFields;
   /** Every readout, shown or not, left to right. */
   order: FlightStripReadout[];
+  /** Scrolling over a selected value turns that knob in X-Plane. */
+  wheelAdjust: boolean;
 }
 
 export interface GraphicsSettings {
@@ -181,6 +185,10 @@ export interface FlightsSettings {
 export interface LauncherSettings {
   closeOnLaunch: boolean;
   customLaunchArgs: string[];
+  /** Port of X-Plane's web server; passed to X-Plane on cold start and used by every client. */
+  webApiPort: number;
+  /** Environment variables set for X-Plane on every cold start. */
+  launchEnv: LaunchEnvVar[];
 }
 
 export interface SupportSettings {
@@ -241,7 +249,9 @@ interface SettingsState {
   setFlightStripScale: (scale: number) => void;
   setFlightStripOpacity: (opacity: number) => void;
   updateFlightStripSettings: (
-    settings: Partial<Pick<FlightStripSettings, 'alwaysOnTop' | 'autoOpen' | 'locked'>>
+    settings: Partial<
+      Pick<FlightStripSettings, 'alwaysOnTop' | 'autoOpen' | 'locked' | 'wheelAdjust'>
+    >
   ) => void;
   toggleFlightStripLock: () => void;
   /** Ignored when it would hide the last readout. */
@@ -299,6 +309,8 @@ const DEFAULT_GRAPHICS_SETTINGS: GraphicsSettings = {
 const DEFAULT_LAUNCHER_SETTINGS: LauncherSettings = {
   closeOnLaunch: false,
   customLaunchArgs: [],
+  webApiPort: XPLANE_WEB_API_PORT,
+  launchEnv: [],
 };
 
 const DEFAULT_FLIGHTS_SETTINGS: FlightsSettings = {
@@ -326,6 +338,7 @@ const DEFAULT_FLIGHT_STRIP_SETTINGS: FlightStripSettings = {
   autoOpen: false,
   fields: DEFAULT_FLIGHT_STRIP_FIELDS,
   order: [...DEFAULT_FLIGHT_STRIP_ORDER],
+  wheelAdjust: true,
 };
 
 function clampFlightStripScale(scale: number): number {
@@ -551,7 +564,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'xplane-viz-settings',
-      version: 41,
+      version: 44,
       migrate: (persistedState, version) => migrateSettings(persistedState, version),
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -841,6 +854,24 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
     const graphics = { ...DEFAULT_GRAPHICS_SETTINGS, ...state.graphics };
     if ((graphics.ownshipColor as string) === 'orange') graphics.ownshipColor = 'red';
     state = { ...state, graphics };
+  }
+  if (version < 42) {
+    state = {
+      ...state,
+      launcher: { ...DEFAULT_LAUNCHER_SETTINGS, ...state.launcher },
+    };
+  }
+  if (version < 43) {
+    state = {
+      ...state,
+      flightStrip: { ...state.flightStrip!, wheelAdjust: true },
+    };
+  }
+  if (version < 44) {
+    state = {
+      ...state,
+      launcher: { ...state.launcher!, launchEnv: [] },
+    };
   }
 
   return state as SettingsState;

@@ -8,11 +8,15 @@ import { isElevated } from '@/lib/utils/isElevated';
 import logger from '@/lib/utils/logger';
 import type { FlightInit } from '@/lib/xplaneServices/client/generated/xplaneApi';
 import type { Aircraft, WeatherPreset } from '@/types/aircraft';
+import { XPLANE_WEB_API_PORT } from '../client/port';
+import { type PortHolder, findPortHolder } from '../client/portHolder';
 import { isXPlaneProcessRunning } from '../client/processCheck';
+import { getXPlaneService } from '../client/service';
 import { scanAircraftDirectory } from './acfParser';
 import { RESERVED_XP_ARG, filterReservedXpArgs } from './cliArgs';
 import { validateNewFlight } from './flightInit/schema';
 import { getXPlaneExecutable } from './freeflightGenerator';
+import { buildLaunchEnv } from './launchEnv';
 import { WEATHER_PRESETS } from './types';
 
 /**
@@ -33,6 +37,8 @@ export interface LaunchResult {
   success: boolean;
   error?: string;
   code?: LaunchErrorCode;
+  /** With `ALREADY_RUNNING`: whoever holds the web API port now, when anyone does. */
+  portHolder?: PortHolder;
 }
 
 /**
@@ -138,20 +144,30 @@ class XPlaneLauncher {
    * Launch X-Plane with FlightInit payload (same schema as REST API, no { data } wrapper).
    * Writes raw payload to a temp JSON file and hands it to X-Plane on launch.
    */
-  async launch(payload: FlightInit, extraArgs?: string[]): Promise<LaunchResult> {
+  async launch(
+    payload: FlightInit,
+    extraArgs?: string[],
+    env: Record<string, string> = {}
+  ): Promise<LaunchResult> {
     try {
       payload = validateNewFlight(payload);
     } catch (error) {
       return { success: false, error: (error as Error).message, code: 'INVALID_CONFIG' };
     }
     try {
+      const webApiPort = getXPlaneService().getPort();
       const isRunning = await isXPlaneProcessRunning();
       if (isRunning) {
-        logger.launcher.warn('X-Plane is already running');
+        const portHolder = await findPortHolder(webApiPort);
+        const holder = portHolder ? `${portHolder.name} (${portHolder.pid})` : 'nobody';
+        logger.launcher.warn(
+          `X-Plane process is running but the renderer saw no web API; port ${webApiPort} held by ${holder}`
+        );
         return {
           success: false,
-          error: 'X-Plane is already running. Use the Change Flight button instead.',
+          error: `X-Plane is running but its web API is not reachable on port ${webApiPort}. Restart X-Plane.`,
           code: 'ALREADY_RUNNING',
+          ...(portHolder ? { portHolder } : {}),
         };
       }
 
@@ -168,9 +184,12 @@ class XPlaneLauncher {
       logger.launcher.info(`Flight JSON: ${JSON.stringify(flightJson)}`);
 
       const xplaneArgs = [`${RESERVED_XP_ARG}=${jsonPath}`];
+      if (webApiPort !== XPLANE_WEB_API_PORT) {
+        xplaneArgs.push(`--web_server_port=${webApiPort}`);
+      }
 
       if (extraArgs?.length) {
-        xplaneArgs.push(...extraArgs);
+        xplaneArgs.push(...filterReservedXpArgs(extraArgs));
       }
 
       const cliXpArgs = filterReservedXpArgs(getCliFlags().xpArgs);
@@ -190,6 +209,10 @@ class XPlaneLauncher {
         const execCmd = `open "${steamUrl}"`;
 
         logger.launcher.info(`Launch method: Steam URL (macOS)`);
+        if (Object.keys(env).length > 0) {
+          // Steam starts the process, so our environment never reaches it.
+          logger.launcher.warn('Launch environment variables are not applied through Steam');
+        }
         logger.launcher.info(`Steam App ID: ${appId}`);
         logger.launcher.info(`Steam URL: ${steamUrl}`);
         logger.launcher.info(`Exec command: ${execCmd}`);
@@ -213,7 +236,11 @@ class XPlaneLauncher {
       const spawnOptions: Parameters<typeof spawn>[2] = {
         detached: true,
         stdio: 'ignore',
+        ...(Object.keys(env).length > 0 ? { env: buildLaunchEnv(process.env, env) } : {}),
       };
+      if (Object.keys(env).length > 0) {
+        logger.launcher.info(`Environment: ${Object.keys(env).join(', ')}`);
+      }
 
       logger.launcher.info(`Launch method: Direct spawn`);
       logger.launcher.info(`Platform: ${process.platform}`);

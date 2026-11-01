@@ -309,7 +309,8 @@ declare global {
       getWeatherPresets: () => Promise<WeatherPreset[]>;
       launch: (
         payload: FlightInit,
-        extraArgs?: string[]
+        extraArgs?: string[],
+        env?: import('@/lib/xplaneServices/launch/launchEnv').LaunchEnvVar[]
       ) => Promise<import('@/lib/xplaneServices/launch').LaunchResult>;
       getAircraftImage: (imagePath: string) => Promise<string | null>;
     };
@@ -355,6 +356,7 @@ declare global {
     // REST + WebSocket (REST goes through IPC to avoid CORS)
     xplaneServiceAPI: {
       isAPIAvailable: () => Promise<boolean>;
+      setPort: (port: number) => Promise<void>;
       getCapabilities: () => Promise<{
         api: { versions: string[] };
         'x-plane': { version: string };
@@ -371,6 +373,7 @@ declare global {
         name: string,
         value: number | number[]
       ) => Promise<{ success: boolean; error?: string }>;
+      commandExists: (name: string) => Promise<boolean>;
       activateCommand: (
         name: string,
         duration?: number

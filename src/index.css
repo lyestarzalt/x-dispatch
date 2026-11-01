@@ -28,48 +28,40 @@
 
     --popover: 0.19 0.02 250; /* #141C26 - elevated */
     --popover-foreground: 0.98 0 0;
-
-    /* Primary = Cyan accent (X-Plane signature color) */
-    --primary: 0.65 0.15 230; /* #1DA0F2 */
+    --primary: 0.72 0.14 227; /* #0FB5E8 - Brand Base */
     --primary-foreground: 0.13 0.02 250;
-
-    /* Secondary = Interactive surfaces */
     --secondary: 0.22 0.02 250; /* #1A2633 */
     --secondary-foreground: 0.98 0 0;
-
-    /* Muted = Subdued elements */
     --muted: 0.25 0.02 250; /* #263240 */
     --muted-foreground: 0.55 0.02 250; /* #717880 */
 
     /* Accent = Hover states */
     --accent: 0.28 0.02 250;
     --accent-foreground: 0.98 0 0;
-
-    /* Borders */
     --border: 0.28 0.02 250; /* #263240 */
     --input: 0.28 0.02 250;
-    --ring: 0.7 0.15 230; /* #4AB3F5 - cyan focus */
+    --ring: 0.78 0.12 227; /* #55C7F3 - Brand Light - focus */
 
     /* Semantic - Status indicators only */
-    --destructive: 0.6 0.2 25; /* Red - errors, LIFR */
+    --destructive: 0.68 0.21 28; /* #FF5247 - Red Base - errors, LIFR */
     --destructive-foreground: 0.98 0 0;
 
-    --success: 0.65 0.2 145; /* Green - VFR, success */
+    --success: 0.71 0.18 153; /* #23C16B - Green Base - VFR, success */
     --success-foreground: 0.13 0.02 250;
 
-    --warning: 0.75 0.15 85; /* Amber - MVFR, caution */
+    --warning: 0.82 0.16 76; /* #FFB323 - Yellow Base - MVFR, caution */
     --warning-foreground: 0.13 0.02 250;
 
-    --info: 0.7 0.12 230; /* Light cyan - info */
+    --info: 0.78 0.12 227; /* #55C7F3 - Brand Light - info */
     --info-foreground: 0.13 0.02 250;
 
-    --xp-cyan-glow: 0.85 0.08 230; /* #A5D9FA - glowing text */
-    --xp-cyan-light: 0.78 0.1 230; /* #77C6E7 - hover glow */
-    --xp-cyan-hover: 0.72 0.14 230; /* #4AB3F5 - hover states */
-    --xp-cyan-primary: 0.65 0.15 230; /* #1DA0F2 - primary (same as --primary) */
-    --xp-cyan-muted: 0.5 0.12 230; /* #1678B5 - active states */
-    --xp-cyan-dark: 0.35 0.1 230; /* #0F5079 - subtle backgrounds */
-    --xp-cyan-deepest: 0.22 0.08 230; /* #07283D - very subtle */
+    --xp-cyan-glow: 0.83 0.08 225; /* #8AD4F1 - Brand Lighter - glowing text */
+    --xp-cyan-light: 0.78 0.12 227; /* #55C7F3 - Brand Light - hover glow */
+    --xp-cyan-hover: 0.75 0.13 227; /* #3BBEEE - hover states, midway between Brand Light and Base */
+    --xp-cyan-primary: 0.72 0.14 227; /* #0FB5E8 - Brand Base - primary (same as --primary) */
+    --xp-cyan-muted: 0.52 0.11 234; /* #06739F - Brand Dark - active states */
+    --xp-cyan-dark: 0.45 0.09 232; /* #015C7D - Brand Darkest - subtle backgrounds */
+    --xp-cyan-deepest: 0.33 0.07 232; /* #003A52 - very subtle, below Brand Darkest */
 
     /* X-Plane Gray Scale */
     --xp-gray-100: 0.55 0.02 250; /* #717880 - muted text */

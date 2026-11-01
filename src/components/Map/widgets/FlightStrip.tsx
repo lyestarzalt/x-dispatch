@@ -1,4 +1,12 @@
-import { Fragment, type ReactNode } from 'react';
+import {
+  type CSSProperties,
+  Fragment,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import { Crosshair, PictureInPicture2, Plane } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
@@ -6,6 +14,15 @@ import { DesktopOnly } from '@/components/remote/DesktopOnly';
 import { Button } from '@/components/ui/button';
 import { useUnits } from '@/hooks/useUnits';
 import type { FlightStripReadout } from '@/lib/flightStrip/fields';
+import {
+  ADJUSTABLE_READOUTS,
+  type AdjustProfile,
+  type AdjustableReadout,
+  COM1_FLIP_COMMAND,
+  adjustCommand,
+  pickAdjustProfile,
+  wheelSteps,
+} from '@/lib/flightStrip/wheelAdjust';
 import { exitEase, panelSpring, quickFade } from '@/lib/motionPresets';
 import type { Feet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
@@ -25,6 +42,52 @@ interface FlightStripProps {
   actions?: ReactNode;
   /** Shown at the bottom of the strip's card, under the taxi guidance. */
   footer?: ReactNode;
+}
+
+type WheelAdjustHandler = (direction: 1 | -1, coarse: boolean) => void;
+
+/**
+ * Scrolling over a readout turns its knob in X-Plane. Off while the sim is away,
+ * when the pilot switched it off, and for autopilot values whose bug is hidden,
+ * since a knob you cannot see turning is a knob you turn by accident.
+ */
+function useWheelAdjust(enabled: boolean, targetsShown: boolean) {
+  const connected = usePlaneStore((s) => s.connected);
+  const icaoType = usePlaneStore((s) => s.state?.icaoType);
+  const aircraftName = usePlaneStore((s) => s.state?.aircraftName);
+  // Which aircraft's knobs to turn: looked up again whenever the loaded aircraft
+  // changes. The answer is tagged with the aircraft it was found for, so a stale one
+  // never applies to the next aircraft while its lookup is still running.
+  const aircraftKey = enabled && connected && icaoType ? `${icaoType}|${aircraftName ?? ''}` : '';
+  const [found, setFound] = useState<{ key: string; profile: AdjustProfile | null }>();
+  useEffect(() => {
+    if (!aircraftKey) return;
+    let cancelled = false;
+    void pickAdjustProfile({ icaoType, aircraftName }, (name) =>
+      window.xplaneServiceAPI.commandExists(name)
+    ).then((profile) => {
+      if (!cancelled) setFound({ key: aircraftKey, profile });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [aircraftKey, icaoType, aircraftName]);
+  const profile = found?.key === aircraftKey ? found.profile : null;
+
+  return useCallback(
+    (readout: AdjustableReadout): WheelAdjustHandler | undefined => {
+      if (!enabled || !connected) return undefined;
+      const isAutopilot = readout !== 'com1' && readout !== 'qnh';
+      if (isAutopilot && !targetsShown) return undefined;
+      return (direction, coarse) => {
+        void window.xplaneServiceAPI.activateCommand(
+          adjustCommand(readout, direction, coarse, profile),
+          0
+        );
+      };
+    },
+    [enabled, connected, targetsShown, profile]
+  );
 }
 
 // --- Formatting helpers ---
@@ -166,6 +229,14 @@ export default function FlightStrip({
   // Autopilot bugs and the muted line under each value follow their own toggles.
   const target = (value: string | undefined) => (fields.targets ? value : undefined);
   const details = fields.details;
+  const wheelAdjust = useSettingsStore((s) => s.flightStrip.wheelAdjust);
+  const adjust = useWheelAdjust(wheelAdjust, fields.targets);
+  const onAdjust = Object.fromEntries(ADJUSTABLE_READOUTS.map((r) => [r, adjust(r)])) as Record<
+    AdjustableReadout,
+    WheelAdjustHandler | undefined
+  >;
+  const adjustHint = t('flightStrip.scrollToAdjust');
+  const flipCom1 = () => void window.xplaneServiceAPI.activateCommand(COM1_FLIP_COMMAND, 0);
   // One node per readout that is on; the pilot's order picks them out below.
   const readouts: Partial<Record<FlightStripReadout, ReactNode>> = {};
   if (fields.attitude && planeState?.pitch !== undefined && planeState?.roll !== undefined) {
@@ -175,6 +246,8 @@ export default function FlightStrip({
     readouts.speed = (
       <DataColumn
         label={t('flightStrip.ias')}
+        onWheelAdjust={onAdjust.speed}
+        adjustHint={adjustHint}
         target={target(
           planeState?.apAirspeedIsMach
             ? formatTarget(formatMach, planeState.apAirspeed)
@@ -205,6 +278,8 @@ export default function FlightStrip({
     readouts.altitude = (
       <DataColumn
         label={t('flightStrip.alt')}
+        onWheelAdjust={onAdjust.altitude}
+        adjustHint={adjustHint}
         target={target(formatTarget(formatValue, altitude(planeState?.apAltitude)))}
         value={
           <Reading chars={ALTITUDE_CHARS}>{formatValue(altitude(planeState?.altitudeMSL))}</Reading>
@@ -226,6 +301,8 @@ export default function FlightStrip({
     readouts.verticalSpeed = (
       <DataColumn
         label={t('flightStrip.vs')}
+        onWheelAdjust={onAdjust.verticalSpeed}
+        adjustHint={adjustHint}
         target={target(
           formatTarget(formatVerticalSpeed, verticalSpeed(planeState?.apVerticalSpeed))
         )}
@@ -243,6 +320,8 @@ export default function FlightStrip({
     readouts.heading = (
       <DataColumn
         label={t('flightStrip.hdg')}
+        onWheelAdjust={onAdjust.heading}
+        adjustHint={adjustHint}
         target={target(formatTarget(formatHeading, planeState?.apHeading))}
         value={
           <Reading chars={HEADING_CHARS}>{formatHeading(planeState?.magneticHeading)}</Reading>
@@ -293,9 +372,12 @@ export default function FlightStrip({
     readouts.com1 = (
       <DataColumn
         label={t('flightStrip.com1')}
+        onWheelAdjust={onAdjust.com1}
+        onActivate={onAdjust.com1 ? flipCom1 : undefined}
+        adjustHint={t('flightStrip.scrollToTune')}
         value={
           <Reading chars={COM_FREQUENCY_CHARS}>
-            {formatComFrequency(planeState?.com1Frequency)}
+            <FrequencyDigits text={formatComFrequency(planeState?.com1Frequency)} />
           </Reading>
         }
         unit={t('units.mhz')}
@@ -304,7 +386,7 @@ export default function FlightStrip({
           <>
             {t('flightStrip.stby')}{' '}
             <Reading align="left" chars={COM_FREQUENCY_CHARS}>
-              {formatComFrequency(planeState?.com1StandbyFrequency)}
+              <FrequencyDigits text={formatComFrequency(planeState?.com1StandbyFrequency)} />
             </Reading>
           </>
         }
@@ -315,6 +397,8 @@ export default function FlightStrip({
     readouts.qnh = (
       <DataColumn
         label={t('flightStrip.qnh')}
+        onWheelAdjust={onAdjust.qnh}
+        adjustHint={adjustHint}
         value={<Reading chars={QNH_CHARS}>{formatQnhHpa(planeState?.baroSettingInHg)}</Reading>}
         unit={t('units.hpa')}
         showDetails={details}
@@ -546,12 +630,27 @@ function MiniAttitude({ pitch, roll }: { pitch: number | undefined; roll: number
   );
 }
 
+/** Marks the part of a reading whose wheel steps are the coarse ones. */
+const COARSE_STEP_ATTR = 'data-coarse-step';
+
+/** A frequency split at the dot, so the wheel steps MHz over the left digits and kHz over the right. */
+function FrequencyDigits({ text }: { text: string }) {
+  const dot = text.indexOf('.');
+  if (dot === -1) return text;
+  return (
+    <>
+      <span {...{ [COARSE_STEP_ATTR]: '' }}>{text.slice(0, dot)}</span>
+      {text.slice(dot)}
+    </>
+  );
+}
+
 interface ReadingProps {
   /** Mono characters of the widest value this reading shows. */
   chars: number;
   /** Big values keep their digits anchored at the right; a reading after a label stays next to it. */
   align?: 'right' | 'left';
-  children: string;
+  children: ReactNode;
 }
 
 /**
@@ -581,7 +680,15 @@ interface DataColumnProps {
   secondary?: ReactNode;
   /** Off drops the line under the value, so the strip gets shorter. */
   showDetails?: boolean;
+  /** Set when scrolling over the column should turn its knob in the sim. */
+  onWheelAdjust?: WheelAdjustHandler;
+  /** A click on the column, for a knob with a push action such as the COM swap. */
+  onActivate?: () => void;
+  adjustHint?: string;
 }
+
+/** The detached window drags by the strip; a column that takes the wheel must not. */
+const noDragStyle = { WebkitAppRegion: 'no-drag' } as CSSProperties;
 
 /**
  * PFD colours: live values white, the selected autopilot value magenta and placed
@@ -594,9 +701,43 @@ function DataColumn({
   target,
   secondary,
   showDetails = true,
+  onWheelAdjust,
+  onActivate,
+  adjustHint,
 }: DataColumnProps) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const carryRef = useRef(0);
+  const adjustable = onWheelAdjust !== undefined;
+  // A native, non-passive listener: the map under the docked strip zooms on wheel,
+  // and React's own handler fires too late to stop it.
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el || !onWheelAdjust) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      // Shift turns a vertical wheel into horizontal travel on Windows.
+      const delta = e.deltaY !== 0 ? e.deltaY : e.deltaX;
+      const { steps, carry } = wheelSteps(carryRef.current, delta);
+      carryRef.current = carry;
+      const direction = steps < 0 ? 1 : -1;
+      const coarse =
+        e.shiftKey ||
+        (e.target instanceof Element && e.target.closest(`[${COARSE_STEP_ATTR}]`) !== null);
+      for (let i = 0; i < Math.abs(steps); i++) onWheelAdjust(direction, coarse);
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, [onWheelAdjust]);
+
   return (
-    <div className="flex min-w-0 flex-col items-start">
+    <div
+      ref={rootRef}
+      className={cn('flex min-w-0 flex-col items-start', adjustable && 'cursor-ns-resize')}
+      style={adjustable ? noDragStyle : undefined}
+      title={adjustable ? adjustHint : undefined}
+      onClick={onActivate}
+    >
       {/* The first column is as wide as the digits or the label row, whichever is wider,
         so the target's right edge always sits over the digits' right edge. */}
       <div className="grid grid-cols-[auto_auto] items-baseline gap-x-1">
