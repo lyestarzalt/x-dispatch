@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **The X-Plane settings tab shows the X-Plane mark** instead of a generic aeroplane icon.
+- **Accent colours now match X-Plane's own.** Buttons, links, the selected gate or runway, the measure line, the airport dot and the logo use X-Plane's brand blue, and the VFR, MVFR and LIFR colours are a touch brighter.
 
 ### Fixed
 

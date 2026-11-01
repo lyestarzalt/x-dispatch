@@ -24,7 +24,7 @@ export const MEASURE_LAYER_IDS = [
 ];
 
 /** `--primary` from src/index.css; layers take hex, not CSS variables. */
-const MEASURE_COLOR = '#1DA0F2';
+const MEASURE_COLOR = '#0FB5E8';
 const LINE_WIDTH = 3;
 const ARC_POINTS = 100;
 

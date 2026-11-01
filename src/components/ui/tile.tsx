@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils/helpers';
  * States per X-Plane V11 UI Component Library:
  * - Default: bg-secondary, no border
  * - Hover: bg-accent, subtle border appears
- * - Selected: cyan border (#1DA0F2), subtle cyan tint bg
+ * - Selected: cyan border (#0FB5E8), subtle cyan tint bg
  * - Disabled: very faded, no interaction
  */
 

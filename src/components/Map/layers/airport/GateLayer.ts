@@ -16,7 +16,7 @@ import { BaseLayerRenderer } from './BaseLayerRenderer';
 const GATE_COLORS = {
   default: '#64748b', // Muted gray
   hover: '#94a3b8', // Lighter gray
-  selected: '#1DA0F2', // Primary cyan
+  selected: '#0FB5E8', // Primary cyan
 } as const;
 
 // Gate type definitions - icons only, color is unified
