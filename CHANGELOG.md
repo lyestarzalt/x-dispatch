@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.11.0] - 2026-11-01
+
 ### Added
 
 - **Turn knobs from the Flight Strip.** Scroll over the autopilot speed, altitude, vertical speed or heading, the COM1 standby frequency or the altimeter setting to change it in X-Plane; click COM1 to swap standby and active. Works with the FlightFactor 777 and Zibo 737 MCPs. Off switch in Settings, Flight Strip.
@@ -384,7 +386,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Releases up to 2.2.0 are listed on the [website changelog](https://x-dispatch.app/changelog/).
 
-[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.10.0...HEAD
+[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.11.0...HEAD
+[2.11.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.10.0...v2.11.0
 [2.10.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.9.0...v2.10.0
 [2.9.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.8.2...v2.9.0
 [2.8.2]: https://github.com/lyestarzalt/x-dispatch/compare/v2.8.1...v2.8.2
