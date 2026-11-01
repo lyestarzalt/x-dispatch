@@ -1338,7 +1338,9 @@
     "spawnErrorAccessBlocked": "Windows hat den Start von X-Plane verweigert, obwohl X-Dispatch bereits als Administrator läuft. Es liegt also nicht an den Berechtigungen. Wahrscheinlich blockiert ein Antivirenprogramm oder der überwachte Ordnerzugriff den Start. Geben Sie den X-Plane-Ordner frei und versuchen Sie es erneut.",
     "changeFlightRejected": "X-Plane hat den Flug nicht akzeptiert: {{message}}",
     "changeFlightConnectionLost": "Die Verbindung zu X-Plane ist beim Laden des Flugs abgebrochen ({{reason}}). Prüfe X-Plane: der Flug wurde möglicherweise trotzdem geladen.",
-    "spawnErrorAlreadyRunning": "X-Plane läuft bereits. Verwenden Sie stattdessen die Schaltfläche „Flug ändern“.",
+    "spawnErrorApiUnreachable": "X-Plane läuft, aber X-Dispatch erreicht es nicht über Port {{port}}. Ein anderes Programm hat diesen Port beim Start von X-Plane belegt, und X-Plane versucht es erst nach einem Neustart erneut. Schließen Sie dieses Programm und starten Sie X-Plane neu.",
+    "spawnErrorApiHeldBy": "X-Plane läuft, aber X-Dispatch erreicht es nicht über Port {{port}}. {{name}} belegt diesen Port, daher ist X-Plane ohne seine Web-API gestartet und versucht es erst nach einem Neustart erneut. Schließen Sie {{name}} und starten Sie X-Plane neu.",
+    "spawnErrorApiHeldByXPlane": "X-Plane läuft, aber X-Dispatch erreicht es nicht über Port {{port}}. Ein weiterer X-Plane-Prozess belegt diesen Port, oder X-Plane ist so eingestellt, dass es eingehenden Datenverkehr ablehnt. Beenden Sie überzählige X-Plane-Prozesse, prüfen Sie in X-Plane Einstellungen → Netzwerk und starten Sie X-Plane neu.",
     "spawnErrorPathNotConfigured": "Es ist kein X-Plane-Installationspfad konfiguriert. Legen Sie ihn unter Einstellungen > X-Plane-Installation fest.",
     "spawnErrorInvalidConfig": "Die Flugkonfiguration ist unvollständig. Wählen Sie ein Flugzeug und einen Startpunkt und versuchen Sie es erneut.",
     "aircraft": {

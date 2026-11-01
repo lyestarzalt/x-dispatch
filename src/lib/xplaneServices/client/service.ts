@@ -7,6 +7,7 @@
 import type { TrafficSnapshot } from '@/types/traffic';
 import type { PlaneState } from '@/types/xplane';
 import type { FlightInit } from './generated/xplaneApi';
+import { XPLANE_WEB_API_PORT } from './port';
 import { isXPlaneProcessRunning } from './processCheck';
 import { getRestClient } from './restClient';
 import { type RawDatarefSink, XPlaneWebSocketClient } from './websocketClient';
@@ -23,7 +24,7 @@ export class XPlaneService {
   private wsClient: XPlaneWebSocketClient;
   private apiPort: number;
 
-  constructor(apiPort: number = 8086) {
+  constructor(apiPort: number = XPLANE_WEB_API_PORT) {
     this.apiPort = apiPort;
     this.wsClient = new XPlaneWebSocketClient(apiPort);
     this.wsClient.setSink(recorderSink);

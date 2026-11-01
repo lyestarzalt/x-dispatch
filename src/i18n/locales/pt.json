@@ -1338,7 +1338,9 @@
     "spawnErrorAccessBlocked": "O Windows recusou iniciar o X-Plane embora o X-Dispatch já esteja a ser executado como administrador, pelo que não é um problema de permissões. O mais provável é estar a ser bloqueado por um antivírus ou pelo Acesso controlado a pastas. Permita a pasta do X-Plane e tente novamente.",
     "changeFlightRejected": "O X-Plane não aceitou o voo: {{message}}",
     "changeFlightConnectionLost": "A ligação ao X-Plane perdeu-se enquanto carregava o voo ({{reason}}). Verifique o X-Plane: o voo pode ter sido carregado na mesma.",
-    "spawnErrorAlreadyRunning": "O X-Plane já está em execução. Utilize antes o botão \"Alterar voo\".",
+    "spawnErrorApiUnreachable": "O X-Plane está em execução, mas o X-Dispatch não consegue ligar-se pela porta {{port}}. Outro programa ocupou essa porta quando o X-Plane arrancou, e o X-Plane não volta a tentar até ser reiniciado. Feche esse programa e reinicie o X-Plane.",
+    "spawnErrorApiHeldBy": "O X-Plane está em execução, mas o X-Dispatch não consegue ligar-se pela porta {{port}}. {{name}} está a usar essa porta, por isso o X-Plane arrancou sem a sua API web e não volta a tentar até ser reiniciado. Feche {{name}} e reinicie o X-Plane.",
+    "spawnErrorApiHeldByXPlane": "O X-Plane está em execução, mas o X-Dispatch não consegue ligar-se pela porta {{port}}. Outro processo do X-Plane está a ocupar essa porta, ou o X-Plane está configurado para recusar tráfego de entrada. Termine qualquer processo extra do X-Plane, verifique Definições → Rede no X-Plane e reinicie o X-Plane.",
     "spawnErrorPathNotConfigured": "Não está configurado nenhum caminho de instalação do X-Plane. Defina-o em Definições > Instalação do X-Plane.",
     "spawnErrorInvalidConfig": "A configuração do voo está incompleta. Escolha uma aeronave e um ponto de partida e tente novamente.",
     "aircraft": {

@@ -8,6 +8,8 @@ import { isElevated } from '@/lib/utils/isElevated';
 import logger from '@/lib/utils/logger';
 import type { FlightInit } from '@/lib/xplaneServices/client/generated/xplaneApi';
 import type { Aircraft, WeatherPreset } from '@/types/aircraft';
+import { XPLANE_WEB_API_PORT } from '../client/port';
+import { type PortHolder, findPortHolder } from '../client/portHolder';
 import { isXPlaneProcessRunning } from '../client/processCheck';
 import { scanAircraftDirectory } from './acfParser';
 import { RESERVED_XP_ARG, filterReservedXpArgs } from './cliArgs';
@@ -33,6 +35,8 @@ export interface LaunchResult {
   success: boolean;
   error?: string;
   code?: LaunchErrorCode;
+  /** With `ALREADY_RUNNING`: whoever holds the web API port now, when anyone does. */
+  portHolder?: PortHolder;
 }
 
 /**
@@ -147,11 +151,16 @@ class XPlaneLauncher {
     try {
       const isRunning = await isXPlaneProcessRunning();
       if (isRunning) {
-        logger.launcher.warn('X-Plane is already running');
+        const portHolder = await findPortHolder(XPLANE_WEB_API_PORT);
+        const holder = portHolder ? `${portHolder.name} (${portHolder.pid})` : 'nobody';
+        logger.launcher.warn(
+          `X-Plane process is running but the renderer saw no web API; port ${XPLANE_WEB_API_PORT} held by ${holder}`
+        );
         return {
           success: false,
-          error: 'X-Plane is already running. Use the Change Flight button instead.',
+          error: `X-Plane is running but its web API is not reachable on port ${XPLANE_WEB_API_PORT}. Restart X-Plane.`,
           code: 'ALREADY_RUNNING',
+          ...(portHolder ? { portHolder } : {}),
         };
       }
 

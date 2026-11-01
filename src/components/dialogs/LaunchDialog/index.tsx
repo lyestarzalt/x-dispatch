@@ -17,6 +17,8 @@ import { isValidAirStartSpeed } from '@/lib/utils/airStartSpeed';
 import { cn } from '@/lib/utils/helpers';
 import { toastError } from '@/lib/utils/toastError';
 import { uuid } from '@/lib/utils/uuid';
+import { XPLANE_WEB_API_PORT } from '@/lib/xplaneServices/client/port';
+import type { PortHolder } from '@/lib/xplaneServices/client/portHolder';
 import type { LaunchErrorCode } from '@/lib/xplaneServices/launch';
 import {
   buildFlightInit,
@@ -62,11 +64,20 @@ interface LaunchPanelProps {
 function launchErrorMessage(
   t: ReturnType<typeof useTranslation>['t'],
   code: LaunchErrorCode | undefined,
-  fallback: string | undefined
+  fallback: string | undefined,
+  portHolder?: PortHolder
 ): string {
   switch (code) {
-    case 'ALREADY_RUNNING':
-      return t('launcher.spawnErrorAlreadyRunning');
+    // The dialog only cold-starts when the API probe failed, so this code means
+    // the X-Plane process is up without a reachable web API: its port was taken
+    // when it started, and it will not retry until restarted. Naming the holder
+    // is only possible while it still has the port.
+    case 'ALREADY_RUNNING': {
+      const port = XPLANE_WEB_API_PORT;
+      if (portHolder?.isXPlane) return t('launcher.spawnErrorApiHeldByXPlane', { port });
+      if (portHolder) return t('launcher.spawnErrorApiHeldBy', { port, name: portHolder.name });
+      return t('launcher.spawnErrorApiUnreachable', { port });
+    }
     case 'PATH_NOT_CONFIGURED':
       return t('launcher.spawnErrorPathNotConfigured');
     case 'INVALID_CONFIG':
@@ -345,8 +356,8 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
         flightInit: flightConfig,
       };
 
-      if (isXPlaneRunning) {
-        // X-Plane running → send via REST API
+      // X-Plane running → send via REST API
+      const changeFlight = async () => {
         try {
           const result = await startFlightMutation.mutateAsync(flightConfig);
           if (!result.success) {
@@ -379,10 +390,21 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
           reportLaunch('change_flight', false, 'CHANGE_FLIGHT_FAILED');
           setLaunchError(errorMessage);
         }
-      } else {
-        // X-Plane not running → cold launch with the FlightInit payload
+      };
+
+      // X-Plane not running → cold launch with the FlightInit payload
+      const coldStart = async () => {
         const customLaunchArgs = useSettingsStore.getState().launcher.customLaunchArgs;
         const result = await window.launcherAPI.launch(flightConfig, customLaunchArgs);
+        if (!result.success && result.code === 'ALREADY_RUNNING') {
+          // The process table has X-Plane but the last API probe, up to 5 s old,
+          // did not. Probe again: if X-Plane finished starting in between, the
+          // flight can still go through the API.
+          if (await window.xplaneServiceAPI.isAPIAvailable()) {
+            await changeFlight();
+            return;
+          }
+        }
         reportLaunch('cold_start', result.success, result.code);
         if (result.success) {
           useLaunchStore.getState().addLogbookEntry(logbookEntry);
@@ -396,9 +418,12 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
           }
         } else {
           window.appAPI.log.error('X-Plane launch failed', result.error);
-          setLaunchError(launchErrorMessage(t, result.code, result.error));
+          setLaunchError(launchErrorMessage(t, result.code, result.error, result.portHolder));
         }
-      }
+      };
+
+      if (isXPlaneRunning) await changeFlight();
+      else await coldStart();
     } catch (err) {
       window.appAPI.log.error('X-Plane launch error', err);
       if (visitRef.current) visitRef.current.failed = true;

@@ -4,8 +4,8 @@ import { RECORDER_DATAREF_NAMES } from '@/lib/flightRecorder/frames';
 import logger from '@/lib/utils/logger';
 import type { TrafficSnapshot, TrafficTarget } from '@/types/traffic';
 import { type AircraftCategory, PLANE_STATE_INTERVAL_MS, type PlaneState } from '@/types/xplane';
+import { XPLANE_WEB_API_PORT } from './port';
 
-const DEFAULT_PORT = 8086;
 const RESOLVE_TIMEOUT = 5000;
 
 // Backoff constants
@@ -203,7 +203,7 @@ export class XPlaneWebSocketClient {
   private trafficTimer: NodeJS.Timeout | null = null;
   private trafficDirty = false;
 
-  constructor(port: number = DEFAULT_PORT) {
+  constructor(port: number = XPLANE_WEB_API_PORT) {
     this.port = port;
   }
 

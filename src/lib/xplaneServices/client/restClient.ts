@@ -9,8 +9,8 @@
 import { errorMessage } from '@/lib/utils/errors';
 import { validateNewFlight } from '../launch/flightInit/schema';
 import type { FlightInit } from './generated/xplaneApi';
+import { XPLANE_WEB_API_PORT } from './port';
 
-const DEFAULT_PORT = 8086;
 const CONNECTION_TIMEOUT = 2000;
 
 /**
@@ -99,7 +99,7 @@ export class XPlaneRestClient {
   // roundtrip on every setDataref/getDataref call after the first.
   private datarefIdCache = new Map<string, number>();
 
-  constructor(port: number = DEFAULT_PORT, flightTiming: Partial<FlightRequestTiming> = {}) {
+  constructor(port: number = XPLANE_WEB_API_PORT, flightTiming: Partial<FlightRequestTiming> = {}) {
     this.port = port;
     this.flightTiming = { ...DEFAULT_FLIGHT_TIMING, ...flightTiming };
   }

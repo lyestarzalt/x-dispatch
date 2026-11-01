@@ -1338,7 +1338,9 @@
     "spawnErrorAccessBlocked": "Windows odmówił uruchomienia X-Plane, mimo że X-Dispatch działa już jako administrator, więc to nie problem z uprawnieniami. Najprawdopodobniej blokuje to program antywirusowy lub Kontrolowany dostęp do folderów. Zezwól na folder X-Plane i spróbuj ponownie.",
     "changeFlightRejected": "X-Plane nie zaakceptował lotu: {{message}}",
     "changeFlightConnectionLost": "Utracono połączenie z X-Plane podczas wczytywania lotu ({{reason}}). Sprawdź X-Plane: lot mógł zostać mimo to wczytany.",
-    "spawnErrorAlreadyRunning": "X-Plane jest już uruchomiony. Użyj zamiast tego przycisku „Zmień lot”.",
+    "spawnErrorApiUnreachable": "X-Plane jest uruchomiony, ale X-Dispatch nie może się z nim połączyć na porcie {{port}}. Inny program zajął ten port podczas uruchamiania X-Plane, a X-Plane nie spróbuje ponownie do czasu restartu. Zamknij ten program, a następnie uruchom X-Plane ponownie.",
+    "spawnErrorApiHeldBy": "X-Plane jest uruchomiony, ale X-Dispatch nie może się z nim połączyć na porcie {{port}}. Program {{name}} używa tego portu, więc X-Plane uruchomił się bez swojego API web i nie spróbuje ponownie do czasu restartu. Zamknij {{name}}, a następnie uruchom X-Plane ponownie.",
+    "spawnErrorApiHeldByXPlane": "X-Plane jest uruchomiony, ale X-Dispatch nie może się z nim połączyć na porcie {{port}}. Inny proces X-Plane zajmuje ten port albo X-Plane jest ustawiony na odrzucanie ruchu przychodzącego. Zakończ dodatkowe procesy X-Plane, sprawdź Ustawienia → Sieć w X-Plane, a następnie uruchom X-Plane ponownie.",
     "spawnErrorPathNotConfigured": "Nie skonfigurowano ścieżki instalacji X-Plane. Ustaw ją w Ustawienia > Instalacja X-Plane.",
     "spawnErrorInvalidConfig": "Konfiguracja lotu jest niekompletna. Wybierz samolot i miejsce startu, a następnie spróbuj ponownie.",
     "aircraft": {

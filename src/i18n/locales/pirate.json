@@ -1338,7 +1338,9 @@
     "spawnErrorAccessBlocked": "Windows refused to start X-Plane even though X-Dispatch already sails under th’ captain’s flag, so it be no permissions trouble. Most likely th’ antivirus or Controlled Folder Access be blockin’ her. Allow X-Plane’s folder and try again.",
     "changeFlightRejected": "X-Plane refused th’ voyage: {{message}}",
     "changeFlightConnectionLost": "Lost the line to X-Plane while it was loadin' the flight ({{reason}}). Check X-Plane: the flight may have loaded anyway, arr.",
-    "spawnErrorAlreadyRunning": "X-Plane already be underway. Use th’ \"Change Voyage\" button instead.",
+    "spawnErrorApiUnreachable": "X-Plane be underway, but X-Dispatch can’t hail her on port {{port}}. Some other scallywag seized that port when X-Plane set sail, an’ she won’t try again ’til she’s restarted. Send that program to Davy Jones, then restart X-Plane.",
+    "spawnErrorApiHeldBy": "X-Plane be underway, but X-Dispatch can’t hail her on port {{port}}. {{name}} be squattin’ on that port, so X-Plane set sail without her web API an’ won’t try again ’til she’s restarted. Send {{name}} to Davy Jones, then restart X-Plane.",
+    "spawnErrorApiHeldByXPlane": "X-Plane be underway, but X-Dispatch can’t hail her on port {{port}}. Another X-Plane be holdin’ that port, or X-Plane be set to turn away incomin’ traffic. Scuttle any extra X-Plane, check Settings → Network aboard X-Plane, then restart her.",
     "spawnErrorPathNotConfigured": "No X-Plane install course be set. Chart it in Settings > X-Plane Install.",
     "spawnErrorInvalidConfig": "Th’ voyage plan be incomplete. Choose yer craft and a departure, then try again.",
     "aircraft": {

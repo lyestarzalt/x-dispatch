@@ -1338,7 +1338,9 @@
     "spawnErrorAccessBlocked": "Windows refused to start X-Plane even though X-Dispatch is already running as administrator, so this is not a permissions problem. Antivirus or Controlled Folder Access is most likely blocking it. Allow X-Plane's folder and try again.",
     "changeFlightRejected": "X-Plane did not accept the flight: {{message}}",
     "changeFlightConnectionLost": "Lost the connection to X-Plane while it was loading the flight ({{reason}}). Check X-Plane: the flight may have loaded anyway.",
-    "spawnErrorAlreadyRunning": "X-Plane is already running. Use the Change Flight button instead.",
+    "spawnErrorApiUnreachable": "X-Plane is running, but X-Dispatch cannot reach it on port {{port}}. Another program took that port when X-Plane started, and X-Plane will not retry until it is restarted. Close that program, then restart X-Plane.",
+    "spawnErrorApiHeldBy": "X-Plane is running, but X-Dispatch cannot reach it on port {{port}}. {{name}} is using that port, so X-Plane started without its web API and will not retry until it is restarted. Close {{name}}, then restart X-Plane.",
+    "spawnErrorApiHeldByXPlane": "X-Plane is running, but X-Dispatch cannot reach it on port {{port}}. Another X-Plane process is holding that port, or X-Plane is set to refuse incoming traffic. End any extra X-Plane process, check Settings → Network in X-Plane, then restart X-Plane.",
     "spawnErrorPathNotConfigured": "No X-Plane install path is configured. Set it in Settings > X-Plane Installation.",
     "spawnErrorInvalidConfig": "The flight configuration is incomplete. Pick an aircraft and a departure, then try again.",
     "aircraft": {

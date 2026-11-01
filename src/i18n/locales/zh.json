@@ -1338,7 +1338,9 @@
     "spawnErrorAccessBlocked": "X-Dispatch 已以管理员身份运行，但 Windows 仍拒绝启动 X-Plane，因此不是权限问题。很可能是杀毒软件或「受控文件夹访问」阻止了它。请允许 X-Plane 所在文件夹后重试。",
     "changeFlightRejected": "X-Plane 未接受此飞行：{{message}}",
     "changeFlightConnectionLost": "加载飞行时与 X-Plane 的连接中断（{{reason}}）。请检查 X-Plane：飞行可能已经加载。",
-    "spawnErrorAlreadyRunning": "X-Plane 已在运行。请改用「更改飞行」按钮。",
+    "spawnErrorApiUnreachable": "X-Plane 正在运行，但 X-Dispatch 无法通过端口 {{port}} 连接到它。X-Plane 启动时该端口已被其他程序占用，X-Plane 在重启前不会再次尝试。请关闭该程序，然后重启 X-Plane。",
+    "spawnErrorApiHeldBy": "X-Plane 正在运行，但 X-Dispatch 无法通过端口 {{port}} 连接到它。{{name}} 正在占用该端口，因此 X-Plane 启动时没有加载 Web API，并且在重启前不会再次尝试。请关闭 {{name}}，然后重启 X-Plane。",
+    "spawnErrorApiHeldByXPlane": "X-Plane 正在运行，但 X-Dispatch 无法通过端口 {{port}} 连接到它。另一个 X-Plane 进程占用了该端口，或者 X-Plane 被设置为拒绝传入连接。请结束多余的 X-Plane 进程，检查 X-Plane 的 设置 → 网络，然后重启 X-Plane。",
     "spawnErrorPathNotConfigured": "尚未配置 X-Plane 安装路径。请在「设置 > X-Plane 安装」中设置。",
     "spawnErrorInvalidConfig": "飞行配置不完整。请选择飞机和出发点后重试。",
     "aircraft": {

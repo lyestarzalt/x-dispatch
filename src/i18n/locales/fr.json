@@ -1338,7 +1338,9 @@
     "spawnErrorAccessBlocked": "Windows a refusé de démarrer X-Plane alors que X-Dispatch s’exécute déjà en tant qu’administrateur : ce n’est donc pas un problème de droits. Un antivirus ou l’Accès contrôlé aux dossiers le bloque probablement. Autorisez le dossier de X-Plane, puis réessayez.",
     "changeFlightRejected": "X-Plane n’a pas accepté le vol : {{message}}",
     "changeFlightConnectionLost": "La connexion à X-Plane a été perdue pendant le chargement du vol ({{reason}}). Vérifiez X-Plane : le vol a peut-être été chargé malgré tout.",
-    "spawnErrorAlreadyRunning": "X-Plane est déjà en cours d’exécution. Utilisez plutôt le bouton « Changer de vol ».",
+    "spawnErrorApiUnreachable": "X-Plane est en cours d’exécution, mais X-Dispatch ne peut pas le joindre sur le port {{port}}. Un autre programme occupait ce port au démarrage de X-Plane, et X-Plane ne réessaiera pas avant d’être redémarré. Fermez ce programme, puis redémarrez X-Plane.",
+    "spawnErrorApiHeldBy": "X-Plane est en cours d’exécution, mais X-Dispatch ne peut pas le joindre sur le port {{port}}. {{name}} utilise ce port, donc X-Plane a démarré sans son API web et ne réessaiera pas avant d’être redémarré. Fermez {{name}}, puis redémarrez X-Plane.",
+    "spawnErrorApiHeldByXPlane": "X-Plane est en cours d’exécution, mais X-Dispatch ne peut pas le joindre sur le port {{port}}. Un autre processus X-Plane occupe ce port, ou X-Plane est réglé pour refuser le trafic entrant. Fermez tout processus X-Plane en trop, vérifiez Paramètres → Réseau dans X-Plane, puis redémarrez X-Plane.",
     "spawnErrorPathNotConfigured": "Aucun chemin d’installation X-Plane n’est configuré. Définissez-le dans Paramètres > Installation X-Plane.",
     "spawnErrorInvalidConfig": "La configuration du vol est incomplète. Sélectionnez un appareil et un point de départ, puis réessayez.",
     "aircraft": {
