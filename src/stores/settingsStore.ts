@@ -145,6 +145,8 @@ export interface FlightStripSettings {
   fields: FlightStripFields;
   /** Every readout, shown or not, left to right. */
   order: FlightStripReadout[];
+  /** Scrolling over a selected value turns that knob in X-Plane. */
+  wheelAdjust: boolean;
 }
 
 export interface GraphicsSettings {
@@ -244,7 +246,9 @@ interface SettingsState {
   setFlightStripScale: (scale: number) => void;
   setFlightStripOpacity: (opacity: number) => void;
   updateFlightStripSettings: (
-    settings: Partial<Pick<FlightStripSettings, 'alwaysOnTop' | 'autoOpen' | 'locked'>>
+    settings: Partial<
+      Pick<FlightStripSettings, 'alwaysOnTop' | 'autoOpen' | 'locked' | 'wheelAdjust'>
+    >
   ) => void;
   toggleFlightStripLock: () => void;
   /** Ignored when it would hide the last readout. */
@@ -330,6 +334,7 @@ const DEFAULT_FLIGHT_STRIP_SETTINGS: FlightStripSettings = {
   autoOpen: false,
   fields: DEFAULT_FLIGHT_STRIP_FIELDS,
   order: [...DEFAULT_FLIGHT_STRIP_ORDER],
+  wheelAdjust: true,
 };
 
 function clampFlightStripScale(scale: number): number {
@@ -555,7 +560,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'xplane-viz-settings',
-      version: 42,
+      version: 43,
       migrate: (persistedState, version) => migrateSettings(persistedState, version),
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -850,6 +855,12 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
     state = {
       ...state,
       launcher: { ...DEFAULT_LAUNCHER_SETTINGS, ...state.launcher },
+    };
+  }
+  if (version < 43) {
+    state = {
+      ...state,
+      flightStrip: { ...state.flightStrip!, wheelAdjust: true },
     };
   }
 

@@ -707,6 +707,8 @@
       "alwaysOnTopDescription": "Resta visibile sopra il simulatore, anche a schermo intero.",
       "autoOpen": "Apri quando X-Plane si collega",
       "autoOpenDescription": "Mostra da sola la finestra appena X-Dispatch si collega a X-Plane.",
+      "wheelAdjust": "Regola con la rotella del mouse",
+      "wheelAdjustDescription": "Scorri sopra un valore della striscia per girare quella manopola in X-Plane: velocità, quota, velocità verticale e prua dell’autopilota, la frequenza di standby COM1 e la regolazione dell’altimetro. Funziona sulla striscia della mappa e nella finestra finché è sbloccata.",
       "look": "Aspetto",
       "scale": "Dimensione sulla mappa",
       "scaleDescription": "Ingrandisce il Flight Strip sulla mappa per leggerlo da più lontano. La finestra segue la propria dimensione.",
@@ -1190,6 +1192,8 @@
   },
   "flightStrip": {
     "notDetected": "X-Plane non in esecuzione",
+    "scrollToAdjust": "Scorri per regolare in X-Plane",
+    "scrollToTune": "Scorri sulle cifre MHz o kHz per sintonizzare la frequenza di standby, clic per scambiare",
     "ias": "IAS",
     "gs": "GS",
     "alt": "ALT",

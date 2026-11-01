@@ -707,6 +707,8 @@
       "alwaysOnTopDescription": "Pozostaje widoczny nad symulatorem, nawet na pełnym ekranie.",
       "autoOpen": "Otwórz po połączeniu z X-Plane",
       "autoOpenDescription": "Samo pokazuje okno, gdy tylko X-Dispatch połączy się z X-Plane.",
+      "wheelAdjust": "Regulacja kółkiem myszy",
+      "wheelAdjustDescription": "Przewiń nad wartością na pasku, aby obrócić to pokrętło w X-Plane: prędkość, wysokość, prędkość pionową i kurs autopilota, częstotliwość zapasową COM1 oraz nastawę wysokościomierza. Działa na pasku na mapie i w oknie, gdy jest odblokowane.",
       "look": "Wygląd",
       "scale": "Rozmiar na mapie",
       "scaleDescription": "Powiększa Flight Strip na mapie, aby był czytelny z daleka. Okno ma własny rozmiar.",
@@ -1190,6 +1192,8 @@
   },
   "flightStrip": {
     "notDetected": "X-Plane nie jest uruchomiony",
+    "scrollToAdjust": "Przewiń, aby zmienić w X-Plane",
+    "scrollToTune": "Przewiń nad cyframi MHz lub kHz, aby ustawić częstotliwość zapasową, kliknij, aby zamienić",
     "ias": "IAS",
     "gs": "GS",
     "alt": "ALT",

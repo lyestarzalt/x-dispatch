@@ -707,6 +707,8 @@
       "alwaysOnTopDescription": "始终显示在模拟器上方,即使在全屏模式下。",
       "autoOpen": "X-Plane 连接时打开",
       "autoOpenDescription": "X-Dispatch 连接到 X-Plane 后自动显示窗口。",
+      "wheelAdjust": "用鼠标滚轮调整",
+      "wheelAdjustDescription": "在条带上的数值上滚动即可转动 X-Plane 中对应的旋钮：自动驾驶速度、高度、垂直速度和航向，COM1 备用频率以及高度表设定。适用于地图上的条带，以及未锁定时的独立窗口。",
       "look": "外观",
       "scale": "地图上的大小",
       "scaleDescription": "放大地图上的 Flight Strip 以便远处阅读。窗口按自身大小显示。",
@@ -1190,6 +1192,8 @@
   },
   "flightStrip": {
     "notDetected": "X-Plane 未运行",
+    "scrollToAdjust": "滚动以在 X-Plane 中调整",
+    "scrollToTune": "在 MHz 或 kHz 数字上滚动以调谐备用频率，点击以交换",
     "ias": "指示空速",
     "gs": "地速",
     "alt": "高度",

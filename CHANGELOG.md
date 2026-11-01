@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Turn knobs from the Flight Strip.** Scroll over the autopilot speed, altitude, vertical speed or heading, the COM1 standby frequency or the altimeter setting to change it in X-Plane; click COM1 to swap standby and active. Works with the FlightFactor 777 and Zibo 737 MCPs. Off switch in Settings, Flight Strip.
 - **Flight Setup has its own settings tab.** Close after launch and the launch arguments moved there from the X-Plane tab, next to a new setting for the port X-Plane's web server uses. Change it when another program already has port 8086: X-Dispatch connects on the new port and starts X-Plane with it, so the two always agree.
 
 ### Changed

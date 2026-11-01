@@ -98,6 +98,7 @@ export class XPlaneRestClient {
   // (even across aircraft load/unload). Caching skips the name→id lookup
   // roundtrip on every setDataref/getDataref call after the first.
   private datarefIdCache = new Map<string, number>();
+  private commandIdCache = new Map<string, string>();
 
   constructor(port: number = XPLANE_WEB_API_PORT, flightTiming: Partial<FlightRequestTiming> = {}) {
     this.port = port;
@@ -273,24 +274,38 @@ export class XPlaneRestClient {
     }
   }
 
+  private async resolveCommandId(commandName: string): Promise<string | null> {
+    const cached = this.commandIdCache.get(commandName);
+    if (cached !== undefined) return cached;
+    const listResponse = await fetch(
+      `${this.baseUrl}/commands?filter[name]=${encodeURIComponent(commandName)}&fields=id`,
+      { method: 'GET', headers: { Accept: 'application/json' } }
+    );
+    if (!listResponse.ok) return null;
+    const listData = await listResponse.json();
+    const id = listData.data?.[0]?.id;
+    if (!id) return null;
+    this.commandIdCache.set(commandName, id);
+    return id;
+  }
+
+  /** Whether X-Plane lists the command; add-on aircraft register their own. */
+  async commandExists(commandName: string): Promise<boolean> {
+    try {
+      return (await this.resolveCommandId(commandName)) !== null;
+    } catch {
+      return false;
+    }
+  }
+
   async activateCommand(
     commandName: string,
     duration: number = 0
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      // Find command ID by name
-      const listResponse = await fetch(
-        `${this.baseUrl}/commands?filter[name]=${encodeURIComponent(commandName)}&fields=id`,
-        { method: 'GET', headers: { Accept: 'application/json' } }
-      );
+      const id = await this.resolveCommandId(commandName);
+      if (id === null) return { success: false, error: 'Command not found' };
 
-      if (!listResponse.ok) return { success: false, error: 'Command not found' };
-
-      const listData = await listResponse.json();
-      const id = listData.data?.[0]?.id;
-      if (!id) return { success: false, error: 'Command not found' };
-
-      // Activate
       const activateResponse = await fetch(`${this.baseUrl}/command/${id}/activate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -298,6 +313,8 @@ export class XPlaneRestClient {
       });
 
       if (!activateResponse.ok) {
+        // Ids are per X-Plane session; a stale one from before a restart fails here.
+        this.commandIdCache.delete(commandName);
         const error = await activateResponse.text();
         return { success: false, error };
       }
@@ -314,6 +331,7 @@ export class XPlaneRestClient {
 
   clearCache(): void {
     this.datarefIdCache.clear();
+    this.commandIdCache.clear();
   }
 }
 

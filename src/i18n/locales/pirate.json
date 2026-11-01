@@ -707,6 +707,8 @@
       "alwaysOnTopDescription": "Stays in sight o'er the simulator, even in full screen.",
       "autoOpen": "Open when X-Plane hails",
       "autoOpenDescription": "Shows the porthole on its own once X-Dispatch hails X-Plane.",
+      "wheelAdjust": "Turn knobs with th’ mouse wheel",
+      "wheelAdjustDescription": "Scroll over a readin’ on th’ strip to turn that knob in X-Plane: autopilot speed, altitude, vertical speed an’ headin’, th’ COM1 standby frequency an’ th’ altimeter settin’. Works on th’ map strip an’ in th’ window while she be unlocked.",
       "look": "Looks",
       "scale": "Size on the chart",
       "scaleDescription": "Makes the Flight Strip on the chart bigger so ye can read it from the crow's nest. The porthole keeps its own size.",
@@ -1190,6 +1192,8 @@
   },
   "flightStrip": {
     "notDetected": "X-Plane not in sight",
+    "scrollToAdjust": "Scroll to turn th’ knob in X-Plane",
+    "scrollToTune": "Scroll th’ MHz or kHz digits to tune th’ standby, click to swap ’em",
     "ias": "IAS",
     "gs": "GS",
     "alt": "ALT",

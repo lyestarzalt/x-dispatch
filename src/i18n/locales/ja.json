@@ -707,6 +707,8 @@
       "alwaysOnTopDescription": "フルスクリーンでもシミュレーターの上に表示されます。",
       "autoOpen": "X-Plane 接続時に開く",
       "autoOpenDescription": "X-Dispatch が X-Plane に接続すると、ウインドウを自動で表示します。",
+      "wheelAdjust": "マウスホイールで調整",
+      "wheelAdjustDescription": "ストリップ上の値の上でスクロールすると、X-Plane のそのノブを回せます。対象はオートパイロットの速度・高度・垂直速度・方位、COM1 スタンバイ周波数、高度計規正値です。マップのストリップと、ロック解除中のウィンドウで動作します。",
       "look": "外観",
       "scale": "マップ上のサイズ",
       "scaleDescription": "遠くからでも読めるようにマップ上の Flight Strip を拡大します。ウインドウは自身のサイズに合わせます。",
@@ -1190,6 +1192,8 @@
   },
   "flightStrip": {
     "notDetected": "X-Plane が実行されていません",
+    "scrollToAdjust": "スクロールで X-Plane の値を調整",
+    "scrollToTune": "MHz または kHz の桁の上でスクロールしてスタンバイ周波数を調整、クリックで入れ替え",
     "ias": "IAS",
     "gs": "GS",
     "alt": "ALT",

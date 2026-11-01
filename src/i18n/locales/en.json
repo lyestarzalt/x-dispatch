@@ -707,6 +707,8 @@
       "alwaysOnTopDescription": "Stay visible over the simulator, even in full screen.",
       "autoOpen": "Open when X-Plane connects",
       "autoOpenDescription": "Show the window by itself as soon as X-Dispatch connects to X-Plane.",
+      "wheelAdjust": "Adjust with the mouse wheel",
+      "wheelAdjustDescription": "Scroll over a value on the strip to turn that knob in X-Plane: autopilot speed, altitude, vertical speed and heading, the COM1 standby frequency and the altimeter setting. Works on the map strip and in the window while it is unlocked.",
       "look": "Look",
       "scale": "Size on the map",
       "scaleDescription": "Make the Flight Strip on the map bigger so it reads from further away. The window follows its own size.",
@@ -1190,6 +1192,8 @@
   },
   "flightStrip": {
     "notDetected": "X-Plane not running",
+    "scrollToAdjust": "Scroll to adjust in X-Plane",
+    "scrollToTune": "Scroll the MHz or kHz digits to tune the standby frequency, click to swap",
     "ias": "IAS",
     "gs": "GS",
     "alt": "ALT",

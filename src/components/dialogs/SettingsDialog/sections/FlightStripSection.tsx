@@ -256,6 +256,12 @@ export default function FlightStripSection({ className }: SettingsSectionProps) 
         title={t('settings.flightStrip.readouts')}
         description={t('settings.flightStrip.readoutsDescription')}
       >
+        <SettingsToggleRow
+          title={t('settings.flightStrip.wheelAdjust')}
+          description={t('settings.flightStrip.wheelAdjustDescription')}
+          checked={flightStrip.wheelAdjust}
+          onCheckedChange={(wheelAdjust) => updateFlightStripSettings({ wheelAdjust })}
+        />
         {/* One column: top to bottom here is left to right on the strip */}
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={flightStrip.order} strategy={verticalListSortingStrategy}>

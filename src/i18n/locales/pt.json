@@ -707,6 +707,8 @@
       "alwaysOnTopDescription": "Continua visível sobre o simulador, mesmo em ecrã inteiro.",
       "autoOpen": "Abrir quando o X-Plane ligar",
       "autoOpenDescription": "Mostra a janela sozinha assim que o X-Dispatch liga ao X-Plane.",
+      "wheelAdjust": "Ajustar com a roda do rato",
+      "wheelAdjustDescription": "Role sobre um valor da faixa para rodar esse botão no X-Plane: velocidade, altitude, velocidade vertical e rumo do piloto automático, a frequência em espera do COM1 e o ajuste do altímetro. Funciona na faixa do mapa e na janela enquanto estiver desbloqueada.",
       "look": "Aspeto",
       "scale": "Tamanho no mapa",
       "scaleDescription": "Aumenta o Flight Strip no mapa para se ler de mais longe. A janela segue o seu próprio tamanho.",
@@ -1190,6 +1192,8 @@
   },
   "flightStrip": {
     "notDetected": "X-Plane não está em execução",
+    "scrollToAdjust": "Role para ajustar no X-Plane",
+    "scrollToTune": "Role sobre os dígitos de MHz ou kHz para sintonizar a frequência em espera, clique para trocar",
     "ias": "IAS",
     "gs": "GS",
     "alt": "ALT",

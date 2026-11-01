@@ -707,6 +707,8 @@
       "alwaysOnTopDescription": "Reste visible au-dessus du simulateur, même en plein écran.",
       "autoOpen": "Ouvrir quand X-Plane se connecte",
       "autoOpenDescription": "Affiche la fenêtre d'elle-même dès que X-Dispatch se connecte à X-Plane.",
+      "wheelAdjust": "Régler à la molette",
+      "wheelAdjustDescription": "Faites tourner la molette sur une valeur de la bande pour tourner ce bouton dans X-Plane : vitesse, altitude, vitesse verticale et cap du pilote automatique, fréquence de veille COM1 et calage altimétrique. Fonctionne sur la bande de la carte et dans la fenêtre tant qu’elle est déverrouillée.",
       "look": "Apparence",
       "scale": "Taille sur la carte",
       "scaleDescription": "Agrandit le Flight Strip sur la carte pour le lire de plus loin. La fenêtre suit sa propre taille.",
@@ -1190,6 +1192,8 @@
   },
   "flightStrip": {
     "notDetected": "X-Plane n'est pas lancé",
+    "scrollToAdjust": "Molette pour régler dans X-Plane",
+    "scrollToTune": "Molette sur les chiffres MHz ou kHz pour régler la fréquence de veille, clic pour permuter",
     "ias": "IAS",
     "gs": "GS",
     "alt": "ALT",

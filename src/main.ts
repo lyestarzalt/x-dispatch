@@ -2571,6 +2571,16 @@ function registerIpcHandlers() {
     }
   });
 
+  handle('xplaneService:commandExists', async (_, commandName: unknown) => {
+    if (!commandName || typeof commandName !== 'string') return false;
+    try {
+      const { getXPlaneService } = await getXPlaneModule();
+      return getXPlaneService().commandExists(commandName);
+    } catch {
+      return false;
+    }
+  });
+
   handle('xplaneService:activateCommand', async (_, commandName: string, duration: number = 0) => {
     if (!commandName || typeof commandName !== 'string') {
       return { success: false, error: 'Invalid command name' };

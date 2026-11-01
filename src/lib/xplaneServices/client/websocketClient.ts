@@ -1,6 +1,13 @@
 import * as Sentry from '@sentry/electron/main';
 import WebSocket from 'ws';
 import { RECORDER_DATAREF_NAMES } from '@/lib/flightRecorder/frames';
+import {
+  type TargetOverlay,
+  applyOverlay,
+  overlayDatarefNames,
+  overlayFields,
+  pickTargetOverlay,
+} from '@/lib/flightStrip/targetOverlays';
 import logger from '@/lib/utils/logger';
 import type { TrafficSnapshot, TrafficTarget } from '@/types/traffic';
 import { type AircraftCategory, PLANE_STATE_INTERVAL_MS, type PlaneState } from '@/types/xplane';
@@ -186,6 +193,14 @@ export class XPlaneWebSocketClient {
   private resolvedDatarefs: DatarefInfo[] = [];
   private metadataFlags: Map<string, number> = new Map();
 
+  // Aircraft whose panel keeps its own selected values: subscribed on top of the
+  // dials once the aircraft identity arrives, dropped when the aircraft changes.
+  private overlay: TargetOverlay | null = null;
+  private overlayDatarefs: DatarefInfo[] = [];
+  private overlayValues: Record<string, number> = {};
+  private overlayFieldSet: Set<string> = new Set();
+  private overlaySync = 0;
+
   // State machine
   private state: WsState = 'IDLE';
   private backoffMs = BACKOFF_INITIAL_MS;
@@ -245,15 +260,17 @@ export class XPlaneWebSocketClient {
     this.createConnection();
   }
 
-  private async resolveDatarefIds(): Promise<DatarefInfo[]> {
+  private async resolveDatarefIds(
+    names: readonly string[] = DATAREF_NAMES
+  ): Promise<DatarefInfo[]> {
     const results: DatarefInfo[] = [];
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), RESOLVE_TIMEOUT);
 
     try {
-      const filterParams = DATAREF_NAMES.map(
-        (name) => `filter[name]=${encodeURIComponent(name)}`
-      ).join('&');
+      const filterParams = names
+        .map((name) => `filter[name]=${encodeURIComponent(name)}`)
+        .join('&');
 
       const url = `http://localhost:${this.port}/api/v3/datarefs?${filterParams}&fields=id,name`;
       const response = await fetch(url, { signal: controller.signal });
@@ -278,17 +295,63 @@ export class XPlaneWebSocketClient {
 
     // The Web API answers before the sim has registered its datarefs during
     // startup; an empty list must retry rather than open a silent stream.
-    if (results.length === 0) {
+    if (results.length === 0 && names === DATAREF_NAMES) {
       throw new Error('No datarefs resolved yet');
     }
 
     return results;
   }
 
+  /**
+   * Follows the loaded aircraft: subscribes the overlay datarefs of a matching
+   * panel, or drops them so the dials take over again. Plugin datarefs only exist
+   * once that aircraft has loaded, so they are resolved here, not at connect.
+   */
+  private async syncOverlay(): Promise<void> {
+    const next = pickTargetOverlay({
+      icaoType: this.currentState.icaoType,
+      aircraftName: this.currentState.aircraftName,
+    });
+    if (next?.id === this.overlay?.id) return;
+    const token = ++this.overlaySync;
+    this.dropOverlay();
+    if (!next) return;
+    let resolved: DatarefInfo[];
+    try {
+      resolved = await this.resolveDatarefIds(overlayDatarefNames(next));
+    } catch {
+      return;
+    }
+    // The aircraft changed again, or the socket dropped, while the lookup ran.
+    if (token !== this.overlaySync || resolved.length === 0) return;
+    this.overlay = next;
+    this.overlayDatarefs = resolved;
+    this.overlayFieldSet = overlayFields(next);
+    for (const dr of resolved) this.datarefIdToName.set(dr.id, dr.name);
+    this.sendSubscription(resolved, true);
+    logger.tracker.info(`Autopilot targets from the ${next.id} panel`);
+  }
+
+  private dropOverlay(): void {
+    if (this.overlayDatarefs.length > 0) this.sendSubscription(this.overlayDatarefs, false);
+    for (const field of this.overlayFieldSet) {
+      delete (this.currentState as Record<string, unknown>)[field];
+    }
+    this.overlay = null;
+    this.overlayDatarefs = [];
+    this.overlayValues = {};
+    this.overlayFieldSet = new Set();
+  }
+
   /** Dataref ids are only stable for one X-Plane process, so drop them whenever the socket is lost. */
   private forgetResolvedDatarefs(): void {
     this.resolvedDatarefs = [];
     this.datarefIdToName.clear();
+    this.overlaySync++;
+    this.overlay = null;
+    this.overlayDatarefs = [];
+    this.overlayValues = {};
+    this.overlayFieldSet = new Set();
   }
 
   disconnect(): void {
@@ -303,8 +366,7 @@ export class XPlaneWebSocketClient {
     this.sink?.onConnectionChange(false);
     this.currentState = {};
     this.metadataFlags.clear();
-    this.resolvedDatarefs = [];
-    this.datarefIdToName.clear();
+    this.forgetResolvedDatarefs();
   }
 
   isConnected(): boolean {
@@ -550,10 +612,24 @@ export class XPlaneWebSocketClient {
       }
       if (typeof value === 'string') {
         const textKey = TEXT_DATAREF_MAPPING[datarefName];
-        if (textKey) this.currentState[textKey] = decodeText(value);
+        if (textKey) {
+          const text = decodeText(value);
+          const changed = this.currentState[textKey] !== text;
+          this.currentState[textKey] = text;
+          if (changed && textKey !== 'tailNumber') void this.syncOverlay();
+        }
         continue;
       }
       this.sink?.onDataref(datarefName, value);
+
+      if (this.overlay && typeof value === 'number') {
+        const owned = datarefName in this.overlay.datarefs || datarefName === this.overlay.vsOpen;
+        if (owned) {
+          this.overlayValues[datarefName] = value;
+          applyOverlay(this.currentState, this.overlay, this.overlayValues);
+          continue;
+        }
+      }
 
       if (datarefName === 'sim/flightmodel/failures/onground_any' && typeof value === 'number') {
         this.currentState.onGround = value >= 0.5;
@@ -565,7 +641,7 @@ export class XPlaneWebSocketClient {
       }
       const switchKey = SWITCH_DATAREF_MAPPING[datarefName];
       if (switchKey && typeof value === 'number') {
-        this.currentState[switchKey] = value >= 0.5;
+        if (!this.overlayFieldSet.has(switchKey)) this.currentState[switchKey] = value >= 0.5;
         continue;
       }
 
@@ -577,6 +653,8 @@ export class XPlaneWebSocketClient {
 
       const stateKey = DATAREF_MAPPING[datarefName];
       if (stateKey && typeof value === 'number') {
+        // The panel overlay owns these fields while its aircraft is loaded.
+        if (this.overlayFieldSet.has(stateKey)) continue;
         let convertedValue = value;
         if (
           datarefName === 'sim/flightmodel/position/elevation' ||

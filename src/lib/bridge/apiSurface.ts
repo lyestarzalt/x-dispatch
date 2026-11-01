@@ -325,6 +325,7 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
       getDataref: (name: string) => t.invoke('xplaneService:getDataref', name),
       setDataref: (name: string, value: number | number[]) =>
         t.invoke('xplaneService:setDataref', name, value),
+      commandExists: (name: string) => t.invoke('xplaneService:commandExists', name),
       activateCommand: (name: string, duration?: number) =>
         t.invoke('xplaneService:activateCommand', name, duration ?? 0),
       // WebSocket streaming

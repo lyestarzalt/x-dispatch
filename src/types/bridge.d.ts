@@ -372,6 +372,7 @@ declare global {
         name: string,
         value: number | number[]
       ) => Promise<{ success: boolean; error?: string }>;
+      commandExists: (name: string) => Promise<boolean>;
       activateCommand: (
         name: string,
         duration?: number

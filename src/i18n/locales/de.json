@@ -707,6 +707,8 @@
       "alwaysOnTopDescription": "Bleibt über dem Simulator sichtbar, auch im Vollbild.",
       "autoOpen": "Öffnen, wenn X-Plane verbunden ist",
       "autoOpenDescription": "Zeigt das Fenster automatisch, sobald X-Dispatch mit X-Plane verbunden ist.",
+      "wheelAdjust": "Mit dem Mausrad verstellen",
+      "wheelAdjustDescription": "Über einem Wert auf dem Strip scrollen, um den Knopf in X-Plane zu drehen: Autopilot-Geschwindigkeit, -Höhe, -Vertikalgeschwindigkeit und -Kurs, die COM1-Standby-Frequenz und die Höhenmessereinstellung. Funktioniert auf dem Karten-Strip und im Fenster, solange es entsperrt ist.",
       "look": "Darstellung",
       "scale": "Größe auf der Karte",
       "scaleDescription": "Vergrößert den Flight Strip auf der Karte, damit er aus größerer Entfernung lesbar ist. Das Fenster folgt seiner eigenen Größe.",
@@ -1190,6 +1192,8 @@
   },
   "flightStrip": {
     "notDetected": "X-Plane läuft nicht",
+    "scrollToAdjust": "Scrollen, um in X-Plane zu verstellen",
+    "scrollToTune": "Über den MHz- oder kHz-Ziffern scrollen, um die Standby-Frequenz einzustellen, Klick zum Tauschen",
     "ias": "IAS",
     "gs": "GS",
     "alt": "ALT",

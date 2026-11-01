@@ -56,6 +56,10 @@ export class XPlaneService {
     return getRestClient(this.apiPort).setDataref(datarefName, value);
   }
 
+  async commandExists(commandName: string) {
+    return getRestClient(this.apiPort).commandExists(commandName);
+  }
+
   async activateCommand(commandName: string, duration: number = 0) {
     return getRestClient(this.apiPort).activateCommand(commandName, duration);
   }

@@ -103,6 +103,7 @@ export const REMOTE_ALLOWED_CHANNELS: readonly string[] = [
   'xplane:getPath',
   'xplane:validatePath',
   'xplaneService:activateCommand',
+  'xplaneService:commandExists',
   'xplaneService:forceReconnect',
   'xplaneService:getCapabilities',
   'xplaneService:getDataref',
