@@ -309,7 +309,8 @@ declare global {
       getWeatherPresets: () => Promise<WeatherPreset[]>;
       launch: (
         payload: FlightInit,
-        extraArgs?: string[]
+        extraArgs?: string[],
+        env?: import('@/lib/xplaneServices/launch/launchEnv').LaunchEnvVar[]
       ) => Promise<import('@/lib/xplaneServices/launch').LaunchResult>;
       getAircraftImage: (imagePath: string) => Promise<string | null>;
     };

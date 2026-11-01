@@ -16,6 +16,7 @@ import { scanAircraftDirectory } from './acfParser';
 import { RESERVED_XP_ARG, filterReservedXpArgs } from './cliArgs';
 import { validateNewFlight } from './flightInit/schema';
 import { getXPlaneExecutable } from './freeflightGenerator';
+import { buildLaunchEnv } from './launchEnv';
 import { WEATHER_PRESETS } from './types';
 
 /**
@@ -143,7 +144,11 @@ class XPlaneLauncher {
    * Launch X-Plane with FlightInit payload (same schema as REST API, no { data } wrapper).
    * Writes raw payload to a temp JSON file and hands it to X-Plane on launch.
    */
-  async launch(payload: FlightInit, extraArgs?: string[]): Promise<LaunchResult> {
+  async launch(
+    payload: FlightInit,
+    extraArgs?: string[],
+    env: Record<string, string> = {}
+  ): Promise<LaunchResult> {
     try {
       payload = validateNewFlight(payload);
     } catch (error) {
@@ -204,6 +209,10 @@ class XPlaneLauncher {
         const execCmd = `open "${steamUrl}"`;
 
         logger.launcher.info(`Launch method: Steam URL (macOS)`);
+        if (Object.keys(env).length > 0) {
+          // Steam starts the process, so our environment never reaches it.
+          logger.launcher.warn('Launch environment variables are not applied through Steam');
+        }
         logger.launcher.info(`Steam App ID: ${appId}`);
         logger.launcher.info(`Steam URL: ${steamUrl}`);
         logger.launcher.info(`Exec command: ${execCmd}`);
@@ -227,7 +236,11 @@ class XPlaneLauncher {
       const spawnOptions: Parameters<typeof spawn>[2] = {
         detached: true,
         stdio: 'ignore',
+        ...(Object.keys(env).length > 0 ? { env: buildLaunchEnv(process.env, env) } : {}),
       };
+      if (Object.keys(env).length > 0) {
+        logger.launcher.info(`Environment: ${Object.keys(env).join(', ')}`);
+      }
 
       logger.launcher.info(`Launch method: Direct spawn`);
       logger.launcher.info(`Platform: ${process.platform}`);

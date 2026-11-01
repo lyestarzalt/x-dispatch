@@ -459,7 +459,12 @@
       "webApiPortInvalid": "Wpisz liczbę od {{min}} do {{max}}.",
       "webApiPortReset": "Przywróć {{port}}",
       "webApiPortRestart": "Po zmianie portu uruchom X-Plane ponownie. X-Plane uruchamiany ręcznie musi być startowany z --web_server_port={{port}}.",
-      "behavior": "Zachowanie przy uruchamianiu"
+      "behavior": "Zachowanie przy uruchamianiu",
+      "env": "Zmienne środowiskowe",
+      "envDescription": "Ustawiane dla X-Plane przy każdym zimnym starcie, na przykład przełącznik sterownika graficznego w Linuksie. Nie działają, gdy X-Plane uruchamia Steam na macOS.",
+      "envNamePlaceholder": "NAZWA",
+      "envValuePlaceholder": "wartość",
+      "envInvalidName": "Nazwa składa się z liter, cyfr i podkreśleń i nie zaczyna się od cyfry."
     },
     "tabs": {
       "xplane": "X-Plane",

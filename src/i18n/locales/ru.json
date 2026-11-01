@@ -459,7 +459,12 @@
       "webApiPortInvalid": "Введите число от {{min}} до {{max}}.",
       "webApiPortReset": "Вернуть {{port}}",
       "webApiPortRestart": "После смены порта перезапустите X-Plane. X-Plane, запущенный вручную, должен стартовать с --web_server_port={{port}}.",
-      "behavior": "Поведение при запуске"
+      "behavior": "Поведение при запуске",
+      "env": "Переменные окружения",
+      "envDescription": "Задаются для X-Plane при каждом холодном запуске, например переключатель графического драйвера в Linux. Не применяются, когда X-Plane запускает Steam на macOS.",
+      "envNamePlaceholder": "ИМЯ",
+      "envValuePlaceholder": "значение",
+      "envInvalidName": "Имя состоит из букв, цифр и подчёркиваний и не начинается с цифры."
     },
     "tabs": {
       "xplane": "X-Plane",

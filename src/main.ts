@@ -143,6 +143,7 @@ import {
 } from './lib/xplaneServices/dataService/config';
 import { loadRequiredStartupData } from './lib/xplaneServices/dataService/startupLoader';
 import type { LaunchResult } from './lib/xplaneServices/launch';
+import { parseLaunchEnv } from './lib/xplaneServices/launch/launchEnv';
 import { registerXPlaneLogIPC } from './lib/xplaneServices/log/ipc';
 import { ResolvedAirportProcedures } from './types/navigation';
 import type { LoadingProgress, PlaneState } from './types/xplane';
@@ -2390,7 +2391,7 @@ function registerIpcHandlers() {
 
   handle(
     'launcher:launch',
-    async (_, payload: unknown, extraArgs?: string[]): Promise<LaunchResult> => {
+    async (_, payload: unknown, extraArgs?: string[], env?: unknown): Promise<LaunchResult> => {
       const xplanePath = dataManager.getXPlanePath();
       if (!xplanePath) {
         return {
@@ -2417,7 +2418,11 @@ function registerIpcHandlers() {
 
       try {
         const { getLauncher } = await getLauncherModule();
-        const result = await getLauncher(xplanePath).launch(flightPayload, extraArgs);
+        const result = await getLauncher(xplanePath).launch(
+          flightPayload,
+          extraArgs,
+          parseLaunchEnv(env)
+        );
         if (result.success) {
           logger.launcher.info('[User] Launch successful');
         } else {

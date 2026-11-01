@@ -459,7 +459,12 @@
       "webApiPortInvalid": "Inserisci un numero tra {{min}} e {{max}}.",
       "webApiPortReset": "Ripristina {{port}}",
       "webApiPortRestart": "Riavvia X-Plane dopo aver cambiato la porta. Un X-Plane avviato a mano deve essere lanciato con --web_server_port={{port}}.",
-      "behavior": "Comportamento all’avvio"
+      "behavior": "Comportamento all’avvio",
+      "env": "Variabili d’ambiente",
+      "envDescription": "Impostate per X-Plane a ogni avvio a freddo, per esempio un’opzione del driver grafico su Linux. Non applicate quando Steam avvia X-Plane su macOS.",
+      "envNamePlaceholder": "NOME",
+      "envValuePlaceholder": "valore",
+      "envInvalidName": "Un nome è fatto di lettere, cifre e trattini bassi e non inizia con una cifra."
     },
     "tabs": {
       "xplane": "X-Plane",

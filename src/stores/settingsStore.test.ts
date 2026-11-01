@@ -697,6 +697,7 @@ describe('launcher web API port at v42', () => {
       closeOnLaunch: true,
       customLaunchArgs: ['--no_sound'],
       webApiPort: 8086,
+      launchEnv: [],
     });
   });
 });

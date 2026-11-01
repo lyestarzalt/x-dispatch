@@ -459,7 +459,12 @@
       "webApiPortInvalid": "Introduza um número entre {{min}} e {{max}}.",
       "webApiPortReset": "Repor {{port}}",
       "webApiPortRestart": "Reinicie o X-Plane depois de alterar a porta. Um X-Plane iniciado à mão tem de ser lançado com --web_server_port={{port}}.",
-      "behavior": "Comportamento ao iniciar"
+      "behavior": "Comportamento ao iniciar",
+      "env": "Variáveis de ambiente",
+      "envDescription": "Definidas para o X-Plane em cada arranque a frio, por exemplo uma opção do controlador gráfico no Linux. Não se aplicam quando o Steam inicia o X-Plane no macOS.",
+      "envNamePlaceholder": "NOME",
+      "envValuePlaceholder": "valor",
+      "envInvalidName": "Um nome é composto por letras, dígitos e sublinhados e não começa por um dígito."
     },
     "tabs": {
       "xplane": "X-Plane",

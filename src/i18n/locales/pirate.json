@@ -459,7 +459,12 @@
       "webApiPortInvalid": "Give a number betwixt {{min}} an’ {{max}}.",
       "webApiPortReset": "Back to {{port}}",
       "webApiPortRestart": "Restart X-Plane after changin’ the port. An X-Plane ye launch by hand must sail with --web_server_port={{port}}.",
-      "behavior": "Launchin’ manners"
+      "behavior": "Launchin’ manners",
+      "env": "Environment variables",
+      "envDescription": "Set fer X-Plane on every cold start, say a graphics driver switch on Linux. Not applied when Steam sets X-Plane a-sail on macOS.",
+      "envNamePlaceholder": "NAME",
+      "envValuePlaceholder": "value",
+      "envInvalidName": "A name be letters, digits an’ underscores, an’ never starts with a digit."
     },
     "tabs": {
       "xplane": "X-Plane",

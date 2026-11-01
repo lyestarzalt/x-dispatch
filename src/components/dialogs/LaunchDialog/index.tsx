@@ -393,8 +393,8 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
 
       // X-Plane not running → cold launch with the FlightInit payload
       const coldStart = async () => {
-        const customLaunchArgs = useSettingsStore.getState().launcher.customLaunchArgs;
-        const result = await window.launcherAPI.launch(flightConfig, customLaunchArgs);
+        const { customLaunchArgs, launchEnv } = useSettingsStore.getState().launcher;
+        const result = await window.launcherAPI.launch(flightConfig, customLaunchArgs, launchEnv);
         if (!result.success && result.code === 'ALREADY_RUNNING') {
           // The process table has X-Plane but the last API probe, up to 5 s old,
           // did not. Probe again: if X-Plane finished starting in between, the

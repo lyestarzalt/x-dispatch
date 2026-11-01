@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Rocket } from 'lucide-react';
+import { Plus, Rocket, X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { MAX_REMOTE_PORT, MIN_REMOTE_PORT, parsePort } from '@/lib/remote/port';
 import { cn } from '@/lib/utils/helpers';
 import { XPLANE_WEB_API_PORT } from '@/lib/xplaneServices/client/port';
+import { isValidEnvName } from '@/lib/xplaneServices/launch/launchEnv';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { SettingsHeader, SettingsSectionBlock, SettingsToggleRow } from '../primitives';
 import type { SettingsSectionProps } from '../types';
@@ -17,6 +19,7 @@ export default function LauncherSection({ className }: SettingsSectionProps) {
   const { t } = useTranslation();
   const webApiPort = useSettingsStore((s) => s.launcher.webApiPort);
   const closeOnLaunch = useSettingsStore((s) => s.launcher.closeOnLaunch);
+  const launchEnv = useSettingsStore((s) => s.launcher.launchEnv);
   const updateLauncherSettings = useSettingsStore((s) => s.updateLauncherSettings);
 
   // Null while the field shows the saved port; a string while the user edits it.
@@ -24,6 +27,20 @@ export default function LauncherSection({ className }: SettingsSectionProps) {
   const portText = portDraft ?? String(webApiPort);
   const parsedPort = parsePort(portText);
   const portInvalid = portDraft !== null && portDraft !== '' && parsedPort === null;
+
+  const [envName, setEnvName] = useState('');
+  const [envValue, setEnvValue] = useState('');
+  const envNameTrimmed = envName.trim();
+  const envNameInvalid = envNameTrimmed !== '' && !isValidEnvName(envNameTrimmed);
+  const addEnv = () => {
+    if (!envNameTrimmed || envNameInvalid) return;
+    const rest = launchEnv.filter((v) => v.name !== envNameTrimmed);
+    updateLauncherSettings({ launchEnv: [...rest, { name: envNameTrimmed, value: envValue }] });
+    setEnvName('');
+    setEnvValue('');
+  };
+  const removeEnv = (name: string) =>
+    updateLauncherSettings({ launchEnv: launchEnv.filter((v) => v.name !== name) });
 
   const applyPort = () => {
     setPortDraft(null);
@@ -108,6 +125,72 @@ export default function LauncherSection({ className }: SettingsSectionProps) {
       <Separator />
 
       <LaunchArgsSection />
+
+      <Separator />
+
+      <SettingsSectionBlock
+        title={t('settings.launcher.env')}
+        description={t('settings.launcher.envDescription')}
+      >
+        <div className="flex items-center gap-1">
+          <Input
+            value={envName}
+            onChange={(e) => setEnvName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                addEnv();
+              }
+            }}
+            placeholder={t('settings.launcher.envNamePlaceholder')}
+            aria-invalid={envNameInvalid}
+            className="h-7 min-w-0 flex-1 font-mono text-xs"
+          />
+          <span className="text-muted-foreground font-mono text-xs">=</span>
+          <Input
+            value={envValue}
+            onChange={(e) => setEnvValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                addEnv();
+              }
+            }}
+            placeholder={t('settings.launcher.envValuePlaceholder')}
+            className="h-7 min-w-0 flex-1 font-mono text-xs"
+          />
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="shrink-0"
+            onClick={addEnv}
+            disabled={!envNameTrimmed || envNameInvalid}
+            tooltip={t('common.add')}
+          >
+            <Plus className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+        {envNameInvalid && (
+          <p className="text-destructive text-xs">{t('settings.launcher.envInvalidName')}</p>
+        )}
+        {launchEnv.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {launchEnv.map(({ name, value }) => (
+              <Badge key={name} variant="default" className="gap-1 font-mono text-xs">
+                {name}={value}
+                <button
+                  type="button"
+                  onClick={() => removeEnv(name)}
+                  className="ml-0.5 rounded-sm opacity-70 hover:opacity-100"
+                  aria-label={`${t('common.remove')} ${name}`}
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            ))}
+          </div>
+        )}
+      </SettingsSectionBlock>
     </div>
   );
 }

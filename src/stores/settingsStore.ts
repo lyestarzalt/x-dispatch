@@ -37,6 +37,7 @@ import type {
 } from '@/lib/utils/units';
 import { uuid } from '@/lib/utils/uuid';
 import { XPLANE_WEB_API_PORT } from '@/lib/xplaneServices/client/port';
+import type { LaunchEnvVar } from '@/lib/xplaneServices/launch/launchEnv';
 
 export type FontSize = 'small' | 'medium' | 'large';
 
@@ -186,6 +187,8 @@ export interface LauncherSettings {
   customLaunchArgs: string[];
   /** Port of X-Plane's web server; passed to X-Plane on cold start and used by every client. */
   webApiPort: number;
+  /** Environment variables set for X-Plane on every cold start. */
+  launchEnv: LaunchEnvVar[];
 }
 
 export interface SupportSettings {
@@ -307,6 +310,7 @@ const DEFAULT_LAUNCHER_SETTINGS: LauncherSettings = {
   closeOnLaunch: false,
   customLaunchArgs: [],
   webApiPort: XPLANE_WEB_API_PORT,
+  launchEnv: [],
 };
 
 const DEFAULT_FLIGHTS_SETTINGS: FlightsSettings = {
@@ -560,7 +564,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'xplane-viz-settings',
-      version: 43,
+      version: 44,
       migrate: (persistedState, version) => migrateSettings(persistedState, version),
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -861,6 +865,12 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
     state = {
       ...state,
       flightStrip: { ...state.flightStrip!, wheelAdjust: true },
+    };
+  }
+  if (version < 44) {
+    state = {
+      ...state,
+      launcher: { ...state.launcher!, launchEnv: [] },
     };
   }
 
