@@ -423,7 +423,7 @@ export interface HoldingPattern {
 /**
  * ATC facility role
  */
-export type ATCRole = 'ctr' | 'app' | 'twr' | 'gnd' | 'del';
+export type ATCRole = 'ctr' | 'tracon' | 'app' | 'twr' | 'gnd' | 'del';
 
 /**
  * ATC controller/facility from atc.dat
@@ -432,12 +432,17 @@ export interface ATCController {
   name: string;
   facilityId: string;
   role: ATCRole;
-  frequencies: number[]; // In Hz * 1000
-  airspace?: {
-    minAlt: number;
-    maxAlt: number;
-    polygon: LonLatPath;
-  };
+  frequencies: number[]; // MHz (e.g. 120.45)
+  /** Airports this facility explicitly serves (the block's ICAO lines). */
+  icaos?: string[];
+  /** Sector shelves; a TRACON or centre often has several stacked polygons. */
+  airspaces: ATCAirspace[];
+}
+
+export interface ATCAirspace {
+  minAlt: number; // ft
+  maxAlt: number; // ft
+  polygon: LonLatPath;
 }
 
 // ============================================================================

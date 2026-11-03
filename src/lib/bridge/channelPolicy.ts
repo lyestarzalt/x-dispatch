@@ -67,6 +67,7 @@ export const REMOTE_ALLOWED_CHANNELS: readonly string[] = [
   'nav:getAirspacesNearPoint',
   'nav:getAirwaySegments',
   'nav:getAllATCControllers',
+  'nav:getATCForAirport',
   'nav:getAllAirspaces',
   'nav:getAllHoldingPatterns',
   'nav:getApproachAidsInRadius',

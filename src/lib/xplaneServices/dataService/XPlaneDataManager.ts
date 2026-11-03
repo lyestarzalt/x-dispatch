@@ -54,6 +54,7 @@ import {
   loadNavaids,
   loadWaypoints,
 } from './navdata';
+import { selectAtcForAirport } from './navdata/atcSelect';
 import {
   type NavDataType,
   checkNavCacheValidity,
@@ -977,6 +978,14 @@ export class XPlaneDataManager {
    */
   getAllATCControllers(): ATCController[] {
     return this.atcControllers;
+  }
+
+  /**
+   * The facilities relevant to one airport: explicit ICAO links, sector
+   * polygons containing it, then same-region polygon-less centres.
+   */
+  getATCForAirport(icao: string, lat: number, lon: number): ATCController[] {
+    return selectAtcForAirport(this.atcControllers, icao, lat, lon);
   }
 
   /**

@@ -250,6 +250,8 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
       getDataSources: () => t.invoke('nav:getDataSources'),
       getATCByFacility: (facilityId: string) => t.invoke('nav:getATCByFacility', facilityId),
       getAllATCControllers: () => t.invoke('nav:getAllATCControllers'),
+      getATCForAirport: (icao: string, lat: number, lon: number) =>
+        t.invoke('nav:getATCForAirport', icao, lat, lon),
       getHoldingPatterns: (fixId: string) => t.invoke('nav:getHoldingPatterns', fixId),
       getAirportMetadata: (icao: string) => t.invoke('nav:getAirportMetadata', icao),
       getTransitionAltitude: (icao: string) => t.invoke('nav:getTransitionAltitude', icao),

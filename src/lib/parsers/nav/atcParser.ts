@@ -3,19 +3,12 @@
  * Parses ATC controller data with frequencies and airspace polygons
  */
 import { z } from 'zod';
-import { LonLatPath } from '@/types/geo';
-import type { ATCController } from '@/types/navigation';
+import type { ATCAirspace, ATCController } from '@/types/navigation';
 import { lonLat, vhfFrequency } from '../schemas';
 import { hasMinLength, recordSkip } from '../types';
 import type { ParseError, ParseResult } from '../types';
 
-const ATCRoleSchema = z.enum(['ctr', 'app', 'twr', 'gnd', 'del']);
-
-interface ParsedAirspace {
-  minAlt: number;
-  maxAlt: number;
-  polygon: LonLatPath;
-}
+const ATCRoleSchema = z.enum(['ctr', 'tracon', 'app', 'twr', 'gnd', 'del']);
 
 export function parseATCData(content: string): ParseResult<ATCController[]> {
   const startTime = Date.now();
@@ -25,7 +18,8 @@ export function parseATCData(content: string): ParseResult<ATCController[]> {
   let skipped = 0;
 
   let current: Partial<ATCController> | null = null;
-  let airspace: ParsedAirspace | null = null;
+  let airspaces: ATCAirspace[] = [];
+  let airspace: ATCAirspace | null = null;
   let inPolygon = false;
 
   const finalize = () => {
@@ -46,7 +40,8 @@ export function parseATCData(content: string): ParseResult<ATCController[]> {
       facilityId: current.facilityId,
       role: current.role,
       frequencies: current.frequencies || [],
-      airspace: airspace || undefined,
+      icaos: current.icaos || [],
+      airspaces: airspaces.filter((a) => a.polygon.length >= 3),
     });
   };
 
@@ -56,7 +51,8 @@ export function parseATCData(content: string): ParseResult<ATCController[]> {
 
     if (line === 'CONTROLLER') {
       finalize();
-      current = { frequencies: [] };
+      current = { frequencies: [], icaos: [] };
+      airspaces = [];
       airspace = null;
       inPolygon = false;
       continue;
@@ -68,6 +64,10 @@ export function parseATCData(content: string): ParseResult<ATCController[]> {
       current.name = line.substring(5).trim();
     } else if (line.startsWith('FACILITY_ID ')) {
       current.facilityId = line.substring(12).trim();
+    } else if (line.startsWith('ICAO ')) {
+      // Airports this facility explicitly serves (TRACONs list several).
+      current.icaos = current.icaos || [];
+      current.icaos.push(line.substring(5).trim().toUpperCase());
     } else if (line.startsWith('ROLE ')) {
       const role = line.substring(5).trim().toLowerCase();
       const result = ATCRoleSchema.safeParse(role);
@@ -84,11 +84,13 @@ export function parseATCData(content: string): ParseResult<ATCController[]> {
     } else if (line.startsWith('AIRSPACE_POLYGON_BEGIN')) {
       const parts = line.split(/\s+/);
       if (!hasMinLength(parts, 3)) continue;
+      // Each BEGIN opens another shelf of the same facility.
       airspace = {
         minAlt: parseInt(parts[1], 10) || 0,
         maxAlt: parseInt(parts[2], 10) || 99999,
         polygon: [],
       };
+      airspaces.push(airspace);
       inPolygon = true;
     } else if (line === 'AIRSPACE_POLYGON_END') {
       inPolygon = false;

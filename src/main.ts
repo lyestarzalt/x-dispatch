@@ -2063,6 +2063,12 @@ function registerIpcHandlers() {
   // New navigation data handlers
   handle('nav:getDataSources', () => dataManager.getDataSources());
 
+  handle('nav:getATCForAirport', (_, icao: string, lat: number, lon: number) => {
+    const c = validateCoordinates(lat, lon, 1);
+    if (isInvalidCoords(c)) throw new Error(c.error);
+    return dataManager.getATCForAirport(String(icao).slice(0, 8), c.lat, c.lon);
+  });
+
   handle('nav:getATCByFacility', (_, facilityId: string) => {
     if (!facilityId || typeof facilityId !== 'string') return null;
     return dataManager.getATCByFacility(facilityId);

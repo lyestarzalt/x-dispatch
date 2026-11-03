@@ -75,21 +75,16 @@ export function useAirportMetadata(icao: string | null) {
   });
 }
 
-export function useATCControllers(icao: string | null) {
+/**
+ * The ATC facilities relevant to an airport: its own tower/TRACON links plus
+ * the sectors whose polygon contains it. Selection happens in the main
+ * process (`selectAtcForAirport`).
+ */
+export function useAirportATC(icao: string | null, lat: number | null, lon: number | null) {
   return useQuery({
     queryKey: appKeys.atcControllers(icao ?? ''),
-    queryFn: async (): Promise<ATCController[]> => {
-      if (!icao) return [];
-      const controllers = await window.navAPI.getAllATCControllers();
-      const prefix = icao.substring(0, 2).toUpperCase();
-      const relevant = controllers.filter(
-        (c: ATCController) =>
-          c.facilityId.toUpperCase().startsWith(prefix) ||
-          c.name.toUpperCase().includes(icao.toUpperCase())
-      );
-      return relevant.slice(0, 10);
-    },
-    enabled: !!icao,
+    queryFn: (): Promise<ATCController[]> => window.navAPI.getATCForAirport(icao!, lat!, lon!),
+    enabled: !!icao && lat !== null && lon !== null,
     staleTime: 10 * 60 * 1000,
   });
 }

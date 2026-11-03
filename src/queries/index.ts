@@ -48,7 +48,7 @@ export {
   useXPlanePath,
   useLoadingStatus,
   useAirportMetadata,
-  useATCControllers,
+  useAirportATC,
   useAirportProcedures,
   useInstallations,
   useActiveInstallation,
