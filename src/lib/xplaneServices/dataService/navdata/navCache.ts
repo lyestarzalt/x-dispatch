@@ -6,6 +6,7 @@
 import { type AnyColumn, type SQL, count, eq, sql } from 'drizzle-orm';
 import * as fs from 'fs';
 import { airspaces, airways, getDb, navFileMeta, navaids, waypoints } from '@/lib/db';
+import { boundsAroundPoint } from '@/lib/utils/geomath';
 import logger from '@/lib/utils/logger';
 import { yieldToEventLoop } from '@/lib/utils/yieldToEventLoop';
 import type { Coordinates } from '@/types/geo';
@@ -40,9 +41,10 @@ export type NavDataType =
  * old parser are read again from the source file. The file's mtime alone cannot tell.
  * airways 2: the one-way letter and the level family were read from each other's field.
  * airways 3: segments topping above FL600 were dropped by the level bound.
+ * navaids 2: row-12 paired DME components are no longer stored (duplicate symbols).
  */
 export const PARSER_VERSIONS: Record<NavDataType, number> = {
-  navaids: 1,
+  navaids: 2,
   waypoints: 1,
   airways: 3,
   airspaces: 1,
@@ -1171,12 +1173,7 @@ export function getAirspacesNearPoint(
   radiusNm: number = 50,
   limit: number = 1000
 ): Airspace[] {
-  // Convert radius to bounding box (1 degree ≈ 60nm)
-  const degBuffer = radiusNm / 60;
-  const minLat = lat - degBuffer;
-  const maxLat = lat + degBuffer;
-  const minLon = lon - degBuffer;
-  const maxLon = lon + degBuffer;
+  const { minLat, maxLat, minLon, maxLon } = boundsAroundPoint(lat, lon, radiusNm);
 
   return getAirspacesInBounds(minLat, maxLat, minLon, maxLon, limit);
 }

@@ -8,11 +8,12 @@ import * as fs from 'fs';
 import { airports, aptFileMeta, closeDb, getDb, isDbReady } from '@/lib/db';
 import { runwayEndsFromApt } from '@/lib/flightplan/builder/runways';
 import { parseCIFP } from '@/lib/parsers/nav/cifpParser';
+import { isIlsDme } from '@/lib/parsers/nav/navaidParser';
 import {
   ResolvedAirportProcedures,
   enrichProceduresWithCoordinates,
 } from '@/lib/parsers/nav/procedureCoordResolver';
-import { distanceNm } from '@/lib/utils/geomath';
+import { boundsAroundPoint, distanceNm } from '@/lib/utils/geomath';
 import logger from '@/lib/utils/logger';
 import type { AirwaySegmentWithCoords } from '@/types/navigation';
 import type {
@@ -693,12 +694,7 @@ export class XPlaneDataManager {
    * Get navaids within radius (uses SQLite bounds query)
    */
   getNavaidsInRadius(lat: number, lon: number, radiusNm: number, types?: NavaidType[]): Navaid[] {
-    // Convert radius to bounds (1 degree ≈ 60nm)
-    const degBuffer = radiusNm / 60;
-    const minLat = lat - degBuffer;
-    const maxLat = lat + degBuffer;
-    const minLon = lon - degBuffer;
-    const maxLon = lon + degBuffer;
+    const { minLat, maxLat, minLon, maxLon } = boundsAroundPoint(lat, lon, radiusNm);
 
     // Query SQLite with bounds
     const results = getNavaidsInBounds(minLat, maxLat, minLon, maxLon, types);
@@ -725,7 +721,10 @@ export class XPlaneDataManager {
    * Get DMEs within radius
    */
   getDMEsInRadius(lat: number, lon: number, radiusNm: number): Navaid[] {
-    return this.getNavaidsInRadius(lat, lon, radiusNm, ['DME', 'TACAN']);
+    // ILS DMEs sit on the LOC antenna and belong to the ILS symbol, not here.
+    return this.getNavaidsInRadius(lat, lon, radiusNm, ['DME', 'TACAN']).filter(
+      (n) => !isIlsDme(n)
+    );
   }
 
   /**
@@ -783,12 +782,7 @@ export class XPlaneDataManager {
    * Get waypoints within radius (uses SQLite bounds query)
    */
   getWaypointsInRadius(lat: number, lon: number, radiusNm: number): Waypoint[] {
-    // Convert radius to bounds (1 degree ≈ 60nm)
-    const degBuffer = radiusNm / 60;
-    const minLat = lat - degBuffer;
-    const maxLat = lat + degBuffer;
-    const minLon = lon - degBuffer;
-    const maxLon = lon + degBuffer;
+    const { minLat, maxLat, minLon, maxLon } = boundsAroundPoint(lat, lon, radiusNm);
 
     // Query SQLite with bounds
     const results = getWaypointsInBounds(minLat, maxLat, minLon, maxLon);
