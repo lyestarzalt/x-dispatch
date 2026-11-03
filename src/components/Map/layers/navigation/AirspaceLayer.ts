@@ -24,7 +24,12 @@ const DASHED_CLASSES = ['D', 'E', 'F', 'G', 'Q', 'W', 'GP', 'OTHER'];
 
 function getLocalAirspaceStyle(airspaceClass: string) {
   const style = getAirspaceStyle(airspaceClass);
-  return { color: style.border, dashed: DASHED_CLASSES.includes(airspaceClass) };
+  return {
+    color: style.border,
+    fillColor: style.fill,
+    fillOpacity: style.opacity,
+    dashed: DASHED_CLASSES.includes(airspaceClass),
+  };
 }
 
 /**
@@ -75,7 +80,11 @@ function ensureCounterClockwise(coords: [number, number][]): [number, number][] 
 export class AirspaceLayerRenderer extends NavLayerRenderer<Airspace> {
   readonly layerId = 'nav-airspaces-fill';
   readonly sourceId = 'nav-airspaces-source';
-  readonly additionalLayerIds = ['nav-airspaces-outline', 'nav-airspaces-labels'];
+  readonly additionalLayerIds = [
+    'nav-airspaces-outline',
+    'nav-airspaces-outline-dashed',
+    'nav-airspaces-labels',
+  ];
 
   protected createGeoJSON(airspaces: Airspace[]): GeoJSON.FeatureCollection {
     return {
@@ -95,6 +104,8 @@ export class AirspaceLayerRenderer extends NavLayerRenderer<Airspace> {
             upperLimit: airspace.upperLimit,
             lowerLimit: airspace.lowerLimit,
             color: style.color,
+            fillColor: style.fillColor,
+            fillOpacity: style.fillOpacity,
             dashed: style.dashed ? 1 : 0,
             label: `${airspace.class} ${airspace.name}`,
           },
@@ -104,30 +115,44 @@ export class AirspaceLayerRenderer extends NavLayerRenderer<Airspace> {
   }
 
   protected addLayers(map: maplibregl.Map): void {
-    const outlineLayerId = this.additionalLayerIds[0];
-    const labelsLayerId = this.additionalLayerIds[1];
-    if (!outlineLayerId || !labelsLayerId) return;
+    const [outlineLayerId, dashedOutlineLayerId, labelsLayerId] = this.additionalLayerIds;
+    if (!outlineLayerId || !dashedOutlineLayerId || !labelsLayerId) return;
 
-    // Fill layer - very subtle fill
+    // Fill — per-class colour and opacity (restricted reads stronger than E/G)
     map.addLayer({
       id: this.layerId,
       type: 'fill',
       source: this.sourceId,
       paint: {
-        'fill-color': ['get', 'color'],
-        'fill-opacity': 0.02,
+        'fill-color': ['get', 'fillColor'],
+        'fill-opacity': ['*', 0.5, ['get', 'fillOpacity']],
       },
     });
 
-    // Outline layer - the main visual
+    // Outlines — the main visual. `line-dasharray` cannot be data-driven, so
+    // solid (B/C/CTR/R/P...) and dashed (D/E/F/G...) classes are two layers
+    // over the same source, split by the `dashed` flag.
     map.addLayer({
       id: outlineLayerId,
       type: 'line',
       source: this.sourceId,
+      filter: ['==', ['get', 'dashed'], 0],
       paint: {
         'line-color': ['get', 'color'],
         'line-width': ['interpolate', ['linear'], ['zoom'], 4, 1, 8, 1.5, 12, 2],
         'line-opacity': 0.6,
+      },
+    });
+    map.addLayer({
+      id: dashedOutlineLayerId,
+      type: 'line',
+      source: this.sourceId,
+      filter: ['==', ['get', 'dashed'], 1],
+      paint: {
+        'line-color': ['get', 'color'],
+        'line-width': ['interpolate', ['linear'], ['zoom'], 4, 1, 8, 1.5, 12, 2],
+        'line-opacity': 0.6,
+        'line-dasharray': [3, 2.5],
       },
     });
 
