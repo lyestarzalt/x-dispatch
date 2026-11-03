@@ -406,7 +406,7 @@
     "unpaved": "未舗装 (芝生/土/砂利)",
     "showOnly": "表示のみ",
     "iataOnly": "商用空港 (IATA)",
-    "customOnly": "カスタムシーナリー",
+    "customOnly": "カスタムシーナリーのみ",
     "proceduresOnly": "計器進入方式のある空港のみ",
     "surfaceType": "路面の種類",
     "runwaySurface": "滑走路面",

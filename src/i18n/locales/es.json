@@ -406,7 +406,7 @@
     "unpaved": "Sin pavimentar (Hierba/Tierra/Grava)",
     "showOnly": "Mostrar solo",
     "iataOnly": "Comercial (IATA)",
-    "customOnly": "Escenarios personalizados",
+    "customOnly": "Solo escenarios personalizados",
     "proceduresOnly": "Solo con procedimientos instrumentales",
     "surfaceType": "Tipo de superficie",
     "runwaySurface": "Superficie de pista",

@@ -406,7 +406,7 @@
     "unpaved": "Unbefestigt (Gras/Erde/Schotter)",
     "showOnly": "Nur anzeigen",
     "iataOnly": "Kommerziell (IATA)",
-    "customOnly": "Eigene Szenerien",
+    "customOnly": "Nur eigene Szenerien",
     "proceduresOnly": "Nur mit Instrumentenverfahren",
     "surfaceType": "Oberflächentyp",
     "runwaySurface": "Pistenbelag",

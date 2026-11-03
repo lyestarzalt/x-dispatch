@@ -406,7 +406,7 @@
     "unpaved": "未铺装 (草地/泥土/碎石)",
     "showOnly": "仅显示",
     "iataOnly": "商用航空 (IATA)",
-    "customOnly": "自定义地景",
+    "customOnly": "仅自定义地景",
     "proceduresOnly": "仅显示有仪表程序的机场",
     "surfaceType": "道面类型",
     "runwaySurface": "跑道道面",

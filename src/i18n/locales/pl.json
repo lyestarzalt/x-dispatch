@@ -406,7 +406,7 @@
     "unpaved": "Nieutwardzona (Trawa/Ziemia/Żwir)",
     "showOnly": "Pokaż tylko",
     "iataOnly": "Komercyjne (IATA)",
-    "customOnly": "Scenerie użytkownika",
+    "customOnly": "Tylko scenerie użytkownika",
     "proceduresOnly": "Tylko z procedurami IFR",
     "surfaceType": "Typ nawierzchni",
     "runwaySurface": "Nawierzchnia pasa",
