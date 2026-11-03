@@ -48,7 +48,7 @@ vi.mock('@/lib/db', async () => {
   };
 });
 
-const { loadNavaids, loadWaypoints } = await import('./navLoader');
+const { loadNavaids, loadWaypoints, checkMergedNavValidity } = await import('./navLoader');
 const { getAllNavaidsFromDb, getAllWaypointsFromDb } = await import('./navCache');
 
 // ---------------------------------------------------------------------------
@@ -126,6 +126,15 @@ describe('loadNavaids with user_nav.dat', () => {
 
     expect(result.fromCache).toBe(false);
     expect(result.count).toBe(2);
+  });
+
+  it('checkMergedNavValidity goes stale when a user_nav.dat appears — the startup fast path gate', async () => {
+    writeEarthNav();
+    await loadNavaids(root);
+    expect(checkMergedNavValidity(root, 'navaids').needsReload).toBe(false);
+
+    writeUserNav([USER_NAV_LINE], 1_000_000_100);
+    expect(checkMergedNavValidity(root, 'navaids').needsReload).toBe(true);
   });
 
   it('reloads when user_nav.dat changes, and when it is deleted', async () => {

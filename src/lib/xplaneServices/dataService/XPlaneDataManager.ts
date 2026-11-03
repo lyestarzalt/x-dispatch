@@ -44,6 +44,7 @@ import {
 } from './config';
 import { NavDataSources, detectAllDataSources } from './cycleInfo';
 import {
+  checkMergedNavValidity,
   loadATCData,
   loadAirportMetadata,
   loadAirspaces,
@@ -187,18 +188,22 @@ export class XPlaneDataManager {
       flag: 'navaids' | 'waypoints' | 'airspaces' | 'airways';
       resolvePath: (xp: string) => string;
       getCount: () => number;
+      /** Overrides the plain file check; navaids/waypoints also watch their pilot file. */
+      checkValidity?: (xp: string) => ReturnType<typeof checkNavCacheValidity>;
     }> = [
       {
         dataType: 'navaids',
         flag: 'navaids',
         resolvePath: getNavDataPath,
         getCount: getNavaidCount,
+        checkValidity: (xp) => checkMergedNavValidity(xp, 'navaids'),
       },
       {
         dataType: 'waypoints',
         flag: 'waypoints',
         resolvePath: getFixDataPath,
         getCount: getWaypointCount,
+        checkValidity: (xp) => checkMergedNavValidity(xp, 'waypoints'),
       },
       {
         dataType: 'airspaces',
@@ -221,7 +226,9 @@ export class XPlaneDataManager {
       if (counts[check.flag] === 0) continue;
 
       if (xplanePath) {
-        const cacheCheck = checkNavCacheValidity(check.resolvePath(xplanePath), check.dataType);
+        const cacheCheck = check.checkValidity
+          ? check.checkValidity(xplanePath)
+          : checkNavCacheValidity(check.resolvePath(xplanePath), check.dataType);
         if (cacheCheck.needsReload) {
           anyNavStale = true;
           logger.data.info(

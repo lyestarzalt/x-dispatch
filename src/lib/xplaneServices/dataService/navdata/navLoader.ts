@@ -90,6 +90,24 @@ function warnSkipped(label: string, result: Pick<ParseResult<unknown>, 'errors' 
 }
 
 /**
+ * Combined cache validity for a data type whose load merges an optional pilot file on top of
+ * the main one. Both the loaders below and the startup fast path in XPlaneDataManager use it,
+ * so they agree on when the merged set is stale.
+ */
+export function checkMergedNavValidity(
+  xplanePath: string,
+  dataType: 'navaids' | 'waypoints'
+): ReturnType<typeof checkNavCacheValidity> {
+  const navaids = dataType === 'navaids';
+  const mainPath = navaids ? getNavDataPath(xplanePath) : getFixDataPath(xplanePath);
+  const userPath = navaids ? getUserNavDataPath(xplanePath) : getUserFixDataPath(xplanePath);
+
+  const main = checkNavCacheValidity(mainPath, dataType);
+  if (main.needsReload) return main;
+  return checkUserNavFileValidity(userPath, navaids ? 'user-navaids' : 'user-waypoints');
+}
+
+/**
  * Parse an optional pilot-created file (user_nav.dat / user_fix.dat) with the same parser as
  * its main file. A missing file is an empty list — X-Plane adds these on top of the defaults.
  */
@@ -118,11 +136,10 @@ export async function loadNavaids(xplanePath: string): Promise<NavLoadResult<Nav
   }
 
   // Check cache validity — of the main file and of the optional user file
-  const cacheCheck = checkNavCacheValidity(navPath, 'navaids');
-  const userCheck = checkUserNavFileValidity(userNavPath, 'user-navaids');
+  const cacheCheck = checkMergedNavValidity(xplanePath, 'navaids');
   const sourceType = detectSourceType(navPath);
 
-  if (!cacheCheck.needsReload && !userCheck.needsReload) {
+  if (!cacheCheck.needsReload) {
     const count = getNavaidCount();
     logger.data.info(`Navaids cache valid (${sourceType}), ${count} in database`);
     return {
@@ -138,7 +155,7 @@ export async function loadNavaids(xplanePath: string): Promise<NavLoadResult<Nav
   const fileStat = fs.statSync(navPath);
   const fileSizeMB = (fileStat.size / (1024 * 1024)).toFixed(1);
   logger.data.info(
-    `Navaids cache stale (${cacheCheck.reason ?? userCheck.reason}), reloading ${fileSizeMB}MB from ${sourceType}`
+    `Navaids cache stale (${cacheCheck.reason}), reloading ${fileSizeMB}MB from ${sourceType}`
   );
 
   // Parse the main file, then append the pilot's own navaids (#320)
@@ -199,11 +216,10 @@ export async function loadWaypoints(xplanePath: string): Promise<NavLoadResult<W
   }
 
   // Check cache validity — of the main file and of the optional user file
-  const cacheCheck = checkNavCacheValidity(fixPath, 'waypoints');
-  const userCheck = checkUserNavFileValidity(userFixPath, 'user-waypoints');
+  const cacheCheck = checkMergedNavValidity(xplanePath, 'waypoints');
   const sourceType = detectSourceType(fixPath);
 
-  if (!cacheCheck.needsReload && !userCheck.needsReload) {
+  if (!cacheCheck.needsReload) {
     const count = getWaypointCount();
     logger.data.info(`Waypoints cache valid (${sourceType}), ${count} in database`);
     return {
@@ -219,7 +235,7 @@ export async function loadWaypoints(xplanePath: string): Promise<NavLoadResult<W
   const fileStat = fs.statSync(fixPath);
   const fileSizeMB = (fileStat.size / (1024 * 1024)).toFixed(1);
   logger.data.info(
-    `Waypoints cache stale (${cacheCheck.reason ?? userCheck.reason}), reloading ${fileSizeMB}MB from ${sourceType}`
+    `Waypoints cache stale (${cacheCheck.reason}), reloading ${fileSizeMB}MB from ${sourceType}`
   );
 
   // Parse the main file, then append the pilot's own waypoints (#320)
