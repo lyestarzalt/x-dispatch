@@ -108,7 +108,8 @@ const NO_PROCEDURES: ResolvedProcedure[] = [];
 const FIELD_CLASS = 'h-9 w-full font-mono text-sm';
 
 /** The approach picker shows chart-style names; the chosen value stays the raw identifier. */
-const approachLabel = (p: ResolvedProcedure) => formatApproachName(p.name, p.approachType);
+const approachLabel = (p: ResolvedProcedure) =>
+  formatApproachName(p.name, p.approachType, p.approachQualifier2);
 const CLASSES: RangeRingCategory[] = ['jet', 'turboprop', 'prop'];
 /** Explore flyout tabs, in header order. */
 const EXPLORE_TABS = [

@@ -363,6 +363,8 @@ export interface Procedure {
   transition: string | null; // Enroute transition name
   /** Approaches: the ARINC 424 route-type letter of the final approach (I = ILS, R = RNAV...). */
   approachType?: string;
+  /** Approaches: ARINC 424 route qualifier 2 of the final approach ('P' marks an RNP AR). */
+  approachQualifier2?: string;
   waypoints: ProcedureWaypoint[];
 }
 

@@ -35,6 +35,19 @@ describe('formatApproachName', () => {
     expect(formatApproachName('T11RZ')).toBe('TACAN Z RWY 11R');
   });
 
+  it('names an RNP AR approach RNAV (RNP) from route qualifier 2', () => {
+    // KDCA RNAV (RNP) Z RWY 19, KEGE RNAV (RNP) X RWY 25: route type R, qualifier 2 'P'.
+    expect(formatApproachName('R19-Z', 'R', 'P')).toBe('RNAV (RNP) Z RWY 19');
+    expect(formatApproachName('R25X', 'R', 'P')).toBe('RNAV (RNP) X RWY 25');
+  });
+
+  it('keeps the other RNAV qualifiers as RNAV (GPS)', () => {
+    expect(formatApproachName('R19-Y', 'R', 'J')).toBe('RNAV (GPS) Y RWY 19'); // GNSS
+    expect(formatApproachName('R26-E', 'R', 'W')).toBe('RNAV (GPS) E RWY 26'); // SBAS
+    expect(formatApproachName('R15-N', 'R', 'U')).toBe('RNAV (GPS) N RWY 15');
+    expect(formatApproachName('R07', 'R')).toBe('RNAV (GPS) RWY 07'); // no qualifier at all
+  });
+
   it('names circling approaches with a dash and their letter', () => {
     expect(formatApproachName('VORA', 'V')).toBe('VOR-A');
     expect(formatApproachName('RNVB', 'R')).toBe('RNAV (GPS)-B');

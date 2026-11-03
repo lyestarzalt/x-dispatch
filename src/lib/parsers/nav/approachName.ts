@@ -56,15 +56,25 @@ const CIRCLING_FORM = /^([A-Z]{3})([A-Z0-9]?)$/;
 /**
  * The chart-style name for an approach identifier, e.g. `ILS Z RWY 04L`. Returns the identifier
  * unchanged when it does not follow either known form, so nothing is ever hidden.
+ *
+ * `routeQualifier2` is the record's ARINC 424 route qualifier 2: an RNAV approach whose qualifier
+ * is `P` is an RNP AR procedure, charted as RNAV (RNP), while `J`/`W`/`U` stay RNAV (GPS).
  */
-export function formatApproachName(identifier: string, routeType?: string | null): string {
+export function formatApproachName(
+  identifier: string,
+  routeType?: string | null,
+  routeQualifier2?: string | null
+): string {
   const id = identifier.trim().toUpperCase();
   const typeFromRecord = routeType ? TYPE_NAMES[routeType.trim().toUpperCase()] : undefined;
+  const rnpAr = routeQualifier2?.trim().toUpperCase() === 'P';
+  const withQualifier = (type: string | undefined) =>
+    rnpAr && type === 'RNAV (GPS)' ? 'RNAV (RNP)' : type;
 
   const runway = RUNWAY_FORM.exec(id);
   if (runway) {
     const [, letter, digits, side, variant] = runway;
-    const type = typeFromRecord ?? TYPE_NAMES[letter!];
+    const type = withQualifier(typeFromRecord ?? TYPE_NAMES[letter!]);
     if (!type) return identifier;
     return `${type}${variant ? ` ${variant}` : ''} RWY ${digits}${side}`;
   }
@@ -74,9 +84,9 @@ export function formatApproachName(identifier: string, routeType?: string | null
     const [, code, variant] = circling;
     if (code!.startsWith('C') && !CIRCLING_CODES[code!]) {
       // `CNDB`, `CVOR`...: the type is in the record, the tail of the name is the rest of the code.
-      return typeFromRecord ?? identifier;
+      return withQualifier(typeFromRecord) ?? identifier;
     }
-    const type = CIRCLING_CODES[code!];
+    const type = withQualifier(CIRCLING_CODES[code!]);
     if (!type) return identifier;
     return variant ? `${type}-${variant}` : type;
   }
