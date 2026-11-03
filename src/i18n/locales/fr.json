@@ -1188,7 +1188,18 @@
       "exportSuccess": "Route de roulage enregistrée",
       "summary": "par {{taxiways}}, {{distance}}"
     },
-    "frequencies": "Fréquences"
+    "frequencies": "Fréquences",
+    "atcSurface": "SFC",
+    "atcUnlimited": "UNL",
+    "atcSectorFreqs_one": "{{count}} fréquence",
+    "atcSectorFreqs_other": "{{count}} fréquences",
+    "atcRole": {
+      "del": "DEL",
+      "gnd": "GND",
+      "twr": "TWR",
+      "app": "APP",
+      "ctr": "CTR"
+    }
   },
   "navigation": {
     "heading": "CAP",

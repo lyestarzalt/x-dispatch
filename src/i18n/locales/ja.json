@@ -1188,7 +1188,18 @@
       "exportSuccess": "Follow the Greens用にルートをエクスポートしました",
       "summary": "{{taxiways}} 経由、{{distance}}"
     },
-    "frequencies": "周波数"
+    "frequencies": "周波数",
+    "atcSurface": "SFC",
+    "atcUnlimited": "UNL",
+    "atcSectorFreqs_one": "{{count}} 周波数",
+    "atcSectorFreqs_other": "{{count}} 周波数",
+    "atcRole": {
+      "del": "DEL",
+      "gnd": "GND",
+      "twr": "TWR",
+      "app": "APP",
+      "ctr": "CTR"
+    }
   },
   "navigation": {
     "heading": "方位",

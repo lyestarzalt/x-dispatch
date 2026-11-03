@@ -1188,7 +1188,18 @@
       "exportSuccess": "Rotta di rullaggio salvata",
       "summary": "via {{taxiways}}, {{distance}}"
     },
-    "frequencies": "Frequenze"
+    "frequencies": "Frequenze",
+    "atcSurface": "SFC",
+    "atcUnlimited": "UNL",
+    "atcSectorFreqs_one": "{{count}} frequenza",
+    "atcSectorFreqs_other": "{{count}} frequenze",
+    "atcRole": {
+      "del": "DEL",
+      "gnd": "GND",
+      "twr": "TWR",
+      "app": "APP",
+      "ctr": "CTR"
+    }
   },
   "navigation": {
     "heading": "PRUA",

@@ -1188,7 +1188,18 @@
       "exportSuccess": "Taxi route stowed",
       "summary": "via {{taxiways}}, {{distance}}"
     },
-    "frequencies": "Freqs"
+    "frequencies": "Freqs",
+    "atcSurface": "SFC",
+    "atcUnlimited": "UNL",
+    "atcSectorFreqs_one": "{{count}} frequency",
+    "atcSectorFreqs_other": "{{count}} frequencies",
+    "atcRole": {
+      "del": "DEL",
+      "gnd": "GND",
+      "twr": "TWR",
+      "app": "APP",
+      "ctr": "CTR"
+    }
   },
   "navigation": {
     "heading": "HEADING",

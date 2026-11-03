@@ -1188,7 +1188,18 @@
       "exportSuccess": "Trasa kołowania zapisana",
       "summary": "przez {{taxiways}}, {{distance}}"
     },
-    "frequencies": "Częstotliwości"
+    "frequencies": "Częstotliwości",
+    "atcSurface": "SFC",
+    "atcUnlimited": "UNL",
+    "atcSectorFreqs_one": "{{count}} częstotliwość",
+    "atcSectorFreqs_other": "{{count}} częstotliwości",
+    "atcRole": {
+      "del": "DEL",
+      "gnd": "GND",
+      "twr": "TWR",
+      "app": "APP",
+      "ctr": "CTR"
+    }
   },
   "navigation": {
     "heading": "KURS",

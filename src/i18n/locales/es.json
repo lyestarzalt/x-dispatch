@@ -1188,7 +1188,18 @@
       "exportSuccess": "Ruta de rodaje guardada",
       "summary": "vía {{taxiways}}, {{distance}}"
     },
-    "frequencies": "Frecuencias"
+    "frequencies": "Frecuencias",
+    "atcSurface": "SFC",
+    "atcUnlimited": "UNL",
+    "atcSectorFreqs_one": "{{count}} frecuencia",
+    "atcSectorFreqs_other": "{{count}} frecuencias",
+    "atcRole": {
+      "del": "DEL",
+      "gnd": "GND",
+      "twr": "TWR",
+      "app": "APP",
+      "ctr": "CTR"
+    }
   },
   "navigation": {
     "heading": "RUMBO",

@@ -11,7 +11,7 @@ import { atisRunways } from '@/lib/networkTraffic/atis';
 import { trafficCountsForAirport } from '@/lib/networkTraffic/stations';
 import { formatFrequency } from '@/lib/utils/format';
 import { runwayLengthFeet } from '@/lib/utils/geomath';
-import { useNavDataQuery } from '@/queries';
+import { useAirportATC, useNavDataQuery } from '@/queries';
 import { useGatewayUpdateCheck } from '@/queries/useGatewayQuery';
 import { useNetworkTraffic } from '@/queries/useNetworkTraffic';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
@@ -76,6 +76,20 @@ export default function InfoTab() {
     50
   );
   const { data: gatewayUpdate } = useGatewayUpdateCheck(icao, isCustom);
+  // Area-control facilities over the airport, appended to the FREQUENCIES
+  // list. Towers stay out — the airport's own rows already carry them.
+  const { data: atcControllers } = useAirportATC(
+    icao,
+    airport?.runways[0]?.ends[0]?.latitude ?? null,
+    airport?.runways[0]?.ends[0]?.longitude ?? null
+  );
+  const overlyingAtc = useMemo(
+    () =>
+      (atcControllers ?? []).filter(
+        (c) => c.role !== 'twr' && c.role !== 'gnd' && c.frequencies.length > 0
+      ),
+    [atcControllers]
+  );
 
   const metar = vatsimMetarData?.parsed ?? null;
   const rawMetar = vatsimMetarData?.raw ?? null;
@@ -175,6 +189,14 @@ export default function InfoTab() {
     [frequencies, atcRows]
   );
 
+  // When the airport publishes its own approach, the TRACON row would repeat
+  // it; keep only the centres then.
+  const facilityRows = useMemo(() => {
+    const hasOwnApproach = mergedFreqRows.some((r) => r.label === 'APP' || r.label === 'DEP');
+    return hasOwnApproach
+      ? overlyingAtc.filter((c) => c.role !== 'tracon' && c.role !== 'app')
+      : overlyingAtc;
+  }, [mergedFreqRows, overlyingAtc]);
   const visibleMergedRows = showAllFreqs
     ? mergedFreqRows
     : mergedFreqRows.slice(0, FREQ_VISIBLE_DEFAULT);
@@ -232,7 +254,7 @@ export default function InfoTab() {
         />
       )}
 
-      {mergedFreqRows.length > 0 && (
+      {(mergedFreqRows.length > 0 || facilityRows.length > 0) && (
         <FrequenciesSection
           visible={visibleMergedRows}
           totalCount={mergedFreqRows.length}
@@ -240,6 +262,7 @@ export default function InfoTab() {
           onToggle={() => setShowAllFreqs((v) => !v)}
           vatsimEnabled={networkOn}
           onlineCount={atcRows.length}
+          facilities={facilityRows}
         />
       )}
 

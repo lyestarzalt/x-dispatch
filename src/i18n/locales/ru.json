@@ -1188,7 +1188,18 @@
       "exportSuccess": "Маршрут руления сохранён",
       "summary": "через {{taxiways}}, {{distance}}"
     },
-    "frequencies": "Частоты"
+    "frequencies": "Частоты",
+    "atcSurface": "SFC",
+    "atcUnlimited": "UNL",
+    "atcSectorFreqs_one": "{{count}} частота",
+    "atcSectorFreqs_other": "{{count}} частот",
+    "atcRole": {
+      "del": "DEL",
+      "gnd": "GND",
+      "twr": "TWR",
+      "app": "APP",
+      "ctr": "CTR"
+    }
   },
   "navigation": {
     "heading": "КУРС",

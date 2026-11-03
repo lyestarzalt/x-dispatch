@@ -1188,7 +1188,18 @@
       "exportSuccess": "Rota exportada para Follow the Greens",
       "summary": "via {{taxiways}}, {{distance}}"
     },
-    "frequencies": "Frequências"
+    "frequencies": "Frequências",
+    "atcSurface": "SFC",
+    "atcUnlimited": "UNL",
+    "atcSectorFreqs_one": "{{count}} frequência",
+    "atcSectorFreqs_other": "{{count}} frequências",
+    "atcRole": {
+      "del": "DEL",
+      "gnd": "GND",
+      "twr": "TWR",
+      "app": "APP",
+      "ctr": "CTR"
+    }
   },
   "navigation": {
     "heading": "PROA",

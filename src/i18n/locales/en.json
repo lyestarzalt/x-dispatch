@@ -1188,7 +1188,18 @@
       "exportSuccess": "Taxi route saved",
       "summary": "via {{taxiways}}, {{distance}}"
     },
-    "frequencies": "Frequencies"
+    "frequencies": "Frequencies",
+    "atcSurface": "SFC",
+    "atcUnlimited": "UNL",
+    "atcSectorFreqs_one": "{{count}} frequency",
+    "atcSectorFreqs_other": "{{count}} frequencies",
+    "atcRole": {
+      "del": "DEL",
+      "gnd": "GND",
+      "twr": "TWR",
+      "app": "APP",
+      "ctr": "CTR"
+    }
   },
   "navigation": {
     "heading": "HEADING",

@@ -1188,7 +1188,18 @@
       "exportSuccess": "Rollroute gespeichert",
       "summary": "über {{taxiways}}, {{distance}}"
     },
-    "frequencies": "Frequenzen"
+    "frequencies": "Frequenzen",
+    "atcSurface": "GND",
+    "atcUnlimited": "UNL",
+    "atcSectorFreqs_one": "{{count}} Frequenz",
+    "atcSectorFreqs_other": "{{count}} Frequenzen",
+    "atcRole": {
+      "del": "DEL",
+      "gnd": "GND",
+      "twr": "TWR",
+      "app": "APP",
+      "ctr": "CTR"
+    }
   },
   "navigation": {
     "heading": "KURS",

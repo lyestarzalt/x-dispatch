@@ -55,6 +55,7 @@ vi.mock('@/stores/mapStore', () => ({
 
 vi.mock('@/queries', () => ({
   useNavDataQuery: () => ({ data: undefined }),
+  useAirportATC: () => ({ data: undefined }),
 }));
 
 vi.mock('@/queries/useGatewayQuery', () => ({

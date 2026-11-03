@@ -1188,7 +1188,18 @@
       "exportSuccess": "滑行路线已保存",
       "summary": "经 {{taxiways}}，{{distance}}"
     },
-    "frequencies": "频率"
+    "frequencies": "频率",
+    "atcSurface": "SFC",
+    "atcUnlimited": "UNL",
+    "atcSectorFreqs_one": "{{count}} 个频率",
+    "atcSectorFreqs_other": "{{count}} 个频率",
+    "atcRole": {
+      "del": "DEL",
+      "gnd": "GND",
+      "twr": "TWR",
+      "app": "APP",
+      "ctr": "CTR"
+    }
   },
   "navigation": {
     "heading": "航向",
