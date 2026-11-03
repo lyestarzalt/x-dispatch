@@ -3,7 +3,7 @@ import { resolve } from 'path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { Navaid } from '@/types/navigation';
 import type { ParseResult } from '../types';
-import { parseNavaids } from './navaidParser';
+import { isIlsDme, parseNavaids } from './navaidParser';
 
 // ---------------------------------------------------------------------------
 // Fixture setup
@@ -160,5 +160,37 @@ describe('Parse errors', () => {
   it('has zero parse errors', () => {
     // Rows with codes the parser does not handle are passed over, not skipped.
     expect(result.errors).toHaveLength(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Paired DME rows
+// ---------------------------------------------------------------------------
+
+describe('paired DME rows (row code 12)', () => {
+  // Row 12 is the DME component of a VOR/VORTAC/ILS — charts never draw it as
+  // its own symbol, so it is not stored. Row 13 (standalone DME / NDB-DME) is.
+  const content = [
+    'I',
+    '1200 Version - data cycle 2610.',
+    '',
+    ' 3  62.951033333 -155.611380556     1000    11350   130     14.000  MCG ENRT PA MC GRATH VORTAC',
+    '12  62.951033333 -155.611380556     1000    11350   130      0.000  MCG ENRT PA MC GRATH VORTAC DME',
+    '13  61.100000000 -150.000000000      100    11000    40      0.000  ZZD ENRT PA SOMEWHERE DME',
+    '13  62.946362785 -155.607390404      300    10950    18      0.000  IMCG PAMC PA MCGRATH DME-ILS',
+    '99',
+  ].join('\n');
+
+  it('drops the paired DME component, keeps the standalone DME', () => {
+    const { data } = parseNavaids(content);
+    const dmes = data.filter((n) => n.type === 'DME');
+    expect(dmes.map((n) => n.id)).toEqual(['ZZD', 'IMCG']);
+    expect(data.find((n) => n.type === 'VORTAC')?.id).toBe('MCG');
+  });
+
+  it('flags an ILS DME so the map does not draw it as a navaid', () => {
+    const { data } = parseNavaids(content);
+    expect(isIlsDme(data.find((n) => n.id === 'IMCG')!)).toBe(true);
+    expect(isIlsDme(data.find((n) => n.id === 'ZZD')!)).toBe(false);
   });
 });

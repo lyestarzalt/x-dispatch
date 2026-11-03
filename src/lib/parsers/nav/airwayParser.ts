@@ -20,8 +20,8 @@ const VALID_FIX_TYPE_NUMBERS = [
   FixTypeNumber.MM,
   FixTypeNumber.IM,
   FixTypeNumber.WAYPOINT,
+  FixTypeNumber.DME_COMPONENT,
   FixTypeNumber.DME_STANDALONE,
-  FixTypeNumber.DME_NDB,
 ];
 
 const AirwayLineSchema = z.object({

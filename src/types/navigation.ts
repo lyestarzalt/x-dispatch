@@ -36,8 +36,8 @@ export enum FixTypeNumber {
   MM = 8,
   IM = 9,
   WAYPOINT = 11, // Enroute fix/waypoint
-  DME_STANDALONE = 12,
-  DME_NDB = 13,
+  DME_COMPONENT = 12, // DME component of a VOR/VORTAC/ILS — not parsed as its own navaid
+  DME_STANDALONE = 13,
 }
 
 /**
@@ -62,8 +62,8 @@ export enum NavaidRowCode {
   OM = 7, // Outer marker
   MM = 8, // Middle marker
   IM = 9, // Inner marker
-  DME_STANDALONE = 12,
-  DME_NDB = 13, // Co-located DME/NDB
+  DME_COMPONENT = 12, // DME component of a VOR/VORTAC/ILS — not parsed as its own navaid
+  DME_STANDALONE = 13, // Standalone DME, or the DME of an NDB-DME
   FPAP = 14, // Final approach path alignment point
   GLS = 15, // GBAS landing system
   LTP_FTP = 16, // Landing threshold point / Fictitious threshold point

@@ -222,24 +222,31 @@ export class NavaidLayerRenderer extends NavLayerRenderer<Navaid> {
   protected createGeoJSON(navaids: Navaid[]): GeoJSON.FeatureCollection {
     return {
       type: 'FeatureCollection',
-      features: navaids.map((navaid) => ({
-        type: 'Feature' as const,
-        geometry: {
-          type: 'Point' as const,
-          coordinates: [navaid.longitude, navaid.latitude],
-        },
-        properties: {
-          id: navaid.id,
-          name: navaid.name,
-          type: navaid.type,
-          frequency: navaid.frequency,
-          freqDisplay: formatFrequency(navaid),
-          elevation: navaid.elevation,
-          magneticVariation: navaid.magneticVariation,
-          symbolType: `navaid-${getSymbolType(navaid)}`,
-          color: getNavaidColor(navaid),
-        },
-      })),
+      features: navaids.map((navaid) => {
+        const symbolType = getSymbolType(navaid);
+        // A VOR compass rose is drawn against magnetic north: rotate it by
+        // the station's slaved variation (east positive = clockwise).
+        const hasRose = symbolType === 'vor' || symbolType === 'vortac' || symbolType === 'vor-dme';
+        return {
+          type: 'Feature' as const,
+          geometry: {
+            type: 'Point' as const,
+            coordinates: [navaid.longitude, navaid.latitude],
+          },
+          properties: {
+            id: navaid.id,
+            name: navaid.name,
+            type: navaid.type,
+            frequency: navaid.frequency,
+            freqDisplay: formatFrequency(navaid),
+            elevation: navaid.elevation,
+            magneticVariation: navaid.magneticVariation,
+            roseRotation: hasRose ? (navaid.magneticVariation ?? 0) : 0,
+            symbolType: `navaid-${symbolType}`,
+            color: getNavaidColor(navaid),
+          },
+        };
+      }),
     };
   }
 
@@ -296,6 +303,8 @@ export class NavaidLayerRenderer extends NavLayerRenderer<Navaid> {
         layout: {
           'icon-image': ['get', 'symbolType'],
           'icon-size': ['interpolate', ['linear'], ['zoom'], 5, 0.4, 8, 0.6, 12, 0.8, 16, 1.0],
+          'icon-rotate': ['get', 'roseRotation'],
+          'icon-rotation-alignment': 'map',
           'icon-allow-overlap': true,
         },
       });
