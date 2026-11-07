@@ -121,9 +121,12 @@ export function writeSceneryPacksIni(
 ): Result<void, SceneryError> {
   const lines: string[] = [];
 
-  // Header
+  // Header, exactly as X-Plane writes it. X-Plane 12.4 treats a file without
+  // the SCENERY line as unreadable and rebuilds it from the folder scan, which
+  // turns every pack back on.
   lines.push('I');
   lines.push('1000 Version');
+  lines.push('SCENERY');
   lines.push('');
 
   for (const entry of entries) {

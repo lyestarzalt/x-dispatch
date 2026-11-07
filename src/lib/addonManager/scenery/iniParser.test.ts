@@ -65,6 +65,13 @@ describe('scenery_packs.ini round trip', () => {
     expect(written).toContain('SCENERY_PACK_DISABLED /mnt/drive/Charlie/');
   });
 
+  it("writes X-Plane's own header, SCENERY line included", () => {
+    // X-Plane 12.4.3 rebuilds a file whose header lacks the SCENERY line and
+    // re-enables every pack while doing so.
+    expect(writeSceneryPacksIni(iniPath, []).ok).toBe(true);
+    expect(fs.readFileSync(iniPath, 'utf-8')).toBe('I\n1000 Version\nSCENERY\n\n');
+  });
+
   it('reads Windows line endings', () => {
     fs.writeFileSync(iniPath, INI.replace(/\n/g, '\r\n'));
     const parsed = parseSceneryPacksIni(iniPath, customScenery);

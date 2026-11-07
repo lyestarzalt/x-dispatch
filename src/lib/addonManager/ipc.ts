@@ -108,12 +108,14 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
 
     const manager = new SceneryManager(xplanePath);
 
-    const analyzeResult = await manager.analyze();
-    if (!analyzeResult.ok) {
-      return analyzeResult;
-    }
+    return manager.locked(async () => {
+      const analyzeResult = await manager.analyze();
+      if (!analyzeResult.ok) {
+        return analyzeResult;
+      }
 
-    return manager.save(analyzeResult.value, false); // Explicit sort requested by user
+      return manager.save(analyzeResult.value, false); // Explicit sort requested by user
+    });
   });
 
   handleAddon('addon:scenery:saveOrder', async (_event, folderNames: unknown) => {
@@ -140,26 +142,28 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
 
     const manager = new SceneryManager(xplanePath);
 
-    // Get current entries. The INI write only needs names, paths and enabled
-    // flags, so skip the folder classification scan.
-    const analyzeResult = await manager.analyze({ classify: false });
-    if (!analyzeResult.ok) {
-      return analyzeResult;
-    }
+    return manager.locked(async () => {
+      // Get current entries. The INI write only needs names, paths and enabled
+      // flags, so skip the folder classification scan.
+      const analyzeResult = await manager.analyze({ classify: false });
+      if (!analyzeResult.ok) {
+        return analyzeResult;
+      }
 
-    // Reorder entries based on provided folderNames order
-    const entryMap = new Map(analyzeResult.value.map((e) => [e.folderName, e]));
-    const reorderedEntries = (folderNames as string[])
-      .map((name) => entryMap.get(name))
-      .filter((e): e is NonNullable<typeof e> => e !== undefined);
+      // Reorder entries based on provided folderNames order
+      const entryMap = new Map(analyzeResult.value.map((e) => [e.folderName, e]));
+      const reorderedEntries = (folderNames as string[])
+        .map((name) => entryMap.get(name))
+        .filter((e): e is NonNullable<typeof e> => e !== undefined);
 
-    // Update originalIndex to match new order
-    reorderedEntries.forEach((entry, index) => {
-      entry.originalIndex = index;
+      // Update originalIndex to match new order
+      reorderedEntries.forEach((entry, index) => {
+        entry.originalIndex = index;
+      });
+
+      // Save with preserveOrder=true to keep user's custom ordering
+      return manager.save(reorderedEntries, true);
     });
-
-    // Save with preserveOrder=true to keep user's custom ordering
-    return manager.save(reorderedEntries, true);
   });
 
   handleAddon('addon:scenery:toggle', async (_event, folderName: unknown) => {

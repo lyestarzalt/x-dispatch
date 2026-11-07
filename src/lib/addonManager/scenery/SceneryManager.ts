@@ -57,6 +57,25 @@ export class SceneryManager {
   private readonly iniPath: string;
   private readonly backupDir: string;
 
+  /**
+   * One write at a time per scenery_packs.ini. Every change is a read of the
+   * file, an edit and a rewrite; two of them overlapping (toggles sent in
+   * quick succession, a toggle during an auto sort) would each rewrite from
+   * their own stale read and the earlier change would be lost.
+   */
+  private static readonly writeQueues = new Map<string, Promise<unknown>>();
+
+  /** Run `fn` after every earlier change to this INI has finished. */
+  async locked<T>(fn: () => Promise<T>): Promise<T> {
+    const previous = SceneryManager.writeQueues.get(this.iniPath) ?? Promise.resolve();
+    const run = previous.then(fn, fn);
+    SceneryManager.writeQueues.set(
+      this.iniPath,
+      run.catch(() => undefined)
+    );
+    return run;
+  }
+
   constructor(xplanePath: string) {
     this.xplanePath = xplanePath;
     this.customSceneryPath = path.join(xplanePath, 'Custom Scenery');
@@ -314,6 +333,10 @@ export class SceneryManager {
    * Toggle enabled/disabled for a single entry.
    */
   async toggle(folderName: string): Promise<Result<SceneryEntry, SceneryError>> {
+    return this.locked(() => this.toggleNow(folderName));
+  }
+
+  private async toggleNow(folderName: string): Promise<Result<SceneryEntry, SceneryError>> {
     const analyzeResult = await this.analyze({ classify: false });
     if (!analyzeResult.ok) {
       return analyzeResult;
@@ -344,6 +367,12 @@ export class SceneryManager {
    * Returns whether the path was a symlink.
    */
   async deleteScenery(folderName: string): Promise<Result<{ wasSymlink: boolean }, SceneryError>> {
+    return this.locked(() => this.deleteSceneryNow(folderName));
+  }
+
+  private async deleteSceneryNow(
+    folderName: string
+  ): Promise<Result<{ wasSymlink: boolean }, SceneryError>> {
     const analyzeResult = await this.analyze({ classify: false });
     if (!analyzeResult.ok) {
       return analyzeResult;
@@ -381,6 +410,13 @@ export class SceneryManager {
    * Move entry up or down within its priority tier.
    */
   async move(
+    folderName: string,
+    direction: 'up' | 'down'
+  ): Promise<Result<SceneryEntry[], SceneryError>> {
+    return this.locked(() => this.moveNow(folderName, direction));
+  }
+
+  private async moveNow(
     folderName: string,
     direction: 'up' | 'down'
   ): Promise<Result<SceneryEntry[], SceneryError>> {
