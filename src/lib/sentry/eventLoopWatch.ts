@@ -18,9 +18,34 @@ import { monitorEventLoopDelay } from 'node:perf_hooks';
 export const BLOCK_THRESHOLD_MS = 5_000;
 const SAMPLE_INTERVAL_MS = 2_000;
 
+/** Where the longest pause since the last sample comes from. */
+export interface PauseSampler {
+  /** The longest pause since the last `reset()`, in milliseconds. */
+  readonly maxMs: number;
+  enable(): void;
+  disable(): void;
+  reset(): void;
+}
+
+/** The sampler used in the app: Node's event loop delay histogram. */
+function delayHistogramSampler(): PauseSampler {
+  const histogram = monitorEventLoopDelay({ resolution: 50 });
+  return {
+    // The histogram is in nanoseconds.
+    get maxMs() {
+      return histogram.max / 1e6;
+    },
+    enable: () => histogram.enable(),
+    disable: () => histogram.disable(),
+    reset: () => histogram.reset(),
+  };
+}
+
 export interface EventLoopWatchOptions {
   thresholdMs?: number;
   sampleIntervalMs?: number;
+  /** Tests feed a stub; the app samples the event loop delay histogram. */
+  sampler?: PauseSampler;
   /**
    * Milliseconds since the user last touched the keyboard or mouse. A pause
    * longer than that happened while nobody was there: an unattended machine
@@ -63,8 +88,8 @@ export function watchEventLoop(
 ): EventLoopWatch {
   const thresholdMs = options.thresholdMs ?? BLOCK_THRESHOLD_MS;
   const sampleIntervalMs = options.sampleIntervalMs ?? SAMPLE_INTERVAL_MS;
-  const histogram = monitorEventLoopDelay({ resolution: 50 });
-  histogram.enable();
+  const sampler = options.sampler ?? delayHistogramSampler();
+  sampler.enable();
   let discard = false;
   let pending: ReturnType<typeof setTimeout> | null = null;
   const dropPending = () => {
@@ -72,9 +97,8 @@ export function watchEventLoop(
     pending = null;
   };
   const timer = setInterval(() => {
-    // The histogram is in nanoseconds.
-    const block = blockToReport({ maxMs: histogram.max / 1e6, thresholdMs });
-    histogram.reset();
+    const block = blockToReport({ maxMs: sampler.maxMs, thresholdMs });
+    sampler.reset();
     if (discard) {
       discard = false;
       dropPending();
@@ -94,10 +118,10 @@ export function watchEventLoop(
     stop: () => {
       clearInterval(timer);
       dropPending();
-      histogram.disable();
+      sampler.disable();
     },
     discardCurrentWindow: () => {
-      histogram.reset();
+      sampler.reset();
       discard = true;
       dropPending();
     },

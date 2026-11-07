@@ -1,10 +1,15 @@
 /**
  * The 2.9.0 startup freeze (a synchronous scan held the main process for a
  * minute on Windows) never reached Sentry: nothing threw. The watchdog samples
- * Node's event loop delay histogram and reports a block once it is over.
+ * the event loop delay and reports a block once it is over.
+ *
+ * The watcher tests feed it a stub sampler and drive the clock with fake
+ * timers. An earlier version busy-waited on real timers with a 100 ms
+ * threshold; on a loaded CI runner a stray stall inside the grace window
+ * re-armed the report until `stop()` cleared it.
  */
-import { describe, expect, it } from 'vitest';
-import { blockToReport } from './eventLoopWatch';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { type PauseSampler, blockToReport, watchEventLoop } from './eventLoopWatch';
 
 describe('blockToReport', () => {
   it('ignores ordinary jitter', () => {
@@ -23,71 +28,136 @@ describe('blockToReport', () => {
   });
 });
 
-const FAST = { thresholdMs: 100, sampleIntervalMs: 200 };
+const THRESHOLD_MS = 5_000;
+const SAMPLE_MS = 2_000;
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+/** A sampler the test fills in; like the histogram, `reset()` empties it. */
+function stubSampler(): PauseSampler & { pause: (ms: number) => void; enabled: boolean } {
+  const sampler = {
+    maxMs: 0,
+    enabled: false,
+    pause(ms: number) {
+      sampler.maxMs = Math.max(sampler.maxMs, ms);
+    },
+    enable() {
+      sampler.enabled = true;
+    },
+    disable() {
+      sampler.enabled = false;
+    },
+    reset() {
+      sampler.maxMs = 0;
+    },
+  };
+  return sampler;
+}
 
-function holdLoop(ms: number): void {
-  const until = Date.now() + ms;
-  while (Date.now() < until) {
-    /* busy */
-  }
+function start(extra: { idleMs?: () => number } = {}) {
+  const sampler = stubSampler();
+  const reports: number[] = [];
+  const watch = watchEventLoop((block) => reports.push(block.seconds), {
+    thresholdMs: THRESHOLD_MS,
+    sampleIntervalMs: SAMPLE_MS,
+    sampler,
+    ...extra,
+  });
+  return { sampler, reports, watch };
 }
 
 describe('watchEventLoop', () => {
-  it('reports a real block of the event loop once it is over', async () => {
-    const { watchEventLoop } = await import('./eventLoopWatch');
-    const reports: number[] = [];
-    const { stop } = watchEventLoop((block) => reports.push(block.seconds), FAST);
-    // The histogram measures from its first loop turn, so let one pass first.
-    await sleep(220);
-    holdLoop(300);
-    // One sample to see it, one more of grace before it is reported.
-    await sleep(700);
-    stop();
-    expect(reports).toEqual([0]);
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
-  it('keeps a pause the user was away for to itself', async () => {
-    const { watchEventLoop } = await import('./eventLoopWatch');
-    const reports: number[] = [];
-    // A pause of 0 s (rounded) against a machine idle for an hour.
-    const { stop } = watchEventLoop((block) => reports.push(block.seconds), {
-      ...FAST,
-      idleMs: () => 3_600_000,
-    });
-    await sleep(220);
-    holdLoop(300);
-    await sleep(700);
-    stop();
+  it('reports a block one sample after the sample that saw it', () => {
+    const { sampler, reports, watch } = start();
+    sampler.pause(63_400);
+    vi.advanceTimersByTime(SAMPLE_MS);
     expect(reports).toEqual([]);
+    vi.advanceTimersByTime(SAMPLE_MS);
+    expect(reports).toEqual([63]);
+    watch.stop();
+  });
+
+  it('reports a stall inside another stall’s grace window as one block', () => {
+    const { sampler, reports, watch } = start();
+    sampler.pause(8_000);
+    vi.advanceTimersByTime(SAMPLE_MS);
+    sampler.pause(12_000);
+    vi.advanceTimersByTime(SAMPLE_MS);
+    expect(reports).toEqual([]);
+    vi.advanceTimersByTime(SAMPLE_MS);
+    expect(reports).toEqual([12]);
+    watch.stop();
+  });
+
+  it('keeps a pause the user was away for to itself', () => {
+    const { sampler, reports, watch } = start({ idleMs: () => 3_600_000 });
+    sampler.pause(8_000);
+    vi.advanceTimersByTime(SAMPLE_MS * 2);
+    expect(reports).toEqual([]);
+    watch.stop();
+  });
+
+  it('still reports a pause shorter than the time the user has been away', () => {
+    const { sampler, reports, watch } = start({ idleMs: () => 3_000 });
+    sampler.pause(8_000);
+    vi.advanceTimersByTime(SAMPLE_MS * 2);
+    expect(reports).toEqual([8]);
+    watch.stop();
+  });
+
+  it('stop drops a report still in its grace window and disables the sampler', () => {
+    const { sampler, reports, watch } = start();
+    sampler.pause(8_000);
+    vi.advanceTimersByTime(SAMPLE_MS);
+    expect(sampler.enabled).toBe(true);
+    watch.stop();
+    vi.advanceTimersByTime(SAMPLE_MS * 2);
+    expect(reports).toEqual([]);
+    expect(sampler.enabled).toBe(false);
   });
 });
 
 describe('watchEventLoop after a system sleep', () => {
-  it('drops the sample window that a sleep inflated', async () => {
-    const { watchEventLoop } = await import('./eventLoopWatch');
-    const reports: number[] = [];
-    const watch = watchEventLoop((block) => reports.push(block.seconds), FAST);
-    await sleep(220);
-    holdLoop(300);
-    watch.discardCurrentWindow();
-    await sleep(700);
-    watch.stop();
-    expect(reports).toEqual([]);
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
-  it('still drops it when the discard lands after the sample, as on wake', async () => {
-    const { watchEventLoop } = await import('./eventLoopWatch');
-    const reports: number[] = [];
-    const watch = watchEventLoop((block) => reports.push(block.seconds), FAST);
-    await sleep(220);
-    holdLoop(300);
-    // The sample timer has run by now; Electron's `resume` arrives a beat later.
-    await sleep(50);
+  it('drops the sample window that a sleep inflated', () => {
+    const { sampler, reports, watch } = start();
+    sampler.pause(8_000);
     watch.discardCurrentWindow();
-    await sleep(700);
-    watch.stop();
+    vi.advanceTimersByTime(SAMPLE_MS * 2);
     expect(reports).toEqual([]);
+    watch.stop();
+  });
+
+  it('still drops it when the discard lands after the sample, as on wake', () => {
+    const { sampler, reports, watch } = start();
+    sampler.pause(8_000);
+    vi.advanceTimersByTime(SAMPLE_MS);
+    // The sample timer has run by now; Electron's `resume` arrives a beat later.
+    watch.discardCurrentWindow();
+    vi.advanceTimersByTime(SAMPLE_MS * 2);
+    expect(reports).toEqual([]);
+    watch.stop();
+  });
+
+  it('reports a block that happens after the discarded window', () => {
+    const { sampler, reports, watch } = start();
+    sampler.pause(8_000);
+    watch.discardCurrentWindow();
+    vi.advanceTimersByTime(SAMPLE_MS);
+    sampler.pause(9_000);
+    vi.advanceTimersByTime(SAMPLE_MS * 2);
+    expect(reports).toEqual([9]);
+    watch.stop();
   });
 });
