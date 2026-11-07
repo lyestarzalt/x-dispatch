@@ -57,6 +57,27 @@ const FREQ_LABELS: Record<FrequencyType, string> = {
 // Component
 // ---------------------------------------------------------------------------
 
+/**
+ * Index navaid records by the runway end they serve, keeping only those that
+ * belong to `icao`. A record without an airport (older or hand-edited nav
+ * files) is kept, so a lone ILS does not vanish over a missing field.
+ */
+export function byRunwayEnd(
+  records: Navaid[] | undefined,
+  icao: string | null
+): Map<string, Navaid> {
+  const map = new Map<string, Navaid>();
+  if (!records) return map;
+  const here = icao?.toUpperCase();
+  for (const record of records) {
+    if (!record.associatedRunway) continue;
+    const owner = record.associatedAirport?.toUpperCase();
+    if (owner && here && owner !== here) continue;
+    map.set(record.associatedRunway.toUpperCase(), record);
+  }
+  return map;
+}
+
 export default function InfoTab() {
   const { t } = useTranslation();
   const airport = useAppStore((s) => s.selectedAirportData);
@@ -119,27 +140,15 @@ export default function InfoTab() {
     );
   }, [runways]);
 
-  // Map of runway end name → ILS navaid (so we can show an ILS chip per end)
-  const ilsByEnd = useMemo(() => {
-    const map = new Map<string, Navaid>();
-    if (!ilsList) return map;
-    for (const ils of ilsList) {
-      if (ils.associatedRunway) map.set(ils.associatedRunway.toUpperCase(), ils);
-    }
-    return map;
-  }, [ilsList]);
+  // Map of runway end name → ILS navaid (so we can show an ILS chip per end).
+  // The nav query covers 50 NM, so a neighbour's ILS 06 would otherwise land
+  // on this airport's runway 06: keep the records that name this airport.
+  const ilsByEnd = useMemo(() => byRunwayEnd(ilsList, icao), [ilsList, icao]);
 
   // Map of runway end name → glide-slope navaid. GS records are separate from
   // ILS/LOC and carry `glidepathAngle`; we join by `associatedRunway` so the
   // ILS detail card can show the GS angle.
-  const gsByEnd = useMemo(() => {
-    const map = new Map<string, Navaid>();
-    if (!gsList) return map;
-    for (const gs of gsList) {
-      if (gs.associatedRunway) map.set(gs.associatedRunway.toUpperCase(), gs);
-    }
-    return map;
-  }, [gsList]);
+  const gsByEnd = useMemo(() => byRunwayEnd(gsList, icao), [gsList, icao]);
 
   // Active runway resolution: ATIS is authoritative when available, wind
   // alignment is a heuristic fallback used only when no ATIS is published.

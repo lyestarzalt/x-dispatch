@@ -1,12 +1,62 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
+import type { Runway, RunwayEnd } from '@/types/apt';
+import type { Navaid } from '@/types/navigation';
 
-const selectedAirportData = {
+const selectedAirportData: {
+  metadata: { iata_code: string };
+  runways: Runway[];
+  frequencies: never[];
+} = {
   metadata: { iata_code: 'LHR' },
   runways: [],
   frequencies: [],
-} as const;
+};
+
+/** What the nav-data query hands the tab: nothing until a test fills it. */
+const navState = { data: undefined as { ils: Navaid[]; gs: Navaid[] } | undefined };
+
+function runway(name0: string, name1: string): Runway {
+  const end = (name: string, latitude: number): RunwayEnd => ({
+    name,
+    latitude,
+    longitude: -0.45,
+    dthr_length: 0,
+    overrun_length: 0,
+    marking: 0,
+    lighting: 0,
+    tdz_lighting: false,
+    reil: 0,
+  });
+  return {
+    width: 45,
+    surface_type: 1,
+    shoulder_surface_type: 0,
+    shoulder_width: 0,
+    smoothness: 0,
+    centerline_lights: false,
+    edge_lights: false,
+    auto_distance_remaining_signs: false,
+    ends: [end(name0, 51.47), end(name1, 51.48)],
+  } as Runway;
+}
+
+/** A localizer record as earth_nav.dat carries it: the airport it serves and its runway end. */
+function ils(id: string, airport: string, runwayEnd: string): Navaid {
+  return {
+    id,
+    name: `${airport} ${runwayEnd}`,
+    type: 'ILS',
+    latitude: 51.47,
+    longitude: -0.45,
+    elevation: 80,
+    frequency: 11010,
+    range: 18,
+    associatedAirport: airport,
+    associatedRunway: runwayEnd,
+  } as Navaid;
+}
 
 const mapState = {
   atcStaffing: {} as Record<string, unknown>,
@@ -54,7 +104,7 @@ vi.mock('@/stores/mapStore', () => ({
 }));
 
 vi.mock('@/queries', () => ({
-  useNavDataQuery: () => ({ data: undefined }),
+  useNavDataQuery: () => navState,
   useAirportATC: () => ({ data: undefined }),
 }));
 
@@ -100,5 +150,22 @@ describe('InfoTab', () => {
 
     networkState.network = null;
     networkState.pilots = [];
+  });
+
+  it('marks a runway ILS only when the localizer belongs to this airport', async () => {
+    // Cape Cod style: no ILS of its own, but neighbours have an ILS on the same runway number.
+    selectedAirportData.runways = [runway('06', '24')];
+    navState.data = { ils: [ils('IFMH', 'KFMH', '06'), ils('IOWD', 'KOWD', '24')], gs: [] };
+
+    const { default: InfoTab } = await import('./InfoTab');
+
+    expect(renderToStaticMarkup(createElement(InfoTab))).not.toMatch(/ILS<\//);
+
+    navState.data = { ils: [ils('IFMH', 'KFMH', '06'), ils('ILL', 'EGLL', '24')], gs: [] };
+
+    expect(renderToStaticMarkup(createElement(InfoTab))).toMatch(/ILS<\//);
+
+    selectedAirportData.runways = [];
+    navState.data = undefined;
   });
 });
