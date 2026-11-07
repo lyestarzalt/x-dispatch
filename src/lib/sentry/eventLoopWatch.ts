@@ -18,6 +18,17 @@ import { monitorEventLoopDelay } from 'node:perf_hooks';
 export const BLOCK_THRESHOLD_MS = 5_000;
 const SAMPLE_INTERVAL_MS = 2_000;
 
+export interface EventLoopWatchOptions {
+  thresholdMs?: number;
+  sampleIntervalMs?: number;
+  /**
+   * Milliseconds since the user last touched the keyboard or mouse. A pause
+   * longer than that happened while nobody was there: an unattended machine
+   * napping, not a freeze anyone sat through.
+   */
+  idleMs?: () => number;
+}
+
 export interface BlockReport {
   seconds: number;
   message: string;
@@ -39,33 +50,56 @@ export interface EventLoopWatch {
   discardCurrentWindow: () => void;
 }
 
-/** Starts sampling; `report` receives one call per block. */
+/**
+ * Starts sampling; `report` receives one call per block.
+ *
+ * A block is reported one sample late. When the machine wakes from sleep the
+ * pending sample timer runs before Electron delivers `resume`, so the sleep
+ * would read as a block; the grace period lets the caller's discard land first.
+ */
 export function watchEventLoop(
   report: (block: BlockReport) => void,
-  thresholdMs = BLOCK_THRESHOLD_MS
+  options: EventLoopWatchOptions = {}
 ): EventLoopWatch {
+  const thresholdMs = options.thresholdMs ?? BLOCK_THRESHOLD_MS;
+  const sampleIntervalMs = options.sampleIntervalMs ?? SAMPLE_INTERVAL_MS;
   const histogram = monitorEventLoopDelay({ resolution: 50 });
   histogram.enable();
   let discard = false;
+  let pending: ReturnType<typeof setTimeout> | null = null;
+  const dropPending = () => {
+    if (pending) clearTimeout(pending);
+    pending = null;
+  };
   const timer = setInterval(() => {
     // The histogram is in nanoseconds.
     const block = blockToReport({ maxMs: histogram.max / 1e6, thresholdMs });
     histogram.reset();
     if (discard) {
       discard = false;
+      dropPending();
       return;
     }
-    if (block) report(block);
-  }, SAMPLE_INTERVAL_MS);
+    if (!block) return;
+    if (options.idleMs && options.idleMs() >= block.seconds * 1000) return;
+    dropPending();
+    pending = setTimeout(() => {
+      pending = null;
+      report(block);
+    }, sampleIntervalMs);
+    pending.unref();
+  }, sampleIntervalMs);
   timer.unref();
   return {
     stop: () => {
       clearInterval(timer);
+      dropPending();
       histogram.disable();
     },
     discardCurrentWindow: () => {
       histogram.reset();
       discard = true;
+      dropPending();
     },
   };
 }

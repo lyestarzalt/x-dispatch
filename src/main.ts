@@ -214,10 +214,12 @@ const shouldInitSentry = (() => {
   }
 })();
 
-if (shouldInitSentry) {
+// A development run throws stale-bundle errors that no user will ever see; the
+// renderer already stays off under Vite, and the main process follows suit.
+if (shouldInitSentry && app.isPackaged) {
   Sentry.init({
     dsn: 'https://0279f306474c382f68b1605fb27be652@o4508345478742016.ingest.de.sentry.io/4510878234837072',
-    environment: app.isPackaged ? 'production' : 'development',
+    environment: 'production',
     release: `x-dispatch@${app.getVersion()}`,
     // The default depth of 3 flattens a refused flight payload's aircraft,
     // weight and start objects to "[Object]" in the flight_rejection context.
@@ -248,14 +250,21 @@ if (shouldInitSentry) {
   });
   // A frozen main process throws nothing; this is how it still gets reported.
   logger.main.info(`Event loop watchdog armed (${BLOCK_THRESHOLD_MS} ms)`);
-  const loopWatch = watchEventLoop((block) => {
-    logger.main.warn(block.message);
-    Sentry.captureMessage(block.message, {
-      level: 'error',
-      tags: { 'main.block_seconds': String(block.seconds) },
-      fingerprint: ['main-process-blocked'],
-    });
-  });
+  const loopWatch = watchEventLoop(
+    (block) => {
+      logger.main.warn(block.message);
+      Sentry.captureMessage(block.message, {
+        level: 'error',
+        tags: { 'main.block_seconds': String(block.seconds) },
+        fingerprint: ['main-process-blocked'],
+      });
+    },
+    {
+      // A laptop napping unattended stalls the loop for the length of the nap;
+      // nobody was waiting on it, so it is not a block.
+      idleMs: () => (app.isReady() ? powerMonitor.getSystemIdleTime() * 1000 : 0),
+    }
+  );
   // Sleep stalls the loop exactly like a block; both edges of it are discarded.
   app.whenReady().then(() => {
     powerMonitor.on('suspend', () => loopWatch.discardCurrentWindow());
@@ -328,6 +337,9 @@ app.on('child-process-gone', (_event, details) => {
   if (details.reason === 'clean-exit') return;
   // GPU and network services go down with the app; only report them mid-session.
   if (isQuitting) return;
+  // "killed" is the OS or the user ending the helper (exit code 15), and Chromium
+  // restarts it on its own. Nothing of ours went wrong (Sentry X-DISPATCH-4D, -4F).
+  if (details.reason === 'killed') return;
 
   // Group by what actually died. The Error is built at a single call site, so
   // without an explicit fingerprint Sentry buckets every child-process-gone
@@ -1239,9 +1251,12 @@ async function downloadUpdate(manager: UpdateManager): Promise<void> {
     requestAttention();
   } catch (err) {
     const message = errorMessage(err);
-    logger.main.error(`[AutoUpdate] ${message}`, err);
     updateStatus.patch({ install: 'error', error: message });
     const reason = updateFailureReason(message);
+    // A dropped connection or a captive portal is the user's network, not a
+    // defect: logged, not filed. Anything else still goes to Sentry.
+    if (reason === 'network') logger.main.warn(`[AutoUpdate] ${message}`);
+    else logger.main.error(`[AutoUpdate] ${message}`, err);
     // Retries come every 10 minutes; one report per kind of failure per session is enough.
     if (!reportedUpdateFailures.has(`${stage}:${reason}`)) {
       reportedUpdateFailures.add(`${stage}:${reason}`);
@@ -1686,6 +1701,8 @@ function registerIpcHandlers() {
       isLoading = false;
       return { success: true, status: dataManager.getStatus() };
     } catch (error) {
+      // A corrupt cache fails here on every launch (Sentry X-DISPATCH-6Q); rebuild it instead.
+      if (recoverFromCorruption(error)) throw error;
       logger.data.error('Data loading failed', error);
       const hint = getFileErrorHintKey(error);
       sendLoadingProgress({

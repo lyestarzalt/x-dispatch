@@ -35,6 +35,24 @@ describe('updateFailureReason', () => {
     expect(updateFailureReason('Network error: Http error: http status: 404')).toBe('not_found');
     expect(updateFailureReason('Network error: dns error: no such host')).toBe('network');
     expect(updateFailureReason('Operation timed out')).toBe('network');
+  });
+
+  it('reads the network failures Windows reports in other languages', () => {
+    expect(
+      updateFailureReason(
+        'Network error: Http error: io: Der angegebene Host ist unbekannt. (os error 11001)'
+      )
+    ).toBe('network');
+    expect(
+      updateFailureReason('Network error: Http error: io: Hôte inconnu. (os error 11001)')
+    ).toBe('network');
+    expect(updateFailureReason("IO error: cannot decrypt peer's message")).toBe('network');
+    expect(updateFailureReason('IO error: Peer disconnected')).toBe('network');
+    expect(updateFailureReason('Network error: Http error: io: unexpected end of file')).toBe(
+      'network'
+    );
+    expect(updateFailureReason('Network error: Http error: http status: 404')).toBe('not_found');
+    expect(updateFailureReason('Failed to apply delta')).toBe('other');
     expect(updateFailureReason('Checksum mismatch')).toBe('other');
   });
 });
