@@ -151,6 +151,14 @@ export type BrowserError =
   | { code: 'INVALID_INPUT'; field: string };
 
 /**
+ * Windows refuses to rename a plugin's .xpl while X-Plane has it loaded, and
+ * reports that as EPERM (or EBUSY), the same code as a protected folder.
+ */
+export function isPluginInUse(reason: string | undefined): boolean {
+  return /EPERM|EBUSY/.test(reason ?? '') && /\.(xpl|xfmp)\b/i.test(reason ?? '');
+}
+
+/**
  * Get user-friendly error message from BrowserError.
  */
 export function getBrowserErrorMessage(error: BrowserError): string {
@@ -160,6 +168,9 @@ export function getBrowserErrorMessage(error: BrowserError): string {
     case 'SCAN_FAILED':
       return `Scan failed: ${error.reason}`;
     case 'TOGGLE_FAILED':
+      if (isPluginInUse(error.reason)) {
+        return `X-Plane is using this plugin. Close X-Plane and try again.`;
+      }
       if (error.reason?.includes('EPERM')) {
         return `Permission denied. Your X-Plane folder is in a protected location that requires administrator access to modify. Try running X-Dispatch as administrator.`;
       }
