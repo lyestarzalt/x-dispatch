@@ -406,7 +406,7 @@
     "unpaved": "Não pavimentado (relva/terra/cascalho)",
     "showOnly": "Mostrar apenas",
     "iataOnly": "Comercial (IATA)",
-    "customOnly": "Cenários personalizados",
+    "customOnly": "Só cenários personalizados",
     "proceduresOnly": "Só com procedimentos por instrumentos",
     "surfaceType": "Tipo de superfície",
     "runwaySurface": "Superfície de pista",
@@ -421,10 +421,29 @@
   },
   "explore": {
     "title": "Explorar",
+    "gateFilter": {
+      "label": "Portão mínimo",
+      "any": "Qualquer tamanho",
+      "aircraft": "Aeronave atual, {{span}}",
+      "option": "Código {{code}}, até {{span}}"
+    },
+    "gateSize": "Maior portão, envergadura até {{span}}",
+    "gateSizeRoute": "Maior portão do aeroporto menor, envergadura até {{span}}",
     "tabs": {
       "random": "Aleatória",
       "routes": "Rotas",
-      "weather": "Meteo"
+      "weather": "Meteo",
+      "online": "Online",
+      "logbook": "Diário"
+    },
+    "online": {
+      "networkOff": "Ative o VATSIM ou o IVAO em Camadas para ver quem está online.",
+      "none": "Nenhum controlador online agora."
+    },
+    "logbook": {
+      "none": "Ainda não há voos concluídos no diário.",
+      "flights_one": "{{count}} voo",
+      "flights_other": "{{count}} voos"
     },
     "weather": {
       "error": "Não foi possível carregar a meteorologia",
@@ -1188,7 +1207,18 @@
       "exportSuccess": "Rota exportada para Follow the Greens",
       "summary": "via {{taxiways}}, {{distance}}"
     },
-    "frequencies": "Frequências"
+    "frequencies": "Frequências",
+    "atcSurface": "SFC",
+    "atcUnlimited": "UNL",
+    "atcSectorFreqs_one": "{{count}} frequência",
+    "atcSectorFreqs_other": "{{count}} frequências",
+    "atcRole": {
+      "del": "DEL",
+      "gnd": "GND",
+      "twr": "TWR",
+      "app": "APP",
+      "ctr": "CTR"
+    }
   },
   "navigation": {
     "heading": "PROA",
@@ -1717,6 +1747,16 @@
       }
     },
     "browser": {
+      "errors": {
+        "NOT_FOUND": "Não encontrado: {{path}}",
+        "SCAN_FAILED": "Falha na verificação: {{reason}}",
+        "TOGGLE_FAILED": "Não foi possível alternar: {{reason}}",
+        "DELETE_FAILED": "Não foi possível excluir: {{reason}}",
+        "PLUGIN_IN_USE": "O X-Plane está usando este plugin. Feche o X-Plane e tente novamente.",
+        "PERMISSION_DENIED": "Permissão negada. A pasta do X-Plane está em um local protegido. Execute o X-Dispatch como administrador.",
+        "PATH_TRAVERSAL": "Caminho inseguro recusado: {{path}}",
+        "INVALID_INPUT": "Entrada inválida: {{field}}"
+      },
       "searchPlaceholder": "Pesquisar...",
       "stats": {
         "total": "{{count}} no total",
@@ -1745,6 +1785,15 @@
       "version": "v{{version}}"
     },
     "scenery": {
+      "errors": {
+        "INI_NOT_FOUND": "scenery_packs.ini não encontrado. Inicie o X-Plane uma vez para que ele crie o arquivo.",
+        "INI_PARSE_ERROR": "Não foi possível ler scenery_packs.ini na linha {{line}}: {{content}}",
+        "FOLDER_NOT_FOUND": "Pasta de cenário não encontrada: {{folderName}}",
+        "DSF_INVALID": "Arquivo DSF inválido: {{reason}}",
+        "DSF_COMPRESSED": "DSF comprimido ainda não é suportado: {{path}}",
+        "WRITE_FAILED": "Não foi possível gravar scenery_packs.ini: {{reason}}",
+        "BACKUP_FAILED": "Falha no backup: {{reason}}"
+      },
       "loading": "A analisar pastas de cenários...",
       "loadingHint": "Isto pode demorar um pouco em instalações grandes",
       "loadFailed": "Não foi possível carregar cenários",

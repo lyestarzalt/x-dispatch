@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PlanEndpoint } from '@/lib/flightplan/builder/types';
 import type { EnrichedFlightPlan } from '@/types/fms';
 import { useFlightPlanStore } from './flightPlanStore';
-import { routerOwnsRoute, usePlanBuilderStore } from './planBuilderStore';
+import { migratePlanBuilderState, routerOwnsRoute, usePlanBuilderStore } from './planBuilderStore';
 
 // electron-log's renderer transport waits for the main process, which a node test never has.
 vi.mock('@/lib/utils/loggerRenderer', () => {
@@ -319,5 +319,27 @@ describe('planBuilderStore — start at departure', () => {
       panel: 'half',
       explore: null,
     });
+  });
+});
+
+describe('planBuilderStore — persisted filter', () => {
+  it('gives a v2 draft the default stand filter', () => {
+    const migrated = migratePlanBuilderState(
+      { routeText: 'SUGOL', cruiseAltitudeFt: 35000 },
+      2
+    ) as Record<string, unknown>;
+    expect(migrated.exploreMinStand).toBe('any');
+    expect(migrated.routeText).toBe('SUGOL');
+  });
+
+  it('cascades from v1 through the later steps', () => {
+    const migrated = migratePlanBuilderState({}, 1) as Record<string, unknown>;
+    expect(migrated.exploreMinStand).toBe('any');
+  });
+
+  it('holds the chosen filter', () => {
+    usePlanBuilderStore.getState().setExploreMinStand('D');
+    expect(usePlanBuilderStore.getState().exploreMinStand).toBe('D');
+    usePlanBuilderStore.getState().setExploreMinStand('any');
   });
 });

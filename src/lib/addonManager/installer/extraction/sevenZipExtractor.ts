@@ -47,11 +47,21 @@ export function sevenZipErrorCode(
 }
 
 /**
+ * A packaged app resolves the bundled binary to a path inside app.asar, which
+ * is a file: spawning from it fails with ENOENT on Windows and ENOTDIR on
+ * Linux (Sentry X-DISPATCH-7F). The build unpacks 7zip-bin next to the
+ * archive, so the executable lives under app.asar.unpacked.
+ */
+export function unpackedBinaryPath(binaryPath: string): string {
+  return binaryPath.replace(/app\.asar(?=[\\/])/, 'app.asar.unpacked');
+}
+
+/**
  * Get path to bundled 7zip binary
  */
 export async function get7zipPath(): Promise<string> {
   const sevenZipBin = await import('7zip-bin');
-  return sevenZipBin.path7za;
+  return unpackedBinaryPath(sevenZipBin.path7za);
 }
 
 /**

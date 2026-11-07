@@ -38,7 +38,6 @@ function determineNavaidType(rowCode: number, name: string): NavaidType | null {
     case NavaidRowCode.IM:
       return 'IM';
     case NavaidRowCode.DME_STANDALONE:
-    case NavaidRowCode.DME_NDB:
       return name.includes('TACAN') ? 'TACAN' : 'DME';
     case NavaidRowCode.FPAP:
       return 'FPAP';
@@ -57,6 +56,12 @@ function extractBearing(encoded: number): number {
 
 function extractMagneticCourse(encoded: number): number {
   return Math.floor(encoded / 360);
+}
+
+/** Degrees from true to magnetic, east positive, in (-180, 180]. */
+function variationBetween(trueDeg: number, magneticDeg: number): number {
+  const diff = (((trueDeg - magneticDeg) % 360) + 540) % 360;
+  return Math.round((diff - 180) * 1000) / 1000;
 }
 
 function extractGlidepathAngle(encoded: number): number {
@@ -98,7 +103,6 @@ function parseNavaidLine(parts: string[], rowCode: number): Omit<Navaid, 'type'>
   switch (rowCode) {
     case 2:
     case 3:
-    case 12:
     case 13:
       magneticVariation = parseFloat(parts[6]);
       id = parts[7];
@@ -110,9 +114,13 @@ function parseNavaidLine(parts: string[], rowCode: number): Omit<Navaid, 'type'>
     case 4:
     case 5: {
       if (!hasMinLength(parts, 12)) return null;
+      // XP1150+ packs the published magnetic front course and the true bearing into one
+      // number: course * 360 + true (KBOS 04R: 12619.675 = 035°M, 019.7°T). The variation is
+      // the difference, not the course itself (GitHub #336).
       const encodedLocBearing = parseFloat(parts[6]);
       bearing = extractBearing(encodedLocBearing);
-      magneticVariation = extractMagneticCourse(encodedLocBearing);
+      course = extractMagneticCourse(encodedLocBearing);
+      magneticVariation = variationBetween(bearing, course);
       id = parts[7];
       associatedAirport = parts[8];
       region = parts[9];
@@ -218,6 +226,15 @@ function parseNavaidLine(parts: string[], rowCode: number): Omit<Navaid, 'type'>
   };
 }
 
+/**
+ * The DME half of an ILS. Stored (its row-13 form stays queryable for ILS
+ * details) but never drawn as a standalone navaid symbol — it sits on the
+ * LOC antenna.
+ */
+export function isIlsDme(navaid: Pick<Navaid, 'name'>): boolean {
+  return /\bDME-ILS$/.test(navaid.name.trim());
+}
+
 export function parseNavaids(content: string): ParseResult<Navaid[]> {
   const startTime = Date.now();
   const lines = content.split('\n');
@@ -239,7 +256,10 @@ export function parseNavaids(content: string): ParseResult<Navaid[]> {
     }
 
     const rowCode = parseInt(parts[0], 10);
-    if (![2, 3, 4, 5, 6, 7, 8, 9, 12, 13, 14, 15, 16].includes(rowCode)) continue;
+    // Row 12 (the DME component of a VOR/VORTAC/ILS) is deliberately absent:
+    // charts never draw it as its own symbol and its data duplicates the
+    // parent record at the same coordinates. Row 13 standalone DMEs stay.
+    if (![2, 3, 4, 5, 6, 7, 8, 9, 13, 14, 15, 16].includes(rowCode)) continue;
 
     const parsed = parseNavaidLine(parts, rowCode);
     if (!parsed) {

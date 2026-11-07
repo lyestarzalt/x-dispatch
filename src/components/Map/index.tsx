@@ -96,6 +96,7 @@ import {
   removePlaneLayer,
   updatePlaneLayer,
 } from './layers';
+import { applyNavLayerTheme } from './layers/navigation/navTheme';
 import './map-animations.css';
 import { makePreserveCustomStyle } from './utils/globeUtils';
 import CompassWidget from './widgets/CompassWidget';
@@ -365,6 +366,7 @@ export default function Map({ airports }: MapProps) {
     mapRef,
     navData,
     navVisibility,
+    theme: basemapTheme,
   });
 
   // Online network traffic, and the selected pilot's route
@@ -626,6 +628,7 @@ export default function Map({ airports }: MapProps) {
     map.once('style.load', () => {
       applyAirportTheme(map, getBasemapTheme(mapStyleUrl));
       applyNetworkAtcTheme(map, getBasemapTheme(mapStyleUrl));
+      applyNavLayerTheme(map, getBasemapTheme(mapStyleUrl));
     });
   }, [mapStyleUrl, mapRef]);
 

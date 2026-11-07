@@ -406,7 +406,7 @@
     "unpaved": "Non revêtu (herbe/terre/gravier)",
     "showOnly": "Afficher uniquement",
     "iataOnly": "Commercial (IATA)",
-    "customOnly": "Scènes personnalisées",
+    "customOnly": "Scènes personnalisées uniquement",
     "proceduresOnly": "Procédures aux instruments uniquement",
     "surfaceType": "Type de surface",
     "runwaySurface": "Surface de piste",
@@ -421,10 +421,29 @@
   },
   "explore": {
     "title": "Explorer",
+    "gateFilter": {
+      "label": "Poste minimum",
+      "any": "Toutes tailles",
+      "aircraft": "Avion actuel, {{span}}",
+      "option": "Code {{code}}, jusqu'à {{span}}"
+    },
+    "gateSize": "Plus grand poste, envergure jusqu'à {{span}}",
+    "gateSizeRoute": "Plus grand poste du plus petit aéroport, envergure jusqu'à {{span}}",
     "tabs": {
       "random": "Aléatoire",
       "routes": "Routes",
-      "weather": "Météo"
+      "weather": "Météo",
+      "online": "En ligne",
+      "logbook": "Carnet"
+    },
+    "online": {
+      "networkOff": "Activez VATSIM ou IVAO dans Calques pour voir qui est en ligne.",
+      "none": "Aucun contrôleur en ligne pour le moment."
+    },
+    "logbook": {
+      "none": "Aucun vol terminé dans le carnet pour l'instant.",
+      "flights_one": "{{count}} vol",
+      "flights_other": "{{count}} vols"
     },
     "weather": {
       "error": "Impossible de charger la météo",
@@ -1188,7 +1207,18 @@
       "exportSuccess": "Route de roulage enregistrée",
       "summary": "par {{taxiways}}, {{distance}}"
     },
-    "frequencies": "Fréquences"
+    "frequencies": "Fréquences",
+    "atcSurface": "SFC",
+    "atcUnlimited": "UNL",
+    "atcSectorFreqs_one": "{{count}} fréquence",
+    "atcSectorFreqs_other": "{{count}} fréquences",
+    "atcRole": {
+      "del": "DEL",
+      "gnd": "GND",
+      "twr": "TWR",
+      "app": "APP",
+      "ctr": "CTR"
+    }
   },
   "navigation": {
     "heading": "CAP",
@@ -1717,6 +1747,16 @@
       }
     },
     "browser": {
+      "errors": {
+        "NOT_FOUND": "Introuvable : {{path}}",
+        "SCAN_FAILED": "Analyse échouée : {{reason}}",
+        "TOGGLE_FAILED": "Impossible de basculer : {{reason}}",
+        "DELETE_FAILED": "Impossible de supprimer : {{reason}}",
+        "PLUGIN_IN_USE": "X-Plane utilise ce plugin. Fermez X-Plane et réessayez.",
+        "PERMISSION_DENIED": "Accès refusé. Le dossier X-Plane est dans un emplacement protégé. Lancez X-Dispatch en tant qu'administrateur.",
+        "PATH_TRAVERSAL": "Chemin non sûr refusé : {{path}}",
+        "INVALID_INPUT": "Saisie invalide : {{field}}"
+      },
       "searchPlaceholder": "Rechercher...",
       "stats": {
         "total": "{{count}} au total",
@@ -1745,6 +1785,15 @@
       "version": "v{{version}}"
     },
     "scenery": {
+      "errors": {
+        "INI_NOT_FOUND": "scenery_packs.ini introuvable. Lancez X-Plane une fois pour qu'il crée le fichier.",
+        "INI_PARSE_ERROR": "Lecture de scenery_packs.ini impossible à la ligne {{line}} : {{content}}",
+        "FOLDER_NOT_FOUND": "Dossier de scène introuvable : {{folderName}}",
+        "DSF_INVALID": "Fichier DSF invalide : {{reason}}",
+        "DSF_COMPRESSED": "Les DSF compressés ne sont pas encore pris en charge : {{path}}",
+        "WRITE_FAILED": "Écriture de scenery_packs.ini impossible : {{reason}}",
+        "BACKUP_FAILED": "Sauvegarde échouée : {{reason}}"
+      },
       "loading": "Analyse des dossiers de scènes...",
       "loadingHint": "Cela peut prendre un moment pour les grandes installations",
       "loadFailed": "Échec du chargement des scènes",

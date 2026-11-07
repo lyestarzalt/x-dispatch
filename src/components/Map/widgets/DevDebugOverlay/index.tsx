@@ -55,7 +55,13 @@ export default function DevDebugOverlay({ mapRef }: { mapRef: MapRef }) {
       if (!map) return;
 
       const style = map.getStyle();
-      const proj = map.getProjection?.();
+      // The style is gone for a moment during a basemap switch (Sentry X-DISPATCH-51).
+      let proj: ReturnType<typeof map.getProjection> | undefined;
+      try {
+        proj = map.getProjection?.();
+      } catch {
+        proj = undefined;
+      }
 
       let appVersion = '—';
       try {

@@ -23,6 +23,7 @@ import type { Airport } from '@/lib/xplaneServices/dataService';
 import { WEATHER_CATEGORIES, trackEvent, useWeatherScanQuery } from '@/queries';
 import { getStaffedCallsignPrefixes, useVatsimQuery } from '@/queries/useVatsimQuery';
 import type { RangeRingCategory } from '@/types/layers';
+import { GateSizeTag } from './GateSizeTag';
 import { WEATHER_CATEGORY_ICON } from './weatherIcons';
 
 type LengthMode = 'time' | 'distance';
@@ -38,6 +39,8 @@ const LENGTH_RANGE: Record<LengthMode, { min: number; max: number; step: number;
 
 interface RandomRouteFinderProps {
   airports: Airport[];
+  /** Destinations to draw from, when a filter narrows the full list. */
+  candidates?: Airport[];
   selectedRoute: { from: string; to: string } | null;
   onSelectRoute: (route: { from: string; to: string } | null) => void;
   /** The plan's departure and class, edited in the plan builder itself. */
@@ -49,6 +52,7 @@ interface RandomRouteFinderProps {
 
 export function RandomRouteFinder({
   airports,
+  candidates,
   selectedRoute,
   onSelectRoute,
   originIcao,
@@ -104,7 +108,7 @@ export function RandomRouteFinder({
       weatherByIcao.set(observation.icao, observation.categories);
     }
     const routes = findRandomRoutes(
-      airports,
+      candidates ?? airports,
       origin,
       {
         minNm: bandNm.min,
@@ -266,6 +270,12 @@ export function RandomRouteFinder({
                     {units.distance(route.distanceNm as NauticalMiles)}
                     <span className="bg-border h-3 w-px shrink-0" aria-hidden />
                     {formatDuration(route.minutes * 60)}
+                    {route.airport.maxStandCode && (
+                      <>
+                        <span className="bg-border h-3 w-px shrink-0" aria-hidden />
+                        <GateSizeTag code={route.airport.maxStandCode} />
+                      </>
+                    )}
                     {route.weather.slice(0, 3).map((w) => {
                       const Icon = WEATHER_CATEGORY_ICON[w];
                       return (

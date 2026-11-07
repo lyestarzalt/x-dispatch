@@ -267,6 +267,7 @@ declare global {
       getDataSources: () => Promise<NavDataSources | null>;
       getATCByFacility: (facilityId: string) => Promise<ATCController | null>;
       getAllATCControllers: () => Promise<ATCController[]>;
+      getATCForAirport: (icao: string, lat: number, lon: number) => Promise<ATCController[]>;
       getHoldingPatterns: (fixId: string) => Promise<HoldingPattern[]>;
       getAirportMetadata: (icao: string) => Promise<AirportMetadata | null>;
       getTransitionAltitude: (icao: string) => Promise<number | null>;

@@ -5,6 +5,7 @@
  */
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { StandCode } from '@/lib/airports/standIdentity';
 import {
   adjustCruiseAltitudeFt,
   cruiseBand,
@@ -42,7 +43,8 @@ import { addStationData, useFlightPlanStore } from './flightPlanStore';
 export type PlanBuilderStatus = 'idle' | 'resolving' | 'ready' | 'error';
 export type ProcedureKind = 'sid' | 'star' | 'approach';
 /** Tabs of the Explore flyout beside the planner. */
-export type ExploreTab = 'random' | 'routes' | 'weather';
+export type ExploreTab = 'random' | 'routes' | 'weather' | 'online' | 'logbook';
+export type ExploreStandFilter = 'any' | 'aircraft' | StandCode;
 
 /** A token moved out of the route text into a picker, so the planner can say so. */
 export interface RouteNote {
@@ -121,6 +123,9 @@ interface PlanBuilderState extends PlanDraft {
   /** Planning class chosen by hand; null follows the aircraft loaded in X-Plane. */
   aircraftClass: RangeRingCategory | null;
   setAircraftClass: (cls: RangeRingCategory | null) => void;
+  /** Explore lists show only airports whose widest stand takes this: a code letter, the connected aircraft, or any. */
+  exploreMinStand: ExploreStandFilter;
+  setExploreMinStand: (filter: ExploreStandFilter) => void;
   /** Enroute resolution with the chosen procedures stitched in, or null before the first resolve. */
   composed: () => { plan: FMSFlightPlan; enriched: EnrichedFlightPlan } | null;
   /** Pushes the composed plan into the flight plan store so the map draws it. */
@@ -163,6 +168,18 @@ function clearDrawnPlan(departure: PlanEndpoint | null, arrival: PlanEndpoint | 
   const map = useFlightPlanStore.getState();
   if (!departure || !arrival || !map.fmsData || map.simbriefData) return;
   if (map.fileName === `${departure.icao}-${arrival.icao}`) map.clearFlightPlan();
+}
+
+/** Persist migrations, one step per version, cascading; exported for the tests. */
+export function migratePlanBuilderState(persisted: unknown, version: number): unknown {
+  const state = persisted as Record<string, unknown>;
+  if (version < 2) {
+    // No field rewrite needed; kept as an explicit step so the cascade stays complete.
+  }
+  if (version < 3) {
+    state.exploreMinStand = 'any';
+  }
+  return state;
 }
 
 export const usePlanBuilderStore = create<PlanBuilderState>()(
@@ -257,7 +274,9 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
       requestTrack: (track) => set({ trackRequest: { track } }),
       clearTrackRequest: () => set({ trackRequest: null }),
       aircraftClass: null,
+      exploreMinStand: 'any',
       // The cruise cap differs per class, so the suggestion is redone.
+      setExploreMinStand: (filter) => set({ exploreMinStand: filter }),
       setAircraftClass: (cls) => set({ aircraftClass: cls, cruiseAltitudeFt: null }),
       setRunway: (end, runway, runwayEnd) =>
         set((state) => {
@@ -505,14 +524,9 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
       name: 'xplane-viz-plan-builder',
       // v2: RunwayEnd gained the optional `elevationFt` (nothing to convert - older saved runway
       // ends simply lack it until the runway is picked again).
-      version: 2,
-      migrate: (persisted, version) => {
-        const state = persisted as Record<string, unknown>;
-        if (version < 2) {
-          // No field rewrite needed; kept as an explicit step so the cascade stays complete.
-        }
-        return state;
-      },
+      // v3: `exploreMinStand`, the Explore lists' stand size filter.
+      version: 3,
+      migrate: migratePlanBuilderState,
       partialize: (state) => ({
         departure: state.departure,
         arrival: state.arrival,
@@ -520,6 +534,7 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
         aircraftClass: state.aircraftClass,
         routeText: state.routeText,
         cruiseAltitudeFt: state.cruiseAltitudeFt,
+        exploreMinStand: state.exploreMinStand,
       }),
     }
   )

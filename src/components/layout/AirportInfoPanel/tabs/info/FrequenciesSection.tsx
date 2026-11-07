@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import type { ATCController } from '@/types/navigation';
+import { AtcFacilityRow } from './AtcFacilityRow';
 import { FrequencyRow, type MergedFreqRow } from './FrequencyRow';
 
 export const FREQ_VISIBLE_DEFAULT = 5;
@@ -13,6 +15,7 @@ export function FrequenciesSection({
   onToggle,
   vatsimEnabled,
   onlineCount,
+  facilities = [],
 }: {
   visible: MergedFreqRow[];
   totalCount: number;
@@ -20,6 +23,8 @@ export function FrequenciesSection({
   onToggle: () => void;
   vatsimEnabled: boolean;
   onlineCount: number;
+  /** Area-control facilities over the airport, listed after its own rows. */
+  facilities?: ATCController[];
 }) {
   const { t } = useTranslation();
   const hidden = totalCount - visible.length;
@@ -57,6 +62,17 @@ export function FrequenciesSection({
             onToggle={() => toggleExpand(row.id)}
           />
         ))}
+        {facilities.map((c) => {
+          const id = `atc-${c.facilityId}-${c.role}-${c.name}`;
+          return (
+            <AtcFacilityRow
+              key={id}
+              controller={c}
+              expanded={expandedIds.has(id)}
+              onToggle={() => toggleExpand(id)}
+            />
+          );
+        })}
       </ul>
       {collapsible && (
         <Button

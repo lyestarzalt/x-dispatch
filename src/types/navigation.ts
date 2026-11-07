@@ -36,8 +36,8 @@ export enum FixTypeNumber {
   MM = 8,
   IM = 9,
   WAYPOINT = 11, // Enroute fix/waypoint
-  DME_STANDALONE = 12,
-  DME_NDB = 13,
+  DME_COMPONENT = 12, // DME component of a VOR/VORTAC/ILS — not parsed as its own navaid
+  DME_STANDALONE = 13,
 }
 
 /**
@@ -62,8 +62,8 @@ export enum NavaidRowCode {
   OM = 7, // Outer marker
   MM = 8, // Middle marker
   IM = 9, // Inner marker
-  DME_STANDALONE = 12,
-  DME_NDB = 13, // Co-located DME/NDB
+  DME_COMPONENT = 12, // DME component of a VOR/VORTAC/ILS — not parsed as its own navaid
+  DME_STANDALONE = 13, // Standalone DME, or the DME of an NDB-DME
   FPAP = 14, // Final approach path alignment point
   GLS = 15, // GBAS landing system
   LTP_FTP = 16, // Landing threshold point / Fictitious threshold point
@@ -363,6 +363,8 @@ export interface Procedure {
   transition: string | null; // Enroute transition name
   /** Approaches: the ARINC 424 route-type letter of the final approach (I = ILS, R = RNAV...). */
   approachType?: string;
+  /** Approaches: ARINC 424 route qualifier 2 of the final approach ('P' marks an RNP AR). */
+  approachQualifier2?: string;
   waypoints: ProcedureWaypoint[];
 }
 
@@ -421,7 +423,7 @@ export interface HoldingPattern {
 /**
  * ATC facility role
  */
-export type ATCRole = 'ctr' | 'app' | 'twr' | 'gnd' | 'del';
+export type ATCRole = 'ctr' | 'tracon' | 'app' | 'twr' | 'gnd' | 'del';
 
 /**
  * ATC controller/facility from atc.dat
@@ -430,12 +432,17 @@ export interface ATCController {
   name: string;
   facilityId: string;
   role: ATCRole;
-  frequencies: number[]; // In Hz * 1000
-  airspace?: {
-    minAlt: number;
-    maxAlt: number;
-    polygon: LonLatPath;
-  };
+  frequencies: number[]; // MHz (e.g. 120.45)
+  /** Airports this facility explicitly serves (the block's ICAO lines). */
+  icaos?: string[];
+  /** Sector shelves; a TRACON or centre often has several stacked polygons. */
+  airspaces: ATCAirspace[];
+}
+
+export interface ATCAirspace {
+  minAlt: number; // ft
+  maxAlt: number; // ft
+  polygon: LonLatPath;
 }
 
 // ============================================================================

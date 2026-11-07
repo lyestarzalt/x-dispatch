@@ -406,7 +406,7 @@
     "unpaved": "Unbefestigt (Gras/Erde/Schotter)",
     "showOnly": "Nur anzeigen",
     "iataOnly": "Kommerziell (IATA)",
-    "customOnly": "Eigene Szenerien",
+    "customOnly": "Nur eigene Szenerien",
     "proceduresOnly": "Nur mit Instrumentenverfahren",
     "surfaceType": "Oberflächentyp",
     "runwaySurface": "Pistenbelag",
@@ -421,10 +421,29 @@
   },
   "explore": {
     "title": "Entdecken",
+    "gateFilter": {
+      "label": "Mindestgröße",
+      "any": "Beliebig",
+      "aircraft": "Aktuelles Flugzeug, {{span}}",
+      "option": "Code {{code}}, bis {{span}}"
+    },
+    "gateSize": "Größte Parkposition, Spannweite bis {{span}}",
+    "gateSizeRoute": "Größte Parkposition am kleineren Flugplatz, Spannweite bis {{span}}",
     "tabs": {
       "random": "Zufall",
       "routes": "Routen",
-      "weather": "Wetter"
+      "weather": "Wetter",
+      "online": "Online",
+      "logbook": "Logbuch"
+    },
+    "online": {
+      "networkOff": "VATSIM oder IVAO unter Ebenen einschalten, um zu sehen, wer online ist.",
+      "none": "Gerade keine Lotsen online."
+    },
+    "logbook": {
+      "none": "Noch keine abgeschlossenen Flüge im Logbuch.",
+      "flights_one": "{{count}} Flug",
+      "flights_other": "{{count}} Flüge"
     },
     "weather": {
       "error": "Wetter konnte nicht geladen werden",
@@ -1188,7 +1207,18 @@
       "exportSuccess": "Rollroute gespeichert",
       "summary": "über {{taxiways}}, {{distance}}"
     },
-    "frequencies": "Frequenzen"
+    "frequencies": "Frequenzen",
+    "atcSurface": "GND",
+    "atcUnlimited": "UNL",
+    "atcSectorFreqs_one": "{{count}} Frequenz",
+    "atcSectorFreqs_other": "{{count}} Frequenzen",
+    "atcRole": {
+      "del": "DEL",
+      "gnd": "GND",
+      "twr": "TWR",
+      "app": "APP",
+      "ctr": "CTR"
+    }
   },
   "navigation": {
     "heading": "KURS",
@@ -1717,6 +1747,16 @@
       }
     },
     "browser": {
+      "errors": {
+        "NOT_FOUND": "Nicht gefunden: {{path}}",
+        "SCAN_FAILED": "Scan fehlgeschlagen: {{reason}}",
+        "TOGGLE_FAILED": "Umschalten fehlgeschlagen: {{reason}}",
+        "DELETE_FAILED": "Löschen fehlgeschlagen: {{reason}}",
+        "PLUGIN_IN_USE": "X-Plane verwendet dieses Plugin. X-Plane beenden und erneut versuchen.",
+        "PERMISSION_DENIED": "Zugriff verweigert. Der X-Plane-Ordner liegt an einem geschützten Ort. X-Dispatch als Administrator ausführen.",
+        "PATH_TRAVERSAL": "Unsicherer Pfad abgelehnt: {{path}}",
+        "INVALID_INPUT": "Ungültige Eingabe: {{field}}"
+      },
       "searchPlaceholder": "Suchen...",
       "stats": {
         "total": "{{count}} gesamt",
@@ -1745,6 +1785,15 @@
       "version": "v{{version}}"
     },
     "scenery": {
+      "errors": {
+        "INI_NOT_FOUND": "scenery_packs.ini nicht gefunden. X-Plane einmal starten, damit es die Datei anlegt.",
+        "INI_PARSE_ERROR": "scenery_packs.ini konnte in Zeile {{line}} nicht gelesen werden: {{content}}",
+        "FOLDER_NOT_FOUND": "Szenerie-Ordner nicht gefunden: {{folderName}}",
+        "DSF_INVALID": "Ungültige DSF-Datei: {{reason}}",
+        "DSF_COMPRESSED": "Komprimierte DSF wird noch nicht unterstützt: {{path}}",
+        "WRITE_FAILED": "scenery_packs.ini konnte nicht geschrieben werden: {{reason}}",
+        "BACKUP_FAILED": "Sicherung fehlgeschlagen: {{reason}}"
+      },
       "loading": "Szenerie-Ordner werden durchsucht...",
       "loadingHint": "Dies kann bei großen Installationen einen Moment dauern",
       "loadFailed": "Laden der Szenerie fehlgeschlagen",

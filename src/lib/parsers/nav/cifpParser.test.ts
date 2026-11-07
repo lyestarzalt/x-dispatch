@@ -274,6 +274,12 @@ APPCH:010,R,R07, ,KAVGY,K6,P,C,E  I, ,   ,IF, , , , , ,      ,    ,    ,    ,   
 APPCH:020,R,R07, ,SATKE,K6,P,C,E  F, ,   ,TF, , , , , ,      ,    ,    ,0660,0060,+,03700,     ,     , ,   ,    ,   , , , , , ,A,J,S;
 `;
 
+// KDCA RNAV (RNP) Z RWY 19: an RNP AR approach, route qualifier 2 is 'P' instead of 'J'.
+const KDCA_RNP_AR = `
+APPCH:010,R,R19-Z, ,DARIC,K6,P,C,E  I, ,   ,IF, , , , , ,      ,    ,    ,    ,    ,+,02700,     ,18000,-,180,    ,   , , , , , ,A,P,S;
+APPCH:030,R,R19-Z, ,RW19,K6,P,G,GY M, ,302,TF, , , , , ,      ,    ,    ,1870,0006, ,00062,     ,     , ,   ,-300,   , , , , , ,A,P,S;
+`;
+
 describe('approach route type', () => {
   it('keeps the final approach route-type letter, not the transition one, on every variant', () => {
     const { approaches } = parseCIFP(APPROACH_TYPES, '2G9');
@@ -282,5 +288,15 @@ describe('approach route type', () => {
     );
     expect(byName.get('L25/JST')).toBe('L');
     expect(byName.get('R07/')).toBe('R');
+  });
+
+  it('keeps route qualifier 2 of the final approach, which tells RNP AR from GPS', () => {
+    const { approaches } = parseCIFP(KDCA_RNP_AR + APPROACH_TYPES, 'KDCA');
+    const byName = new Map(
+      approaches.map((a) => [`${a.name}/${a.transition ?? ''}`, a.approachQualifier2])
+    );
+    expect(byName.get('R19-Z/')).toBe('P'); // RNP AR
+    expect(byName.get('R07/')).toBe('J'); // GNSS, a plain RNAV (GPS)
+    expect(byName.get('L25/JST')).toBe('D'); // from the final rows, not the JST transition
   });
 });

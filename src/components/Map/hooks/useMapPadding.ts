@@ -120,9 +120,11 @@ export function useMapPadding({ mapRef, rootRef, onChange }: UseMapPaddingOption
       if (map.isMoving()) {
         if (!waitingForMoveEnd) {
           waitingForMoveEnd = true;
+          // A beat later: `moveend` is dispatched from inside the frame that ends an ease, and
+          // starting the padding ease there trips MapLibre (Sentry X-DISPATCH-6T).
           map.once('moveend', () => {
             waitingForMoveEnd = false;
-            apply();
+            setTimeout(apply, 0);
           });
         }
         return;

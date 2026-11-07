@@ -8,6 +8,9 @@ export {
   type TurnDirection,
 } from './arcs';
 
+// Re-export radius-query bounds
+export { boundsAroundPoint, type GeoBounds } from './bounds';
+
 // Re-export course-intersection primitives
 export { crossTrackStatus, intersectRadials, lineCircleIntersection } from './intersections';
 

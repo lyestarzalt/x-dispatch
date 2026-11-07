@@ -406,7 +406,7 @@
     "unpaved": "未铺装 (草地/泥土/碎石)",
     "showOnly": "仅显示",
     "iataOnly": "商用航空 (IATA)",
-    "customOnly": "自定义地景",
+    "customOnly": "仅自定义地景",
     "proceduresOnly": "仅显示有仪表程序的机场",
     "surfaceType": "道面类型",
     "runwaySurface": "跑道道面",
@@ -421,10 +421,29 @@
   },
   "explore": {
     "title": "探索",
+    "gateFilter": {
+      "label": "最小停机位",
+      "any": "任意大小",
+      "aircraft": "当前飞机，{{span}}",
+      "option": "代码 {{code}}，最大 {{span}}"
+    },
+    "gateSize": "最大停机位，翼展最大 {{span}}",
+    "gateSizeRoute": "较小一端机场的最大停机位，翼展最大 {{span}}",
     "tabs": {
       "random": "随机",
       "routes": "航线",
-      "weather": "天气"
+      "weather": "天气",
+      "online": "在线",
+      "logbook": "飞行日志"
+    },
+    "online": {
+      "networkOff": "在图层中开启 VATSIM 或 IVAO 以查看在线管制员。",
+      "none": "当前没有在线管制员。"
+    },
+    "logbook": {
+      "none": "飞行日志中还没有完成的飞行。",
+      "flights_one": "{{count}} 次飞行",
+      "flights_other": "{{count}} 次飞行"
     },
     "weather": {
       "error": "无法加载天气数据",
@@ -1188,7 +1207,18 @@
       "exportSuccess": "滑行路线已保存",
       "summary": "经 {{taxiways}}，{{distance}}"
     },
-    "frequencies": "频率"
+    "frequencies": "频率",
+    "atcSurface": "SFC",
+    "atcUnlimited": "UNL",
+    "atcSectorFreqs_one": "{{count}} 个频率",
+    "atcSectorFreqs_other": "{{count}} 个频率",
+    "atcRole": {
+      "del": "DEL",
+      "gnd": "GND",
+      "twr": "TWR",
+      "app": "APP",
+      "ctr": "CTR"
+    }
   },
   "navigation": {
     "heading": "航向",
@@ -1717,6 +1747,16 @@
       }
     },
     "browser": {
+      "errors": {
+        "NOT_FOUND": "未找到：{{path}}",
+        "SCAN_FAILED": "扫描失败：{{reason}}",
+        "TOGGLE_FAILED": "无法切换：{{reason}}",
+        "DELETE_FAILED": "无法删除：{{reason}}",
+        "PLUGIN_IN_USE": "X-Plane 正在使用此插件。请关闭 X-Plane 后重试。",
+        "PERMISSION_DENIED": "权限被拒绝。X-Plane 文件夹位于受保护的位置。请以管理员身份运行 X-Dispatch。",
+        "PATH_TRAVERSAL": "已拒绝不安全的路径：{{path}}",
+        "INVALID_INPUT": "无效输入：{{field}}"
+      },
       "searchPlaceholder": "搜索...",
       "stats": {
         "total": "共 {{count}} 个",
@@ -1745,6 +1785,15 @@
       "version": "v{{version}}"
     },
     "scenery": {
+      "errors": {
+        "INI_NOT_FOUND": "未找到 scenery_packs.ini。请先启动一次 X-Plane 以生成该文件。",
+        "INI_PARSE_ERROR": "无法读取 scenery_packs.ini 第 {{line}} 行：{{content}}",
+        "FOLDER_NOT_FOUND": "未找到地景文件夹：{{folderName}}",
+        "DSF_INVALID": "无效的 DSF 文件：{{reason}}",
+        "DSF_COMPRESSED": "暂不支持压缩的 DSF：{{path}}",
+        "WRITE_FAILED": "无法写入 scenery_packs.ini：{{reason}}",
+        "BACKUP_FAILED": "备份失败：{{reason}}"
+      },
       "loading": "正在扫描地景文件夹...",
       "loadingHint": "大型安装可能需要一些时间",
       "loadFailed": "加载地景失败",

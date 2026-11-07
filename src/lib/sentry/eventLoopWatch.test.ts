@@ -23,21 +23,44 @@ describe('blockToReport', () => {
   });
 });
 
+const FAST = { thresholdMs: 100, sampleIntervalMs: 200 };
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+function holdLoop(ms: number): void {
+  const until = Date.now() + ms;
+  while (Date.now() < until) {
+    /* busy */
+  }
+}
+
 describe('watchEventLoop', () => {
   it('reports a real block of the event loop once it is over', async () => {
     const { watchEventLoop } = await import('./eventLoopWatch');
     const reports: number[] = [];
-    const { stop } = watchEventLoop((block) => reports.push(block.seconds), 100);
+    const { stop } = watchEventLoop((block) => reports.push(block.seconds), FAST);
     // The histogram measures from its first loop turn, so let one pass first.
-    await new Promise((r) => setTimeout(r, 120));
-    // Hold the loop for ~300 ms.
-    const until = Date.now() + 300;
-    while (Date.now() < until) {
-      /* busy */
-    }
-    await new Promise((r) => setTimeout(r, 2_300));
+    await sleep(220);
+    holdLoop(300);
+    // One sample to see it, one more of grace before it is reported.
+    await sleep(700);
     stop();
     expect(reports).toEqual([0]);
+  });
+
+  it('keeps a pause the user was away for to itself', async () => {
+    const { watchEventLoop } = await import('./eventLoopWatch');
+    const reports: number[] = [];
+    // A pause of 0 s (rounded) against a machine idle for an hour.
+    const { stop } = watchEventLoop((block) => reports.push(block.seconds), {
+      ...FAST,
+      idleMs: () => 3_600_000,
+    });
+    await sleep(220);
+    holdLoop(300);
+    await sleep(700);
+    stop();
+    expect(reports).toEqual([]);
   });
 });
 
@@ -45,14 +68,25 @@ describe('watchEventLoop after a system sleep', () => {
   it('drops the sample window that a sleep inflated', async () => {
     const { watchEventLoop } = await import('./eventLoopWatch');
     const reports: number[] = [];
-    const watch = watchEventLoop((block) => reports.push(block.seconds), 100);
-    await new Promise((r) => setTimeout(r, 120));
-    const until = Date.now() + 300;
-    while (Date.now() < until) {
-      /* a pause that, in the app, would be the machine waking up */
-    }
+    const watch = watchEventLoop((block) => reports.push(block.seconds), FAST);
+    await sleep(220);
+    holdLoop(300);
     watch.discardCurrentWindow();
-    await new Promise((r) => setTimeout(r, 2_300));
+    await sleep(700);
+    watch.stop();
+    expect(reports).toEqual([]);
+  });
+
+  it('still drops it when the discard lands after the sample, as on wake', async () => {
+    const { watchEventLoop } = await import('./eventLoopWatch');
+    const reports: number[] = [];
+    const watch = watchEventLoop((block) => reports.push(block.seconds), FAST);
+    await sleep(220);
+    holdLoop(300);
+    // The sample timer has run by now; Electron's `resume` arrives a beat later.
+    await sleep(50);
+    watch.discardCurrentWindow();
+    await sleep(700);
     watch.stop();
     expect(reports).toEqual([]);
   });

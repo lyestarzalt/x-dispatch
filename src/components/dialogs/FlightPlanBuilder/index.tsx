@@ -13,10 +13,12 @@ import {
   CloudSun,
   Dices,
   Eraser,
+  History,
   type LucideIcon,
   Mountain,
   PlaneLanding,
   PlaneTakeoff,
+  RadioTower,
   RotateCcw,
   Route,
   Save,
@@ -31,6 +33,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useUnits } from '@/hooks/useUnits';
 import { type PlanVisit, planVisitSummary } from '@/lib/analytics/planVisit';
 import { formatDuration } from '@/lib/flightRecorder/format';
@@ -108,13 +111,16 @@ const NO_PROCEDURES: ResolvedProcedure[] = [];
 const FIELD_CLASS = 'h-9 w-full font-mono text-sm';
 
 /** The approach picker shows chart-style names; the chosen value stays the raw identifier. */
-const approachLabel = (p: ResolvedProcedure) => formatApproachName(p.name, p.approachType);
+const approachLabel = (p: ResolvedProcedure) =>
+  formatApproachName(p.name, p.approachType, p.approachQualifier2);
 const CLASSES: RangeRingCategory[] = ['jet', 'turboprop', 'prop'];
 /** Explore flyout tabs, in header order. */
 const EXPLORE_TABS = [
   { id: 'random', icon: Dices },
   { id: 'routes', icon: Route },
   { id: 'weather', icon: CloudSun },
+  { id: 'online', icon: RadioTower },
+  { id: 'logbook', icon: History },
 ] as const satisfies ReadonlyArray<{ id: ExploreTab; icon: LucideIcon }>;
 
 interface FlightPlanBuilderProps {
@@ -736,16 +742,22 @@ function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) {
         'absolute left-4 z-30 transition-all duration-300 ease-out',
         showFlightPlanBar ? 'top-28' : 'top-16',
         panel === 'rail' ? 'w-12' : 'w-[26rem]',
-        // The compact read-out is as tall as its content, leaving the map's controls clear.
-        !compact && 'bottom-4'
+        // The compact read-out and the folded rail are as tall as their content, leaving the
+        // map's controls in the bottom-left corner clear.
+        panel === 'full' && 'bottom-4'
       )}
     >
-      <div className="border-border/40 bg-card/95 relative flex h-full flex-col overflow-hidden rounded-lg border backdrop-blur-sm">
+      <div
+        className={cn(
+          'border-border/40 bg-card/95 relative flex flex-col overflow-hidden rounded-lg border backdrop-blur-sm',
+          panel !== 'rail' && 'h-full'
+        )}
+      >
         {/* Folded: a slim rail with the route's ends, same as the airport panel */}
         <div
           className={cn(
-            'bg-card absolute inset-0 z-20 flex flex-col items-center py-5 transition-opacity duration-200',
-            panel === 'rail' ? 'opacity-100' : 'pointer-events-none opacity-0'
+            'bg-card z-20 flex flex-col items-center py-5 transition-opacity duration-200',
+            panel === 'rail' ? 'opacity-100' : 'pointer-events-none absolute inset-0 opacity-0'
           )}
         >
           <Button
@@ -767,7 +779,12 @@ function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) {
             <IcaoCode>{arrival?.icao ?? '----'}</IcaoCode>
           </span>
         </div>
-        <header className="border-border/30 space-y-3 border-b px-4 py-3">
+        <header
+          className={cn(
+            'border-border/30 space-y-3 border-b px-4 py-3',
+            panel === 'rail' && 'hidden'
+          )}
+        >
           <div className="flex items-center justify-between gap-2">
             <div className="flex min-w-0 items-center gap-2">
               <Route className="text-primary h-4 w-4 shrink-0" />
@@ -928,15 +945,23 @@ function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) {
             className={cn('w-full', compact && 'hidden')}
           >
             {EXPLORE_TABS.map(({ id, icon: Icon }) => (
-              <ToggleGroupItem key={id} value={id} className="min-w-0 flex-1">
-                <Icon />
-                <span className="truncate">{t(`explore.tabs.${id}`)}</span>
-              </ToggleGroupItem>
+              <Tooltip key={id}>
+                <TooltipTrigger asChild>
+                  <ToggleGroupItem
+                    value={id}
+                    className="min-w-0 flex-1"
+                    aria-label={t(`explore.tabs.${id}`)}
+                  >
+                    <Icon />
+                  </ToggleGroupItem>
+                </TooltipTrigger>
+                <TooltipContent>{t(`explore.tabs.${id}`)}</TooltipContent>
+              </Tooltip>
             ))}
           </ToggleGroup>
         </header>
 
-        <ScrollArea className={cn('min-h-0 flex-1', compact && 'hidden')}>
+        <ScrollArea className={cn('min-h-0 flex-1', panel !== 'full' && 'hidden')}>
           <div className="space-y-5 p-4">
             <div className="space-y-3">
               <section className="border-border space-y-3 rounded-lg border p-3">
@@ -1152,7 +1177,12 @@ function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) {
           </div>
         </ScrollArea>
 
-        <footer className="border-border/30 space-y-2 border-t px-4 py-3">
+        <footer
+          className={cn(
+            'border-border/30 space-y-2 border-t px-4 py-3',
+            panel === 'rail' && 'hidden'
+          )}
+        >
           {savedPath && (
             <p className="text-success flex min-w-0 items-center gap-1.5 text-xs" title={savedPath}>
               <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />

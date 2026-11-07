@@ -1,5 +1,6 @@
 // src/queries/useAddonManager.ts
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import i18n from 'i18next';
 import type {
   AircraftInfo,
   LiveryInfo,
@@ -11,8 +12,8 @@ import type {
 import {
   type BrowserError,
   type SceneryError as SceneryErrorT,
-  getBrowserErrorMessage,
-  getSceneryErrorMessage,
+  browserErrorText,
+  sceneryErrorText,
 } from '@/lib/addonManager/core/types';
 import { type InstallerError, getInstallerErrorMessage } from '@/lib/addonManager/installer/types';
 import { launchKeys } from './useLaunchQuery';
@@ -502,11 +503,13 @@ export class AddonActionError extends Error {
 }
 
 function browserError(error: BrowserError): AddonActionError {
-  return new AddonActionError('browser', error.code, getBrowserErrorMessage(error));
+  const { key, params } = browserErrorText(error);
+  return new AddonActionError('browser', error.code, i18n.t(key, params));
 }
 
 function sceneryError(error: SceneryErrorT): AddonActionError {
-  return new AddonActionError('scenery', error.code, getSceneryErrorMessage(error));
+  const { key, params } = sceneryErrorText(error);
+  return new AddonActionError('scenery', error.code, i18n.t(key, params));
 }
 
 // ===== INSTALLER =====

@@ -406,7 +406,7 @@
     "unpaved": "Non pavimentato (Erba/Terra/Ghiaia)",
     "showOnly": "Mostra solo",
     "iataOnly": "Commerciale (IATA)",
-    "customOnly": "Scenari personalizzati",
+    "customOnly": "Solo scenari personalizzati",
     "proceduresOnly": "Solo con procedure strumentali",
     "surfaceType": "Tipo di superficie",
     "runwaySurface": "Superficie della pista",
@@ -421,10 +421,29 @@
   },
   "explore": {
     "title": "Esplora",
+    "gateFilter": {
+      "label": "Piazzola minima",
+      "any": "Qualsiasi",
+      "aircraft": "Aereo attuale, {{span}}",
+      "option": "Codice {{code}}, fino a {{span}}"
+    },
+    "gateSize": "Piazzola più grande, apertura alare fino a {{span}}",
+    "gateSizeRoute": "Piazzola più grande dello scalo minore, apertura alare fino a {{span}}",
     "tabs": {
       "random": "Casuale",
       "routes": "Rotte",
-      "weather": "Meteo"
+      "weather": "Meteo",
+      "online": "Online",
+      "logbook": "Logbook"
+    },
+    "online": {
+      "networkOff": "Attiva VATSIM o IVAO in Livelli per vedere chi è online.",
+      "none": "Nessun controllore online al momento."
+    },
+    "logbook": {
+      "none": "Nessun volo completato nel logbook.",
+      "flights_one": "{{count}} volo",
+      "flights_other": "{{count}} voli"
     },
     "weather": {
       "error": "Impossibile caricare il meteo",
@@ -1188,7 +1207,18 @@
       "exportSuccess": "Rotta di rullaggio salvata",
       "summary": "via {{taxiways}}, {{distance}}"
     },
-    "frequencies": "Frequenze"
+    "frequencies": "Frequenze",
+    "atcSurface": "SFC",
+    "atcUnlimited": "UNL",
+    "atcSectorFreqs_one": "{{count}} frequenza",
+    "atcSectorFreqs_other": "{{count}} frequenze",
+    "atcRole": {
+      "del": "DEL",
+      "gnd": "GND",
+      "twr": "TWR",
+      "app": "APP",
+      "ctr": "CTR"
+    }
   },
   "navigation": {
     "heading": "PRUA",
@@ -1717,6 +1747,16 @@
       }
     },
     "browser": {
+      "errors": {
+        "NOT_FOUND": "Non trovato: {{path}}",
+        "SCAN_FAILED": "Scansione non riuscita: {{reason}}",
+        "TOGGLE_FAILED": "Impossibile cambiare stato: {{reason}}",
+        "DELETE_FAILED": "Impossibile eliminare: {{reason}}",
+        "PLUGIN_IN_USE": "X-Plane sta usando questo plugin. Chiudi X-Plane e riprova.",
+        "PERMISSION_DENIED": "Permesso negato. La cartella di X-Plane è in una posizione protetta. Esegui X-Dispatch come amministratore.",
+        "PATH_TRAVERSAL": "Percorso non sicuro rifiutato: {{path}}",
+        "INVALID_INPUT": "Input non valido: {{field}}"
+      },
       "searchPlaceholder": "Cerca...",
       "stats": {
         "total": "{{count}} in totale",
@@ -1745,6 +1785,15 @@
       "version": "v{{version}}"
     },
     "scenery": {
+      "errors": {
+        "INI_NOT_FOUND": "scenery_packs.ini non trovato. Avvia X-Plane una volta perché crei il file.",
+        "INI_PARSE_ERROR": "Impossibile leggere scenery_packs.ini alla riga {{line}}: {{content}}",
+        "FOLDER_NOT_FOUND": "Cartella scenario non trovata: {{folderName}}",
+        "DSF_INVALID": "File DSF non valido: {{reason}}",
+        "DSF_COMPRESSED": "I DSF compressi non sono ancora supportati: {{path}}",
+        "WRITE_FAILED": "Impossibile scrivere scenery_packs.ini: {{reason}}",
+        "BACKUP_FAILED": "Backup non riuscito: {{reason}}"
+      },
       "loading": "Analisi delle cartelle scenari...",
       "loadingHint": "Potrebbe richiedere un momento per installazioni di grandi dimensioni",
       "loadFailed": "Impossibile caricare gli scenari",

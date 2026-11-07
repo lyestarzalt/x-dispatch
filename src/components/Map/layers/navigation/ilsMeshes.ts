@@ -203,6 +203,32 @@ export function buildBeamPolygons(navaids: Navaid[]): BeamPolygon[] {
   return out;
 }
 
+/**
+ * The 2D extended-centerline for each LOC: from the antenna back along the
+ * reciprocal of the localizer course, over the same length as the GS wedge
+ * so the dashed line and the 3D volume end together.
+ */
+export function createILSCourseGeoJSON(ilsList: Navaid[]): GeoJSON.FeatureCollection {
+  const features: GeoJSON.Feature[] = [];
+  for (const ils of ilsList) {
+    if (ils.bearing === undefined) continue;
+    const course = (ils.bearing + 180) % 360;
+    const origin: [number, number] = [ils.longitude, ils.latitude];
+    const endPoint = destinationPoint(
+      ils.latitude,
+      ils.longitude,
+      nauticalMilesToMeters(BEAM_LENGTH_NM),
+      course
+    );
+    features.push({
+      type: 'Feature',
+      geometry: { type: 'LineString', coordinates: [origin, endPoint] },
+      properties: { id: ils.id, runway: ils.associatedRunway || '' },
+    });
+  }
+  return { type: 'FeatureCollection', features };
+}
+
 // Constants exposed for tests.
 export const ILS_BEAM_CONSTANTS = {
   GS_HALF_ANGLE_DEG,

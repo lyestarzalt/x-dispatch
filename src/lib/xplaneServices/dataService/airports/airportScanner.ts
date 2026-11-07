@@ -66,6 +66,8 @@ interface ScanningAirport {
   runwayLon: number;
   runwayCount: number;
   primarySurfaceType: number;
+  /** Widest ICAO code letter seen on a 1301 stand row so far. */
+  maxStandCode?: string;
   data: string[];
   // Metadata
   city?: string;
@@ -128,6 +130,15 @@ function parseAirportHeader(line: string): ScanningAirport | null {
     primarySurfaceType: 0,
     data: [line],
   };
+}
+
+/**
+ * The ICAO code letter of a 1301 row: `1301 <A–F> <operation> [airlines...]`.
+ * Anything else (a blank or a stray value) counts as no size.
+ */
+export function standSizeCode(line: string): string | undefined {
+  const code = line.split(/\s+/)[1];
+  return code && /^[A-F]$/.test(code) ? code : undefined;
 }
 
 /**
@@ -297,6 +308,7 @@ function finalizeAirport(
     elevation: airport.elevation || undefined,
     runwayCount: airport.runwayCount || undefined,
     primarySurfaceType: airport.primarySurfaceType || undefined,
+    maxStandCode: airport.maxStandCode,
     data: airport.data.join('\n'),
     sourceFile,
     ...metadata,
@@ -352,6 +364,14 @@ export async function scanAptFile(
     // Metadata (row code 1302)
     if (line.startsWith('1302 ')) {
       parseMetadata(line, currentAirport);
+    }
+
+    // Stand size (row code 1301, metadata of the 1300 start before it): keep the widest
+    if (line.startsWith('1301 ')) {
+      const code = standSizeCode(line);
+      if (code && (!currentAirport.maxStandCode || code > currentAirport.maxStandCode)) {
+        currentAirport.maxStandCode = code;
+      }
     }
 
     // Runway (row code 100) - count runways, track surface type, extract first coordinates

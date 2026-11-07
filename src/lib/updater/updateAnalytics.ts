@@ -28,7 +28,15 @@ export type UpdateFailureReason = 'network' | 'not_found' | 'other';
 /** Coarse cause of an updater error, from Velopack's message; never the message itself. */
 export function updateFailureReason(message: string): UpdateFailureReason {
   if (/\b404\b/.test(message)) return 'not_found';
-  if (/network|timed? ?out|dns|connect|unreachable|reset/i.test(message)) return 'network';
+  // The updater prefixes its transport failures ("Network error", "IO error"), and
+  // Windows quotes a WinSock code ("os error 11001") whatever language the text is in.
+  if (
+    /network|io error|timed? ?out|dns|connect|unreachable|reset|peer|certificate|decrypt|lookup|host|end of file|os error \d+/i.test(
+      message
+    )
+  ) {
+    return 'network';
+  }
   return 'other';
 }
 

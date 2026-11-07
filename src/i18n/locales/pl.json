@@ -406,7 +406,7 @@
     "unpaved": "Nieutwardzona (Trawa/Ziemia/Żwir)",
     "showOnly": "Pokaż tylko",
     "iataOnly": "Komercyjne (IATA)",
-    "customOnly": "Scenerie użytkownika",
+    "customOnly": "Tylko scenerie użytkownika",
     "proceduresOnly": "Tylko z procedurami IFR",
     "surfaceType": "Typ nawierzchni",
     "runwaySurface": "Nawierzchnia pasa",
@@ -421,10 +421,29 @@
   },
   "explore": {
     "title": "Eksploruj",
+    "gateFilter": {
+      "label": "Minimalne stanowisko",
+      "any": "Dowolne",
+      "aircraft": "Bieżący samolot, {{span}}",
+      "option": "Kod {{code}}, do {{span}}"
+    },
+    "gateSize": "Największe stanowisko, rozpiętość do {{span}}",
+    "gateSizeRoute": "Największe stanowisko na mniejszym lotnisku, rozpiętość do {{span}}",
     "tabs": {
       "random": "Losowe",
       "routes": "Trasy",
-      "weather": "Pogoda"
+      "weather": "Pogoda",
+      "online": "Online",
+      "logbook": "Dziennik"
+    },
+    "online": {
+      "networkOff": "Włącz VATSIM lub IVAO w Warstwach, aby zobaczyć, kto jest online.",
+      "none": "Brak kontrolerów online w tej chwili."
+    },
+    "logbook": {
+      "none": "W dzienniku nie ma jeszcze ukończonych lotów.",
+      "flights_one": "{{count}} lot",
+      "flights_other": "{{count}} lotu"
     },
     "weather": {
       "error": "Nie udało się wczytać pogody",
@@ -1188,7 +1207,18 @@
       "exportSuccess": "Trasa kołowania zapisana",
       "summary": "przez {{taxiways}}, {{distance}}"
     },
-    "frequencies": "Częstotliwości"
+    "frequencies": "Częstotliwości",
+    "atcSurface": "SFC",
+    "atcUnlimited": "UNL",
+    "atcSectorFreqs_one": "{{count}} częstotliwość",
+    "atcSectorFreqs_other": "{{count}} częstotliwości",
+    "atcRole": {
+      "del": "DEL",
+      "gnd": "GND",
+      "twr": "TWR",
+      "app": "APP",
+      "ctr": "CTR"
+    }
   },
   "navigation": {
     "heading": "KURS",
@@ -1717,6 +1747,16 @@
       }
     },
     "browser": {
+      "errors": {
+        "NOT_FOUND": "Nie znaleziono: {{path}}",
+        "SCAN_FAILED": "Skanowanie nie powiodło się: {{reason}}",
+        "TOGGLE_FAILED": "Nie udało się przełączyć: {{reason}}",
+        "DELETE_FAILED": "Nie udało się usunąć: {{reason}}",
+        "PLUGIN_IN_USE": "X-Plane używa tej wtyczki. Zamknij X-Plane i spróbuj ponownie.",
+        "PERMISSION_DENIED": "Brak uprawnień. Folder X-Plane znajduje się w chronionej lokalizacji. Uruchom X-Dispatch jako administrator.",
+        "PATH_TRAVERSAL": "Odrzucono niebezpieczną ścieżkę: {{path}}",
+        "INVALID_INPUT": "Nieprawidłowe dane: {{field}}"
+      },
       "searchPlaceholder": "Szukaj...",
       "stats": {
         "total": "{{count}} łącznie",
@@ -1745,6 +1785,15 @@
       "version": "v{{version}}"
     },
     "scenery": {
+      "errors": {
+        "INI_NOT_FOUND": "Nie znaleziono scenery_packs.ini. Uruchom raz X-Plane, aby utworzył ten plik.",
+        "INI_PARSE_ERROR": "Nie można odczytać scenery_packs.ini w wierszu {{line}}: {{content}}",
+        "FOLDER_NOT_FOUND": "Nie znaleziono folderu scenerii: {{folderName}}",
+        "DSF_INVALID": "Nieprawidłowy plik DSF: {{reason}}",
+        "DSF_COMPRESSED": "Skompresowane DSF nie są jeszcze obsługiwane: {{path}}",
+        "WRITE_FAILED": "Nie można zapisać scenery_packs.ini: {{reason}}",
+        "BACKUP_FAILED": "Kopia zapasowa nie powiodła się: {{reason}}"
+      },
       "loading": "Skanowanie folderów scenerii...",
       "loadingHint": "Może to chwilę potrwać przy dużych instalacjach",
       "loadFailed": "Nie udało się załadować scenerii",

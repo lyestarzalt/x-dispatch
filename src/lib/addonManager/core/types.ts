@@ -118,7 +118,7 @@ export function createDefaultClassification(): SceneryClassification {
 }
 
 /**
- * Get user-friendly error message from SceneryError.
+ * Log text for a SceneryError. The renderer shows `sceneryErrorText` instead.
  */
 export function getSceneryErrorMessage(error: SceneryError): string {
   switch (error.code) {
@@ -150,8 +150,64 @@ export type BrowserError =
   | { code: 'PATH_TRAVERSAL'; path: string }
   | { code: 'INVALID_INPUT'; field: string };
 
+/** A translation key under `addonManager.<family>.errors` and the values its text quotes. */
+export interface AddonErrorText {
+  key: string;
+  params: Record<string, string | number>;
+}
+
 /**
- * Get user-friendly error message from BrowserError.
+ * The renderer's text for a scenery failure, as an i18n key: the lib never
+ * holds a user-facing sentence.
+ */
+export function sceneryErrorText(error: SceneryError): AddonErrorText {
+  const key = `addonManager.scenery.errors.${error.code}`;
+  switch (error.code) {
+    case 'INI_NOT_FOUND':
+    case 'DSF_COMPRESSED':
+      return { key, params: { path: error.path } };
+    case 'INI_PARSE_ERROR':
+      return { key, params: { line: error.line, content: error.content } };
+    case 'FOLDER_NOT_FOUND':
+      return { key, params: { folderName: error.folderName } };
+    case 'DSF_INVALID':
+    case 'WRITE_FAILED':
+    case 'BACKUP_FAILED':
+      return { key, params: { reason: error.reason } };
+  }
+}
+
+/** The renderer's text for an aircraft, plugin or script action that failed, as an i18n key. */
+export function browserErrorText(error: BrowserError): AddonErrorText {
+  const family = 'addonManager.browser.errors';
+  switch (error.code) {
+    case 'NOT_FOUND':
+    case 'PATH_TRAVERSAL':
+      return { key: `${family}.${error.code}`, params: { path: error.path } };
+    case 'INVALID_INPUT':
+      return { key: `${family}.INVALID_INPUT`, params: { field: error.field } };
+    case 'SCAN_FAILED':
+      return { key: `${family}.SCAN_FAILED`, params: { reason: error.reason } };
+    case 'TOGGLE_FAILED':
+      if (isPluginInUse(error.reason)) return { key: `${family}.PLUGIN_IN_USE`, params: {} };
+      if (error.reason.includes('EPERM')) return { key: `${family}.PERMISSION_DENIED`, params: {} };
+      return { key: `${family}.TOGGLE_FAILED`, params: { reason: error.reason } };
+    case 'DELETE_FAILED':
+      if (error.reason.includes('EPERM')) return { key: `${family}.PERMISSION_DENIED`, params: {} };
+      return { key: `${family}.DELETE_FAILED`, params: { reason: error.reason } };
+  }
+}
+
+/**
+ * Windows refuses to rename a plugin's .xpl while X-Plane has it loaded, and
+ * reports that as EPERM (or EBUSY), the same code as a protected folder.
+ */
+export function isPluginInUse(reason: string | undefined): boolean {
+  return /EPERM|EBUSY/.test(reason ?? '') && /\.(xpl|xfmp)\b/i.test(reason ?? '');
+}
+
+/**
+ * Log text for a BrowserError. The renderer shows `browserErrorText` instead.
  */
 export function getBrowserErrorMessage(error: BrowserError): string {
   switch (error.code) {
@@ -160,6 +216,9 @@ export function getBrowserErrorMessage(error: BrowserError): string {
     case 'SCAN_FAILED':
       return `Scan failed: ${error.reason}`;
     case 'TOGGLE_FAILED':
+      if (isPluginInUse(error.reason)) {
+        return `X-Plane is using this plugin. Close X-Plane and try again.`;
+      }
       if (error.reason?.includes('EPERM')) {
         return `Permission denied. Your X-Plane folder is in a protected location that requires administrator access to modify. Try running X-Dispatch as administrator.`;
       }

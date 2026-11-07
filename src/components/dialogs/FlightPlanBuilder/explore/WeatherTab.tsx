@@ -7,17 +7,20 @@ import { cn } from '@/lib/utils/helpers';
 import type { WeatherCategory } from '@/lib/weatherScan/parseMetarFeed';
 import type { Airport } from '@/lib/xplaneServices/dataService';
 import { WEATHER_CATEGORIES, filterByCategory, trackEvent, useWeatherScanQuery } from '@/queries';
+import { GateSizeTag } from './GateSizeTag';
 import { WEATHER_CATEGORY_ICON } from './weatherIcons';
 
 const GATEWAY_URL = 'https://gateway.x-plane.com';
 
 interface WeatherTabProps {
   airports: Airport[];
+  /** Airports in X-Plane that fail this are left out; unknown stations stay listed. */
+  fits?: (airport: Airport) => boolean;
   /** A station in X-Plane was picked: it becomes the plan's arrival. */
   onPick: (airport: Airport) => void;
 }
 
-export function WeatherTab({ airports, onPick }: WeatherTabProps) {
+export function WeatherTab({ airports, fits, onPick }: WeatherTabProps) {
   const { t } = useTranslation();
   const [category, setCategory] = useState<WeatherCategory>('snow');
   const selectCategory = (key: WeatherCategory) => {
@@ -32,7 +35,14 @@ export function WeatherTab({ airports, onPick }: WeatherTabProps) {
     return index;
   }, [airports]);
 
-  const observations = useMemo(() => filterByCategory(data, category), [data, category]);
+  const observations = useMemo(() => {
+    const inCategory = filterByCategory(data, category);
+    if (!fits) return inCategory;
+    return inCategory.filter((observation) => {
+      const airport = airportsByIcao.get(observation.icao);
+      return airport === undefined || fits(airport);
+    });
+  }, [data, category, fits, airportsByIcao]);
 
   const counts = useMemo(() => {
     const totals = {} as Record<WeatherCategory, number>;
@@ -109,8 +119,11 @@ export function WeatherTab({ airports, onPick }: WeatherTabProps) {
                     : 'cursor-default'
                 )}
               >
-                <span className="text-info mt-px shrink-0 font-mono text-sm font-semibold">
-                  {observation.icao}
+                <span className="flex shrink-0 flex-col items-start gap-0.5">
+                  <span className="text-info mt-px font-mono text-sm font-semibold">
+                    {observation.icao}
+                  </span>
+                  <GateSizeTag code={airport?.maxStandCode} />
                 </span>
 
                 <div className="min-w-0 flex-1 space-y-0.5">

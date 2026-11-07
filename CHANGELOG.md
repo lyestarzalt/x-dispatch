@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Custom navaids and waypoints on the map.** `user_nav.dat` and `user_fix.dat` in Custom Data are read on top of the X-Plane data.
+- **Area control in the airport frequency list.** The centre over the airport, and the approach facility when the airport has none of its own.
+- **Largest gate on the Explore lists.** Each airport shows the wingspan its widest stand takes. Routes shows the tighter end.
+- **Two more Explore lists.** Online shows airports with a controller on VATSIM or IVAO right now, nearest first. Logbook lists the city pairs you have flown, most flown first, one click to fly again.
+- **Explore lists filter by gate size.** Pick a code letter, or the connected aircraft, and only airports that can park it are listed.
+
+### Changed
+
+- **The custom scenery switch says "Custom scenery only".** It is a filter.
+- **Airspace boundaries drawn by class.** Classes D to G dashed, each class its own fill.
+- **Navaid, ILS and airspace labels follow the basemap theme.**
+
+### Fixed
+
+- **Installing .7z and .rar add-ons works in the installed app again.** The bundled extractor was looked for inside the app package, where it can't run.
+- **A damaged airport cache is rebuilt instead of failing every start.**
+- **A plugin that can't be switched off while X-Plane runs says so.** The message used to blame folder permissions.
+- **Disabling a scenery pack now holds.** The file X-Dispatch wrote lacked a header line X-Plane 12.4 requires, so X-Plane rebuilt it with every pack enabled.
+- **ILS courses in the airport panel are right.** The magnetic course was taken for the variation, so 035°M came out as 345°M.
+- **No more ILS from the airport next door in the runway list.**
+- **The folded flight planner no longer covers the compass and track buttons.**
+- **RNAV (RNP) approaches no longer listed as RNAV (GPS).**
+- **One symbol per navaid station.** The DME half of a VOR or ILS was drawn as a second icon.
+- **VOR compass roses point to magnetic north.**
+- **The ILS centreline and glideslope wedge end together at 18 NM.**
+- **The 50 NM area around an airport no longer cut short east to west at high latitudes.**
+
 ## [2.11.0] - 2026-11-01
 
 ### Added

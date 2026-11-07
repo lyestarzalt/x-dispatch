@@ -105,7 +105,13 @@ export function setupGlobeProjection(map: maplibregl.Map): void {
   // zoom swaps the camera under the gesture, which could throw the view back to an old centre.
   let currentProjection: 'globe' | 'mercator' = 'globe';
 
-  map.on('moveend', () => {
+  // Off MapLibre's own call stack: `moveend` fires from inside the animation frame that ends
+  // an ease, and moving the camera there (the terrain jumpTo) cancels a frame callback that
+  // is still running (Sentry X-DISPATCH-6T, maplibre #3328).
+  map.on('moveend', () => setTimeout(switchProjectionForZoom, 0));
+
+  function switchProjectionForZoom(): void {
+    if (map.isMoving()) return;
     const zoom = map.getZoom();
     const { terrain3dEnabled } = useMapStore.getState();
 
@@ -130,7 +136,7 @@ export function setupGlobeProjection(map: maplibregl.Map): void {
         map.setLayoutProperty(STARFIELD_LAYER_ID, 'visibility', 'visible');
       }
     }
-  });
+  }
 
   // React to user toggling 3D terrain in Settings → Graphics. Only takes
   // effect in mercator (globe forbids terrain), but we always update the

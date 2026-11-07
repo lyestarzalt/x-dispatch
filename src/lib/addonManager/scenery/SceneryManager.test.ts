@@ -195,3 +195,35 @@ describe('SceneryManager \u2014 missing libraries', () => {
     expect(result.value.find((e) => e.folderName === 'KSEA')?.missingLibraries).toBeUndefined();
   });
 });
+
+describe('SceneryManager \u2014 one write at a time', () => {
+  it('keeps every toggle when several are sent without waiting', async () => {
+    for (const name of ['Alpha', 'Bravo', 'Charlie']) {
+      fs.mkdirSync(path.join(customScenery, name));
+    }
+    fs.writeFileSync(
+      path.join(customScenery, 'scenery_packs.ini'),
+      [
+        'I',
+        '1000 Version',
+        'SCENERY',
+        '',
+        'SCENERY_PACK Custom Scenery/Alpha/',
+        'SCENERY_PACK Custom Scenery/Bravo/',
+        'SCENERY_PACK Custom Scenery/Charlie/',
+        '',
+      ].join('\n')
+    );
+    const manager = new SceneryManager(xpRoot);
+
+    const results = await Promise.all(
+      ['Alpha', 'Bravo', 'Charlie'].map((name) => manager.toggle(name))
+    );
+
+    expect(results.every((r) => r.ok)).toBe(true);
+    const written = fs.readFileSync(path.join(customScenery, 'scenery_packs.ini'), 'utf-8');
+    expect(written).toContain('SCENERY_PACK_DISABLED Custom Scenery/Alpha/');
+    expect(written).toContain('SCENERY_PACK_DISABLED Custom Scenery/Bravo/');
+    expect(written).toContain('SCENERY_PACK_DISABLED Custom Scenery/Charlie/');
+  });
+});

@@ -3,6 +3,7 @@
  * Handles loading of all navigation data files.
  */
 export {
+  checkMergedNavValidity,
   loadAirportMetadata,
   loadAirspaces,
   loadAirways,

@@ -8,11 +8,12 @@ import * as fs from 'fs';
 import { airports, aptFileMeta, closeDb, getDb, isDbReady } from '@/lib/db';
 import { runwayEndsFromApt } from '@/lib/flightplan/builder/runways';
 import { parseCIFP } from '@/lib/parsers/nav/cifpParser';
+import { isIlsDme } from '@/lib/parsers/nav/navaidParser';
 import {
   ResolvedAirportProcedures,
   enrichProceduresWithCoordinates,
 } from '@/lib/parsers/nav/procedureCoordResolver';
-import { distanceNm } from '@/lib/utils/geomath';
+import { boundsAroundPoint, distanceNm } from '@/lib/utils/geomath';
 import logger from '@/lib/utils/logger';
 import type { AirwaySegmentWithCoords } from '@/types/navigation';
 import type {
@@ -44,6 +45,7 @@ import {
 } from './config';
 import { NavDataSources, detectAllDataSources } from './cycleInfo';
 import {
+  checkMergedNavValidity,
   loadATCData,
   loadAirportMetadata,
   loadAirspaces,
@@ -52,6 +54,7 @@ import {
   loadNavaids,
   loadWaypoints,
 } from './navdata';
+import { selectAtcForAirport } from './navdata/atcSelect';
 import {
   type NavDataType,
   checkNavCacheValidity,
@@ -187,18 +190,22 @@ export class XPlaneDataManager {
       flag: 'navaids' | 'waypoints' | 'airspaces' | 'airways';
       resolvePath: (xp: string) => string;
       getCount: () => number;
+      /** Overrides the plain file check; navaids/waypoints also watch their pilot file. */
+      checkValidity?: (xp: string) => ReturnType<typeof checkNavCacheValidity>;
     }> = [
       {
         dataType: 'navaids',
         flag: 'navaids',
         resolvePath: getNavDataPath,
         getCount: getNavaidCount,
+        checkValidity: (xp) => checkMergedNavValidity(xp, 'navaids'),
       },
       {
         dataType: 'waypoints',
         flag: 'waypoints',
         resolvePath: getFixDataPath,
         getCount: getWaypointCount,
+        checkValidity: (xp) => checkMergedNavValidity(xp, 'waypoints'),
       },
       {
         dataType: 'airspaces',
@@ -221,7 +228,9 @@ export class XPlaneDataManager {
       if (counts[check.flag] === 0) continue;
 
       if (xplanePath) {
-        const cacheCheck = checkNavCacheValidity(check.resolvePath(xplanePath), check.dataType);
+        const cacheCheck = check.checkValidity
+          ? check.checkValidity(xplanePath)
+          : checkNavCacheValidity(check.resolvePath(xplanePath), check.dataType);
         if (cacheCheck.needsReload) {
           anyNavStale = true;
           logger.data.info(
@@ -686,12 +695,7 @@ export class XPlaneDataManager {
    * Get navaids within radius (uses SQLite bounds query)
    */
   getNavaidsInRadius(lat: number, lon: number, radiusNm: number, types?: NavaidType[]): Navaid[] {
-    // Convert radius to bounds (1 degree ≈ 60nm)
-    const degBuffer = radiusNm / 60;
-    const minLat = lat - degBuffer;
-    const maxLat = lat + degBuffer;
-    const minLon = lon - degBuffer;
-    const maxLon = lon + degBuffer;
+    const { minLat, maxLat, minLon, maxLon } = boundsAroundPoint(lat, lon, radiusNm);
 
     // Query SQLite with bounds
     const results = getNavaidsInBounds(minLat, maxLat, minLon, maxLon, types);
@@ -718,7 +722,10 @@ export class XPlaneDataManager {
    * Get DMEs within radius
    */
   getDMEsInRadius(lat: number, lon: number, radiusNm: number): Navaid[] {
-    return this.getNavaidsInRadius(lat, lon, radiusNm, ['DME', 'TACAN']);
+    // ILS DMEs sit on the LOC antenna and belong to the ILS symbol, not here.
+    return this.getNavaidsInRadius(lat, lon, radiusNm, ['DME', 'TACAN']).filter(
+      (n) => !isIlsDme(n)
+    );
   }
 
   /**
@@ -776,12 +783,7 @@ export class XPlaneDataManager {
    * Get waypoints within radius (uses SQLite bounds query)
    */
   getWaypointsInRadius(lat: number, lon: number, radiusNm: number): Waypoint[] {
-    // Convert radius to bounds (1 degree ≈ 60nm)
-    const degBuffer = radiusNm / 60;
-    const minLat = lat - degBuffer;
-    const maxLat = lat + degBuffer;
-    const minLon = lon - degBuffer;
-    const maxLon = lon + degBuffer;
+    const { minLat, maxLat, minLon, maxLon } = boundsAroundPoint(lat, lon, radiusNm);
 
     // Query SQLite with bounds
     const results = getWaypointsInBounds(minLat, maxLat, minLon, maxLon);
@@ -976,6 +978,14 @@ export class XPlaneDataManager {
    */
   getAllATCControllers(): ATCController[] {
     return this.atcControllers;
+  }
+
+  /**
+   * The facilities relevant to one airport: explicit ICAO links, sector
+   * polygons containing it, then same-region polygon-less centres.
+   */
+  getATCForAirport(icao: string, lat: number, lon: number): ATCController[] {
+    return selectAtcForAirport(this.atcControllers, icao, lat, lon);
   }
 
   /**

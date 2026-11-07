@@ -1,8 +1,10 @@
 import { useEffect } from 'react';
 import * as maplibregl from 'maplibre-gl';
+import type { BasemapTheme } from '@/lib/map/basemapTheme';
 import type { NavigationData } from '@/queries/useNavDataQuery';
 import type { NavLayerVisibility } from '@/types/layers';
 import { airspaceLayer, ilsLayer, navaidLayer } from '../layers';
+import { applyNavLayerTheme } from '../layers/navigation/navTheme';
 import { runWhenStyleIsReady } from './styleReadiness';
 import type { MapRef } from './useMapSetup';
 
@@ -10,9 +12,15 @@ interface UseNavLayerSyncOptions {
   mapRef: MapRef;
   navData: NavigationData | undefined;
   navVisibility: NavLayerVisibility;
+  theme: BasemapTheme;
 }
 
-export function useNavLayerSync({ mapRef, navData, navVisibility }: UseNavLayerSyncOptions): void {
+export function useNavLayerSync({
+  mapRef,
+  navData,
+  navVisibility,
+  theme,
+}: UseNavLayerSyncOptions): void {
   // Sync local nav layers (navaids, ILS, airspaces)
   useEffect(() => {
     const map = mapRef.current;
@@ -40,6 +48,8 @@ export function useNavLayerSync({ mapRef, navData, navVisibility }: UseNavLayerS
 
         await airspaceLayer.update(map, navData.airspaces);
         airspaceLayer.setVisibility(map, navVisibility.airspaces);
+
+        applyNavLayerTheme(map, theme);
       } catch (err) {
         window.appAPI.log.error('Nav layer update failed', err);
       }
@@ -53,7 +63,7 @@ export function useNavLayerSync({ mapRef, navData, navVisibility }: UseNavLayerS
       cancelled = true;
       cleanupStyleWait();
     };
-  }, [mapRef, navData, navVisibility]);
+  }, [mapRef, navData, navVisibility, theme]);
 }
 
 // Helper to apply visibility changes for individual nav layers

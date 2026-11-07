@@ -190,7 +190,7 @@ export const ANALYTICS_ERROR_AREAS = [
   'addon_manager',
 ] as const;
 
-export const ANALYTICS_EXPLORE_TABS = ['random', 'routes', 'weather'] as const;
+export const ANALYTICS_EXPLORE_TABS = ['random', 'routes', 'weather', 'online', 'logbook'] as const;
 
 /** How the planner's final route came about. */
 export const ANALYTICS_PLAN_ROUTES = [

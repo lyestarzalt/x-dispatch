@@ -32,6 +32,8 @@ export const airports = sqliteTable(
     guiLabel: text('gui_label'),
     runwayCount: integer('runway_count'),
     primarySurfaceType: integer('primary_surface_type'),
+    /** ICAO code letter (A–F) of the widest stand in the 1301 rows, when any carries one. */
+    maxStandCode: text('max_stand_code'),
   },
   (table) => [
     index('idx_airports_coords').on(table.lat, table.lon),
@@ -70,6 +72,8 @@ export const airportsCustom = sqliteTable(
     guiLabel: text('gui_label'),
     runwayCount: integer('runway_count'),
     primarySurfaceType: integer('primary_surface_type'),
+    /** ICAO code letter (A–F) of the widest stand in the 1301 rows, when any carries one. */
+    maxStandCode: text('max_stand_code'),
   },
   (table) => [
     index('idx_airports_custom_coords').on(table.lat, table.lon),

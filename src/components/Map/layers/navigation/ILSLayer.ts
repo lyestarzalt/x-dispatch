@@ -3,12 +3,16 @@ import { MapLibreOverlay } from '@deck.gl/maplibre';
 import * as maplibregl from 'maplibre-gl';
 import { NAV_COLORS } from '@/config/navLayerConfig';
 import { labelFont } from '@/lib/map/labelFonts';
-import { destinationPoint, nauticalMilesToMeters } from '@/lib/utils/geomath';
 import { svgToDataUrl } from '@/lib/utils/helpers';
 import type { Navaid } from '@/types/navigation';
 import { setLayersVisibility } from '../types';
 import { NavLayerRenderer } from './NavLayerRenderer';
-import { type BeamKind, type BeamPolygon, buildBeamPolygons } from './ilsMeshes';
+import {
+  type BeamKind,
+  type BeamPolygon,
+  buildBeamPolygons,
+  createILSCourseGeoJSON,
+} from './ilsMeshes';
 
 function createILSSymbolSVG(size: number = 36): string {
   const center = size / 2;
@@ -16,31 +20,6 @@ function createILSSymbolSVG(size: number = 36): string {
     <polygon points="${center},4 ${center - 8},${size - 4} ${center},${size - 12} ${center + 8},${size - 4}" fill="${NAV_COLORS.ils}" stroke="${NAV_COLORS.ils}" stroke-width="1"/>
     <line x1="${center}" y1="4" x2="${center}" y2="${size - 4}" stroke="#000" stroke-width="1.5"/>
   </svg>`;
-}
-
-function destinationPointNm(
-  lat: number,
-  lon: number,
-  bearing: number,
-  distanceNm: number
-): [number, number] {
-  return destinationPoint(lat, lon, nauticalMilesToMeters(distanceNm), bearing);
-}
-
-function createILSCourseGeoJSON(ilsList: Navaid[]): GeoJSON.FeatureCollection {
-  const features: GeoJSON.Feature[] = [];
-  for (const ils of ilsList) {
-    if (ils.bearing === undefined) continue;
-    const course = (ils.bearing + 180) % 360;
-    const origin: [number, number] = [ils.longitude, ils.latitude];
-    const endPoint = destinationPointNm(ils.latitude, ils.longitude, course, 12);
-    features.push({
-      type: 'Feature',
-      geometry: { type: 'LineString', coordinates: [origin, endPoint] },
-      properties: { id: ils.id, runway: ils.associatedRunway || '' },
-    });
-  }
-  return { type: 'FeatureCollection', features };
 }
 
 // Parse "#RRGGBB" → [R, G, B]. deck.gl wants RGB arrays, not CSS strings.

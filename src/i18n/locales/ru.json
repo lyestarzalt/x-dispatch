@@ -406,7 +406,7 @@
     "unpaved": "Без покрытия (трава/грунт/гравий)",
     "showOnly": "Показать только",
     "iataOnly": "Коммерческие (IATA)",
-    "customOnly": "Пользовательские сценарии",
+    "customOnly": "Только пользовательские сценарии",
     "proceduresOnly": "Только с процедурами ППП",
     "surfaceType": "Тип покрытия",
     "runwaySurface": "Покрытие ВПП",
@@ -421,10 +421,29 @@
   },
   "explore": {
     "title": "Обзор",
+    "gateFilter": {
+      "label": "Минимальная стоянка",
+      "any": "Любой размер",
+      "aircraft": "Текущий самолёт, {{span}}",
+      "option": "Код {{code}}, до {{span}}"
+    },
+    "gateSize": "Самая большая стоянка, размах крыла до {{span}}",
+    "gateSizeRoute": "Самая большая стоянка в меньшем аэропорту, размах крыла до {{span}}",
     "tabs": {
       "random": "Случайный",
       "routes": "Маршруты",
-      "weather": "Погода"
+      "weather": "Погода",
+      "online": "Онлайн",
+      "logbook": "Журнал"
+    },
+    "online": {
+      "networkOff": "Включите VATSIM или IVAO в слоях, чтобы увидеть, кто онлайн.",
+      "none": "Сейчас нет диспетчеров онлайн."
+    },
+    "logbook": {
+      "none": "В журнале пока нет завершённых полётов.",
+      "flights_one": "{{count}} полёт",
+      "flights_other": "{{count}} полёта"
     },
     "weather": {
       "error": "Не удалось загрузить погоду",
@@ -1188,7 +1207,18 @@
       "exportSuccess": "Маршрут руления сохранён",
       "summary": "через {{taxiways}}, {{distance}}"
     },
-    "frequencies": "Частоты"
+    "frequencies": "Частоты",
+    "atcSurface": "SFC",
+    "atcUnlimited": "UNL",
+    "atcSectorFreqs_one": "{{count}} частота",
+    "atcSectorFreqs_other": "{{count}} частот",
+    "atcRole": {
+      "del": "DEL",
+      "gnd": "GND",
+      "twr": "TWR",
+      "app": "APP",
+      "ctr": "CTR"
+    }
   },
   "navigation": {
     "heading": "КУРС",
@@ -1717,6 +1747,16 @@
       }
     },
     "browser": {
+      "errors": {
+        "NOT_FOUND": "Не найдено: {{path}}",
+        "SCAN_FAILED": "Сканирование не удалось: {{reason}}",
+        "TOGGLE_FAILED": "Не удалось переключить: {{reason}}",
+        "DELETE_FAILED": "Не удалось удалить: {{reason}}",
+        "PLUGIN_IN_USE": "X-Plane использует этот плагин. Закройте X-Plane и повторите попытку.",
+        "PERMISSION_DENIED": "Доступ запрещён. Папка X-Plane находится в защищённом месте. Запустите X-Dispatch от имени администратора.",
+        "PATH_TRAVERSAL": "Небезопасный путь отклонён: {{path}}",
+        "INVALID_INPUT": "Недопустимый ввод: {{field}}"
+      },
       "searchPlaceholder": "Поиск...",
       "stats": {
         "total": "{{count}} всего",
@@ -1745,6 +1785,15 @@
       "version": "v{{version}}"
     },
     "scenery": {
+      "errors": {
+        "INI_NOT_FOUND": "Файл scenery_packs.ini не найден. Запустите X-Plane один раз, чтобы он его создал.",
+        "INI_PARSE_ERROR": "Не удалось прочитать scenery_packs.ini в строке {{line}}: {{content}}",
+        "FOLDER_NOT_FOUND": "Папка сценария не найдена: {{folderName}}",
+        "DSF_INVALID": "Недопустимый файл DSF: {{reason}}",
+        "DSF_COMPRESSED": "Сжатые DSF пока не поддерживаются: {{path}}",
+        "WRITE_FAILED": "Не удалось записать scenery_packs.ini: {{reason}}",
+        "BACKUP_FAILED": "Резервное копирование не удалось: {{reason}}"
+      },
       "loading": "Поиск папок сценариев...",
       "loadingHint": "Это может занять некоторое время для больших установок",
       "loadFailed": "Не удалось загрузить сценарии",

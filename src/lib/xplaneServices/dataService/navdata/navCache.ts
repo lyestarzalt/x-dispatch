@@ -6,6 +6,7 @@
 import { type AnyColumn, type SQL, count, eq, sql } from 'drizzle-orm';
 import * as fs from 'fs';
 import { airspaces, airways, getDb, navFileMeta, navaids, waypoints } from '@/lib/db';
+import { boundsAroundPoint } from '@/lib/utils/geomath';
 import logger from '@/lib/utils/logger';
 import { yieldToEventLoop } from '@/lib/utils/yieldToEventLoop';
 import type { Coordinates } from '@/types/geo';
@@ -25,19 +26,32 @@ import { FixTypeNumber } from '@/types/navigation';
 // Types
 // ============================================================================
 
-export type NavDataType = 'navaids' | 'waypoints' | 'airways' | 'airspaces';
+export type NavDataType =
+  | 'navaids'
+  | 'waypoints'
+  | 'airways'
+  | 'airspaces'
+  // Optional pilot-created files merged into navaids / waypoints. They get their own meta
+  // rows so a change to user_nav.dat / user_fix.dat invalidates the merged cache.
+  | 'user-navaids'
+  | 'user-waypoints';
 
 /**
  * Bump a type's version whenever its parser changes what it stores, so caches built by the
  * old parser are read again from the source file. The file's mtime alone cannot tell.
  * airways 2: the one-way letter and the level family were read from each other's field.
  * airways 3: segments topping above FL600 were dropped by the level bound.
+ * navaids 2: row-12 paired DME components are no longer stored (duplicate symbols).
+ * navaids 3: ILS variation is the difference between true bearing and magnetic course, and
+ *   the course is stored; it used to hold the course itself.
  */
 export const PARSER_VERSIONS: Record<NavDataType, number> = {
-  navaids: 1,
+  navaids: 3,
   waypoints: 1,
   airways: 3,
   airspaces: 1,
+  'user-navaids': 1,
+  'user-waypoints': 1,
 };
 export type NavSourceType = 'navigraph' | 'xplane-default' | 'unknown';
 
@@ -149,6 +163,35 @@ export function checkNavCacheValidity(
 }
 
 /**
+ * Cache validity of an optional pilot file (user_nav.dat / user_fix.dat) merged into a
+ * main data type. Unlike `checkNavCacheValidity`, a missing file is a valid state — the
+ * cache only goes stale when the file appears, disappears, moves or changes.
+ */
+export function checkUserNavFileValidity(
+  currentPath: string,
+  dataType: NavDataType
+): NavCacheCheckResult {
+  const stored = getStoredNavFileMeta(dataType);
+  const currentMtime = getFileMtime(currentPath);
+
+  if (!stored) {
+    return currentMtime === null
+      ? { needsReload: false }
+      : { needsReload: true, reason: `${dataType} file added` };
+  }
+  if (currentMtime === null) {
+    return { needsReload: true, reason: `${dataType} file removed` };
+  }
+  if (stored.path !== currentPath) {
+    return { needsReload: true, reason: `${dataType} file path changed` };
+  }
+  if (stored.mtime !== currentMtime) {
+    return { needsReload: true, reason: `${dataType} file modified` };
+  }
+  return { needsReload: false };
+}
+
+/**
  * Update stored file metadata after successful load
  */
 export function updateNavFileMeta(
@@ -180,6 +223,23 @@ export function updateNavFileMeta(
   logger.data.debug(
     `Updated ${dataType} cache: ${recordCount} records from ${sourceType} (${filePath})`
   );
+}
+
+/**
+ * Record an optional pilot file's state after a load. A missing file clears its meta row,
+ * so `checkUserNavFileValidity` treats "still missing" as valid and "removed" as stale.
+ */
+export function updateUserNavFileMeta(
+  filePath: string,
+  dataType: NavDataType,
+  recordCount: number
+): void {
+  if (getFileMtime(filePath) === null) {
+    const db = getDb();
+    db.delete(navFileMeta).where(eq(navFileMeta.dataType, dataType)).run();
+    return;
+  }
+  updateNavFileMeta(filePath, dataType, recordCount);
 }
 
 // ============================================================================
@@ -1115,12 +1175,7 @@ export function getAirspacesNearPoint(
   radiusNm: number = 50,
   limit: number = 1000
 ): Airspace[] {
-  // Convert radius to bounding box (1 degree ≈ 60nm)
-  const degBuffer = radiusNm / 60;
-  const minLat = lat - degBuffer;
-  const maxLat = lat + degBuffer;
-  const minLon = lon - degBuffer;
-  const maxLon = lon + degBuffer;
+  const { minLat, maxLat, minLon, maxLon } = boundsAroundPoint(lat, lon, radiusNm);
 
   return getAirspacesInBounds(minLat, maxLat, minLon, maxLon, limit);
 }

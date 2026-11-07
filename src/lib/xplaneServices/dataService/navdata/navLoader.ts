@@ -38,9 +38,12 @@ import {
   getFixDataPath,
   getHoldDataPath,
   getNavDataPath,
+  getUserFixDataPath,
+  getUserNavDataPath,
 } from '../paths';
 import {
   checkNavCacheValidity,
+  checkUserNavFileValidity,
   clearAirspaces,
   clearAirways,
   clearNavaids,
@@ -55,6 +58,7 @@ import {
   insertNavaids,
   insertWaypoints,
   updateNavFileMeta,
+  updateUserNavFileMeta,
 } from './navCache';
 
 // ============================================================================
@@ -86,18 +90,53 @@ function warnSkipped(label: string, result: Pick<ParseResult<unknown>, 'errors' 
 }
 
 /**
- * Load navaids from earth_nav.dat with caching
+ * Combined cache validity for a data type whose load merges an optional pilot file on top of
+ * the main one. Both the loaders below and the startup fast path in XPlaneDataManager use it,
+ * so they agree on when the merged set is stale.
+ */
+export function checkMergedNavValidity(
+  xplanePath: string,
+  dataType: 'navaids' | 'waypoints'
+): ReturnType<typeof checkNavCacheValidity> {
+  const navaids = dataType === 'navaids';
+  const mainPath = navaids ? getNavDataPath(xplanePath) : getFixDataPath(xplanePath);
+  const userPath = navaids ? getUserNavDataPath(xplanePath) : getUserFixDataPath(xplanePath);
+
+  const main = checkNavCacheValidity(mainPath, dataType);
+  if (main.needsReload) return main;
+  return checkUserNavFileValidity(userPath, navaids ? 'user-navaids' : 'user-waypoints');
+}
+
+/**
+ * Parse an optional pilot-created file (user_nav.dat / user_fix.dat) with the same parser as
+ * its main file. A missing file is an empty list — X-Plane adds these on top of the defaults.
+ */
+async function parseUserFile<T>(
+  userPath: string,
+  label: string,
+  parse: (content: string) => ParseResult<T[]>
+): Promise<T[]> {
+  if (!fs.existsSync(userPath)) return [];
+  const content = await fs.promises.readFile(userPath, 'utf-8');
+  const result = parse(content);
+  warnSkipped(label, result);
+  return result.data;
+}
+
+/**
+ * Load navaids from earth_nav.dat, plus any pilot-created ones in user_nav.dat, with caching
  */
 export async function loadNavaids(xplanePath: string): Promise<NavLoadResult<Navaid[]>> {
   const navPath = getNavDataPath(xplanePath);
+  const userNavPath = getUserNavDataPath(xplanePath);
 
   if (!fs.existsSync(navPath)) {
     logger.data.warn(`earth_nav.dat not found: ${navPath}`);
     return { data: [], count: 0, loaded: false, source: null, fromCache: false };
   }
 
-  // Check cache validity
-  const cacheCheck = checkNavCacheValidity(navPath, 'navaids');
+  // Check cache validity — of the main file and of the optional user file
+  const cacheCheck = checkMergedNavValidity(xplanePath, 'navaids');
   const sourceType = detectSourceType(navPath);
 
   if (!cacheCheck.needsReload) {
@@ -119,10 +158,15 @@ export async function loadNavaids(xplanePath: string): Promise<NavLoadResult<Nav
     `Navaids cache stale (${cacheCheck.reason}), reloading ${fileSizeMB}MB from ${sourceType}`
   );
 
-  // Parse file
+  // Parse the main file, then append the pilot's own navaids (#320)
   const startTime = Date.now();
   const content = await fs.promises.readFile(navPath, 'utf-8');
-  const { data, errors, stats } = parseNavaids(content);
+  const { data: mainData, errors, stats } = parseNavaids(content);
+  const userData = await parseUserFile(userNavPath, 'User navaids', parseNavaids);
+  const data = userData.length > 0 ? [...mainData, ...userData] : mainData;
+  if (userData.length > 0) {
+    logger.data.info(`Merged ${userData.length} pilot navaids from user_nav.dat`);
+  }
 
   warnSkipped('Navaids', { errors, stats });
 
@@ -134,6 +178,7 @@ export async function loadNavaids(xplanePath: string): Promise<NavLoadResult<Nav
 
   // Update file metadata
   updateNavFileMeta(navPath, 'navaids', data.length);
+  updateUserNavFileMeta(userNavPath, 'user-navaids', userData.length);
 
   const elapsed = Date.now() - startTime;
 
@@ -159,18 +204,19 @@ export async function loadNavaids(xplanePath: string): Promise<NavLoadResult<Nav
 // ============================================================================
 
 /**
- * Load waypoints from earth_fix.dat with caching
+ * Load waypoints from earth_fix.dat, plus any pilot-created ones in user_fix.dat, with caching
  */
 export async function loadWaypoints(xplanePath: string): Promise<NavLoadResult<Waypoint[]>> {
   const fixPath = getFixDataPath(xplanePath);
+  const userFixPath = getUserFixDataPath(xplanePath);
 
   if (!fs.existsSync(fixPath)) {
     logger.data.warn(`earth_fix.dat not found: ${fixPath}`);
     return { data: [], count: 0, loaded: false, source: null, fromCache: false };
   }
 
-  // Check cache validity
-  const cacheCheck = checkNavCacheValidity(fixPath, 'waypoints');
+  // Check cache validity — of the main file and of the optional user file
+  const cacheCheck = checkMergedNavValidity(xplanePath, 'waypoints');
   const sourceType = detectSourceType(fixPath);
 
   if (!cacheCheck.needsReload) {
@@ -192,10 +238,15 @@ export async function loadWaypoints(xplanePath: string): Promise<NavLoadResult<W
     `Waypoints cache stale (${cacheCheck.reason}), reloading ${fileSizeMB}MB from ${sourceType}`
   );
 
-  // Parse file
+  // Parse the main file, then append the pilot's own waypoints (#320)
   const startTime = Date.now();
   const content = await fs.promises.readFile(fixPath, 'utf-8');
-  const { data, errors, stats } = parseWaypoints(content);
+  const { data: mainData, errors, stats } = parseWaypoints(content);
+  const userData = await parseUserFile(userFixPath, 'User waypoints', parseWaypoints);
+  const data = userData.length > 0 ? [...mainData, ...userData] : mainData;
+  if (userData.length > 0) {
+    logger.data.info(`Merged ${userData.length} pilot waypoints from user_fix.dat`);
+  }
 
   warnSkipped('Waypoints', { errors, stats });
 
@@ -207,6 +258,7 @@ export async function loadWaypoints(xplanePath: string): Promise<NavLoadResult<W
 
   // Update file metadata
   updateNavFileMeta(fixPath, 'waypoints', data.length);
+  updateUserNavFileMeta(userFixPath, 'user-waypoints', userData.length);
 
   const elapsed = Date.now() - startTime;
   logger.data.info(`Loaded ${stats.parsed} waypoints in ${elapsed}ms (insert: ${insertTime}ms)`);

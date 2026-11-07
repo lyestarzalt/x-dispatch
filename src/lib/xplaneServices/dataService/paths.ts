@@ -65,6 +65,16 @@ export function getFixDataPath(xplanePath: string): string {
   return resolveDataPath(xplanePath, XPLANE_PATHS.earthFix);
 }
 
+/** Pilot-created navaids. Always in Custom Data; the file is optional. */
+export function getUserNavDataPath(xplanePath: string): string {
+  return path.join(xplanePath, XPLANE_PATHS.userNav);
+}
+
+/** Pilot-created waypoints. Always in Custom Data; the file is optional. */
+export function getUserFixDataPath(xplanePath: string): string {
+  return path.join(xplanePath, XPLANE_PATHS.userFix);
+}
+
 export function getAirwayDataPath(xplanePath: string): string {
   return resolveDataPath(xplanePath, XPLANE_PATHS.earthAwy);
 }

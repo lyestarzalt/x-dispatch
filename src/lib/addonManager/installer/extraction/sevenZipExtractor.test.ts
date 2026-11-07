@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { sevenZipErrorCode } from './sevenZipExtractor';
+import { sevenZipErrorCode, unpackedBinaryPath } from './sevenZipExtractor';
 
 describe('sevenZipErrorCode', () => {
   it('reads the password failure from stderr when node-7z gives no message', () => {
@@ -35,5 +35,26 @@ describe('sevenZipErrorCode', () => {
       reason: 'unknown error ERROR: Data Error',
     });
     expect(sevenZipErrorCode({}, '/a.7z', undefined)).toMatchObject({ reason: 'unknown error' });
+  });
+});
+
+describe('unpackedBinaryPath', () => {
+  it('points a packaged binary at the unpacked copy', () => {
+    expect(
+      unpackedBinaryPath(
+        'C:\\Users\\me\\AppData\\Local\\XDispatch\\current\\resources\\app.asar\\node_modules\\7zip-bin\\win\\x64\\7za.exe'
+      )
+    ).toBe(
+      'C:\\Users\\me\\AppData\\Local\\XDispatch\\current\\resources\\app.asar.unpacked\\node_modules\\7zip-bin\\win\\x64\\7za.exe'
+    );
+    expect(
+      unpackedBinaryPath('/opt/X-Dispatch/resources/app.asar/node_modules/7zip-bin/linux/x64/7za')
+    ).toBe('/opt/X-Dispatch/resources/app.asar.unpacked/node_modules/7zip-bin/linux/x64/7za');
+  });
+
+  it('leaves a development path alone', () => {
+    expect(unpackedBinaryPath('/repo/node_modules/7zip-bin/mac/arm64/7za')).toBe(
+      '/repo/node_modules/7zip-bin/mac/arm64/7za'
+    );
   });
 });

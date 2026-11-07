@@ -11,7 +11,7 @@ import { atisRunways } from '@/lib/networkTraffic/atis';
 import { trafficCountsForAirport } from '@/lib/networkTraffic/stations';
 import { formatFrequency } from '@/lib/utils/format';
 import { runwayLengthFeet } from '@/lib/utils/geomath';
-import { useNavDataQuery } from '@/queries';
+import { useAirportATC, useNavDataQuery } from '@/queries';
 import { useGatewayUpdateCheck } from '@/queries/useGatewayQuery';
 import { useNetworkTraffic } from '@/queries/useNetworkTraffic';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
@@ -57,6 +57,27 @@ const FREQ_LABELS: Record<FrequencyType, string> = {
 // Component
 // ---------------------------------------------------------------------------
 
+/**
+ * Index navaid records by the runway end they serve, keeping only those that
+ * belong to `icao`. A record without an airport (older or hand-edited nav
+ * files) is kept, so a lone ILS does not vanish over a missing field.
+ */
+export function byRunwayEnd(
+  records: Navaid[] | undefined,
+  icao: string | null
+): Map<string, Navaid> {
+  const map = new Map<string, Navaid>();
+  if (!records) return map;
+  const here = icao?.toUpperCase();
+  for (const record of records) {
+    if (!record.associatedRunway) continue;
+    const owner = record.associatedAirport?.toUpperCase();
+    if (owner && here && owner !== here) continue;
+    map.set(record.associatedRunway.toUpperCase(), record);
+  }
+  return map;
+}
+
 export default function InfoTab() {
   const { t } = useTranslation();
   const airport = useAppStore((s) => s.selectedAirportData);
@@ -76,6 +97,20 @@ export default function InfoTab() {
     50
   );
   const { data: gatewayUpdate } = useGatewayUpdateCheck(icao, isCustom);
+  // Area-control facilities over the airport, appended to the FREQUENCIES
+  // list. Towers stay out — the airport's own rows already carry them.
+  const { data: atcControllers } = useAirportATC(
+    icao,
+    airport?.runways[0]?.ends[0]?.latitude ?? null,
+    airport?.runways[0]?.ends[0]?.longitude ?? null
+  );
+  const overlyingAtc = useMemo(
+    () =>
+      (atcControllers ?? []).filter(
+        (c) => c.role !== 'twr' && c.role !== 'gnd' && c.frequencies.length > 0
+      ),
+    [atcControllers]
+  );
 
   const metar = vatsimMetarData?.parsed ?? null;
   const rawMetar = vatsimMetarData?.raw ?? null;
@@ -105,27 +140,15 @@ export default function InfoTab() {
     );
   }, [runways]);
 
-  // Map of runway end name → ILS navaid (so we can show an ILS chip per end)
-  const ilsByEnd = useMemo(() => {
-    const map = new Map<string, Navaid>();
-    if (!ilsList) return map;
-    for (const ils of ilsList) {
-      if (ils.associatedRunway) map.set(ils.associatedRunway.toUpperCase(), ils);
-    }
-    return map;
-  }, [ilsList]);
+  // Map of runway end name → ILS navaid (so we can show an ILS chip per end).
+  // The nav query covers 50 NM, so a neighbour's ILS 06 would otherwise land
+  // on this airport's runway 06: keep the records that name this airport.
+  const ilsByEnd = useMemo(() => byRunwayEnd(ilsList, icao), [ilsList, icao]);
 
   // Map of runway end name → glide-slope navaid. GS records are separate from
   // ILS/LOC and carry `glidepathAngle`; we join by `associatedRunway` so the
   // ILS detail card can show the GS angle.
-  const gsByEnd = useMemo(() => {
-    const map = new Map<string, Navaid>();
-    if (!gsList) return map;
-    for (const gs of gsList) {
-      if (gs.associatedRunway) map.set(gs.associatedRunway.toUpperCase(), gs);
-    }
-    return map;
-  }, [gsList]);
+  const gsByEnd = useMemo(() => byRunwayEnd(gsList, icao), [gsList, icao]);
 
   // Active runway resolution: ATIS is authoritative when available, wind
   // alignment is a heuristic fallback used only when no ATIS is published.
@@ -175,6 +198,14 @@ export default function InfoTab() {
     [frequencies, atcRows]
   );
 
+  // When the airport publishes its own approach, the TRACON row would repeat
+  // it; keep only the centres then.
+  const facilityRows = useMemo(() => {
+    const hasOwnApproach = mergedFreqRows.some((r) => r.label === 'APP' || r.label === 'DEP');
+    return hasOwnApproach
+      ? overlyingAtc.filter((c) => c.role !== 'tracon' && c.role !== 'app')
+      : overlyingAtc;
+  }, [mergedFreqRows, overlyingAtc]);
   const visibleMergedRows = showAllFreqs
     ? mergedFreqRows
     : mergedFreqRows.slice(0, FREQ_VISIBLE_DEFAULT);
@@ -232,7 +263,7 @@ export default function InfoTab() {
         />
       )}
 
-      {mergedFreqRows.length > 0 && (
+      {(mergedFreqRows.length > 0 || facilityRows.length > 0) && (
         <FrequenciesSection
           visible={visibleMergedRows}
           totalCount={mergedFreqRows.length}
@@ -240,6 +271,7 @@ export default function InfoTab() {
           onToggle={() => setShowAllFreqs((v) => !v)}
           vatsimEnabled={networkOn}
           onlineCount={atcRows.length}
+          facilities={facilityRows}
         />
       )}
 

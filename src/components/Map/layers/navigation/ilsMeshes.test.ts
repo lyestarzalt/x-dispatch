@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { Navaid } from '@/types/navigation';
-import { ILS_BEAM_CONSTANTS, buildBeamPolygons, pairLocAndGs } from './ilsMeshes';
+import {
+  ILS_BEAM_CONSTANTS,
+  buildBeamPolygons,
+  createILSCourseGeoJSON,
+  pairLocAndGs,
+} from './ilsMeshes';
 
 function makeNavaid(overrides: Partial<Navaid>): Navaid {
   return {
@@ -210,5 +215,35 @@ describe('buildBeamPolygons', () => {
     expect(specs).toHaveLength(2);
     expect(specs.find((s) => s.id.startsWith('ILOC09'))!.glidepathAngle).toBeCloseTo(3, 6);
     expect(specs.find((s) => s.id.startsWith('ILOC27'))!.glidepathAngle).toBeCloseTo(5.5, 6);
+  });
+});
+
+describe('createILSCourseGeoJSON', () => {
+  const loc: Navaid = {
+    id: 'IMCG',
+    name: 'MCGRATH ILS',
+    type: 'ILS',
+    latitude: 62.946,
+    longitude: -155.607,
+    elevation: 300,
+    frequency: 10950,
+    bearing: 163,
+    associatedAirport: 'PAMC',
+    associatedRunway: '16',
+  } as Navaid;
+
+  it('draws the extended centerline over the full beam length, on the reciprocal course', () => {
+    const fc = createILSCourseGeoJSON([loc]);
+    const line = fc.features[0]!.geometry as GeoJSON.LineString;
+    const [start, end] = [line.coordinates[0]!, line.coordinates.at(-1)!];
+    expect(start).toEqual([loc.longitude, loc.latitude]);
+    const distNm = Math.hypot(
+      (end[1]! - loc.latitude) * 60,
+      (end[0]! - loc.longitude) * 60 * Math.cos((loc.latitude * Math.PI) / 180)
+    );
+    expect(distNm).toBeCloseTo(ILS_BEAM_CONSTANTS.BEAM_LENGTH_NM, 0);
+    // course 163 → line heads 343 (north-west-ish): end lies north and west
+    expect(end[1]!).toBeGreaterThan(loc.latitude);
+    expect(end[0]!).toBeLessThan(loc.longitude);
   });
 });

@@ -406,7 +406,7 @@
     "unpaved": "未舗装 (芝生/土/砂利)",
     "showOnly": "表示のみ",
     "iataOnly": "商用空港 (IATA)",
-    "customOnly": "カスタムシーナリー",
+    "customOnly": "カスタムシーナリーのみ",
     "proceduresOnly": "計器進入方式のある空港のみ",
     "surfaceType": "路面の種類",
     "runwaySurface": "滑走路面",
@@ -421,10 +421,29 @@
   },
   "explore": {
     "title": "探索",
+    "gateFilter": {
+      "label": "最小スポット",
+      "any": "すべて",
+      "aircraft": "現在の機体、{{span}}",
+      "option": "コード {{code}}、{{span}} まで"
+    },
+    "gateSize": "最大スポット、翼幅 {{span}} まで",
+    "gateSizeRoute": "小さい側の空港の最大スポット、翼幅 {{span}} まで",
     "tabs": {
       "random": "ランダム",
       "routes": "ルート",
-      "weather": "気象"
+      "weather": "気象",
+      "online": "オンライン",
+      "logbook": "ログブック"
+    },
+    "online": {
+      "networkOff": "レイヤーで VATSIM か IVAO をオンにすると、誰がオンラインか表示されます。",
+      "none": "現在オンラインの管制官はいません。"
+    },
+    "logbook": {
+      "none": "ログブックに完了したフライトはまだありません。",
+      "flights_one": "{{count}} 回",
+      "flights_other": "{{count}} 回"
     },
     "weather": {
       "error": "気象情報を読み込めませんでした",
@@ -1188,7 +1207,18 @@
       "exportSuccess": "Follow the Greens用にルートをエクスポートしました",
       "summary": "{{taxiways}} 経由、{{distance}}"
     },
-    "frequencies": "周波数"
+    "frequencies": "周波数",
+    "atcSurface": "SFC",
+    "atcUnlimited": "UNL",
+    "atcSectorFreqs_one": "{{count}} 周波数",
+    "atcSectorFreqs_other": "{{count}} 周波数",
+    "atcRole": {
+      "del": "DEL",
+      "gnd": "GND",
+      "twr": "TWR",
+      "app": "APP",
+      "ctr": "CTR"
+    }
   },
   "navigation": {
     "heading": "方位",
@@ -1717,6 +1747,16 @@
       }
     },
     "browser": {
+      "errors": {
+        "NOT_FOUND": "見つかりません: {{path}}",
+        "SCAN_FAILED": "スキャンに失敗しました: {{reason}}",
+        "TOGGLE_FAILED": "切り替えできません: {{reason}}",
+        "DELETE_FAILED": "削除できません: {{reason}}",
+        "PLUGIN_IN_USE": "X-Plane がこのプラグインを使用中です。X-Plane を終了してやり直してください。",
+        "PERMISSION_DENIED": "アクセスが拒否されました。X-Plane フォルダは保護された場所にあります。X-Dispatch を管理者として実行してください。",
+        "PATH_TRAVERSAL": "安全でないパスを拒否しました: {{path}}",
+        "INVALID_INPUT": "無効な入力: {{field}}"
+      },
       "searchPlaceholder": "検索...",
       "stats": {
         "total": "合計{{count}}件",
@@ -1745,6 +1785,15 @@
       "version": "v{{version}}"
     },
     "scenery": {
+      "errors": {
+        "INI_NOT_FOUND": "scenery_packs.ini が見つかりません。X-Plane を一度起動してファイルを作成してください。",
+        "INI_PARSE_ERROR": "scenery_packs.ini の {{line}} 行目を読めません: {{content}}",
+        "FOLDER_NOT_FOUND": "シーナリーフォルダが見つかりません: {{folderName}}",
+        "DSF_INVALID": "無効な DSF ファイル: {{reason}}",
+        "DSF_COMPRESSED": "圧縮 DSF はまだ対応していません: {{path}}",
+        "WRITE_FAILED": "scenery_packs.ini を書き込めません: {{reason}}",
+        "BACKUP_FAILED": "バックアップに失敗しました: {{reason}}"
+      },
       "loading": "シーナリーフォルダを確認中...",
       "loadingHint": "大規模なインストールでは時間がかかる場合があります",
       "loadFailed": "シーナリーの読み込みに失敗しました",
