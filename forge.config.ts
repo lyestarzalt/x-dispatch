@@ -32,6 +32,8 @@ const config: ForgeConfig = {
   makers: [],
   plugins: [
     new VitePlugin({
+      // Relaunch the app when the main process bundle rebuilds during `start`.
+      hotRestart: true,
       build: [
         {
           entry: 'src/main.ts',
