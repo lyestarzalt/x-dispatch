@@ -38,8 +38,9 @@ export function getFileMtime(filePath: string): number | null {
  * kept in the file-metadata table under a path no apt.dat can have.
  *
  * 2: country row normalised to one name per ISO code.
+ * 3: widest stand code (1301 rows) stored per airport.
  */
-export const SCANNER_VERSION = 2;
+export const SCANNER_VERSION = 3;
 export const SCANNER_META_PATH = '#scanner';
 
 /**
@@ -189,6 +190,7 @@ export async function insertAirports(airportEntries: ParsedAirportEntry[]): Prom
     elevation: a.elevation,
     runwayCount: a.runwayCount,
     primarySurfaceType: a.primarySurfaceType,
+    maxStandCode: a.maxStandCode,
     data: a.data,
     sourceFile: a.sourceFile,
     city: a.city,
@@ -229,6 +231,7 @@ export async function insertCustomAirports(airportEntries: ParsedAirportEntry[])
     elevation: a.elevation,
     runwayCount: a.runwayCount,
     primarySurfaceType: a.primarySurfaceType,
+    maxStandCode: a.maxStandCode,
     data: a.data,
     sourceFile: a.sourceFile,
     city: a.city,
@@ -284,6 +287,7 @@ export function getAllAirportsFromDb(procedureIcaos: ReadonlySet<string> = NO_CI
     sourceFile: airports.sourceFile,
     runwayCount: airports.runwayCount,
     primarySurfaceType: airports.primarySurfaceType,
+    maxStandCode: airports.maxStandCode,
     country: airports.country,
   };
 
@@ -308,6 +312,7 @@ export function getAllAirportsFromDb(procedureIcaos: ReadonlySet<string> = NO_CI
       sourceFile: airportsCustom.sourceFile,
       runwayCount: airportsCustom.runwayCount,
       primarySurfaceType: airportsCustom.primarySurfaceType,
+      maxStandCode: airportsCustom.maxStandCode,
       country: airportsCustom.country,
     })
     .from(airportsCustom)
@@ -330,6 +335,7 @@ export function getAllAirportsFromDb(procedureIcaos: ReadonlySet<string> = NO_CI
     elevation: r.elevation ?? 0,
     country: r.country ?? '',
     hasProcedures: procedureIcaos.has(r.icao),
+    maxStandCode: r.maxStandCode ?? undefined,
   }));
 }
 

@@ -421,6 +421,8 @@
   },
   "explore": {
     "title": "探索",
+    "gateSize": "最大停机位，翼展最大 {{span}}",
+    "gateSizeRoute": "较小一端机场的最大停机位，翼展最大 {{span}}",
     "tabs": {
       "random": "随机",
       "routes": "航线",

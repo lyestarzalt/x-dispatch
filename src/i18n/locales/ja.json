@@ -421,6 +421,8 @@
   },
   "explore": {
     "title": "探索",
+    "gateSize": "最大スポット、翼幅 {{span}} まで",
+    "gateSizeRoute": "小さい側の空港の最大スポット、翼幅 {{span}} まで",
     "tabs": {
       "random": "ランダム",
       "routes": "ルート",

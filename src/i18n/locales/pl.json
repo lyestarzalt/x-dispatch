@@ -421,6 +421,8 @@
   },
   "explore": {
     "title": "Eksploruj",
+    "gateSize": "Największe stanowisko, rozpiętość do {{span}}",
+    "gateSizeRoute": "Największe stanowisko na mniejszym lotnisku, rozpiętość do {{span}}",
     "tabs": {
       "random": "Losowe",
       "routes": "Trasy",

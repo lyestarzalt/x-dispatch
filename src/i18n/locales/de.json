@@ -421,6 +421,8 @@
   },
   "explore": {
     "title": "Entdecken",
+    "gateSize": "Größte Parkposition, Spannweite bis {{span}}",
+    "gateSizeRoute": "Größte Parkposition am kleineren Flugplatz, Spannweite bis {{span}}",
     "tabs": {
       "random": "Zufall",
       "routes": "Routen",

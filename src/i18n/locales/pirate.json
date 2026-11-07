@@ -421,6 +421,8 @@
   },
   "explore": {
     "title": "Scout",
+    "gateSize": "Biggest berth, wings up to {{span}}",
+    "gateSizeRoute": "Biggest berth at the lesser port, wings up to {{span}}",
     "tabs": {
       "random": "Lucky Dip",
       "routes": "Courses",

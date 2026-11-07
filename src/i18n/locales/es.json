@@ -421,6 +421,8 @@
   },
   "explore": {
     "title": "Explorar",
+    "gateSize": "Puerta más grande, envergadura hasta {{span}}",
+    "gateSizeRoute": "Puerta más grande del aeropuerto menor, envergadura hasta {{span}}",
     "tabs": {
       "random": "Aleatoria",
       "routes": "Rutas",

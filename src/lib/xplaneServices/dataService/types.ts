@@ -21,6 +21,11 @@ export interface Airport {
   country: string;
   /** True when the airport's CIFP file holds at least one SID, STAR or approach. */
   hasProcedures: boolean;
+  /**
+   * ICAO aerodrome reference code letter (A–F) of the widest stand, from the
+   * apt.dat 1301 rows. Absent when no stand carries a size.
+   */
+  maxStandCode?: string;
 }
 
 export interface AirportSourceBreakdown {
@@ -38,6 +43,7 @@ export interface ParsedAirportEntry {
   elevation?: number;
   runwayCount?: number;
   primarySurfaceType?: number;
+  maxStandCode?: string;
   data: string;
   sourceFile: string;
   city?: string;

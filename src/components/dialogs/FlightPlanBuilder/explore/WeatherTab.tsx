@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils/helpers';
 import type { WeatherCategory } from '@/lib/weatherScan/parseMetarFeed';
 import type { Airport } from '@/lib/xplaneServices/dataService';
 import { WEATHER_CATEGORIES, filterByCategory, trackEvent, useWeatherScanQuery } from '@/queries';
+import { GateSizeTag } from './GateSizeTag';
 import { WEATHER_CATEGORY_ICON } from './weatherIcons';
 
 const GATEWAY_URL = 'https://gateway.x-plane.com';
@@ -109,8 +110,11 @@ export function WeatherTab({ airports, onPick }: WeatherTabProps) {
                     : 'cursor-default'
                 )}
               >
-                <span className="text-info mt-px shrink-0 font-mono text-sm font-semibold">
-                  {observation.icao}
+                <span className="flex shrink-0 flex-col items-start gap-0.5">
+                  <span className="text-info mt-px font-mono text-sm font-semibold">
+                    {observation.icao}
+                  </span>
+                  <GateSizeTag code={airport?.maxStandCode} />
                 </span>
 
                 <div className="min-w-0 flex-1 space-y-0.5">

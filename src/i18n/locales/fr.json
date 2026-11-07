@@ -421,6 +421,8 @@
   },
   "explore": {
     "title": "Explorer",
+    "gateSize": "Plus grand poste, envergure jusqu'à {{span}}",
+    "gateSizeRoute": "Plus grand poste du plus petit aéroport, envergure jusqu'à {{span}}",
     "tabs": {
       "random": "Aléatoire",
       "routes": "Routes",

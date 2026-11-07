@@ -421,6 +421,8 @@
   },
   "explore": {
     "title": "Explore",
+    "gateSize": "Largest gate, wingspan up to {{span}}",
+    "gateSizeRoute": "Largest gate at the smaller end, wingspan up to {{span}}",
     "tabs": {
       "random": "Random",
       "routes": "Routes",

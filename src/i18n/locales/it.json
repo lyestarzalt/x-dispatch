@@ -421,6 +421,8 @@
   },
   "explore": {
     "title": "Esplora",
+    "gateSize": "Piazzola più grande, apertura alare fino a {{span}}",
+    "gateSizeRoute": "Piazzola più grande dello scalo minore, apertura alare fino a {{span}}",
     "tabs": {
       "random": "Casuale",
       "routes": "Rotte",
