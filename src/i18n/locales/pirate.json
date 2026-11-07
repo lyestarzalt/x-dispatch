@@ -421,6 +421,12 @@
   },
   "explore": {
     "title": "Scout",
+    "gateFilter": {
+      "label": "Smallest berth",
+      "any": "Any size",
+      "aircraft": "This here ship, {{span}}",
+      "option": "Code {{code}}, up to {{span}}"
+    },
     "gateSize": "Biggest berth, wings up to {{span}}",
     "gateSizeRoute": "Biggest berth at the lesser port, wings up to {{span}}",
     "tabs": {

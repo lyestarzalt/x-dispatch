@@ -39,6 +39,8 @@ const LENGTH_RANGE: Record<LengthMode, { min: number; max: number; step: number;
 
 interface RandomRouteFinderProps {
   airports: Airport[];
+  /** Destinations to draw from, when a filter narrows the full list. */
+  candidates?: Airport[];
   selectedRoute: { from: string; to: string } | null;
   onSelectRoute: (route: { from: string; to: string } | null) => void;
   /** The plan's departure and class, edited in the plan builder itself. */
@@ -50,6 +52,7 @@ interface RandomRouteFinderProps {
 
 export function RandomRouteFinder({
   airports,
+  candidates,
   selectedRoute,
   onSelectRoute,
   originIcao,
@@ -105,7 +108,7 @@ export function RandomRouteFinder({
       weatherByIcao.set(observation.icao, observation.categories);
     }
     const routes = findRandomRoutes(
-      airports,
+      candidates ?? airports,
       origin,
       {
         minNm: bandNm.min,

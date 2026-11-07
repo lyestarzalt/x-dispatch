@@ -421,6 +421,12 @@
   },
   "explore": {
     "title": "Explore",
+    "gateFilter": {
+      "label": "Minimum gate",
+      "any": "Any size",
+      "aircraft": "Current aircraft, {{span}}",
+      "option": "Code {{code}}, up to {{span}}"
+    },
     "gateSize": "Largest gate, wingspan up to {{span}}",
     "gateSizeRoute": "Largest gate at the smaller end, wingspan up to {{span}}",
     "tabs": {

@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Custom navaids and waypoints on the map.** `user_nav.dat` and `user_fix.dat` in Custom Data are read on top of the X-Plane data.
 - **Area control in the airport frequency list.** The centre over the airport, and the approach facility when the airport has none of its own.
 - **Largest gate on the Explore lists.** Each airport shows the wingspan its widest stand takes. Routes shows the tighter end.
+- **Explore lists filter by gate size.** Pick a code letter, or the connected aircraft, and only airports that can park it are listed.
 
 ### Changed
 

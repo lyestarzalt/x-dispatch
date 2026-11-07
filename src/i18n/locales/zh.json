@@ -421,6 +421,12 @@
   },
   "explore": {
     "title": "探索",
+    "gateFilter": {
+      "label": "最小停机位",
+      "any": "任意大小",
+      "aircraft": "当前飞机，{{span}}",
+      "option": "代码 {{code}}，最大 {{span}}"
+    },
     "gateSize": "最大停机位，翼展最大 {{span}}",
     "gateSizeRoute": "较小一端机场的最大停机位，翼展最大 {{span}}",
     "tabs": {

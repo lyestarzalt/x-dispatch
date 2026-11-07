@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { airlineName, isWideBody, normalizeOperation, normalizeWidthCode } from './standIdentity';
+import {
+  airlineName,
+  isWideBody,
+  normalizeOperation,
+  normalizeWidthCode,
+  smallestStandCodeFor,
+  standFits,
+} from './standIdentity';
 
 describe('standIdentity', () => {
   it('normalises operation types and falls back to none', () => {
@@ -24,5 +31,22 @@ describe('standIdentity', () => {
   it('resolves known airline designators', () => {
     expect(airlineName('dlh')).toBe('Lufthansa');
     expect(airlineName('XYZ')).toBeUndefined();
+  });
+});
+
+describe('stand size filter', () => {
+  it('picks the narrowest code that takes a wingspan', () => {
+    expect(smallestStandCodeFor(10)).toBe('A');
+    expect(smallestStandCodeFor(15)).toBe('A');
+    expect(smallestStandCodeFor(35.8)).toBe('C');
+    expect(smallestStandCodeFor(79.8)).toBe('F');
+    expect(smallestStandCodeFor(81)).toBeUndefined();
+  });
+
+  it('keeps airports whose widest stand is at least the minimum', () => {
+    expect(standFits('E', 'C')).toBe(true);
+    expect(standFits('C', 'C')).toBe(true);
+    expect(standFits('B', 'C')).toBe(false);
+    expect(standFits(undefined, 'A')).toBe(false);
   });
 });

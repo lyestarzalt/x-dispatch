@@ -421,6 +421,12 @@
   },
   "explore": {
     "title": "Entdecken",
+    "gateFilter": {
+      "label": "Mindestgröße",
+      "any": "Beliebig",
+      "aircraft": "Aktuelles Flugzeug, {{span}}",
+      "option": "Code {{code}}, bis {{span}}"
+    },
     "gateSize": "Größte Parkposition, Spannweite bis {{span}}",
     "gateSizeRoute": "Größte Parkposition am kleineren Flugplatz, Spannweite bis {{span}}",
     "tabs": {

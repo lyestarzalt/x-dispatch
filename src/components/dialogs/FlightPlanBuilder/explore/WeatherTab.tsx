@@ -14,11 +14,13 @@ const GATEWAY_URL = 'https://gateway.x-plane.com';
 
 interface WeatherTabProps {
   airports: Airport[];
+  /** Airports in X-Plane that fail this are left out; unknown stations stay listed. */
+  fits?: (airport: Airport) => boolean;
   /** A station in X-Plane was picked: it becomes the plan's arrival. */
   onPick: (airport: Airport) => void;
 }
 
-export function WeatherTab({ airports, onPick }: WeatherTabProps) {
+export function WeatherTab({ airports, fits, onPick }: WeatherTabProps) {
   const { t } = useTranslation();
   const [category, setCategory] = useState<WeatherCategory>('snow');
   const selectCategory = (key: WeatherCategory) => {
@@ -33,7 +35,14 @@ export function WeatherTab({ airports, onPick }: WeatherTabProps) {
     return index;
   }, [airports]);
 
-  const observations = useMemo(() => filterByCategory(data, category), [data, category]);
+  const observations = useMemo(() => {
+    const inCategory = filterByCategory(data, category);
+    if (!fits) return inCategory;
+    return inCategory.filter((observation) => {
+      const airport = airportsByIcao.get(observation.icao);
+      return airport === undefined || fits(airport);
+    });
+  }, [data, category, fits, airportsByIcao]);
 
   const counts = useMemo(() => {
     const totals = {} as Record<WeatherCategory, number>;

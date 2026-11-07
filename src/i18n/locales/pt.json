@@ -421,6 +421,12 @@
   },
   "explore": {
     "title": "Explorar",
+    "gateFilter": {
+      "label": "Portão mínimo",
+      "any": "Qualquer tamanho",
+      "aircraft": "Aeronave atual, {{span}}",
+      "option": "Código {{code}}, até {{span}}"
+    },
     "gateSize": "Maior portão, envergadura até {{span}}",
     "gateSizeRoute": "Maior portão do aeroporto menor, envergadura até {{span}}",
     "tabs": {

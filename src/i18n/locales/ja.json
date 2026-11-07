@@ -421,6 +421,12 @@
   },
   "explore": {
     "title": "探索",
+    "gateFilter": {
+      "label": "最小スポット",
+      "any": "すべて",
+      "aircraft": "現在の機体、{{span}}",
+      "option": "コード {{code}}、{{span}} まで"
+    },
     "gateSize": "最大スポット、翼幅 {{span}} まで",
     "gateSizeRoute": "小さい側の空港の最大スポット、翼幅 {{span}} まで",
     "tabs": {

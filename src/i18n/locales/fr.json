@@ -421,6 +421,12 @@
   },
   "explore": {
     "title": "Explorer",
+    "gateFilter": {
+      "label": "Poste minimum",
+      "any": "Toutes tailles",
+      "aircraft": "Avion actuel, {{span}}",
+      "option": "Code {{code}}, jusqu'à {{span}}"
+    },
     "gateSize": "Plus grand poste, envergure jusqu'à {{span}}",
     "gateSizeRoute": "Plus grand poste du plus petit aéroport, envergure jusqu'à {{span}}",
     "tabs": {

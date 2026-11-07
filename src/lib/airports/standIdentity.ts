@@ -17,15 +17,30 @@ export const STAND_TINT: Record<StandOperation, string> = {
   none: '#64748b',
 };
 
+/** ICAO aerodrome reference code letters, narrowest first. */
+export const STAND_CODES = ['A', 'B', 'C', 'D', 'E', 'F'] as const;
+export type StandCode = (typeof STAND_CODES)[number];
+
 /** ICAO aerodrome reference code letter to maximum wingspan in metres. */
-export const WIDTH_CODE_WINGSPAN_M: Record<string, number> = {
-  A: 15,
-  B: 24,
-  C: 36,
-  D: 52,
-  E: 65,
-  F: 80,
-};
+export const WIDTH_CODE_WINGSPAN_M: Record<StandCode, number> & Record<string, number | undefined> =
+  {
+    A: 15,
+    B: 24,
+    C: 36,
+    D: 52,
+    E: 65,
+    F: 80,
+  };
+
+/** The narrowest code whose stands take this wingspan, or undefined beyond code F. */
+export function smallestStandCodeFor(wingspanM: number): StandCode | undefined {
+  return STAND_CODES.find((code) => wingspanM <= WIDTH_CODE_WINGSPAN_M[code]);
+}
+
+/** Whether an airport's widest stand (its code letter) takes aircraft needing `min`. */
+export function standFits(airportCode: string | undefined, min: StandCode): boolean {
+  return airportCode !== undefined && airportCode >= min;
+}
 
 export function normalizeOperation(raw: string | undefined | null): StandOperation {
   const value = (raw ?? '').toLowerCase();

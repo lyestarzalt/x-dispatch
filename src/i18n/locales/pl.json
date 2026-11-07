@@ -421,6 +421,12 @@
   },
   "explore": {
     "title": "Eksploruj",
+    "gateFilter": {
+      "label": "Minimalne stanowisko",
+      "any": "Dowolne",
+      "aircraft": "Bieżący samolot, {{span}}",
+      "option": "Kod {{code}}, do {{span}}"
+    },
     "gateSize": "Największe stanowisko, rozpiętość do {{span}}",
     "gateSizeRoute": "Największe stanowisko na mniejszym lotnisku, rozpiętość do {{span}}",
     "tabs": {

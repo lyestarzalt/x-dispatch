@@ -421,6 +421,12 @@
   },
   "explore": {
     "title": "Esplora",
+    "gateFilter": {
+      "label": "Piazzola minima",
+      "any": "Qualsiasi",
+      "aircraft": "Aereo attuale, {{span}}",
+      "option": "Codice {{code}}, fino a {{span}}"
+    },
     "gateSize": "Piazzola più grande, apertura alare fino a {{span}}",
     "gateSizeRoute": "Piazzola più grande dello scalo minore, apertura alare fino a {{span}}",
     "tabs": {
