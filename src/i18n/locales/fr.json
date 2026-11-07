@@ -1730,6 +1730,16 @@
       }
     },
     "browser": {
+      "errors": {
+        "NOT_FOUND": "Introuvable : {{path}}",
+        "SCAN_FAILED": "Analyse échouée : {{reason}}",
+        "TOGGLE_FAILED": "Impossible de basculer : {{reason}}",
+        "DELETE_FAILED": "Impossible de supprimer : {{reason}}",
+        "PLUGIN_IN_USE": "X-Plane utilise ce plugin. Fermez X-Plane et réessayez.",
+        "PERMISSION_DENIED": "Accès refusé. Le dossier X-Plane est dans un emplacement protégé. Lancez X-Dispatch en tant qu'administrateur.",
+        "PATH_TRAVERSAL": "Chemin non sûr refusé : {{path}}",
+        "INVALID_INPUT": "Saisie invalide : {{field}}"
+      },
       "searchPlaceholder": "Rechercher...",
       "stats": {
         "total": "{{count}} au total",
@@ -1758,6 +1768,15 @@
       "version": "v{{version}}"
     },
     "scenery": {
+      "errors": {
+        "INI_NOT_FOUND": "scenery_packs.ini introuvable. Lancez X-Plane une fois pour qu'il crée le fichier.",
+        "INI_PARSE_ERROR": "Lecture de scenery_packs.ini impossible à la ligne {{line}} : {{content}}",
+        "FOLDER_NOT_FOUND": "Dossier de scène introuvable : {{folderName}}",
+        "DSF_INVALID": "Fichier DSF invalide : {{reason}}",
+        "DSF_COMPRESSED": "Les DSF compressés ne sont pas encore pris en charge : {{path}}",
+        "WRITE_FAILED": "Écriture de scenery_packs.ini impossible : {{reason}}",
+        "BACKUP_FAILED": "Sauvegarde échouée : {{reason}}"
+      },
       "loading": "Analyse des dossiers de scènes...",
       "loadingHint": "Cela peut prendre un moment pour les grandes installations",
       "loadFailed": "Échec du chargement des scènes",

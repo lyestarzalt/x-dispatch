@@ -1730,6 +1730,16 @@
       }
     },
     "browser": {
+      "errors": {
+        "NOT_FOUND": "Not found: {{path}}",
+        "SCAN_FAILED": "Scan failed: {{reason}}",
+        "TOGGLE_FAILED": "Couldn't switch it: {{reason}}",
+        "DELETE_FAILED": "Couldn't delete it: {{reason}}",
+        "PLUGIN_IN_USE": "X-Plane is using this plugin. Close X-Plane and try again.",
+        "PERMISSION_DENIED": "Permission denied. The X-Plane folder is in a protected location. Run X-Dispatch as administrator.",
+        "PATH_TRAVERSAL": "Unsafe path refused: {{path}}",
+        "INVALID_INPUT": "Invalid input: {{field}}"
+      },
       "searchPlaceholder": "Search...",
       "stats": {
         "total": "{{count}} total",
@@ -1758,6 +1768,15 @@
       "version": "v{{version}}"
     },
     "scenery": {
+      "errors": {
+        "INI_NOT_FOUND": "scenery_packs.ini not found. Start X-Plane once so it creates the file.",
+        "INI_PARSE_ERROR": "Couldn't read scenery_packs.ini at line {{line}}: {{content}}",
+        "FOLDER_NOT_FOUND": "Scenery folder not found: {{folderName}}",
+        "DSF_INVALID": "Invalid DSF file: {{reason}}",
+        "DSF_COMPRESSED": "Compressed DSF isn't supported yet: {{path}}",
+        "WRITE_FAILED": "Couldn't write scenery_packs.ini: {{reason}}",
+        "BACKUP_FAILED": "Backup failed: {{reason}}"
+      },
       "loading": "Scanning scenery folders...",
       "loadingHint": "This may take a moment for large installations",
       "loadFailed": "Failed to load scenery",

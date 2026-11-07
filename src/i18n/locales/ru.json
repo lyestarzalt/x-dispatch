@@ -1730,6 +1730,16 @@
       }
     },
     "browser": {
+      "errors": {
+        "NOT_FOUND": "Не найдено: {{path}}",
+        "SCAN_FAILED": "Сканирование не удалось: {{reason}}",
+        "TOGGLE_FAILED": "Не удалось переключить: {{reason}}",
+        "DELETE_FAILED": "Не удалось удалить: {{reason}}",
+        "PLUGIN_IN_USE": "X-Plane использует этот плагин. Закройте X-Plane и повторите попытку.",
+        "PERMISSION_DENIED": "Доступ запрещён. Папка X-Plane находится в защищённом месте. Запустите X-Dispatch от имени администратора.",
+        "PATH_TRAVERSAL": "Небезопасный путь отклонён: {{path}}",
+        "INVALID_INPUT": "Недопустимый ввод: {{field}}"
+      },
       "searchPlaceholder": "Поиск...",
       "stats": {
         "total": "{{count}} всего",
@@ -1758,6 +1768,15 @@
       "version": "v{{version}}"
     },
     "scenery": {
+      "errors": {
+        "INI_NOT_FOUND": "Файл scenery_packs.ini не найден. Запустите X-Plane один раз, чтобы он его создал.",
+        "INI_PARSE_ERROR": "Не удалось прочитать scenery_packs.ini в строке {{line}}: {{content}}",
+        "FOLDER_NOT_FOUND": "Папка сценария не найдена: {{folderName}}",
+        "DSF_INVALID": "Недопустимый файл DSF: {{reason}}",
+        "DSF_COMPRESSED": "Сжатые DSF пока не поддерживаются: {{path}}",
+        "WRITE_FAILED": "Не удалось записать scenery_packs.ini: {{reason}}",
+        "BACKUP_FAILED": "Резервное копирование не удалось: {{reason}}"
+      },
       "loading": "Поиск папок сценариев...",
       "loadingHint": "Это может занять некоторое время для больших установок",
       "loadFailed": "Не удалось загрузить сценарии",

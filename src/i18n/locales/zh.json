@@ -1730,6 +1730,16 @@
       }
     },
     "browser": {
+      "errors": {
+        "NOT_FOUND": "未找到：{{path}}",
+        "SCAN_FAILED": "扫描失败：{{reason}}",
+        "TOGGLE_FAILED": "无法切换：{{reason}}",
+        "DELETE_FAILED": "无法删除：{{reason}}",
+        "PLUGIN_IN_USE": "X-Plane 正在使用此插件。请关闭 X-Plane 后重试。",
+        "PERMISSION_DENIED": "权限被拒绝。X-Plane 文件夹位于受保护的位置。请以管理员身份运行 X-Dispatch。",
+        "PATH_TRAVERSAL": "已拒绝不安全的路径：{{path}}",
+        "INVALID_INPUT": "无效输入：{{field}}"
+      },
       "searchPlaceholder": "搜索...",
       "stats": {
         "total": "共 {{count}} 个",
@@ -1758,6 +1768,15 @@
       "version": "v{{version}}"
     },
     "scenery": {
+      "errors": {
+        "INI_NOT_FOUND": "未找到 scenery_packs.ini。请先启动一次 X-Plane 以生成该文件。",
+        "INI_PARSE_ERROR": "无法读取 scenery_packs.ini 第 {{line}} 行：{{content}}",
+        "FOLDER_NOT_FOUND": "未找到地景文件夹：{{folderName}}",
+        "DSF_INVALID": "无效的 DSF 文件：{{reason}}",
+        "DSF_COMPRESSED": "暂不支持压缩的 DSF：{{path}}",
+        "WRITE_FAILED": "无法写入 scenery_packs.ini：{{reason}}",
+        "BACKUP_FAILED": "备份失败：{{reason}}"
+      },
       "loading": "正在扫描地景文件夹...",
       "loadingHint": "大型安装可能需要一些时间",
       "loadFailed": "加载地景失败",

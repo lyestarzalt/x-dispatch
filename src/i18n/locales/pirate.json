@@ -1730,6 +1730,16 @@
       }
     },
     "browser": {
+      "errors": {
+        "NOT_FOUND": "Nowhere t' be found: {{path}}",
+        "SCAN_FAILED": "Scoutin' failed: {{reason}}",
+        "TOGGLE_FAILED": "Couldn't flip it: {{reason}}",
+        "DELETE_FAILED": "Couldn't scuttle it: {{reason}}",
+        "PLUGIN_IN_USE": "X-Plane be usin' this plugin. Close X-Plane an' try again.",
+        "PERMISSION_DENIED": "Access denied, matey. The X-Plane hold be in protected waters. Run X-Dispatch as the admiral.",
+        "PATH_TRAVERSAL": "Treacherous path refused: {{path}}",
+        "INVALID_INPUT": "Bad input: {{field}}"
+      },
       "searchPlaceholder": "Search fer...",
       "stats": {
         "total": "{{count}} aboard",
@@ -1758,6 +1768,15 @@
       "version": "v{{version}}"
     },
     "scenery": {
+      "errors": {
+        "INI_NOT_FOUND": "No scenery_packs.ini aboard. Set sail in X-Plane once so it writes the file.",
+        "INI_PARSE_ERROR": "Couldn't read scenery_packs.ini at line {{line}}: {{content}}",
+        "FOLDER_NOT_FOUND": "Scenery hold not found: {{folderName}}",
+        "DSF_INVALID": "Rotten DSF file: {{reason}}",
+        "DSF_COMPRESSED": "Compressed DSF ain't supported yet: {{path}}",
+        "WRITE_FAILED": "Couldn't write scenery_packs.ini: {{reason}}",
+        "BACKUP_FAILED": "Backup failed: {{reason}}"
+      },
       "loading": "Scannin' scenery folders...",
       "loadingHint": "This may take a moment fer large installations",
       "loadFailed": "Failed ta load scenery",
