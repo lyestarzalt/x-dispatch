@@ -5,20 +5,14 @@ import type { ConfigEnv, UserConfig } from 'vite';
 import { defineConfig } from 'vite';
 import pkg from './package.json' with { type: 'json' };
 import { CONTENT_SECURITY_POLICY, CSP_META_PLACEHOLDER } from './src/config/csp';
-import { pluginExposeRenderer } from './vite.base.config.mts';
 
 // https://vitejs.dev/config
 export default defineConfig((env) => {
-  const forgeEnv = env as ConfigEnv<'renderer'>;
-  const { root, mode, forgeConfigSelf } = forgeEnv;
+  const { forgeConfigSelf } = env as ConfigEnv<'renderer'>;
   const name = forgeConfigSelf.name ?? '';
 
   return {
-    root,
-    mode,
-    base: './',
     build: {
-      outDir: `.vite/renderer/${name}`,
       sourcemap: 'hidden',
       target: 'es2022',
     },
@@ -35,7 +29,6 @@ export default defineConfig((env) => {
     },
     plugins: [
       react(),
-      pluginExposeRenderer(name),
       {
         name: 'x-dispatch-csp',
         transformIndexHtml: (html: string) =>
@@ -53,12 +46,10 @@ export default defineConfig((env) => {
       }),
     ],
     resolve: {
-      preserveSymlinks: true,
       alias: {
         '@': path.resolve(import.meta.dirname, './src'),
         '@assets': path.resolve(import.meta.dirname, './assets'),
       },
     },
-    clearScreen: false,
   } as UserConfig;
 });

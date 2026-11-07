@@ -1,20 +1,19 @@
 import { sentryVitePlugin } from '@sentry/vite-plugin';
 import path from 'path';
 import type { ConfigEnv, UserConfig } from 'vite';
-import { defineConfig, mergeConfig } from 'vite';
+import { defineConfig } from 'vite';
 import pkg from './package.json' with { type: 'json' };
-import { external, getBuildConfig, getBuildDefine, pluginHotRestart } from './vite.base.config.mts';
+import { external } from './vite.base.config.mts';
 
 // https://vitejs.dev/config
 export default defineConfig((env) => {
-  const forgeEnv = env as ConfigEnv<'build'>;
-  const { forgeConfigSelf } = forgeEnv;
-  const define = getBuildDefine(forgeEnv);
+  const { forgeConfigSelf } = env as ConfigEnv<'build'>;
   const config: UserConfig = {
     build: {
       lib: {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         entry: forgeConfigSelf.entry!,
+        // Keeps the `.js` name that package.json `main` points at.
         fileName: () => '[name].js',
         formats: ['cjs'],
       },
@@ -24,7 +23,6 @@ export default defineConfig((env) => {
       sourcemap: 'hidden',
     },
     plugins: [
-      pluginHotRestart('restart'),
       sentryVitePlugin({
         authToken: process.env.SENTRY_AUTH_TOKEN,
         org: process.env.SENTRY_ORG,
@@ -36,15 +34,12 @@ export default defineConfig((env) => {
         telemetry: false,
       }),
     ],
-    define,
     resolve: {
-      // Load the Node.js entry.
-      mainFields: ['module', 'jsnext:main', 'jsnext'],
       alias: {
         '@': path.resolve(import.meta.dirname, './src'),
       },
     },
   };
 
-  return mergeConfig(getBuildConfig(forgeEnv), config);
+  return config;
 });

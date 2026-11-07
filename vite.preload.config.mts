@@ -1,50 +1,25 @@
 import { sentryVitePlugin } from '@sentry/vite-plugin';
 import path from 'path';
-import type { ConfigEnv, Plugin, UserConfig } from 'vite';
-import { defineConfig, mergeConfig } from 'vite';
+import type { UserConfig } from 'vite';
+import { defineConfig } from 'vite';
 import pkg from './package.json' with { type: 'json' };
-import { external, getBuildConfig, pluginHotRestart } from './vite.base.config.mts';
-
-// @electron-forge/plugin-vite merges `inlineDynamicImports: true` into the
-// preload output; rolldown deprecated that option in favor of
-// `codeSplitting: false`, so swap it after the merge to keep the single-file
-// output without the startup warning.
-function pluginSingleChunkOutput(): Plugin {
-  return {
-    name: 'x-dispatch:single-chunk-output',
-    config(config) {
-      const output = config.build?.rollupOptions?.output;
-      for (const o of Array.isArray(output) ? output : output ? [output] : []) {
-        delete (o as Record<string, unknown>).inlineDynamicImports;
-        (o as Record<string, unknown>).codeSplitting = false;
-      }
-    },
-  };
-}
+import { external } from './vite.base.config.mts';
 
 // https://vitejs.dev/config
-export default defineConfig((env) => {
-  const forgeEnv = env as ConfigEnv<'build'>;
-  const { forgeConfigSelf } = forgeEnv;
+export default defineConfig(() => {
   const config: UserConfig = {
     build: {
       rollupOptions: {
         external,
-        // Preload scripts may contain Web assets, so use the `build.rollupOptions.input` instead `build.lib.entry`.
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        input: forgeConfigSelf.entry!,
         output: {
-          format: 'cjs',
+          // Keeps the `preload.js` name main.ts loads.
           entryFileNames: '[name].js',
           chunkFileNames: '[name].js',
-          assetFileNames: '[name].[ext]',
         },
       },
       sourcemap: 'hidden',
     },
     plugins: [
-      pluginSingleChunkOutput(),
-      pluginHotRestart('reload'),
       sentryVitePlugin({
         authToken: process.env.SENTRY_AUTH_TOKEN,
         org: process.env.SENTRY_ORG,
@@ -63,5 +38,5 @@ export default defineConfig((env) => {
     },
   };
 
-  return mergeConfig(getBuildConfig(forgeEnv), config);
+  return config;
 });
