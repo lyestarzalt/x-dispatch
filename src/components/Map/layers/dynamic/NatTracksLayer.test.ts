@@ -1,6 +1,10 @@
+import i18next from 'i18next';
 import { describe, expect, it } from 'vitest';
 import type { OceanicTrackInfo } from '@/lib/flightplan/builder/types';
 import { natTrackPopupHtml, natTracksGeoJSON } from './NatTracksLayer';
+
+// No resources, so t() returns the key and the assertions can match on it.
+void i18next.init({ lng: 'en', resources: {} });
 
 const track = (id: string, levels: number[]): OceanicTrackInfo => ({
   id,
@@ -94,7 +98,7 @@ describe('natTrackPopupHtml', () => {
   });
 
   it('tags a track from the last published set', () => {
-    // i18n is not initialised in tests, so the key stands in for the text.
+    // i18n has no resources in tests, so the key stands in for the text.
     expect(natTrackPopupHtml(track('A', [350]), 'expired')).toContain(
       'planBuilder.tracks.lastPublished'
     );

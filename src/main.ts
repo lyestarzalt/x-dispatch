@@ -222,6 +222,8 @@ if (shouldInitSentry) {
     // The default depth of 3 flattens a refused flight payload's aircraft,
     // weight and start objects to "[Object]" in the flight_rejection context.
     normalizeDepth: 7,
+    // v11 infers the user IP by default; nothing here needs it and v10 never sent it.
+    dataCollection: { userInfo: false },
     tracesSampleRate: 1.0,
     integrations: [Sentry.startupTracingIntegration()],
     ignoreErrors: [TRANSIENT_NET_ERROR_PATTERN],
