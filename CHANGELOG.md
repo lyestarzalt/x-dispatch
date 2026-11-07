@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Custom navaids and waypoints show on the map.** Pilots' own `user_nav.dat` and `user_fix.dat` in Custom Data are read on top of the X-Plane data, the way X-Plane merges them, and picked up again when either file changes.
+- **Area control in the airport frequency list.** The centre over the airport, and the approach facility when the airport has no approach frequency of its own, are listed after the airport's frequencies. Tap a row for every sector and its frequency.
+- **The largest gate at a glance.** Airports in Explore's Weather, Routes and Random lists show the wingspan their widest stand takes, so you know before picking one whether your aircraft fits. Routes shows the tighter end of the pair.
+
+### Changed
+
+- **The custom scenery switch in the airport list says "Custom scenery only".** It is a filter, like "Instrument procedures only" next to it, which is why other airports disappeared when it was on.
+- **Airspace boundaries are drawn by class.** Classes D to G are dashed, and each class has its own fill, so restricted and prohibited areas stand out.
+- **Navaid, ILS and airspace labels follow the basemap theme** when you switch styles, like airport labels already did.
+
+### Fixed
+
+- **Disabling a scenery pack in the add-on manager now holds.** The file X-Dispatch wrote was missing a header line X-Plane 12.4 insists on, so X-Plane rebuilt the file on its next start with every pack enabled. The same fix keeps the order you saved. Scenery changes sent in quick succession no longer overwrite each other.
+- **No more ILS from the airport next door.** The runway list in the airport panel showed localizers from neighbouring airports that happened to share a runway number. It now lists only the airport's own.
+- **The folded flight planner no longer covers the compass and track buttons.** It is only as tall as its content.
+- **RNAV (RNP) approaches are no longer listed as RNAV (GPS).**
+- **One symbol per navaid station.** The DME part of a VOR, VORTAC or ILS was drawn as a second icon on top of the station, and ILS DMEs showed as navaid diamonds on runways. Layer counts now match a chart.
+- **VOR compass roses point to magnetic north.**
+- **The ILS centreline and the glideslope wedge end together** at 18 NM.
+- **The 50 NM area around an airport is no longer cut short east to west at high latitudes.** At 63°N it reached only 23 NM.
+
 ## [2.11.0] - 2026-11-01
 
 ### Added
