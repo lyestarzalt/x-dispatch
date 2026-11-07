@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **A damaged airport cache is rebuilt instead of failing every start.**
 - **A plugin that can't be switched off while X-Plane runs says so.** The message used to blame folder permissions.
 - **Disabling a scenery pack now holds.** The file X-Dispatch wrote lacked a header line X-Plane 12.4 requires, so X-Plane rebuilt it with every pack enabled.
+- **ILS courses in the airport panel are right.** The magnetic course was taken for the variation, so 035°M came out as 345°M.
 - **No more ILS from the airport next door in the runway list.**
 - **The folded flight planner no longer covers the compass and track buttons.**
 - **RNAV (RNP) approaches no longer listed as RNAV (GPS).**

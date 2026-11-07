@@ -194,3 +194,32 @@ describe('paired DME rows (row code 12)', () => {
     expect(isIlsDme(data.find((n) => n.id === 'ZZD')!)).toBe(false);
   });
 });
+
+describe('ILS localizer course (row codes 4 and 5)', () => {
+  // XP1150+ packs magnetic course * 360 + true bearing into the bearing field.
+  const content = [
+    'I',
+    '1200 Version - data cycle 2610',
+    ' 4  42.382213889  -70.996719444       10    11030    18  12619.675 IBOS KBOS K6 04R ILS-cat-III',
+    // Course 002°M with a true bearing of 359.0°: 2 * 360 + 359 = 1079.
+    ' 4  60.000000000   10.000000000       10    10950    18   1079.000 IWRP ENWR EN 02 ILS-cat-I',
+    '99',
+  ].join('\n');
+
+  it('splits the field into true bearing, magnetic course and their difference', () => {
+    const { data } = parseNavaids(content);
+    const ibos = data.find((n) => n.id === 'IBOS')!;
+    expect(ibos.bearing).toBeCloseTo(19.675, 3);
+    expect(ibos.course).toBe(35);
+    // Boston: about 15° west, so negative.
+    expect(ibos.magneticVariation).toBeCloseTo(-15.325, 3);
+  });
+
+  it('keeps the variation small across the 360 wrap', () => {
+    const { data } = parseNavaids(content);
+    const iwrp = data.find((n) => n.id === 'IWRP')!;
+    expect(iwrp.bearing).toBeCloseTo(359, 3);
+    expect(iwrp.course).toBe(2);
+    expect(iwrp.magneticVariation).toBeCloseTo(-3, 3);
+  });
+});

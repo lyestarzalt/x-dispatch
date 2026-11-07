@@ -58,6 +58,12 @@ function extractMagneticCourse(encoded: number): number {
   return Math.floor(encoded / 360);
 }
 
+/** Degrees from true to magnetic, east positive, in (-180, 180]. */
+function variationBetween(trueDeg: number, magneticDeg: number): number {
+  const diff = (((trueDeg - magneticDeg) % 360) + 540) % 360;
+  return Math.round((diff - 180) * 1000) / 1000;
+}
+
 function extractGlidepathAngle(encoded: number): number {
   return Math.floor(encoded / 1000) / 100;
 }
@@ -108,9 +114,13 @@ function parseNavaidLine(parts: string[], rowCode: number): Omit<Navaid, 'type'>
     case 4:
     case 5: {
       if (!hasMinLength(parts, 12)) return null;
+      // XP1150+ packs the published magnetic front course and the true bearing into one
+      // number: course * 360 + true (KBOS 04R: 12619.675 = 035°M, 019.7°T). The variation is
+      // the difference, not the course itself (GitHub #336).
       const encodedLocBearing = parseFloat(parts[6]);
       bearing = extractBearing(encodedLocBearing);
-      magneticVariation = extractMagneticCourse(encodedLocBearing);
+      course = extractMagneticCourse(encodedLocBearing);
+      magneticVariation = variationBetween(bearing, course);
       id = parts[7];
       associatedAirport = parts[8];
       region = parts[9];

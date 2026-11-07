@@ -42,9 +42,11 @@ export type NavDataType =
  * airways 2: the one-way letter and the level family were read from each other's field.
  * airways 3: segments topping above FL600 were dropped by the level bound.
  * navaids 2: row-12 paired DME components are no longer stored (duplicate symbols).
+ * navaids 3: ILS variation is the difference between true bearing and magnetic course, and
+ *   the course is stored; it used to hold the course itself.
  */
 export const PARSER_VERSIONS: Record<NavDataType, number> = {
-  navaids: 2,
+  navaids: 3,
   waypoints: 1,
   airways: 3,
   airspaces: 1,
