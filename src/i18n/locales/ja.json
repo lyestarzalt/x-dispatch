@@ -432,7 +432,18 @@
     "tabs": {
       "random": "ランダム",
       "routes": "ルート",
-      "weather": "気象"
+      "weather": "気象",
+      "online": "オンライン",
+      "logbook": "ログブック"
+    },
+    "online": {
+      "networkOff": "レイヤーで VATSIM か IVAO をオンにすると、誰がオンラインか表示されます。",
+      "none": "現在オンラインの管制官はいません。"
+    },
+    "logbook": {
+      "none": "ログブックに完了したフライトはまだありません。",
+      "flights_one": "{{count}} 回",
+      "flights_other": "{{count}} 回"
     },
     "weather": {
       "error": "気象情報を読み込めませんでした",

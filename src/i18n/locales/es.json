@@ -432,7 +432,18 @@
     "tabs": {
       "random": "Aleatoria",
       "routes": "Rutas",
-      "weather": "Meteo"
+      "weather": "Meteo",
+      "online": "En línea",
+      "logbook": "Bitácora"
+    },
+    "online": {
+      "networkOff": "Activa VATSIM o IVAO en Capas para ver quién está en línea.",
+      "none": "No hay controladores en línea ahora mismo."
+    },
+    "logbook": {
+      "none": "Aún no hay vuelos completados en la bitácora.",
+      "flights_one": "{{count}} vuelo",
+      "flights_other": "{{count}} vuelos"
     },
     "weather": {
       "error": "No se pudo cargar la meteorología",

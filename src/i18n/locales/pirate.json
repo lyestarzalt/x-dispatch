@@ -432,7 +432,18 @@
     "tabs": {
       "random": "Lucky Dip",
       "routes": "Courses",
-      "weather": "Skies"
+      "weather": "Skies",
+      "online": "Online",
+      "logbook": "Log"
+    },
+    "online": {
+      "networkOff": "Hoist VATSIM or IVAO in Layers to see who be on watch.",
+      "none": "No controllers on watch right now."
+    },
+    "logbook": {
+      "none": "No finished voyages in the log yet.",
+      "flights_one": "{{count}} voyage",
+      "flights_other": "{{count}} voyages"
     },
     "weather": {
       "error": "Couldn't spy the skies",

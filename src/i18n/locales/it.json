@@ -432,7 +432,18 @@
     "tabs": {
       "random": "Casuale",
       "routes": "Rotte",
-      "weather": "Meteo"
+      "weather": "Meteo",
+      "online": "Online",
+      "logbook": "Logbook"
+    },
+    "online": {
+      "networkOff": "Attiva VATSIM o IVAO in Livelli per vedere chi è online.",
+      "none": "Nessun controllore online al momento."
+    },
+    "logbook": {
+      "none": "Nessun volo completato nel logbook.",
+      "flights_one": "{{count}} volo",
+      "flights_other": "{{count}} voli"
     },
     "weather": {
       "error": "Impossibile caricare il meteo",

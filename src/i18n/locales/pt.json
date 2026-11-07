@@ -432,7 +432,18 @@
     "tabs": {
       "random": "Aleatória",
       "routes": "Rotas",
-      "weather": "Meteo"
+      "weather": "Meteo",
+      "online": "Online",
+      "logbook": "Diário"
+    },
+    "online": {
+      "networkOff": "Ative o VATSIM ou o IVAO em Camadas para ver quem está online.",
+      "none": "Nenhum controlador online agora."
+    },
+    "logbook": {
+      "none": "Ainda não há voos concluídos no diário.",
+      "flights_one": "{{count}} voo",
+      "flights_other": "{{count}} voos"
     },
     "weather": {
       "error": "Não foi possível carregar a meteorologia",

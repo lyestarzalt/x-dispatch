@@ -432,7 +432,18 @@
     "tabs": {
       "random": "Losowe",
       "routes": "Trasy",
-      "weather": "Pogoda"
+      "weather": "Pogoda",
+      "online": "Online",
+      "logbook": "Dziennik"
+    },
+    "online": {
+      "networkOff": "Włącz VATSIM lub IVAO w Warstwach, aby zobaczyć, kto jest online.",
+      "none": "Brak kontrolerów online w tej chwili."
+    },
+    "logbook": {
+      "none": "W dzienniku nie ma jeszcze ukończonych lotów.",
+      "flights_one": "{{count}} lot",
+      "flights_other": "{{count}} lotu"
     },
     "weather": {
       "error": "Nie udało się wczytać pogody",

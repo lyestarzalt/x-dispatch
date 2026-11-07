@@ -432,7 +432,18 @@
     "tabs": {
       "random": "Zufall",
       "routes": "Routen",
-      "weather": "Wetter"
+      "weather": "Wetter",
+      "online": "Online",
+      "logbook": "Logbuch"
+    },
+    "online": {
+      "networkOff": "VATSIM oder IVAO unter Ebenen einschalten, um zu sehen, wer online ist.",
+      "none": "Gerade keine Lotsen online."
+    },
+    "logbook": {
+      "none": "Noch keine abgeschlossenen Flüge im Logbuch.",
+      "flights_one": "{{count}} Flug",
+      "flights_other": "{{count}} Flüge"
     },
     "weather": {
       "error": "Wetter konnte nicht geladen werden",

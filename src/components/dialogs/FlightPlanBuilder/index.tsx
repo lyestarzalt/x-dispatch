@@ -13,10 +13,12 @@ import {
   CloudSun,
   Dices,
   Eraser,
+  History,
   type LucideIcon,
   Mountain,
   PlaneLanding,
   PlaneTakeoff,
+  RadioTower,
   RotateCcw,
   Route,
   Save,
@@ -31,6 +33,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useUnits } from '@/hooks/useUnits';
 import { type PlanVisit, planVisitSummary } from '@/lib/analytics/planVisit';
 import { formatDuration } from '@/lib/flightRecorder/format';
@@ -116,6 +119,8 @@ const EXPLORE_TABS = [
   { id: 'random', icon: Dices },
   { id: 'routes', icon: Route },
   { id: 'weather', icon: CloudSun },
+  { id: 'online', icon: RadioTower },
+  { id: 'logbook', icon: History },
 ] as const satisfies ReadonlyArray<{ id: ExploreTab; icon: LucideIcon }>;
 
 interface FlightPlanBuilderProps {
@@ -940,10 +945,18 @@ function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) {
             className={cn('w-full', compact && 'hidden')}
           >
             {EXPLORE_TABS.map(({ id, icon: Icon }) => (
-              <ToggleGroupItem key={id} value={id} className="min-w-0 flex-1">
-                <Icon />
-                <span className="truncate">{t(`explore.tabs.${id}`)}</span>
-              </ToggleGroupItem>
+              <Tooltip key={id}>
+                <TooltipTrigger asChild>
+                  <ToggleGroupItem
+                    value={id}
+                    className="min-w-0 flex-1"
+                    aria-label={t(`explore.tabs.${id}`)}
+                  >
+                    <Icon />
+                  </ToggleGroupItem>
+                </TooltipTrigger>
+                <TooltipContent>{t(`explore.tabs.${id}`)}</TooltipContent>
+              </Tooltip>
             ))}
           </ToggleGroup>
         </header>

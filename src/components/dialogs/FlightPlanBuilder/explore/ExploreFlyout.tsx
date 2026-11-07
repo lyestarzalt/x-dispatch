@@ -31,6 +31,8 @@ import {
 import { usePlaneStore } from '@/stores/planeStore';
 import type { RangeRingCategory } from '@/types/layers';
 import { toEndpoint } from '../AirportPicker';
+import { LogbookTab } from './LogbookTab';
+import { OnlineTab } from './OnlineTab';
 import { RandomRouteFinder } from './RandomRouteFinder';
 import { RoutesTab } from './RoutesTab';
 import { WeatherTab } from './WeatherTab';
@@ -158,6 +160,8 @@ export function ExploreFlyout({
           )}
           {tab === 'routes' && <RoutesTab airports={fitAirports} onPlanRoute={planRoute} />}
           {tab === 'weather' && <WeatherTab airports={airports} fits={fits} onPick={pickArrival} />}
+          {tab === 'online' && <OnlineTab airports={fitAirports} onPick={pickArrival} />}
+          {tab === 'logbook' && <LogbookTab airports={fitAirports} onPlanRoute={planRoute} />}
         </div>
       </ScrollArea>
     </div>

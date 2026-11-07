@@ -432,7 +432,18 @@
     "tabs": {
       "random": "Random",
       "routes": "Routes",
-      "weather": "Weather"
+      "weather": "Weather",
+      "online": "Online",
+      "logbook": "Logbook"
+    },
+    "online": {
+      "networkOff": "Turn on VATSIM or IVAO in Layers to see who is online.",
+      "none": "No controllers online right now."
+    },
+    "logbook": {
+      "none": "No completed flights in the logbook yet.",
+      "flights_one": "{{count}} flight",
+      "flights_other": "{{count}} flights"
     },
     "weather": {
       "error": "Could not load weather",

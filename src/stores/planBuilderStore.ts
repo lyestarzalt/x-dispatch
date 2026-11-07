@@ -43,7 +43,7 @@ import { addStationData, useFlightPlanStore } from './flightPlanStore';
 export type PlanBuilderStatus = 'idle' | 'resolving' | 'ready' | 'error';
 export type ProcedureKind = 'sid' | 'star' | 'approach';
 /** Tabs of the Explore flyout beside the planner. */
-export type ExploreTab = 'random' | 'routes' | 'weather';
+export type ExploreTab = 'random' | 'routes' | 'weather' | 'online' | 'logbook';
 export type ExploreStandFilter = 'any' | 'aircraft' | StandCode;
 
 /** A token moved out of the route text into a picker, so the planner can say so. */

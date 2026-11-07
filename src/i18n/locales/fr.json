@@ -432,7 +432,18 @@
     "tabs": {
       "random": "Aléatoire",
       "routes": "Routes",
-      "weather": "Météo"
+      "weather": "Météo",
+      "online": "En ligne",
+      "logbook": "Carnet"
+    },
+    "online": {
+      "networkOff": "Activez VATSIM ou IVAO dans Calques pour voir qui est en ligne.",
+      "none": "Aucun contrôleur en ligne pour le moment."
+    },
+    "logbook": {
+      "none": "Aucun vol terminé dans le carnet pour l'instant.",
+      "flights_one": "{{count}} vol",
+      "flights_other": "{{count}} vols"
     },
     "weather": {
       "error": "Impossible de charger la météo",

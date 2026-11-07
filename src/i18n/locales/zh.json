@@ -432,7 +432,18 @@
     "tabs": {
       "random": "随机",
       "routes": "航线",
-      "weather": "天气"
+      "weather": "天气",
+      "online": "在线",
+      "logbook": "飞行日志"
+    },
+    "online": {
+      "networkOff": "在图层中开启 VATSIM 或 IVAO 以查看在线管制员。",
+      "none": "当前没有在线管制员。"
+    },
+    "logbook": {
+      "none": "飞行日志中还没有完成的飞行。",
+      "flights_one": "{{count}} 次飞行",
+      "flights_other": "{{count}} 次飞行"
     },
     "weather": {
       "error": "无法加载天气数据",
