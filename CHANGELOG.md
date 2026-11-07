@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.12.0] - 2026-11-07
+
 ### Added
 
 - **Custom navaids and waypoints on the map.** `user_nav.dat` and `user_fix.dat` in Custom Data are read on top of the X-Plane data.
@@ -415,7 +417,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Releases up to 2.2.0 are listed on the [website changelog](https://x-dispatch.app/changelog/).
 
-[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.11.0...HEAD
+[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.12.0...HEAD
+[2.12.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.11.0...v2.12.0
 [2.11.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.10.0...v2.11.0
 [2.10.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.9.0...v2.10.0
 [2.9.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.8.2...v2.9.0
