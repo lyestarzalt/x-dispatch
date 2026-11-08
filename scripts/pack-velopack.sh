@@ -55,11 +55,16 @@ case "$(uname -s)" in
     BASE="darwin-$ARCH"
     APP="out/X-Dispatch-darwin-$ARCH/X-Dispatch.app"
     [ -d "$APP" ] || { echo "::error::$APP not found."; exit 1; }
-    # The app has no certificate: vpk signs it ad hoc ("-") after adding its updater, so
-    # the bundle's signature stays whole and macOS asks to open it like any unsigned app.
+    # vpk signs the app after adding its updater, so the bundle's signature stays whole.
+    # With a Developer ID from mac-signing-keychain.sh it also notarizes the app and the
+    # update package; without one it signs ad hoc ("-") and macOS asks to open the app
+    # like any unsigned app.
     PLATFORM_ARGS=(--packDir "$APP" --mainExe "$(ls "$APP/Contents/MacOS" | head -n 1)"
       --icon assets/icon.icns --runtime "osx-$ARCH" --noInst
-      --signAppIdentity=- --signEntitlements packaging/mac.entitlements)
+      --signAppIdentity "${MAC_SIGN_IDENTITY:--}" --signEntitlements packaging/mac.entitlements)
+    if [ -n "${MAC_SIGN_IDENTITY:-}" ]; then
+      PLATFORM_ARGS+=(--notaryProfile "$MAC_NOTARY_PROFILE" --keychain "$MAC_KEYCHAIN")
+    fi
     INSTALLER_GLOB='*-Portable.zip'
     INSTALLER_NAME="X-Dispatch-$VERSION-$([ "$ARCH" = arm64 ] && echo mac-apple-silicon || echo mac-intel).dmg"
     ;;
@@ -97,9 +102,22 @@ if [ "$BASE" = "darwin-$ARCH" ]; then
   mkdir "$WORK/dmg"
   ditto -x -k "$installer" "$WORK/dmg"
   codesign --verify --deep --strict --verbose=2 "$WORK/dmg/X-Dispatch.app"
+  if [ -n "${MAC_SIGN_IDENTITY:-}" ]; then
+    # The ticket travels with the app, so Gatekeeper passes it offline too.
+    xcrun stapler staple "$WORK/dmg/X-Dispatch.app"
+    spctl --assess --type execute --verbose=2 "$WORK/dmg/X-Dispatch.app"
+  fi
   ln -s /Applications "$WORK/dmg/Applications"
   hdiutil create -volname X-Dispatch -srcfolder "$WORK/dmg" -fs HFS+ -format ULFO -ov \
     "$ASSETS/$INSTALLER_NAME"
+  if [ -n "${MAC_SIGN_IDENTITY:-}" ]; then
+    # vpk only knows the app and its packages; the dmg is ours to sign and notarize.
+    codesign --sign "$MAC_SIGN_IDENTITY" --keychain "$MAC_KEYCHAIN" --timestamp "$ASSETS/$INSTALLER_NAME"
+    xcrun notarytool submit "$ASSETS/$INSTALLER_NAME" --keychain-profile "$MAC_NOTARY_PROFILE" \
+      --keychain "$MAC_KEYCHAIN" --wait
+    xcrun stapler staple "$ASSETS/$INSTALLER_NAME"
+    spctl --assess --type open --context context:primary-signature --verbose=2 "$ASSETS/$INSTALLER_NAME"
+  fi
 else
   cp "$installer" "$ASSETS/$INSTALLER_NAME"
 fi

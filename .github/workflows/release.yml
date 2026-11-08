@@ -115,6 +115,17 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      # Signs ad hoc until the Developer ID secrets exist.
+      - name: Set up macOS signing
+        if: runner.os == 'macOS'
+        run: bash scripts/mac-signing-keychain.sh
+        env:
+          MAC_CERT_P12: ${{ secrets.MAC_CERT_P12 }}
+          MAC_CERT_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
+          APPLE_API_KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
+
       # Forge builds and packages the app; the installers come from Velopack below.
       - name: Package app
         run: npm run package ${{ matrix.arch && format('-- --arch={0}', matrix.arch) || '' }}
@@ -223,6 +234,7 @@ jobs:
         env:
           TAG: ${{ needs.compute-version.outputs.tag }}
           VERSION: ${{ needs.compute-version.outputs.version }}
+          MAC_SIGNED: ${{ secrets.MAC_CERT_P12 != '' }}
         run: |
           set -euo pipefail
           bash scripts/release-notes.sh print CHANGELOG.md > user-notes.md
@@ -254,8 +266,13 @@ jobs:
 
           ---
 
-          > :apple: **macOS (Sequoia/Tahoe):** The app is unsigned. Go to **System Settings > Privacy & Security** and click **"Open Anyway"**, or run: `xattr -rd com.apple.quarantine /Applications/X-Dispatch.app`
-
+          EOF
+          # The Mac app is signed and notarized once the Developer ID secrets exist.
+          if [ "$MAC_SIGNED" != "true" ]; then
+            echo '> :apple: **macOS (Sequoia/Tahoe):** The app is unsigned. Go to **System Settings > Privacy & Security** and click **"Open Anyway"**, or run: `xattr -rd com.apple.quarantine /Applications/X-Dispatch.app`' >> release-notes.md
+            echo >> release-notes.md
+          fi
+          cat >> release-notes.md << 'EOF'
           > :window: **Windows:** If X-Plane doesn't launch from the app, try running X-Dispatch as administrator.
           EOF
 
