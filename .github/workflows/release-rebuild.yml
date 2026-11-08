@@ -69,6 +69,17 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      # Signs ad hoc until the Developer ID secrets exist.
+      - name: Set up macOS signing
+        if: runner.os == 'macOS' && hashFiles('scripts/mac-signing-keychain.sh') != ''
+        run: bash scripts/mac-signing-keychain.sh
+        env:
+          MAC_CERT_P12: ${{ secrets.MAC_CERT_P12 }}
+          MAC_CERT_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
+          APPLE_API_KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
+
       - name: Package app (verbose)
         shell: bash
         run: |

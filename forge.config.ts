@@ -17,6 +17,9 @@ const config: ForgeConfig = {
     },
     icon: './assets/icon',
     executableName: 'x-dispatch',
+    // Baked into the Mac signature and the notarization record; never change it.
+    appBundleId: 'app.x-dispatch.desktop',
+    appCategoryType: 'public.app-category.utilities',
     extraResource: ['./assets'],
     protocols: [
       {
@@ -56,9 +59,11 @@ const config: ForgeConfig = {
     new FusesPlugin({
       version: FuseVersion.V1,
       [FuseV1Options.RunAsNode]: false,
-      // Off while the Mac app is signed ad hoc: every update has a new code identity, so the
-      // cookie key in the keychain prompts again each time. Turn back on with a Developer ID.
-      [FuseV1Options.EnableCookieEncryption]: false,
+      // On for Mac builds signed with a Developer ID (mac-signing-keychain.sh sets the
+      // identity). Ad hoc builds stay off: every update has a new code identity, so the
+      // cookie key in the keychain would prompt again each time.
+      [FuseV1Options.EnableCookieEncryption]:
+        process.platform === 'darwin' && Boolean(process.env.MAC_SIGN_IDENTITY),
       [FuseV1Options.EnableNodeOptionsEnvironmentVariable]: false,
       // Production builds disable --inspect for security. E2E builds keep it
       // enabled because Playwright's electron driver needs it to attach for
