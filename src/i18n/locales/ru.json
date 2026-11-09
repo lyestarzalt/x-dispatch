@@ -437,7 +437,7 @@
       "logbook": "Журнал"
     },
     "online": {
-      "networkOff": "Включите VATSIM или IVAO в слоях, чтобы увидеть, кто онлайн.",
+      "networkOff": "Выберите сеть, чтобы увидеть, кто в сети.",
       "none": "Сейчас нет диспетчеров онлайн."
     },
     "logbook": {
@@ -780,6 +780,7 @@
       "navigation": "Навигация",
       "distance": "Расстояние",
       "altitude": "Высота",
+      "length": "Длина ВПП и гейта",
       "speed": "Скорость",
       "verticalSpeed": "Вертикальная скорость",
       "weight": "Вес",
@@ -1109,6 +1110,10 @@
       "range": "Дальность",
       "ident": "Идент.",
       "rangeNm": "{{value}}"
+    },
+    "displacedThreshold": {
+      "lda": "LDA {{length}}",
+      "tooltip": "Порог смещён на {{displaced}}, располагаемая посадочная дистанция {{lda}}"
     },
     "rawMetar": "Исходный METAR",
     "routeTab": {

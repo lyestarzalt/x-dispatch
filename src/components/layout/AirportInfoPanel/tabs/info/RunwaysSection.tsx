@@ -23,7 +23,7 @@ export function RunwaysSection({
           {t('airportInfo.runwayCountTotal', { count: runways.length })}
         </span>
       </div>
-      <ul className="space-y-1">
+      <ul className="space-y-2">
         {runways.map((rwy, i) => (
           <RunwayRow
             key={i}

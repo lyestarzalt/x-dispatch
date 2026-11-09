@@ -28,6 +28,7 @@ const units = {
   weight: 'lbs' as const,
   coordinates: 'decimal' as const,
   course: 'magnetic' as const,
+  length: 'ft' as const,
 };
 
 describe('buildUnitFormatters', () => {

@@ -453,6 +453,7 @@ describe('migrateSettings', () => {
       weight: 'kg', // preserved, not reset to the default 'lbs'
       coordinates: 'decimal',
       course: 'magnetic', // cascaded forward from the v30 step in the same call
+      length: 'ft', // v45, from the altitude unit set above
     });
   });
 
@@ -495,6 +496,7 @@ describe('migrateSettings', () => {
       weight: 'kg',
       coordinates: 'dms',
       course: 'magnetic',
+      length: 'm', // v45 follows the metric altitude the user had chosen
     });
   });
 });
@@ -677,6 +679,19 @@ describe('flight strip settings', () => {
     setFlightStripScale(5);
     setFlightStripOpacity(0);
     expect(useSettingsStore.getState().flightStrip).toMatchObject({ scale: 2, opacity: 0.3 });
+  });
+});
+
+describe('ground length unit at v45', () => {
+  it('starts the new length unit from the altitude unit so nothing changes on screen', () => {
+    const units = { distance: 'nm', altitude: 'm', speed: 'kts', weight: 'kg' };
+    const result = migrateSettings({ map: { userMapStyles: [], units } }, 44);
+    expect(result.map.units).toMatchObject({ altitude: 'm', length: 'm', weight: 'kg' });
+  });
+
+  it('falls back to feet when the blob carries no altitude unit', () => {
+    const result = migrateSettings({ map: { userMapStyles: [], units: { weight: 'lbs' } } }, 44);
+    expect(result.map.units.length).toBe('ft');
   });
 });
 
