@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as Sentry from '@sentry/react';
-import { Copy, Heart, LifeBuoy, Send } from 'lucide-react';
+import { Copy, LifeBuoy, Send } from 'lucide-react';
 import { toast } from 'sonner';
+import { DiscordSymbol, KofiMark } from '@/components/icons/BrandMarks';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
@@ -122,11 +123,15 @@ export default function SupportSection({ className }: SettingsSectionProps) {
         <h3 className="xp-section-heading">{t('settings.support.community')}</h3>
         <div className="space-y-1">
           <SettingsLinkRow label={t('settings.about.reportIssue')} href={SUPPORT_PAGE} />
-          <SettingsLinkRow label={t('settings.support.discord')} href={DISCORD_INVITE} />
+          <SettingsLinkRow
+            label={t('settings.support.discord')}
+            href={DISCORD_INVITE}
+            leadingIcon={<DiscordSymbol />}
+          />
           <SettingsLinkRow
             label={t('settings.about.supportProject')}
             href="https://ko-fi.com/A0A21V3IZZ"
-            leadingIcon={<Heart className="text-cat-red h-3.5 w-3.5" />}
+            leadingIcon={<KofiMark />}
             onOpen={trackDonateClick}
           />
         </div>

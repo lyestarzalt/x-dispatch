@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Radar } from 'lucide-react';
+import { VatsimWordmark } from '@/components/icons/BrandMarks';
 import { Badge } from '@/components/ui/badge';
 import { Toggle } from '@/components/ui/toggle';
 import { useUnits } from '@/hooks/useUnits';
@@ -60,8 +61,7 @@ export function OnlineTab({ airports, onPick }: OnlineTabProps) {
         aria-label={t('toolbar.vatsim')}
         className="data-[state=off]:bg-secondary/40 data-[state=off]:text-muted-foreground flex-1 justify-center data-[state=on]:ring-0"
       >
-        <Radar className="shrink-0" />
-        {t('toolbar.vatsim')}
+        <VatsimWordmark className="h-3.5" />
       </Toggle>
       <Toggle
         variant="subtle"
