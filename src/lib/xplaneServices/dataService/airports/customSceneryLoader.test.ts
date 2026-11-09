@@ -4,6 +4,12 @@ import * as path from 'path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { buildMinimalLnk } from '@/lib/utils/buildLnkFixture';
 
+// The airport cache reaches Electron through the database path; the real
+// package downloads its binary on first require.
+vi.mock('electron', () => ({
+  app: { isPackaged: false, getPath: () => '/tmp' },
+}));
+
 // Mock logger before import — see SceneryManager.test.ts for pattern.
 vi.mock('@/lib/utils/logger', () => ({
   default: {

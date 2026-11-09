@@ -29,18 +29,19 @@ export async function bootstrap(): Promise<void> {
         {
           dsn: 'https://0279f306474c382f68b1605fb27be652@o4508345478742016.ingest.de.sentry.io/4510878234837072',
           release: `x-dispatch@${await window.appAPI.getVersion()}`,
-          // Replay keeps a rolling recording in memory; the strip redraws ten times a second.
-          integrations: isFlightStripView
-            ? [Sentry.browserTracingIntegration()]
-            : [Sentry.browserTracingIntegration(), Sentry.replayIntegration()],
+          // No tracing in the renderer: the SDK ships events to the main process over a
+          // sentry-ipc:// fetch, and the fetch instrumentation traced its own transport,
+          // 4.7M spans in three days on 2.12.0. The remaining renderer spans were
+          // localhost polls and local icon loads. Replay keeps a rolling recording in
+          // memory; the strip redraws ten times a second.
+          integrations: isFlightStripView ? [] : [Sentry.replayIntegration()],
           // Add-on failures are filed from the main process with the add-on's type,
           // archive and error code attached; the renderer's copy would be a bare sentence.
           ignoreErrors: [TRANSIENT_NET_ERROR_PATTERN, 'AddonActionError', 'InstallerRequestError'],
           beforeSend: (event) => scrubEventPaths(event),
-          tracesSampleRate: 1.0,
-          // The free plan holds 50 replays a month: keep them for sessions with an error.
+          // The free plan holds 50 replays a month: a few of the sessions with an error.
           replaysSessionSampleRate: 0,
-          replaysOnErrorSampleRate: 1.0,
+          replaysOnErrorSampleRate: 0.2,
         },
         reactInit
       );

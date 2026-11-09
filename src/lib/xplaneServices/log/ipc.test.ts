@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import { readXPlaneLog } from './ipc';
 
+// The real Electron package downloads its binary on first require.
+vi.mock('electron', () => ({
+  shell: { openPath: vi.fn(async () => '') },
+}));
+
 vi.mock('@/lib/utils/logger', () => ({
   default: { main: { warn: vi.fn(), info: vi.fn() } },
 }));

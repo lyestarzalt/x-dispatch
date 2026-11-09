@@ -7,7 +7,6 @@ import {
   dialog,
   nativeTheme,
   net,
-  powerMonitor,
   screen,
   session,
   shell,
@@ -15,6 +14,7 @@ import {
 } from 'electron';
 import windowStateKeeper from 'electron-window-state';
 import * as Sentry from '@sentry/electron/main';
+import { eventLoopBlockIntegration } from '@sentry/electron/native';
 import * as fs from 'fs';
 import { execFile } from 'node:child_process';
 import type { StatementSync } from 'node:sqlite';
@@ -83,7 +83,6 @@ import {
 import { initRemoteAccess, stopRemoteAccess } from './lib/remote';
 import { broadcast, handle, on } from './lib/remote/handlerRegistry';
 import { isDiskFullEvent } from './lib/sentry/diskFullErrors';
-import { BLOCK_THRESHOLD_MS, watchEventLoop } from './lib/sentry/eventLoopWatch';
 import { readLogTail } from './lib/sentry/logTail';
 import { scrubEventPaths } from './lib/sentry/scrubPaths';
 import { TRANSIENT_NET_ERROR_PATTERN } from './lib/sentry/transientNetErrors';
@@ -148,6 +147,9 @@ import { registerXPlaneLogIPC } from './lib/xplaneServices/log/ipc';
 import { ResolvedAirportProcedures } from './types/navigation';
 import type { LoadingProgress, PlaneState } from './types/xplane';
 
+/** Main-process event loop blocks shorter than this are not reported. */
+const BLOCK_THRESHOLD_MS = 10_000;
+
 /** Named NAT track fixes are looked up within this radius of the nearest track coordinate. */
 const TRACK_FIX_SEARCH_NM = 1500;
 
@@ -158,8 +160,10 @@ if (app.isPackaged) {
     // Updates are applied on restart or quit, once checked against the user's channel.
     VelopackApp.build()
       .setLogger((level, msg) => {
-        if (level === 'error') logger.main.error(`[Velopack] ${msg}`, new Error(msg));
-        else if (level === 'warn') logger.main.warn(`[Velopack] ${msg}`);
+        // Velopack logs its transport failures (TLS, DNS, timeouts) at error; they
+        // describe the user's network. A failed check or download is filed from the
+        // update code once it has been classified, so nothing is lost here.
+        if (level === 'error' || level === 'warn') logger.main.warn(`[Velopack] ${msg}`);
         else if (level === 'info') logger.main.info(`[Velopack] ${msg}`);
       })
       .setAutoApplyOnStartup(false)
@@ -227,7 +231,14 @@ if (shouldInitSentry && app.isPackaged) {
     // v11 infers the user IP by default; nothing here needs it and v10 never sent it.
     dataCollection: { userInfo: false },
     tracesSampleRate: 1.0,
-    integrations: [Sentry.startupTracingIntegration()],
+    integrations: [
+      Sentry.startupTracingIntegration(),
+      // A frozen main process throws nothing: 2.9.0 shipped a startup freeze only
+      // users noticed. The SDK's worker thread reports a block with the stack of
+      // the blocked thread, stops over sleep and screen lock, and files one event
+      // an hour. Below ten seconds it is X-Plane taking the CPU, not a freeze.
+      eventLoopBlockIntegration({ threshold: BLOCK_THRESHOLD_MS, maxEventsPerHour: 1 }),
+    ],
     ignoreErrors: [TRANSIENT_NET_ERROR_PATTERN],
     beforeSend(event, hint) {
       // Disk-full failures describe the user's machine, not a defect here, and
@@ -248,28 +259,7 @@ if (shouldInitSentry && app.isPackaged) {
       return event;
     },
   });
-  // A frozen main process throws nothing; this is how it still gets reported.
-  logger.main.info(`Event loop watchdog armed (${BLOCK_THRESHOLD_MS} ms)`);
-  const loopWatch = watchEventLoop(
-    (block) => {
-      logger.main.warn(block.message);
-      Sentry.captureMessage(block.message, {
-        level: 'error',
-        tags: { 'main.block_seconds': String(block.seconds) },
-        fingerprint: ['main-process-blocked'],
-      });
-    },
-    {
-      // A laptop napping unattended stalls the loop for the length of the nap;
-      // nobody was waiting on it, so it is not a block.
-      idleMs: () => (app.isReady() ? powerMonitor.getSystemIdleTime() * 1000 : 0),
-    }
-  );
-  // Sleep stalls the loop exactly like a block; both edges of it are discarded.
-  app.whenReady().then(() => {
-    powerMonitor.on('suspend', () => loopWatch.discardCurrentWindow());
-    powerMonitor.on('resume', () => loopWatch.discardCurrentWindow());
-  });
+  logger.main.info(`Event loop block detection armed (${BLOCK_THRESHOLD_MS} ms)`);
   // Anonymous per-install ID, so an issue shows how many installs it hits and a
   // tester can quote the ID with a report. Renderer events set it in bootstrap.
   const crashReportId = getCrashReportId();
