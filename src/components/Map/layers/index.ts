@@ -21,7 +21,14 @@ import type { LayerRenderer } from './airport/BaseLayerRenderer';
 export { type LayerRenderer } from './airport/BaseLayerRenderer';
 
 // Navigation layer singletons (consolidated)
-export { airspaceLayer, firLayer, holdingPatternLayer, ilsLayer, navaidLayer } from './navigation';
+export {
+  airspaceLayer,
+  ensureNavLayerOrder,
+  firLayer,
+  holdingPatternLayer,
+  ilsLayer,
+  navaidLayer,
+} from './navigation';
 
 // Dynamic layer functions
 export {

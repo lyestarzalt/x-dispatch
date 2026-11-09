@@ -437,7 +437,7 @@
       "logbook": "飞行日志"
     },
     "online": {
-      "networkOff": "在图层中开启 VATSIM 或 IVAO 以查看在线管制员。",
+      "networkOff": "选择一个网络以查看谁在线。",
       "none": "当前没有在线管制员。"
     },
     "logbook": {
@@ -780,6 +780,7 @@
       "navigation": "导航",
       "distance": "距离",
       "altitude": "高度",
+      "length": "跑道与机位长度",
       "speed": "速度",
       "verticalSpeed": "垂直速度",
       "weight": "重量",
@@ -1109,6 +1110,10 @@
       "range": "范围",
       "ident": "识别码",
       "rangeNm": "{{value}}"
+    },
+    "displacedThreshold": {
+      "lda": "LDA {{length}}",
+      "tooltip": "跑道入口内移 {{displaced}}，可用着陆距离 {{lda}}"
     },
     "rawMetar": "原始 METAR",
     "routeTab": {

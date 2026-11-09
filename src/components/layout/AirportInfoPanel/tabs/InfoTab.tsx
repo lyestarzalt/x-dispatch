@@ -30,6 +30,7 @@ import { DetailsSection } from './info/DetailsSection';
 import { FREQ_VISIBLE_DEFAULT, FrequenciesSection } from './info/FrequenciesSection';
 import { type MergedFreqRow } from './info/FrequencyRow';
 import { RunwaysSection } from './info/RunwaysSection';
+import { runwayEndKey } from './info/runwayEndKey';
 
 // Frequencies in flight-flow order: preflight (recorded info) → taxi out
 // → departure clearance → tower → en-route control → unicom for non-ATC.
@@ -60,7 +61,8 @@ const FREQ_LABELS: Record<FrequencyType, string> = {
 /**
  * Index navaid records by the runway end they serve, keeping only those that
  * belong to `icao`. A record without an airport (older or hand-edited nav
- * files) is kept, so a lone ILS does not vanish over a missing field.
+ * files) is kept, so a lone ILS does not vanish over a missing field. Keys
+ * are `runwayEndKey`s, so callers must look up with the same.
  */
 export function byRunwayEnd(
   records: Navaid[] | undefined,
@@ -73,7 +75,7 @@ export function byRunwayEnd(
     if (!record.associatedRunway) continue;
     const owner = record.associatedAirport?.toUpperCase();
     if (owner && here && owner !== here) continue;
-    map.set(record.associatedRunway.toUpperCase(), record);
+    map.set(runwayEndKey(record.associatedRunway), record);
   }
   return map;
 }
@@ -154,7 +156,7 @@ export default function InfoTab() {
   // alignment is a heuristic fallback used only when no ATIS is published.
   const activeRunway = useMemo<ActiveRunway | null>(() => {
     if (atisRunwayEnds.length > 0) {
-      return { source: 'atis', ends: atisRunwayEnds };
+      return { source: 'atis', ends: atisRunwayEnds.map(runwayEndKey) };
     }
     const wind = metar?.wind;
     if (wind && wind.degrees !== undefined && wind.speed > 0) {
@@ -162,7 +164,7 @@ export default function InfoTab() {
       if (best) {
         return {
           source: 'wind',
-          ends: [best.endName.toUpperCase()],
+          ends: [runwayEndKey(best.endName)],
           windDeg: wind.degrees,
           windSpeed: wind.speed,
           deltaDeg: best.deltaDeg,

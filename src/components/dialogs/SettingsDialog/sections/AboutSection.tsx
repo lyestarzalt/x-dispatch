@@ -6,12 +6,12 @@ import {
   Download,
   FileText,
   FolderOpen,
-  Heart,
   Info,
   RefreshCw,
   ScrollText,
   TriangleAlert,
 } from 'lucide-react';
+import { KofiMark } from '@/components/icons/BrandMarks';
 import { DesktopOnly } from '@/components/remote/DesktopOnly';
 import { AppLogo } from '@/components/ui/AppLogo';
 import { Badge } from '@/components/ui/badge';
@@ -246,7 +246,7 @@ export default function AboutSection({ className }: SettingsSectionProps) {
             <SettingsLinkRow
               label={t('settings.about.supportProject')}
               href={KOFI_URL}
-              leadingIcon={<Heart className="text-cat-red h-3.5 w-3.5" />}
+              leadingIcon={<KofiMark />}
               onOpen={trackDonateClick}
             />
           </div>

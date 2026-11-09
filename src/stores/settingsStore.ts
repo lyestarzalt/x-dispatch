@@ -32,6 +32,7 @@ import type {
   CoordinateFormat,
   CourseMode,
   DistanceUnit,
+  LengthUnit,
   SpeedUnit,
   VerticalSpeedUnit,
 } from '@/lib/utils/units';
@@ -95,6 +96,8 @@ export interface MapSettings {
   units: {
     distance: DistanceUnit;
     altitude: AltitudeUnit;
+    /** Runway length, gate width, taxi distance. */
+    length: LengthUnit;
     speed: SpeedUnit;
     verticalSpeed: VerticalSpeedUnit;
     weight: WeightUnit;
@@ -270,6 +273,7 @@ const DEFAULT_MAP_SETTINGS: MapSettings = {
   units: {
     distance: 'nm',
     altitude: 'ft',
+    length: 'ft',
     speed: 'kts',
     verticalSpeed: 'fpm',
     weight: 'lbs',
@@ -564,7 +568,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'xplane-viz-settings',
-      version: 44,
+      version: 45,
       migrate: (persistedState, version) => migrateSettings(persistedState, version),
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -735,10 +739,11 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
           verticalSpeed: 'fpm',
           weight: state.map!.units.weight,
           coordinates: 'decimal',
-          // Not set until the next step — forward-referenced only so this object
-          // literal satisfies MapSettings['units'] (which requires `course`).
-          // Any pre-v30 blob gets a real value from the v30 step immediately below.
+          // Not set until later steps — forward-referenced only so this object
+          // literal satisfies MapSettings['units'] (which requires them).
+          // Any pre-v30 blob gets real values from the v30 and v45 steps below.
           course: state.map!.units.course,
+          length: state.map!.units.length,
         },
       },
     };
@@ -872,6 +877,17 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
       ...state,
       launcher: { ...state.launcher!, launchEnv: [] },
     };
+  }
+  if (version < 45) {
+    // Ground lengths (runway, gate, taxi) split from altitude. They followed the
+    // altitude unit until now, so start from it and nothing changes on screen.
+    const units = state.map?.units;
+    if (units) {
+      state = {
+        ...state,
+        map: { ...state.map!, units: { ...units, length: units.altitude ?? 'ft' } },
+      };
+    }
   }
 
   return state as SettingsState;

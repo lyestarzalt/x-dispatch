@@ -71,9 +71,9 @@ const DECK_LAYER_ID = 'nav-ils-deck-beams';
  * visually duplicate the wedge's projected footprint without adding
  * information.
  *
- * LOC↔GS pairing in `ilsMeshes.ts` re-anchors the GS apex at the LOC
- * antenna position — physical GS antennas sit ~400 ft beside the runway,
- * which would otherwise put the wedge visibly off the extended centerline.
+ * LOC↔GS pairing in `ilsMeshes.ts` anchors the wedge and the course line
+ * at the GS antenna's position on the extended centerline (the touchdown
+ * zone), not at the LOC antenna at the far end of the runway.
  */
 export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
   readonly layerId = 'nav-ils';
@@ -90,6 +90,7 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
   private deckMap: maplibregl.Map | null = null;
   private currentBeams: BeamPolygon[] = [];
   private beamsVisible = true;
+  private idleFlushPending = false;
 
   protected createGeoJSON(ilsList: Navaid[]): GeoJSON.FeatureCollection {
     return {
@@ -291,9 +292,27 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
     if (!this.deckOverlay) {
       this.deckOverlay = new MapLibreOverlay({ interleaved: true, layers });
       this.deckMap.addControl(this.deckOverlay);
-      return;
+    } else {
+      this.deckOverlay.setProps({ layers });
     }
-    this.deckOverlay.setProps({ layers });
+    this.flushDeckLayersWhenIdle(this.deckMap);
+  }
+
+  /**
+   * deck.gl only inserts its layer group into the style while
+   * `isStyleLoaded()` is true, which is false while tiles load during the
+   * fly-to that follows an airport selection. Nothing re-triggers it once
+   * the tiles are in, so the cones stayed missing. Push the layers again on
+   * the next idle, when the style is loaded for sure.
+   */
+  private flushDeckLayersWhenIdle(map: maplibregl.Map): void {
+    if (this.idleFlushPending || map.isStyleLoaded()) return;
+    this.idleFlushPending = true;
+    map.once('idle', () => {
+      this.idleFlushPending = false;
+      if (this.deckMap !== map || !this.deckOverlay || !map.getStyle()) return;
+      this.deckOverlay.setProps({ layers: this.buildDeckLayers() });
+    });
   }
 
   async add(map: maplibregl.Map, data: Navaid[]): Promise<void> {
@@ -304,7 +323,7 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
 
     const locData = data.filter((n) => n.type !== 'GS');
 
-    this.safeAddSource(map, this.courseSourceId, createILSCourseGeoJSON(locData));
+    this.safeAddSource(map, this.courseSourceId, createILSCourseGeoJSON(data));
     this.safeAddSource(map, this.sourceId, this.createGeoJSON(locData));
     this.ensureLayers(map);
 
@@ -322,7 +341,7 @@ export class ILSLayerRenderer extends NavLayerRenderer<Navaid> {
     const locData = data.filter((n) => n.type !== 'GS');
     source.setData(this.createGeoJSON(locData));
     const courseSource = map.getSource(this.courseSourceId) as maplibregl.GeoJSONSource | undefined;
-    if (courseSource) courseSource.setData(createILSCourseGeoJSON(locData));
+    if (courseSource) courseSource.setData(createILSCourseGeoJSON(data));
 
     this.currentBeams = buildBeamPolygons(data);
     this.pushDeckLayers();

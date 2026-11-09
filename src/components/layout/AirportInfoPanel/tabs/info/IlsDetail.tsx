@@ -4,7 +4,18 @@ import { type Degrees, type NauticalMiles } from '@/lib/utils/geomath';
 import type { Navaid } from '@/types/navigation';
 import { KvRow } from './KvRow';
 
-export function IlsDetail({ endName, ils, gs }: { endName: string; ils: Navaid; gs?: Navaid }) {
+export function IlsDetail({
+  endName,
+  ils,
+  gs,
+  hideName = false,
+}: {
+  endName: string;
+  ils: Navaid;
+  gs?: Navaid;
+  /** Inside a card that already names the end. */
+  hideName?: boolean;
+}) {
   const { t } = useTranslation();
   const units = useUnits();
   // Navaid frequencies are stored as Hz*100 (e.g. 10950 → 109.50 MHz). Same
@@ -35,9 +46,11 @@ export function IlsDetail({ endName, ils, gs }: { endName: string; ils: Navaid; 
   // KvRows indented under it.
   return (
     <div className="text-sm">
-      <h5 className="text-muted-foreground/70 mb-0.5 text-xs tracking-wider uppercase">
-        {t('airportInfo.runwayName', { name: endName })}
-      </h5>
+      {!hideName && (
+        <h5 className="text-muted-foreground/70 mb-0.5 text-xs tracking-wider uppercase">
+          {t('airportInfo.runwayName', { name: endName })}
+        </h5>
+      )}
       <div className="pl-1">
         <KvRow label={t('airportInfo.ils.frequency')} value={freq} />
         <KvRow label={t('airportInfo.ils.localizer')} value={headingStr} />

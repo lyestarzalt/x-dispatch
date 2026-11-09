@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import type { Airspace, Navaid, Waypoint } from '@/types/navigation';
 
 // Local nav data (around airport)
@@ -14,16 +14,6 @@ export interface NavigationData {
   waypoints: Waypoint[];
   airspaces: Airspace[];
 }
-
-const EMPTY_NAV_DATA: NavigationData = {
-  vors: [],
-  ndbs: [],
-  dmes: [],
-  ils: [],
-  gs: [],
-  waypoints: [],
-  airspaces: [],
-};
 
 const navDataKeys = {
   all: ['navData'] as const,
@@ -62,7 +52,10 @@ export function useNavDataQuery(
     enabled: isEnabled && hasCoords,
     staleTime: 10 * 60 * 1000,
     gcTime: 60 * 60 * 1000,
-    placeholderData: EMPTY_NAV_DATA,
+    // The previous airport's data stays until the new one arrives. Empty
+    // placeholder data made every selection wipe the nav layers mid-flight,
+    // and the ILS cones did not come back until a later style change.
+    placeholderData: keepPreviousData,
   });
 }
 

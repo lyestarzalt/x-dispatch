@@ -7,6 +7,7 @@ import {
   type Translate,
   convertAltitude,
   convertDistance,
+  convertLength,
   convertSpeed,
   convertVerticalSpeed,
   convertWeight,
@@ -15,6 +16,7 @@ import {
   formatCourse,
   formatCourseWithVariation,
   formatDistance,
+  formatLength,
   formatShortDistance,
   formatSpeed,
   formatVerticalSpeed,
@@ -35,8 +37,10 @@ export function buildUnitFormatters(units: UnitPreferences, t: Translate) {
   return {
     distance: (nm: NauticalMiles) => formatDistance(nm, units.distance, t),
     altitude: (ft: Feet) => formatAltitude(ft, units.altitude, t),
-    // Taxi distances: feet or metres following the altitude unit, rounded for a glance.
-    shortDistance: (ft: Feet) => formatShortDistance(ft, units.altitude, t),
+    // Runway lengths and other ground lengths, apart from altitude (Settings → Units).
+    length: (ft: Feet) => formatLength(ft, units.length, t),
+    // Taxi distances and gate widths: the length unit, rounded for a glance.
+    shortDistance: (ft: Feet) => formatShortDistance(ft, units.length, t),
     speed: (kts: Knots) => formatSpeed(kts, units.speed, t),
     verticalSpeed: (fpm: FeetPerMinute) => formatVerticalSpeed(fpm, units.verticalSpeed, t),
     weight: (lbs: number) => formatWeight(lbs, units.weight),
@@ -52,6 +56,7 @@ export function buildUnitFormatters(units: UnitPreferences, t: Translate) {
     // Raw converted numbers, for charts/axes that need a value, not a string.
     distanceF: (nm: NauticalMiles) => convertDistance(nm, units.distance),
     altitudeF: (ft: Feet) => convertAltitude(ft, units.altitude),
+    lengthF: (ft: Feet) => convertLength(ft, units.length),
     speedF: (kts: Knots) => convertSpeed(kts, units.speed),
     verticalSpeedF: (fpm: FeetPerMinute) => convertVerticalSpeed(fpm, units.verticalSpeed),
     weightF: (lbs: number) => convertWeight(lbs, units.weight),
@@ -59,8 +64,8 @@ export function buildUnitFormatters(units: UnitPreferences, t: Translate) {
 }
 
 /**
- * Bound unit formatters for the six quantities (distance, altitude, speed,
- * vertical speed, weight, coordinates), following the user's settingsStore
+ * Bound unit formatters for the seven quantities (distance, altitude, length,
+ * speed, vertical speed, weight, coordinates), following the user's settingsStore
  * preference. Components call this instead of reading
  * `settingsStore.map.units` directly and formatting by hand — see the
  * CLAUDE.md "unit display" rule.

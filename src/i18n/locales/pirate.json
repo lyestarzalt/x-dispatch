@@ -437,7 +437,7 @@
       "logbook": "Log"
     },
     "online": {
-      "networkOff": "Hoist VATSIM or IVAO in Layers to see who be on watch.",
+      "networkOff": "Pick a network to see who be sailin' online.",
       "none": "No controllers on watch right now."
     },
     "logbook": {
@@ -780,6 +780,7 @@
       "navigation": "Navigatin’",
       "distance": "Distance",
       "altitude": "Altitude",
+      "length": "Runway an' berth length",
       "speed": "Speed",
       "verticalSpeed": "Rise an' Fall Rate",
       "weight": "Weight",
@@ -1109,6 +1110,10 @@
       "range": "Range",
       "ident": "Ident",
       "rangeNm": "{{value}}"
+    },
+    "displacedThreshold": {
+      "lda": "LDA {{length}}",
+      "tooltip": "Threshold shoved back {{displaced}}, {{lda}} o' deck left to land"
     },
     "rawMetar": "Raw METAR scroll",
     "routeTab": {

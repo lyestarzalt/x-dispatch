@@ -437,7 +437,7 @@
       "logbook": "Bitácora"
     },
     "online": {
-      "networkOff": "Activa VATSIM o IVAO en Capas para ver quién está en línea.",
+      "networkOff": "Elige una red para ver quién está en línea.",
       "none": "No hay controladores en línea ahora mismo."
     },
     "logbook": {
@@ -780,6 +780,7 @@
       "navigation": "Navegación",
       "distance": "Distancia",
       "altitude": "Altitud",
+      "length": "Longitud de pista y puerta",
       "speed": "Velocidad",
       "verticalSpeed": "Velocidad vertical",
       "weight": "Peso",
@@ -1109,6 +1110,10 @@
       "range": "Alcance",
       "ident": "Identif.",
       "rangeNm": "{{value}}"
+    },
+    "displacedThreshold": {
+      "lda": "LDA {{length}}",
+      "tooltip": "Umbral desplazado {{displaced}}, distancia de aterrizaje disponible {{lda}}"
     },
     "rawMetar": "METAR sin procesar",
     "routeTab": {

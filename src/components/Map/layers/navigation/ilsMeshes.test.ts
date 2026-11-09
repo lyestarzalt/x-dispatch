@@ -28,24 +28,54 @@ function makeNavaid(overrides: Partial<Navaid>): Navaid {
 }
 
 describe('pairLocAndGs', () => {
-  it('anchors paired GS at the LOC antenna position, not the physical GS antenna', () => {
+  it('anchors a paired GS on the extended centerline abeam the GS antenna', () => {
+    // LOC at the origin, course 090 flown: the runway runs west of the antenna.
+    // The GS antenna stands 2.2 km west and 110 m north (beside the runway).
     const navaids: Navaid[] = [
-      makeNavaid({ type: 'ILS', id: 'ILOC', latitude: 10, longitude: 20, bearing: 50 }),
+      makeNavaid({
+        type: 'ILS',
+        id: 'ILOC',
+        latitude: 0,
+        longitude: 0,
+        bearing: 90,
+        elevation: 50,
+      }),
       makeNavaid({
         type: 'GS',
         id: 'IGS',
-        latitude: 11, // physically offset; should be ignored in favour of the LOC anchor
-        longitude: 21,
-        bearing: 50,
+        latitude: 0.001,
+        longitude: -0.02,
+        bearing: 90,
         glidepathAngle: 3,
+        elevation: 40,
       }),
     ];
 
     const specs = pairLocAndGs(navaids);
     expect(specs).toHaveLength(1);
-    expect(specs[0]!.apexLat).toBe(10);
-    expect(specs[0]!.apexLon).toBe(20);
+    // On the centerline (lateral offset removed), level with the GS antenna along the runway.
+    expect(specs[0]!.apexLat).toBeCloseTo(0, 4);
+    expect(specs[0]!.apexLon).toBeCloseTo(-0.02, 4);
+    expect(specs[0]!.apexElevationFt).toBe(40);
+    expect(specs[0]!.course).toBe(270);
     expect(specs[0]!.glidepathAngle).toBe(3);
+  });
+
+  it('falls back to the LOC antenna when the GS lies behind it', () => {
+    const navaids: Navaid[] = [
+      makeNavaid({ type: 'ILS', id: 'ILOC', latitude: 0, longitude: 0, bearing: 90 }),
+      makeNavaid({
+        type: 'GS',
+        id: 'IGS',
+        latitude: 0,
+        longitude: 0.02,
+        bearing: 90,
+        glidepathAngle: 3,
+      }),
+    ];
+    const specs = pairLocAndGs(navaids);
+    expect(specs[0]!.apexLat).toBe(0);
+    expect(specs[0]!.apexLon).toBe(0);
   });
 
   it('emits nothing for a LOC with no paired GS', () => {
@@ -181,12 +211,13 @@ describe('buildBeamPolygons', () => {
     expect(upper.polygon[1]![2]).toBeCloseTo(expectedTopZ, 0);
   });
 
-  it('apex Z = antenna elevation (in metres)', () => {
+  it('apex Z = GS antenna elevation (in metres)', () => {
     const elevFt = 1500;
     const expectedApexZ = elevFt * ILS_BEAM_CONSTANTS.FEET_TO_METERS;
+    // GS ahead of the LOC along the course (bearing 0 → course 180, so south of it).
     const navaids: Navaid[] = [
-      makeNavaid({ type: 'ILS', id: 'ILOC', elevation: elevFt }),
-      makeNavaid({ type: 'GS', id: 'IGS', glidepathAngle: 3 }),
+      makeNavaid({ type: 'ILS', id: 'ILOC', elevation: 1400 }),
+      makeNavaid({ type: 'GS', id: 'IGS', glidepathAngle: 3, elevation: elevFt, latitude: -0.02 }),
     ];
     const upper = buildBeamPolygons(navaids).find((b) => b.kind === 'GS_UPPER')!;
     expect(upper.polygon[0]![2]).toBeCloseTo(expectedApexZ, 6);
@@ -245,5 +276,23 @@ describe('createILSCourseGeoJSON', () => {
     // course 163 → line heads 343 (north-west-ish): end lies north and west
     expect(end[1]!).toBeGreaterThan(loc.latitude);
     expect(end[0]!).toBeLessThan(loc.longitude);
+  });
+
+  it('starts at the GS anchor when the runway has one, matching the wedge apex', () => {
+    const gs: Navaid = {
+      ...loc,
+      id: 'IMCG',
+      type: 'GS',
+      latitude: 62.96,
+      longitude: -155.62,
+      glidepathAngle: 3,
+    };
+    const fc = createILSCourseGeoJSON([loc, gs]);
+    expect(fc.features).toHaveLength(1);
+    const start = (fc.features[0]!.geometry as GeoJSON.LineString).coordinates[0]!;
+    const spec = pairLocAndGs([loc, gs])[0]!;
+    expect(start[0]).toBeCloseTo(spec.apexLon, 9);
+    expect(start[1]).toBeCloseTo(spec.apexLat, 9);
+    expect(start).not.toEqual([loc.longitude, loc.latitude]);
   });
 });

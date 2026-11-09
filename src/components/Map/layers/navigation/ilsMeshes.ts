@@ -1,4 +1,9 @@
-import { destinationPoint, nauticalMilesToMeters } from '@/lib/utils/geomath';
+import {
+  calculateBearing,
+  destinationPoint,
+  haversineDistance,
+  nauticalMilesToMeters,
+} from '@/lib/utils/geomath';
 import type { Navaid } from '@/types/navigation';
 
 // LOC/GS antenna elevation comes from earth_nav.dat in feet.
@@ -50,23 +55,10 @@ function normalizeGlidepathAngle(angle: number): number {
   return angle < 0.5 ? angle * 100 : angle;
 }
 
-/**
- * Pair every LOC/ILS record with its matching GS record by
- * `associatedAirport + associatedRunway`, then anchor BOTH meshes at the LOC
- * antenna position. Physical GS antennas sit ~400 ft beside the runway, so
- * without this re-anchor the GS beam appears visibly off the extended
- * centerline. Charts always draw the GS centered on the runway for the same
- * reason.
- *
- * Returns one spec per LOC that has a paired GS. LOC-only runways (no GS
- * record) produce no spec — the GS wedge is the only 3D primitive this
- * layer renders, so a runway without a GS isn't visualised.
- */
-export function pairLocAndGs(navaids: Navaid[]): BeamSpec[] {
-  const keyOf = (n: Navaid): string =>
-    `${n.associatedAirport}/${n.associatedRunway!.toUpperCase()}`;
+const keyOf = (n: Navaid): string => `${n.associatedAirport}/${n.associatedRunway!.toUpperCase()}`;
 
-  // Index GS records once so the per-LOC lookup is O(1) instead of O(n).
+/** GS records by airport/runway, so each LOC finds its glide slope in O(1). */
+function indexGlideSlopes(navaids: Navaid[]): Map<string, Navaid> {
   const gsByKey = new Map<string, Navaid>();
   for (const n of navaids) {
     if (n.type !== 'GS') continue;
@@ -74,11 +66,50 @@ export function pairLocAndGs(navaids: Navaid[]): BeamSpec[] {
     if (!n.associatedAirport || !n.associatedRunway) continue;
     gsByKey.set(keyOf(n), n);
   }
+  return gsByKey;
+}
+
+interface Anchor {
+  lat: number;
+  lon: number;
+  elevationFt: number;
+}
+
+/**
+ * Where the beam and the course line start: the GS antenna's position
+ * projected onto the extended centerline. The LOC antenna sits past the far
+ * end of the runway, so anchoring there ran the cone and the line down the
+ * whole runway (EPWA read as a thin orange stripe over the pavement). The
+ * GS antenna stands beside the touchdown zone, which is where the glide
+ * path meets the ground; projecting it onto the centerline removes its
+ * ~400 ft lateral offset, the way charts draw it. Without a GS, or with one
+ * behind the LOC (bad data), the LOC antenna is used.
+ */
+function locAnchor(loc: Navaid, course: number, gs: Navaid | undefined): Anchor {
+  if (!gs) return { lat: loc.latitude, lon: loc.longitude, elevationFt: loc.elevation };
+  const toGsM = haversineDistance(loc.latitude, loc.longitude, gs.latitude, gs.longitude);
+  const toGsBearing = calculateBearing(loc.latitude, loc.longitude, gs.latitude, gs.longitude);
+  const alongM = toGsM * Math.cos(((toGsBearing - course) * Math.PI) / 180);
+  if (!(alongM > 0)) return { lat: loc.latitude, lon: loc.longitude, elevationFt: loc.elevation };
+  const [lon, lat] = destinationPoint(loc.latitude, loc.longitude, alongM, course);
+  return { lat, lon, elevationFt: gs.elevation };
+}
+
+/**
+ * Pair every LOC/ILS record with its matching GS record by
+ * `associatedAirport + associatedRunway` and anchor the beam at the GS's
+ * point on the extended centerline (see `locAnchor`).
+ *
+ * Returns one spec per LOC that has a paired GS. LOC-only runways (no GS
+ * record) produce no spec — the GS wedge is the only 3D primitive this
+ * layer renders, so a runway without a GS isn't visualised.
+ */
+export function pairLocAndGs(navaids: Navaid[]): BeamSpec[] {
+  const gsByKey = indexGlideSlopes(navaids);
 
   const consumedGsKeys = new Set<string>();
   const specs: BeamSpec[] = [];
 
-  // For every LOC with a paired GS, emit ONE spec anchored at the LOC.
   for (const loc of navaids) {
     if (loc.type === 'GS') continue;
     if (loc.bearing === undefined) continue;
@@ -89,12 +120,14 @@ export function pairLocAndGs(navaids: Navaid[]): BeamSpec[] {
     if (consumedGsKeys.has(key)) continue; // dedupe: a runway can list multiple LOCs (duplicate region rows)
     consumedGsKeys.add(key);
 
+    const course = (loc.bearing + 180) % 360;
+    const anchor = locAnchor(loc, course, gs);
     specs.push({
       id: `${loc.id} ${loc.associatedRunway}`,
-      apexLat: loc.latitude,
-      apexLon: loc.longitude,
-      apexElevationFt: loc.elevation,
-      course: (loc.bearing + 180) % 360,
+      apexLat: anchor.lat,
+      apexLon: anchor.lon,
+      apexElevationFt: anchor.elevationFt,
+      course,
       glidepathAngle: normalizeGlidepathAngle(gs.glidepathAngle!),
     });
   }
@@ -204,19 +237,24 @@ export function buildBeamPolygons(navaids: Navaid[]): BeamPolygon[] {
 }
 
 /**
- * The 2D extended-centerline for each LOC: from the antenna back along the
- * reciprocal of the localizer course, over the same length as the GS wedge
- * so the dashed line and the 3D volume end together.
+ * The 2D extended-centerline for each LOC: from the same anchor as the GS
+ * wedge back along the reciprocal of the localizer course, over the same
+ * length, so the dashed line and the 3D volume start and end together.
+ * Takes LOC and GS records together; GS records only serve as anchors.
  */
-export function createILSCourseGeoJSON(ilsList: Navaid[]): GeoJSON.FeatureCollection {
+export function createILSCourseGeoJSON(navaids: Navaid[]): GeoJSON.FeatureCollection {
+  const gsByKey = indexGlideSlopes(navaids);
   const features: GeoJSON.Feature[] = [];
-  for (const ils of ilsList) {
+  for (const ils of navaids) {
+    if (ils.type === 'GS') continue;
     if (ils.bearing === undefined) continue;
     const course = (ils.bearing + 180) % 360;
-    const origin: [number, number] = [ils.longitude, ils.latitude];
+    const gs = ils.associatedAirport && ils.associatedRunway ? gsByKey.get(keyOf(ils)) : undefined;
+    const anchor = locAnchor(ils, course, gs);
+    const origin: [number, number] = [anchor.lon, anchor.lat];
     const endPoint = destinationPoint(
-      ils.latitude,
-      ils.longitude,
+      anchor.lat,
+      anchor.lon,
       nauticalMilesToMeters(BEAM_LENGTH_NM),
       course
     );

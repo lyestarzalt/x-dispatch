@@ -437,7 +437,7 @@
       "logbook": "Logbook"
     },
     "online": {
-      "networkOff": "Attiva VATSIM o IVAO in Livelli per vedere chi è online.",
+      "networkOff": "Scegli una rete per vedere chi è online.",
       "none": "Nessun controllore online al momento."
     },
     "logbook": {
@@ -780,6 +780,7 @@
       "navigation": "Navigazione",
       "distance": "Distanza",
       "altitude": "Altitudine",
+      "length": "Lunghezza pista e gate",
       "speed": "Velocità",
       "verticalSpeed": "Velocità verticale",
       "weight": "Peso",
@@ -1109,6 +1110,10 @@
       "range": "Portata",
       "ident": "Identif.",
       "rangeNm": "{{value}}"
+    },
+    "displacedThreshold": {
+      "lda": "LDA {{length}}",
+      "tooltip": "Soglia spostata di {{displaced}}, distanza di atterraggio disponibile {{lda}}"
     },
     "rawMetar": "METAR originale",
     "routeTab": {

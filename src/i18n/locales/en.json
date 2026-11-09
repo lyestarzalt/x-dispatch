@@ -437,7 +437,7 @@
       "logbook": "Logbook"
     },
     "online": {
-      "networkOff": "Turn on VATSIM or IVAO in Layers to see who is online.",
+      "networkOff": "Choose a network to see who is online.",
       "none": "No controllers online right now."
     },
     "logbook": {
@@ -780,6 +780,7 @@
       "navigation": "Navigation",
       "distance": "Distance",
       "altitude": "Altitude",
+      "length": "Runway and gate length",
       "speed": "Speed",
       "verticalSpeed": "Vertical speed",
       "weight": "Weight",
@@ -1109,6 +1110,10 @@
       "range": "Range",
       "ident": "Ident",
       "rangeNm": "{{value}}"
+    },
+    "displacedThreshold": {
+      "lda": "LDA {{length}}",
+      "tooltip": "Threshold displaced {{displaced}}, landing distance available {{lda}}"
     },
     "rawMetar": "Raw METAR",
     "routeTab": {
