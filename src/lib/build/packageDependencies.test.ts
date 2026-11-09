@@ -22,7 +22,7 @@ afterEach(() => {
 });
 
 describe('collectPackageDependencies', () => {
-  it('follows runtime dependencies, hoisted and nested', () => {
+  it('follows runtime dependencies, hoisted and nested, listing a nested one through its parent', () => {
     pkg(path.join(nodeModules, 'engine'), {
       dependencies: { debug: '*', helper: '*' },
       devDependencies: { vitest: '*' },
@@ -32,12 +32,21 @@ describe('collectPackageDependencies', () => {
     pkg(path.join(nodeModules, 'engine', 'node_modules', 'helper'), {});
     pkg(path.join(nodeModules, 'vitest'), {});
 
-    expect(collectPackageDependencies(nodeModules, ['engine'])).toEqual([
-      'debug',
-      'engine',
-      path.join('engine', 'node_modules', 'helper'),
-      'ms',
-    ]);
+    // `helper` ships inside `engine`'s folder, which the forge hook copies whole.
+    expect(collectPackageDependencies(nodeModules, ['engine'])).toEqual(['debug', 'engine', 'ms']);
+  });
+
+  it('never lists a folder that another listed folder contains', () => {
+    // A nested package listed beside its parent was copied twice at once; fs.cp
+    // replaces files it finds, so the other copy's chmod found them gone
+    // (mac release build of 2.13.0).
+    pkg(path.join(nodeModules, 'a'), { dependencies: { b: '*' } });
+    pkg(path.join(nodeModules, 'a', 'node_modules', 'b'), { dependencies: { c: '*' } });
+    pkg(path.join(nodeModules, 'a', 'node_modules', 'b', 'node_modules', 'c'), {});
+    pkg(path.join(nodeModules, 'd'), { dependencies: { c: '*' } });
+    pkg(path.join(nodeModules, 'c'), {});
+
+    expect(collectPackageDependencies(nodeModules, ['a', 'd'])).toEqual(['a', 'c', 'd']);
   });
 
   it('skips a missing optional dependency and fails on a missing required one', () => {

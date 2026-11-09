@@ -40,6 +40,12 @@ function resolvePackageDir(rootNodeModules: string, fromDir: string, name: strin
  * Every package folder, relative to `rootNodeModules`, that `roots` and their
  * runtime dependencies live in. Missing optional dependencies are skipped;
  * a missing required one throws, so the build fails instead of the app.
+ *
+ * A package nested under another listed package is left out: it ships inside
+ * its parent's folder, which is copied whole. Listed as well, the forge hook
+ * copied it twice at the same time, and `fs.cp` replaces files it finds, so
+ * one copy's chmod found a file the other had just removed (the mac build of
+ * 2.13.0 failed on `path-scurry/node_modules/lru-cache`).
  */
 export function collectPackageDependencies(rootNodeModules: string, roots: string[]): string[] {
   const seen = new Set<string>();
@@ -68,5 +74,12 @@ export function collectPackageDependencies(rootNodeModules: string, roots: strin
     }
   }
 
-  return [...seen].map((dir) => path.relative(rootNodeModules, dir)).sort();
+  const dirs = [...seen];
+  const nestedMarker = `${path.sep}node_modules${path.sep}`;
+  const insideAnother = (dir: string) =>
+    dirs.some((other) => other !== dir && dir.startsWith(other + nestedMarker));
+  return dirs
+    .filter((dir) => !insideAnother(dir))
+    .map((dir) => path.relative(rootNodeModules, dir))
+    .sort();
 }
