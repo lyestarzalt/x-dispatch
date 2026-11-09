@@ -4,7 +4,13 @@ import type { Result } from '../../core/types';
 import { err, ok } from '../../core/types';
 import { openZipFile } from '../extraction/multiVolumeReader';
 import { rarErrorCode } from '../extraction/rarExtractor';
-import { get7zipPath, sevenZipErrorCode, sevenZipPassword } from '../extraction/sevenZipExtractor';
+import {
+  type SevenZipFailure,
+  collectSevenZipStderr,
+  get7zipPath,
+  sevenZipErrorCode,
+  sevenZipPassword,
+} from '../extraction/sevenZipExtractor';
 import type { ArchiveEntry, ArchiveFormat, InstallerError } from '../types';
 import { INSTALLER_CONSTANTS } from '../types';
 import { listDirectoryEntries } from './folderScanner';
@@ -115,6 +121,7 @@ async function listSevenZipEntries(
         $bin: pathTo7zip,
         password: sevenZipPassword(password),
       });
+      const stderr = collectSevenZipStderr(listStream);
 
       listStream.on('data', (data: SevenZipListData) => {
         entries.push({
@@ -132,10 +139,18 @@ async function listSevenZipEntries(
         resolve(ok(entries));
       });
 
-      listStream.on('error', (listErr: Error) => {
+      listStream.on('error', (listErr: SevenZipFailure) => {
         if (settled) return;
         settled = true;
-        resolve(err(sevenZipErrorCode(listErr, archivePath, password)));
+        resolve(
+          err(
+            sevenZipErrorCode(
+              { message: listErr.message, stderr: stderr() || listErr.stderr },
+              archivePath,
+              password
+            )
+          )
+        );
       });
     } catch (e) {
       resolve(err({ code: 'EXTRACTION_FAILED', path: archivePath, reason: String(e) }));
