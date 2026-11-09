@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { VatsimSectorDataset, VatsimSectorManifest } from '@/types/vatsimSectors';
 import {
   clearVatsimSectorCache,
@@ -11,6 +11,12 @@ import {
   writeNormalizedDataset,
   writeVatsimSectorManifest,
 } from './cache';
+
+// Every call below passes its own directory; the mock keeps the real Electron
+// package out, which would otherwise download its binary on first require.
+vi.mock('electron', () => ({
+  app: { getPath: () => '/tmp' },
+}));
 
 describe('vatsim sector cache', () => {
   let rootDir: string;
