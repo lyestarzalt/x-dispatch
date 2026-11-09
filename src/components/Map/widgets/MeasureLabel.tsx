@@ -122,7 +122,7 @@ function LegLabel({ mapRef, line, index, geometry, placing, isLast, totalNm }: L
         {
           courseMode: unitPrefs.course,
           distanceUnit: unitPrefs.distance,
-          shortUnit: unitPrefs.altitude,
+          shortUnit: unitPrefs.length,
           placing,
           flipped: placement.flipped,
         },

@@ -121,7 +121,7 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
                     {t('simbriefDialog.performance.rwyLength')}
                   </span>
                   <span className="font-mono font-medium">
-                    {units.altitude(metersToFeet(parseInt(takeoffRunway.length, 10)))}
+                    {units.length(metersToFeet(parseInt(takeoffRunway.length, 10)))}
                   </span>
                 </div>
               </div>
@@ -198,7 +198,7 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
                     {t('simbriefDialog.performance.ldaDry')}
                   </span>
                   <span className="font-mono font-medium">
-                    {units.altitude(
+                    {units.length(
                       metersToFeet(parseInt(tlr.landing.distance_dry.factored_distance, 10))
                     )}
                   </span>
@@ -208,7 +208,7 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
                     {t('simbriefDialog.performance.ldaWet')}
                   </span>
                   <span className="font-mono font-medium">
-                    {units.altitude(
+                    {units.length(
                       metersToFeet(parseInt(tlr.landing.distance_wet.factored_distance, 10))
                     )}
                   </span>
@@ -219,7 +219,7 @@ export function PerformanceTab({ data }: PerformanceTabProps) {
                       {t('simbriefDialog.performance.rwyLength')}
                     </span>
                     <span className="font-mono font-medium">
-                      {units.altitude(metersToFeet(parseInt(landingRunway.length, 10)))}
+                      {units.length(metersToFeet(parseInt(landingRunway.length, 10)))}
                     </span>
                   </div>
                 )}

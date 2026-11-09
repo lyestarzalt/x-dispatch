@@ -2,6 +2,7 @@ export * from './types';
 export * from './precision';
 export * from './distance';
 export * from './altitude';
+export * from './length';
 export * from './speed';
 export * from './verticalSpeed';
 export * from './weight';

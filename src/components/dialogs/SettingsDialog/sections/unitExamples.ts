@@ -6,6 +6,7 @@ import {
   type DistanceUnit,
   type FeetPerMinute,
   type Knots,
+  type LengthUnit,
   type SpeedUnit,
   type Translate,
   type VerticalSpeedUnit,
@@ -13,6 +14,7 @@ import {
   formatCoordinates,
   formatCourse,
   formatDistance,
+  formatLength,
   formatSpeed,
   formatVerticalSpeed,
   formatWeight,
@@ -22,6 +24,8 @@ import {
 const SAMPLE = {
   distanceNm: 12.5 as NauticalMiles,
   altitudeFt: 3500 as Feet,
+  // KSAN's runway.
+  lengthFt: 9397 as Feet,
   speedKts: 250 as Knots,
   verticalSpeedFpm: 1500 as FeetPerMinute,
   weightLbs: 2200,
@@ -34,6 +38,7 @@ const SAMPLE = {
 export interface UnitExampleKinds {
   distance: DistanceUnit;
   altitude: AltitudeUnit;
+  length: LengthUnit;
   speed: SpeedUnit;
   verticalSpeed: VerticalSpeedUnit;
   weight: 'lbs' | 'kg';
@@ -52,6 +57,8 @@ export function unitExample<K extends keyof UnitExampleKinds>(
       return formatDistance(SAMPLE.distanceNm, unit as DistanceUnit, t);
     case 'altitude':
       return formatAltitude(SAMPLE.altitudeFt, unit as AltitudeUnit, t);
+    case 'length':
+      return formatLength(SAMPLE.lengthFt, unit as LengthUnit, t);
     case 'speed':
       return formatSpeed(SAMPLE.speedKts, unit as SpeedUnit, t);
     case 'verticalSpeed':

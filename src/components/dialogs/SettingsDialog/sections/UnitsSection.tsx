@@ -32,6 +32,10 @@ const MEASUREMENT_ROWS = [
     { value: 'ft', labelKey: 'units.ft' },
     { value: 'm', labelKey: 'units.m' },
   ]),
+  spec('length', [
+    { value: 'ft', labelKey: 'units.ft' },
+    { value: 'm', labelKey: 'units.m' },
+  ]),
   spec('speed', [
     { value: 'kts', labelKey: 'units.kts' },
     { value: 'kmh', labelKey: 'units.kmh' },

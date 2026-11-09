@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Runway and gate length has its own unit.** Settings → Units; runway lengths, gate sizes and taxi distances follow it, altitude stays altitude.
+- **Landing distance on displaced thresholds.** A runway end with a displaced threshold shows the distance left to land on.
+- **VATSIM and IVAO switches inside Explore → Online.** Pick the network without leaving the list.
+
+### Changed
+
+- **One card per runway end on the airport card.** Each end carries its own ILS, landing distance and active colour.
+- **ILS cones start at the threshold.** The beam and the course line no longer run along the runway from the far antenna.
+- **VATSIM, Discord and Ko-fi show their own logos.**
+
+### Fixed
+
+- **ILS was missing on runways named with one digit.** KACK 6, KMIA 9 and KIAH 9 now show theirs.
+- **Airspace fills no longer cover the selected airport and its ILS.**
+- **ILS cones stayed hidden after zooming to a new airport.**
+
 ## [2.12.0] - 2026-11-07
 
 ### Added

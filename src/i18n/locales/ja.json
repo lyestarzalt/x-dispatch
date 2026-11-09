@@ -437,7 +437,7 @@
       "logbook": "ログブック"
     },
     "online": {
-      "networkOff": "レイヤーで VATSIM か IVAO をオンにすると、誰がオンラインか表示されます。",
+      "networkOff": "ネットワークを選ぶと、誰がオンラインかわかります。",
       "none": "現在オンラインの管制官はいません。"
     },
     "logbook": {
@@ -780,6 +780,7 @@
       "navigation": "ナビゲーション",
       "distance": "距離",
       "altitude": "高度",
+      "length": "滑走路・ゲートの長さ",
       "speed": "速度",
       "verticalSpeed": "垂直速度",
       "weight": "重量",
@@ -1109,6 +1110,10 @@
       "range": "有効範囲",
       "ident": "識別符号",
       "rangeNm": "{{value}}"
+    },
+    "displacedThreshold": {
+      "lda": "LDA {{length}}",
+      "tooltip": "スレッショルド {{displaced}} 移設、着陸可能距離 {{lda}}"
     },
     "rawMetar": "元の METAR",
     "routeTab": {

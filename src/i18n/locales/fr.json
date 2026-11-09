@@ -437,7 +437,7 @@
       "logbook": "Carnet"
     },
     "online": {
-      "networkOff": "Activez VATSIM ou IVAO dans Calques pour voir qui est en ligne.",
+      "networkOff": "Choisissez un réseau pour voir qui est en ligne.",
       "none": "Aucun contrôleur en ligne pour le moment."
     },
     "logbook": {
@@ -780,6 +780,7 @@
       "navigation": "Navigation",
       "distance": "Distance",
       "altitude": "Altitude",
+      "length": "Longueur de piste et de porte",
       "speed": "Vitesse",
       "verticalSpeed": "Vitesse verticale",
       "weight": "Poids",
@@ -1109,6 +1110,10 @@
       "range": "Portée",
       "ident": "Indicatif",
       "rangeNm": "{{value}}"
+    },
+    "displacedThreshold": {
+      "lda": "LDA {{length}}",
+      "tooltip": "Seuil décalé de {{displaced}}, distance d'atterrissage utilisable {{lda}}"
     },
     "rawMetar": "METAR original",
     "routeTab": {
