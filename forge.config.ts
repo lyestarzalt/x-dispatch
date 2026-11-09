@@ -81,6 +81,9 @@ const config: ForgeConfig = {
         'node-unrar-js',
         'velopack',
         '@neon-rs/load',
+        // Event loop block detection and the native add-on behind it
+        '@sentry/node-native',
+        '@sentry/node-native-stacktrace',
       ];
 
       const sourceNodeModulesPath = path.resolve(__dirname, 'node_modules');

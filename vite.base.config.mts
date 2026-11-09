@@ -13,4 +13,8 @@ export const external = [
   // Loaded by its CommonJS entry: the ESM one is the browser build, without file support
   'node-unrar-js',
   'velopack',
+  // Event loop block detection: spawns a worker from a file next to its own
+  // module and loads a native add-on built for Electron at package time.
+  '@sentry/node-native',
+  '@sentry/node-native-stacktrace',
 ];
