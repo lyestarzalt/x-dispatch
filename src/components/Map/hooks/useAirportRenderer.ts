@@ -3,7 +3,7 @@ import * as maplibregl from 'maplibre-gl';
 import { AirportParser } from '@/lib/parsers/apt';
 import type { ParsedAirport } from '@/types/apt';
 import { LayerVisibility } from '@/types/layers';
-import { LayerRenderer, createLayerRenderers } from '../layers';
+import { LayerRenderer, createLayerRenderers, ensureNavLayerOrder } from '../layers';
 import { calculateOptimalZoom } from '../utils/zoomCalculator';
 import { isStyleReadyForLayerUpdates } from './styleReadiness';
 
@@ -193,6 +193,13 @@ export function useAirportRenderer(
         // and logs one event per affected layer; living with that noise is
         // better than a silent paint-never-fires regression.
         paintLayers(parsedAirport);
+        // The new airport layers went on top of everything; the ILS must come
+        // back over them. Again on idle, for the renderers that add layers
+        // after an image load.
+        ensureNavLayerOrder(m);
+        m.once('idle', () => {
+          if (m.getStyle()) ensureNavLayerOrder(m);
+        });
 
         const optimalZoom = calculateOptimalZoom(parsedAirport.runways, parsedAirport.waterRunways);
 
