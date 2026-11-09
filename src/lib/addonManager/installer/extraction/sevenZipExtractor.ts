@@ -47,6 +47,26 @@ export function sevenZipErrorCode(
 }
 
 /**
+ * The whole stderr of the 7-Zip process behind a node-7z stream.
+ *
+ * node-7z makes one Error per stderr chunk and merges them first-chunk-wins
+ * (its error.js `assign`). `7z l` writes a blank line before the error, so when
+ * the OS delivers that line as its own chunk the password failure is lost and
+ * the stream reports "unknown error" (CI, 2026-11-09). The stream carries its
+ * child process from creation; its stderr is read whole here, attached in the
+ * same tick so no chunk is missed.
+ */
+export function collectSevenZipStderr(stream: unknown): () => string {
+  let text = '';
+  const child = (stream as { _childProcess?: { stderr?: NodeJS.ReadableStream | null } })
+    ._childProcess;
+  child?.stderr?.on('data', (chunk: Buffer | string) => {
+    text += chunk.toString();
+  });
+  return () => text;
+}
+
+/**
  * A packaged app resolves the bundled binary to a path inside app.asar, which
  * is a file: spawning from it fails with ENOENT on Windows and ENOTDIR on
  * Linux (Sentry X-DISPATCH-7F). The build unpacks 7zip-bin next to the
@@ -94,6 +114,7 @@ export async function extractSevenZip(
         recursive: true,
         password: sevenZipPassword(password),
       });
+      const stderr = collectSevenZipStderr(extractStream);
 
       extractStream.on('data', (data: { file: string; status?: string }) => {
         const filePath = data.file;
@@ -147,7 +168,15 @@ export async function extractSevenZip(
       extractStream.on('error', (extractErr: SevenZipFailure) => {
         if (settled) return;
         settled = true;
-        resolve(err(sevenZipErrorCode(extractErr, archivePath, password)));
+        resolve(
+          err(
+            sevenZipErrorCode(
+              { message: extractErr.message, stderr: stderr() || extractErr.stderr },
+              archivePath,
+              password
+            )
+          )
+        );
       });
     } catch (e) {
       resolve(err({ code: 'EXTRACTION_FAILED', path: archivePath, reason: String(e) }));

@@ -1,5 +1,32 @@
+import { EventEmitter } from 'node:events';
 import { describe, expect, it } from 'vitest';
-import { sevenZipErrorCode, unpackedBinaryPath } from './sevenZipExtractor';
+import { collectSevenZipStderr, sevenZipErrorCode, unpackedBinaryPath } from './sevenZipExtractor';
+
+describe('collectSevenZipStderr', () => {
+  it('keeps every chunk, so a password failure survives a split stderr', () => {
+    // `7z l` writes a blank line first; when the OS delivers it as its own chunk,
+    // node-7z keeps that chunk and drops the one with the error (first chunk wins).
+    const stderr = new EventEmitter();
+    const stream = { _childProcess: { stderr } };
+    const text = collectSevenZipStderr(stream);
+    stderr.emit('data', Buffer.from('\n'));
+    stderr.emit(
+      'data',
+      Buffer.from('ERROR: Hidden.7z : Can not open encrypted archive. Wrong password?\n')
+    );
+    expect(text()).toContain('Wrong password?');
+    expect(
+      sevenZipErrorCode({ message: 'unknown error', stderr: text() }, '/a.7z', undefined)
+    ).toEqual({
+      code: 'PASSWORD_REQUIRED',
+      path: '/a.7z',
+    });
+  });
+
+  it('reads nothing from a stream without a child process', () => {
+    expect(collectSevenZipStderr({})()).toBe('');
+  });
+});
 
 describe('sevenZipErrorCode', () => {
   it('reads the password failure from stderr when node-7z gives no message', () => {
