@@ -259,8 +259,8 @@ jobs:
           > :window: **Windows:** If X-Plane doesn't launch from the app, try running X-Dispatch as administrator.
           EOF
 
-      # Installers ship from R2 only. The draft is never public and holds the
-      # notes that release-sync-notes.yml copies to R2 after editing.
+      # Installers ship from R2 only. The draft is never public; it keeps the
+      # notes on GitHub, and the R2 copy is published below.
       - name: Create draft GitHub release (notes only)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

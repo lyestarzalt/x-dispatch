@@ -233,8 +233,8 @@ jobs:
             echo "> :window: **Windows:** If X-Plane doesn't launch from the app, try running X-Dispatch as administrator."
           } > release-notes.md
 
-      # Installers ship from R2 only. The draft is never public and holds the
-      # notes that release-sync-notes.yml copies to R2 after editing. A draft
+      # Installers ship from R2 only. The draft is never public; it keeps the
+      # notes on GitHub, and the R2 copy is published below. A draft
       # does not create its tag, so the tag is made first: the Discord
       # changelog counts commits from the previous RC tag.
       - name: Tag RC and create draft GitHub release (notes only)
