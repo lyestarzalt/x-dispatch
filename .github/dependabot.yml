@@ -33,6 +33,11 @@ updates:
       # plugin-fuses release that accepts ^2.0.0.
       - dependency-name: "@electron/fuses"
 
+      # @sentry/node-native is pinned to the exact version @sentry/electron names as its
+      # optional peer (8.3.0 wants 11.8.0). A bump on its own fails `npm ci` with ERESOLVE;
+      # it moves together with @sentry/electron, by hand, when that SDK is upgraded.
+      - dependency-name: "@sentry/node-native"
+
     groups:
       patches-and-minors:
         patterns: ["*"]
