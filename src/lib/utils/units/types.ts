@@ -17,6 +17,8 @@ export type FeetPerMinute = Brand<number, 'feetPerMinute'>;
 
 export type DistanceUnit = 'nm' | 'km' | 'mi';
 export type AltitudeUnit = 'ft' | 'm';
+/** Runway length, gate width, taxi distance: lengths on the ground, apart from altitude. */
+export type LengthUnit = 'ft' | 'm';
 export type SpeedUnit = 'kts' | 'kmh' | 'mph';
 export type VerticalSpeedUnit = 'fpm' | 'ms';
 /** 'decimal' = decimal degrees, 'dms' = degrees/minutes/seconds, 'dm' = degrees + decimal minutes. */

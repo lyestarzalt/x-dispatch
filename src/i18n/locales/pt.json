@@ -437,7 +437,7 @@
       "logbook": "Diário"
     },
     "online": {
-      "networkOff": "Ative o VATSIM ou o IVAO em Camadas para ver quem está online.",
+      "networkOff": "Escolha uma rede para ver quem está online.",
       "none": "Nenhum controlador online agora."
     },
     "logbook": {
@@ -780,6 +780,7 @@
       "navigation": "Navegação",
       "distance": "Distância",
       "altitude": "Altitude",
+      "length": "Comprimento de pista e portão",
       "speed": "Velocidade",
       "verticalSpeed": "Velocidade vertical",
       "weight": "Peso",
@@ -1109,6 +1110,10 @@
       "range": "Alcance",
       "ident": "Identif.",
       "rangeNm": "{{value}}"
+    },
+    "displacedThreshold": {
+      "lda": "LDA {{length}}",
+      "tooltip": "Cabeceira deslocada {{displaced}}, distância de pouso disponível {{lda}}"
     },
     "rawMetar": "METAR original",
     "routeTab": {

@@ -437,7 +437,7 @@
       "logbook": "Dziennik"
     },
     "online": {
-      "networkOff": "Włącz VATSIM lub IVAO w Warstwach, aby zobaczyć, kto jest online.",
+      "networkOff": "Wybierz sieć, aby zobaczyć, kto jest online.",
       "none": "Brak kontrolerów online w tej chwili."
     },
     "logbook": {
@@ -780,6 +780,7 @@
       "navigation": "Nawigacja",
       "distance": "Odległość",
       "altitude": "Wysokość",
+      "length": "Długość pasa i stanowiska",
       "speed": "Prędkość",
       "verticalSpeed": "Prędkość pionowa",
       "weight": "Waga",
@@ -1109,6 +1110,10 @@
       "range": "Zasięg",
       "ident": "Identyfikator",
       "rangeNm": "{{value}}"
+    },
+    "displacedThreshold": {
+      "lda": "LDA {{length}}",
+      "tooltip": "Próg przesunięty o {{displaced}}, dostępna długość lądowania {{lda}}"
     },
     "rawMetar": "Oryginalny METAR",
     "routeTab": {

@@ -1,6 +1,7 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import type { Runway, RunwayEnd } from '@/types/apt';
 import type { Navaid } from '@/types/navigation';
 
@@ -17,12 +18,12 @@ const selectedAirportData: {
 /** What the nav-data query hands the tab: nothing until a test fills it. */
 const navState = { data: undefined as { ils: Navaid[]; gs: Navaid[] } | undefined };
 
-function runway(name0: string, name1: string): Runway {
-  const end = (name: string, latitude: number): RunwayEnd => ({
+function runway(name0: string, name1: string, dthr: [number, number] = [0, 0]): Runway {
+  const end = (name: string, latitude: number, dthr_length: number): RunwayEnd => ({
     name,
     latitude,
     longitude: -0.45,
-    dthr_length: 0,
+    dthr_length,
     overrun_length: 0,
     marking: 0,
     lighting: 0,
@@ -38,7 +39,7 @@ function runway(name0: string, name1: string): Runway {
     centerline_lights: false,
     edge_lights: false,
     auto_distance_remaining_signs: false,
-    ends: [end(name0, 51.47), end(name1, 51.48)],
+    ends: [end(name0, 51.47, dthr[0]), end(name1, 51.48, dthr[1])],
   } as Runway;
 }
 
@@ -116,11 +117,14 @@ vi.mock('@/queries/useNetworkTraffic', () => ({
   useNetworkTraffic: () => networkState,
 }));
 
+/** The METAR wind a test blows: calm until one sets it. */
+const metarState = { wind: undefined as { degrees: number; speed: number } | undefined };
+
 vi.mock('@/queries/useVatsimMetarQuery', () => ({
   useVatsimMetarQuery: () => ({
     data: {
       parsed: {
-        wind: undefined,
+        wind: metarState.wind,
         visibility: undefined,
         cavok: false,
         clouds: [],
@@ -167,5 +171,51 @@ describe('InfoTab', () => {
 
     selectedAirportData.runways = [];
     navState.data = undefined;
+  });
+
+  it('matches a single-digit apt.dat runway end to its two-digit ILS record', async () => {
+    // KACK: apt.dat names the end "6", earth_nav.dat names the localizer end "06".
+    selectedAirportData.runways = [runway('6', '24')];
+    navState.data = { ils: [ils('IRNE', 'EGLL', '06')], gs: [] };
+
+    const { default: InfoTab } = await import('./InfoTab');
+
+    expect(renderToStaticMarkup(createElement(InfoTab))).toMatch(/ILS<\//);
+
+    selectedAirportData.runways = [];
+    navState.data = undefined;
+  });
+
+  it('colours only the active end of a runway pair, and the active runway sentence', async () => {
+    selectedAirportData.runways = [runway('06', '24')];
+    metarState.wind = { degrees: 70, speed: 12 };
+
+    const { default: InfoTab } = await import('./InfoTab');
+    const html = renderToStaticMarkup(createElement(InfoTab));
+
+    // One card per end: "06" in the active colour, "24" in the plain one.
+    expect(html).toMatch(/<span class="[^"]*text-cat-emerald[^"]*">06<\/span>/);
+    expect(html).not.toMatch(/<span class="[^"]*text-cat-emerald[^"]*">24<\/span>/);
+    expect(html).toMatch(/<span class="[^"]*text-foreground[^"]*">24<\/span>/);
+    // The sentence above the list names the runway in the same colour.
+    expect(html).toMatch(
+      /airportInfo\.activeRunway<\/span><span class="[^"]*text-cat-emerald[^"]*">06</
+    );
+
+    selectedAirportData.runways = [];
+    metarState.wind = undefined;
+  });
+
+  it('shows a landing distance only on the end whose threshold is displaced', async () => {
+    selectedAirportData.runways = [runway('09', '27', [305, 0])];
+
+    const { default: InfoTab } = await import('./InfoTab');
+    // The landing-distance line carries a tooltip, which needs the provider the app mounts.
+    const html = renderToStaticMarkup(createElement(TooltipProvider, null, createElement(InfoTab)));
+
+    expect(html.match(/airportInfo\.displacedThreshold\.lda/g)).toHaveLength(1);
+    expect(html.indexOf('airportInfo.displacedThreshold.lda')).toBeLessThan(html.indexOf('>27<'));
+
+    selectedAirportData.runways = [];
   });
 });

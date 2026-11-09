@@ -16,6 +16,7 @@ import {
   Wind,
 } from 'lucide-react';
 import { isAirportFiltersActive } from '@/components/Map/hooks/useAirportFilters';
+import { VatsimWordmark } from '@/components/icons/BrandMarks';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -125,12 +126,15 @@ function SwitchRow({
 function OverlayTile({
   icon: Icon,
   label,
+  mark,
   on,
   onToggle,
   badge,
 }: {
   icon: LucideIcon;
   label: string;
+  /** A brand's own mark, shown instead of the icon and text; `label` still names the tile. */
+  mark?: React.ReactNode;
   on: boolean;
   onToggle: () => void;
   badge?: React.ReactNode;
@@ -144,8 +148,13 @@ function OverlayTile({
       title={label}
       className="data-[state=off]:bg-secondary/40 data-[state=off]:text-muted-foreground h-9 min-w-0 justify-start gap-2 px-2.5 text-sm font-normal data-[state=on]:ring-0 [&_svg]:size-4"
     >
-      <Icon className="shrink-0" />
-      <span className="min-w-0 flex-1 truncate text-left">{label}</span>
+      {mark ?? (
+        <>
+          <Icon className="shrink-0" />
+          <span className="min-w-0 flex-1 truncate text-left">{label}</span>
+        </>
+      )}
+      {mark && <span className="min-w-0 flex-1" />}
       {badge}
     </Toggle>
   );
@@ -221,6 +230,7 @@ export function LayersPanel({
     key: string;
     icon: LucideIcon;
     label: string;
+    mark?: React.ReactNode;
     on: boolean;
     toggle: () => void;
     badge?: React.ReactNode;
@@ -295,6 +305,7 @@ export function LayersPanel({
       key: 'vatsim',
       icon: Radar,
       label: t('toolbar.vatsim'),
+      mark: <VatsimWordmark className="h-3.5" />,
       on: vatsimEnabled,
       toggle: onToggleVatsim,
       badge:
@@ -479,6 +490,7 @@ export function LayersPanel({
               key={o.key}
               icon={o.icon}
               label={o.label}
+              mark={o.mark}
               on={o.on}
               onToggle={o.toggle}
               badge={o.badge}

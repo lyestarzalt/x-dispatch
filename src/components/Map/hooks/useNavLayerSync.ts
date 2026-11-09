@@ -3,7 +3,7 @@ import * as maplibregl from 'maplibre-gl';
 import type { BasemapTheme } from '@/lib/map/basemapTheme';
 import type { NavigationData } from '@/queries/useNavDataQuery';
 import type { NavLayerVisibility } from '@/types/layers';
-import { airspaceLayer, ilsLayer, navaidLayer } from '../layers';
+import { airspaceLayer, ensureNavLayerOrder, ilsLayer, navaidLayer } from '../layers';
 import { applyNavLayerTheme } from '../layers/navigation/navTheme';
 import { runWhenStyleIsReady } from './styleReadiness';
 import type { MapRef } from './useMapSetup';
@@ -49,6 +49,8 @@ export function useNavLayerSync({
         await airspaceLayer.update(map, navData.airspaces);
         airspaceLayer.setVisibility(map, navVisibility.airspaces);
 
+        // Whichever layer got its first data last was added on top; put them back.
+        ensureNavLayerOrder(map);
         applyNavLayerTheme(map, theme);
       } catch (err) {
         window.appAPI.log.error('Nav layer update failed', err);

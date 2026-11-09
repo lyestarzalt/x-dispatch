@@ -9,6 +9,9 @@ export { airspaceLayer, firLayer, AIRSPACE_LAYER_IDS, FIR_LAYER_IDS } from './Ai
 // ILS layer (complex - has cone and course geometry)
 export { ilsLayer, ILS_LAYER_IDS } from './ILSLayer';
 
+// Stacking: airspaces under the airport, ILS over it
+export { ensureNavLayerOrder } from './navLayerOrder';
+
 // Holding pattern layer
 export { holdingPatternLayer, HOLDING_PATTERN_LAYER_IDS } from './HoldingPatternLayer';
 
