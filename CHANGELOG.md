@@ -11,9 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Copy the route.** The flight planner and the SimBrief Route tab copy it the way SimBrief's Copy for Charts does, ready to paste into a chart app.
 - **Click the airport's ICAO to recenter or switch.** Center the map on the airport again, or jump to your home airport or a favorite.
+- **Lock the map flat.** Turn off Tilt the map in Settings → Graphics and an accidental right-drag can't tilt it.
 
 ### Changed
 
+- **3D terrain steps aside while X-Plane is connected.** The sim keeps the video memory, and terrain comes back when you disconnect.
 - **The SimBrief Route tab shows the whole route.** A long route wraps instead of being cut off.
 
 ### Fixed
