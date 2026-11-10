@@ -1,5 +1,44 @@
+import type * as maplibregl from 'maplibre-gl';
 import { describe, expect, it } from 'vitest';
-import { dedupCoincident } from './TaxiRouteLayer';
+import { TAXIWAY_NAMES_LAYER_ID } from '../airport/TaxiwayNameLayer';
+import { TAXI_ROUTE_LAYER_IDS, bringTaxiRouteToFront, dedupCoincident } from './TaxiRouteLayer';
+
+/** A stand-in for the map's layer stack: just the ids, bottom to top. */
+function stackMap(ids: string[]) {
+  const stack = [...ids];
+  const map = {
+    getStyle: () => ({}),
+    getLayer: (id: string) => (stack.includes(id) ? { id } : undefined),
+    moveLayer: (id: string, beforeId?: string) => {
+      stack.splice(stack.indexOf(id), 1);
+      stack.splice(beforeId ? stack.indexOf(beforeId) : stack.length, 0, id);
+    },
+  };
+  return { map: map as unknown as maplibregl.Map, stack };
+}
+
+describe('bringTaxiRouteToFront', () => {
+  it('keeps the taxiway names above the green line and under the drag handle', () => {
+    // The airport renders after the route mounts, so its layers start on top.
+    const { map, stack } = stackMap([
+      ...TAXI_ROUTE_LAYER_IDS,
+      'airport-pavement',
+      TAXIWAY_NAMES_LAYER_ID,
+    ]);
+    bringTaxiRouteToFront(map);
+    const at = (id: string) => stack.indexOf(id);
+    expect(at('airport-pavement')).toBeLessThan(at('taxi-route-casing'));
+    expect(at(TAXIWAY_NAMES_LAYER_ID)).toBeGreaterThan(at('taxi-route-line'));
+    expect(at(TAXIWAY_NAMES_LAYER_ID)).toBeGreaterThan(at('taxi-route-chevrons'));
+    expect(at(TAXIWAY_NAMES_LAYER_ID)).toBeLessThan(at('taxi-route-handle'));
+  });
+
+  it('lifts the route alone at an airport without taxiway names', () => {
+    const { map, stack } = stackMap(['taxi-route-line', 'airport-pavement']);
+    bringTaxiRouteToFront(map);
+    expect(stack).toEqual(['airport-pavement', 'taxi-route-line']);
+  });
+});
 
 describe('dedupCoincident', () => {
   it('returns the input unchanged when no points are coincident', () => {

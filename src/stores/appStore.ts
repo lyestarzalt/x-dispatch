@@ -28,6 +28,8 @@ interface AppState {
   pendingAirportSelectionIcao: string | null;
   /** A link asked for a tab of the airport panel; the panel switches and clears. */
   pendingAirportTab: AirportPanelTab | null;
+  /** The airport panel asked the map to frame the selected airport again; the Map clears it. */
+  pendingFrameAirport: boolean;
   /** A link asked for a runway end as the start position; the Map resolves it once the airport is loaded. */
   pendingStartRunway: { icao: string; runway: string } | null;
   showAddonManager: boolean;
@@ -55,6 +57,9 @@ interface AppState {
   clearPendingAirportSelection: () => void;
   requestAirportTab: (tab: AirportPanelTab) => void;
   clearPendingAirportTab: () => void;
+  /** Producer: bring the selected airport back into view, camera only. */
+  requestFrameAirport: () => void;
+  clearPendingFrameAirport: () => void;
   requestStartRunway: (icao: string, runway: string) => void;
   clearPendingStartRunway: () => void;
   openAddonManager: (tab?: AddonManagerTab | null) => void;
@@ -96,6 +101,7 @@ export const useAppStore = create<AppState>()(
     startPosition: null as StartPosition | null,
     pendingAirportSelectionIcao: null as string | null,
     pendingAirportTab: null as AirportPanelTab | null,
+    pendingFrameAirport: false,
     pendingStartRunway: null as { icao: string; runway: string } | null,
     showAddonManager: false,
     pendingAddonTab: null as AddonManagerTab | null,
@@ -140,6 +146,8 @@ export const useAppStore = create<AppState>()(
 
     requestAirportTab: (tab) => set({ pendingAirportTab: tab }),
     clearPendingAirportTab: () => set({ pendingAirportTab: null }),
+    requestFrameAirport: () => set({ pendingFrameAirport: true }),
+    clearPendingFrameAirport: () => set({ pendingFrameAirport: false }),
     requestStartRunway: (icao, runway) =>
       set({ pendingStartRunway: { icao: icao.toUpperCase(), runway: runway.toUpperCase() } }),
     clearPendingStartRunway: () => set({ pendingStartRunway: null }),

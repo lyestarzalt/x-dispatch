@@ -1,10 +1,9 @@
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Home, Star, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { useFavoriteAirports } from '@/hooks/useFavoriteAirports';
 import { cn } from '@/lib/utils/helpers';
-import { useAirportsListQuery } from '@/queries/useAirportsListQuery';
 import { useAppStore } from '@/stores/appStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import {
@@ -15,34 +14,14 @@ import {
 } from '../primitives';
 import type { SettingsSectionProps } from '../types';
 
-interface ResolvedFavorite {
-  icao: string;
-  name: string | null;
-  isHome: boolean;
-}
-
 export default function AirportsSection({ className }: SettingsSectionProps) {
   const { t } = useTranslation();
-  const { favoriteIcaos, homeIcao, autoNavigateHomeOnStart } = useSettingsStore((s) => s.airports);
+  const { favoriteIcaos, autoNavigateHomeOnStart } = useSettingsStore((s) => s.airports);
   const updateAirportsSettings = useSettingsStore((s) => s.updateAirportsSettings);
   const removeFavoriteAirport = useSettingsStore((s) => s.removeFavoriteAirport);
   const setHomeAirport = useSettingsStore((s) => s.setHomeAirport);
   const requestSelectAirport = useAppStore((s) => s.requestSelectAirport);
-  const { data: airports } = useAirportsListQuery();
-
-  // Union of favorites + home (home may not be in favorites — independent fields).
-  // Home is shown first so the user always sees their primary airport at the top.
-  const rows = useMemo<ResolvedFavorite[]>(() => {
-    const nameByIcao = new Map(airports?.map((a) => [a.icao, a.name]) ?? []);
-    const ordered: string[] = [];
-    if (homeIcao && !favoriteIcaos.includes(homeIcao)) ordered.push(homeIcao);
-    for (const icao of favoriteIcaos) ordered.push(icao);
-    return ordered.map((icao) => ({
-      icao,
-      name: nameByIcao.get(icao) ?? null,
-      isHome: icao === homeIcao,
-    }));
-  }, [airports, favoriteIcaos, homeIcao]);
+  const rows = useFavoriteAirports();
 
   return (
     <div className={cn('space-y-6', className)}>

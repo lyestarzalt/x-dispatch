@@ -704,49 +704,52 @@ export default function Map({ airports }: MapProps) {
     };
   }, [mapRef, debugEnabled, handleFeatureClick]);
 
+  // Frame an airport using the runway-endpoint bounding box rather than a
+  // fixed-zoom flyTo. Big airports zoom out enough to show the whole layout;
+  // tiny strips stay close (capped by maxZoom). For heliports/no-runway
+  // airports the bounds are degenerate, so fall back to a flyTo with a
+  // sensible zoom. Used on select and when the panel asks to recenter.
+  const frameAirport = useCallback(
+    (parsedAirport: ParsedAirport, center: [number, number]) => {
+      if (mapRef.current) {
+        const map = mapRef.current;
+        const bounds = getAirportBounds(parsedAirport, center);
+        if (airportBoundsHaveArea(bounds)) {
+          // Compute the camera fitBounds would land on, then lower the
+          // minzoom of every airport-detail layer to match. Big airports
+          // (KCVG, LFPG) fit at zoom ~11; default detail layers gate at
+          // 14 and would stay invisible at the framed view. Lowering
+          // minzoom dynamically per-airport means details are always
+          // visible at the chosen frame, regardless of airport size.
+          const camera = map.cameraForBounds(bounds, { padding: 80, maxZoom: 15 });
+          const targetZoom = camera?.zoom ?? 13;
+          const detailMinZoom = Math.max(0, targetZoom - 0.5);
+          const styleLayers = map.getStyle().layers ?? [];
+          for (const layer of styleLayers) {
+            if (!layer.id.startsWith('airport-')) continue;
+            if (layer.id === 'airport-labels') continue; // world layer
+            const currentMin = (layer as { minzoom?: number }).minzoom ?? 0;
+            if (currentMin > detailMinZoom) {
+              const currentMax = (layer as { maxzoom?: number }).maxzoom ?? 24;
+              map.setLayerZoomRange(layer.id, detailMinZoom, currentMax);
+            }
+          }
+          map.fitBounds(bounds, { padding: 80, duration: 1500, maxZoom: 15 });
+        } else {
+          map.flyTo({ center, zoom: 14, duration: 1500 });
+        }
+      }
+    },
+    [mapRef]
+  );
+
   const selectAirport = useCallback(
     async (airport: Airport) => {
       setSelectedFeature(null);
       const parsedAirport = await renderAirport(airport.icao, [airport.lon, airport.lat]);
       if (parsedAirport) {
         storeSelectAirport(airport.icao, parsedAirport);
-        // Frame the airport using the runway-endpoint bounding box rather
-        // than a fixed-zoom flyTo. Big airports zoom out enough to show the
-        // whole layout; tiny strips stay close (capped by maxZoom). For
-        // heliports/no-runway airports the bounds are degenerate, so fall
-        // back to a flyTo with a sensible zoom.
-        if (mapRef.current) {
-          const map = mapRef.current;
-          const bounds = getAirportBounds(parsedAirport, [airport.lon, airport.lat]);
-          if (airportBoundsHaveArea(bounds)) {
-            // Compute the camera fitBounds would land on, then lower the
-            // minzoom of every airport-detail layer to match. Big airports
-            // (KCVG, LFPG) fit at zoom ~11; default detail layers gate at
-            // 14 and would stay invisible at the framed view. Lowering
-            // minzoom dynamically per-airport means details are always
-            // visible at the chosen frame, regardless of airport size.
-            const camera = map.cameraForBounds(bounds, { padding: 80, maxZoom: 15 });
-            const targetZoom = camera?.zoom ?? 13;
-            const detailMinZoom = Math.max(0, targetZoom - 0.5);
-            const styleLayers = map.getStyle().layers ?? [];
-            for (const layer of styleLayers) {
-              if (!layer.id.startsWith('airport-')) continue;
-              if (layer.id === 'airport-labels') continue; // world layer
-              const currentMin = (layer as { minzoom?: number }).minzoom ?? 0;
-              if (currentMin > detailMinZoom) {
-                const currentMax = (layer as { maxzoom?: number }).maxzoom ?? 24;
-                map.setLayerZoomRange(layer.id, detailMinZoom, currentMax);
-              }
-            }
-            map.fitBounds(bounds, { padding: 80, duration: 1500, maxZoom: 15 });
-          } else {
-            map.flyTo({
-              center: [airport.lon, airport.lat],
-              zoom: 14,
-              duration: 1500,
-            });
-          }
-        }
+        frameAirport(parsedAirport, [airport.lon, airport.lat]);
         setTimeout(() => {
           startAnimations();
           applyLayerVisibility(layerVisibility);
@@ -758,6 +761,7 @@ export default function Map({ airports }: MapProps) {
     [
       mapRef,
       renderAirport,
+      frameAirport,
       startAnimations,
       applyLayerVisibility,
       layerVisibility,
@@ -765,6 +769,25 @@ export default function Map({ airports }: MapProps) {
       setSelectedFeature,
     ]
   );
+
+  // The airport panel asked to bring the selected airport back into view: camera
+  // only, so the start position and the rendered layers stay as they are.
+  const pendingFrameAirport = useAppStore((s) => s.pendingFrameAirport);
+  const clearPendingFrameAirport = useAppStore((s) => s.clearPendingFrameAirport);
+  useEffect(() => {
+    if (!pendingFrameAirport) return;
+    clearPendingFrameAirport();
+    if (!selectedICAO || !selectedAirportData) return;
+    const airport = airports.find((a) => a.icao === selectedICAO);
+    if (airport) frameAirport(selectedAirportData, [airport.lon, airport.lat]);
+  }, [
+    pendingFrameAirport,
+    clearPendingFrameAirport,
+    selectedICAO,
+    selectedAirportData,
+    airports,
+    frameAirport,
+  ]);
 
   // In-app jump-to-airport channel — flight-plan chips, SimBrief panel, etc.
   // dispatch via appStore.requestSelectAirport(icao); we resolve and clear.

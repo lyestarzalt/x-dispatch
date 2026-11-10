@@ -1,9 +1,11 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Compass,
+  Crosshair,
   Home,
   Info,
   PlaneTakeoff,
@@ -13,9 +15,18 @@ import {
 import { AirportLocalClock } from '@/components/AirportLocalClock';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { IcaoCode } from '@/components/ui/icao-code';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useFavoriteAirports } from '@/hooks/useFavoriteAirports';
 import { useUnits } from '@/hooks/useUnits';
 import { formatAirportCountry } from '@/lib/utils/format';
 import type { Feet } from '@/lib/utils/geomath';
@@ -69,6 +80,9 @@ function AirportInfoPanel({
   const homeIcao = useSettingsStore((s) => s.airports.homeIcao);
   const toggleFavoriteAirport = useSettingsStore((s) => s.toggleFavoriteAirport);
   const setHomeAirport = useSettingsStore((s) => s.setHomeAirport);
+  const favoriteAirports = useFavoriteAirports();
+  const requestFrameAirport = useAppStore((s) => s.requestFrameAirport);
+  const requestSelectAirport = useAppStore((s) => s.requestSelectAirport);
 
   const { data: vatsimMetarData } = useVatsimMetarQuery(icao);
   const flightCategory = vatsimMetarData?.flightCategory ?? null;
@@ -151,7 +165,55 @@ function AirportInfoPanel({
           {/* Row 1: ICAO, elevation and transition altitude; fold and close at the right */}
           <div className="flex items-center justify-between gap-2">
             <div className="flex min-w-0 items-baseline gap-2">
-              <h1 className="text-info font-mono text-xl font-bold tracking-tight">{airport.id}</h1>
+              {/* The ICAO opens a menu: bring this airport back into view, or jump to a favorite. */}
+              <DropdownMenu>
+                <h1 className="text-info font-mono text-xl font-bold tracking-tight">
+                  <DropdownMenuTrigger
+                    className="group hover:text-info/80 flex items-center gap-1 rounded-sm"
+                    aria-label={t('airportInfo.menu.open')}
+                  >
+                    {airport.id}
+                    <ChevronDown className="text-muted-foreground/60 group-hover:text-foreground h-3.5 w-3.5" />
+                  </DropdownMenuTrigger>
+                </h1>
+                <DropdownMenuContent align="start" className="max-h-80 w-64 overflow-y-auto">
+                  <DropdownMenuItem onSelect={requestFrameAirport}>
+                    <Crosshair />
+                    <span className="min-w-0 truncate">
+                      {t('airportInfo.menu.center', { icao: airport.id })}
+                    </span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel className="xp-section-heading font-normal">
+                    {t('airportInfo.menu.favorites')}
+                  </DropdownMenuLabel>
+                  {favoriteAirports.length === 0 ? (
+                    <DropdownMenuItem disabled>
+                      <span className="min-w-0 truncate">{t('airportInfo.menu.noFavorites')}</span>
+                    </DropdownMenuItem>
+                  ) : (
+                    favoriteAirports.map((favorite) => (
+                      <DropdownMenuItem
+                        key={favorite.icao}
+                        disabled={favorite.icao === airport.id}
+                        onSelect={() => requestSelectAirport(favorite.icao)}
+                      >
+                        {favorite.isHome ? (
+                          <Home className="text-primary" />
+                        ) : (
+                          <Star className="text-warning fill-current" />
+                        )}
+                        <span className="text-info font-mono font-bold">{favorite.icao}</span>
+                        {favorite.name && (
+                          <span className="text-muted-foreground min-w-0 truncate">
+                            {favorite.name}
+                          </span>
+                        )}
+                      </DropdownMenuItem>
+                    ))
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
               <span className="text-muted-foreground font-mono text-xs whitespace-nowrap">
                 {elevation}
                 {transitionAlt ? ` · TA ${transitionAlt}` : ''}

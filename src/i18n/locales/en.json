@@ -1054,6 +1054,12 @@
       "setHome": "Set as home airport",
       "clearHome": "Clear home airport"
     },
+    "menu": {
+      "open": "Center the map or switch airport",
+      "center": "Center on {{icao}}",
+      "favorites": "Favorites",
+      "noFavorites": "No favorites yet"
+    },
     "localTime": "Local time at {{icao}}",
     "stats": {
       "elevation": "ELEV",

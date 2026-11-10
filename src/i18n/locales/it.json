@@ -1054,6 +1054,12 @@
       "setHome": "Imposta come aeroporto di base",
       "clearHome": "Rimuovi aeroporto di base"
     },
+    "menu": {
+      "open": "Centra la mappa o cambia aeroporto",
+      "center": "Centra su {{icao}}",
+      "favorites": "Preferiti",
+      "noFavorites": "Nessun preferito ancora"
+    },
     "localTime": "Ora locale a {{icao}}",
     "stats": {
       "elevation": "ELEV",

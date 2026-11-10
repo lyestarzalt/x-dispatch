@@ -1054,6 +1054,12 @@
       "setHome": "设为基地机场",
       "clearHome": "清除基地机场"
     },
+    "menu": {
+      "open": "居中地图或切换机场",
+      "center": "居中到 {{icao}}",
+      "favorites": "收藏",
+      "noFavorites": "暂无收藏"
+    },
     "localTime": "{{icao}}当地时间",
     "stats": {
       "elevation": "海拔",
