@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Copy the route.** The flight planner and the SimBrief Route tab copy it the way SimBrief's Copy for Charts does, ready to paste into a chart app.
+- **Click the airport's ICAO to recenter or switch.** Center the map on the airport again, or jump to your home airport or a favorite.
+
+### Changed
+
+- **The SimBrief Route tab shows the whole route.** A long route wraps instead of being cut off.
+
+### Fixed
+
+- **Taxiway names stay readable over the green taxi route.**
+
 ## [2.13.0] - 2026-11-09
 
 ### Added
