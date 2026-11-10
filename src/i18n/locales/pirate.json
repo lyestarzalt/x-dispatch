@@ -209,6 +209,7 @@
     "fixesUnit": "marks",
     "runway": "Strip",
     "clear": "Scuttle it",
+    "copy": "Copy it",
     "directRoute": "Straight as the crow flies, no marks on the way",
     "routeSummary": "{{fixes}} marks along {{airways}} sea lanes",
     "notUsed": "Left ashore",
@@ -2163,7 +2164,8 @@
     "route": {
       "sid": "SID {{id}}",
       "star": "STAR {{id}}",
-      "fixesCount": "{{count}} fixes"
+      "fixesCount": "{{count}} fixes",
+      "copy": "Copy the course"
     }
   },
   "errorBoundary": {

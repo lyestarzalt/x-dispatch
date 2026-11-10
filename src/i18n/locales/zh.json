@@ -209,6 +209,7 @@
     "fixesUnit": "个航路点",
     "runway": "跑道",
     "clear": "清空",
+    "copy": "复制",
     "directRoute": "直飞，无航路点",
     "routeSummary": "{{airways}} 条航路上共 {{fixes}} 个航路点",
     "notUsed": "未使用",
@@ -2163,7 +2164,8 @@
     "route": {
       "sid": "SID {{id}}",
       "star": "STAR {{id}}",
-      "fixesCount": "{{count}} 个航路点"
+      "fixesCount": "{{count}} 个航路点",
+      "copy": "复制航路"
     }
   },
   "errorBoundary": {
