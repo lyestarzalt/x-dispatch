@@ -100,6 +100,15 @@ function createSafeMapProxy(map: maplibregl.Map): maplibregl.Map {
  * ratio to fit, which blurs the map on large HiDPI windows. Lift the cap to
  * what the GPU can actually back.
  */
+/**
+ * Capped to keep airport markers clickable (#79). The default-allowed 85° puts
+ * the horizon in the upper third of the viewport, where the picker dead zone
+ * starts. 70° gives a noticeable 3D feel without (typically) crossing into the
+ * broken range. "Tilt the map" off sets it to 0: with 3D terrain on, tilting
+ * roughly doubles the map's video memory (measured over LOWI, 2026-11-10).
+ */
+const MAX_PITCH = 70;
+
 function maxCanvasSizeForGpu(): [number, number] {
   const gl = document.createElement('canvas').getContext('webgl2');
   const size = gl?.getParameter(gl.MAX_TEXTURE_SIZE);
@@ -150,6 +159,7 @@ export function useMapSetup({
   // elevation publishes per mousemove).
   const setCurrentZoom = useMapStore((s) => s.setCurrentZoom);
   const setMapBearing = useMapStore((s) => s.setMapBearing);
+  const mapTiltEnabled = useMapStore((s) => s.mapTiltEnabled);
 
   const setCurrentZoomRef = useRef(setCurrentZoom);
   const setMapBearingRef = useRef(setMapBearing);
@@ -188,12 +198,7 @@ export function useMapSetup({
       zoom: 2,
       pitch: 0,
       bearing: 0,
-      // Capped to keep airport markers clickable (#79). The default-allowed
-      // 85° puts the horizon in the upper third of the viewport, which is
-      // where the picker dead zone starts. 70° gives a noticeable 3D feel
-      // without (typically) crossing into the broken range; revisit when
-      // the underlying high-pitch hit-testing bug is fixed.
-      maxPitch: 70,
+      maxPitch: useMapStore.getState().mapTiltEnabled ? MAX_PITCH : 0,
       maxCanvasSize: maxCanvasSizeForGpu(),
       // Keep parsed tiles for more zoom levels so zooming out and back in or
       // panning back does not re-parse them; MapLibre defaults to 5.
@@ -298,6 +303,11 @@ export function useMapSetup({
     if (!map) return;
     updateAirportFavoriteFlags(map, airports, favoriteIcaoSetRef.current, homeIcaoRef.current);
   }, [airports]);
+
+  // "Tilt the map" off holds the map flat; turning it off while tilted levels the view.
+  useEffect(() => {
+    mapRef.current?.setMaxPitch(mapTiltEnabled ? MAX_PITCH : 0);
+  }, [mapTiltEnabled]);
 
   // Keep the scale bar's unit in sync with the user's distance preference.
   // MapLibre's ScaleControl supports changing this on an existing instance.

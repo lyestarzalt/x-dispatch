@@ -6,7 +6,9 @@ import {
   CITY_LIGHTS_BASEMAP_LAYER_IDS,
   CITY_LIGHTS_PLACE_LAYER_IDS,
 } from '@/lib/map/solar/cityLightsStyle';
+import { terrainActive } from '@/lib/map/terrainActive';
 import { useMapStore } from '@/stores/mapStore';
+import { usePlaneStore } from '@/stores/planeStore';
 import { lowestOf } from '../layers/world/layerOrder';
 import { makePreserveCustomStyle as makePreserveCustomStyleInternal } from './preserveCustomStyle';
 
@@ -113,7 +115,7 @@ export function setupGlobeProjection(map: maplibregl.Map): void {
   function switchProjectionForZoom(): void {
     if (map.isMoving()) return;
     const zoom = map.getZoom();
-    const { terrain3dEnabled } = useMapStore.getState();
+    const terrainWanted = wantsTerrain();
 
     if (zoom > GLOBE_TO_MERCATOR_ZOOM && currentProjection === 'globe') {
       map.setProjection({ type: 'mercator' });
@@ -122,8 +124,8 @@ export function setupGlobeProjection(map: maplibregl.Map): void {
       if (map.getLayer(STARFIELD_LAYER_ID)) {
         map.setLayoutProperty(STARFIELD_LAYER_ID, 'visibility', 'none');
       }
-      // Apply terrain in mercator if the user has 3D terrain enabled
-      if (terrain3dEnabled && map.getSource(TERRAIN_SOURCE_ID)) {
+      // Apply terrain in mercator if the user has 3D terrain enabled and the sim is not holding it off
+      if (terrainWanted && map.getSource(TERRAIN_SOURCE_ID)) {
         enableTerrain(map);
       }
     } else if (zoom <= GLOBE_TO_MERCATOR_ZOOM && currentProjection === 'mercator') {
@@ -138,18 +140,27 @@ export function setupGlobeProjection(map: maplibregl.Map): void {
     }
   }
 
-  // React to user toggling 3D terrain in Settings → Graphics. Only takes
-  // effect in mercator (globe forbids terrain), but we always update the
-  // map state so the next projection switch picks it up.
-  useMapStore.subscribe((state, prev) => {
-    if (state.terrain3dEnabled === prev.terrain3dEnabled) return;
+  // 3D terrain follows the pilot's setting, and steps aside while X-Plane is
+  // connected when "Save video memory while flying" is on. Only takes effect
+  // in mercator (globe forbids terrain); the next projection switch reads the
+  // same rule.
+  function wantsTerrain(): boolean {
+    return terrainActive(useMapStore.getState(), usePlaneStore.getState().connected);
+  }
+  let terrainApplied = wantsTerrain();
+  function applyTerrainRule(): void {
+    const wanted = wantsTerrain();
+    if (wanted === terrainApplied) return;
+    terrainApplied = wanted;
     if (currentProjection !== 'mercator') return;
-    if (state.terrain3dEnabled && map.getSource(TERRAIN_SOURCE_ID)) {
+    if (wanted && map.getSource(TERRAIN_SOURCE_ID)) {
       enableTerrain(map);
     } else {
       map.setTerrain(null);
     }
-  });
+  }
+  useMapStore.subscribe(applyTerrainRule);
+  usePlaneStore.subscribe(applyTerrainRule);
 
   // map.setStyle() rebuilds the map's transform from the new style spec, which
   // resets the projection to whatever the spec defines (mercator by default
@@ -214,7 +225,7 @@ export function setup3DTerrain(map: maplibregl.Map, shadingAllowed: boolean): vo
 
   // Terrain is not enabled here — we start in globe mode where it would crash.
   // setupGlobeProjection() enables/disables terrain on projection switches
-  // based on the `terrain3dEnabled` setting in mapStore (Settings → Graphics).
+  // following `terrainActive` (Settings → Graphics, and the sim connection).
 
   // Hillshade — shadow/light shading from DEM (uses its own source). Sits
   // below labels and below the sun-driven overlays, which may already be on

@@ -57,4 +57,18 @@ describe('migrateMapState', () => {
     expect(result.navVisibility.natTracks).toBe(false);
     expect(result.airportFilters.onlyWithProcedures).toBe(false);
   });
+  it('turns map tilt and the in-flight terrain saving on for a v18 blob', () => {
+    const result = migrateMapState({ terrain3dEnabled: true }, 18) as Record<string, unknown>;
+    expect(result.mapTiltEnabled).toBe(true);
+    expect(result.saveGpuWhileFlying).toBe(true);
+  });
+
+  it('keeps a stored tilt and saving choice', () => {
+    const result = migrateMapState(
+      { mapTiltEnabled: false, saveGpuWhileFlying: false },
+      18
+    ) as Record<string, unknown>;
+    expect(result.mapTiltEnabled).toBe(false);
+    expect(result.saveGpuWhileFlying).toBe(false);
+  });
 });
