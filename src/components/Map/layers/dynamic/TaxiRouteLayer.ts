@@ -21,6 +21,7 @@
  */
 import type * as maplibregl from 'maplibre-gl';
 import { labelFont } from '@/lib/map/labelFonts';
+import { TAXIWAY_NAMES_LAYER_ID } from '../airport/TaxiwayNameLayer';
 import { safeAddGeoJSONSource } from '../types';
 
 const SOURCE_ID = 'taxi-route-source';
@@ -28,13 +29,11 @@ const PREVIEW_SOURCE_ID = 'taxi-route-preview-source';
 const ENDPOINTS_SOURCE_ID = 'taxi-route-endpoints-source';
 const HANDLE_SOURCE_ID = 'taxi-route-handle-source';
 const HOLD_SOURCE_ID = 'taxi-route-hold-source';
-const NAMES_SOURCE_ID = 'taxi-route-names-source';
 
 const CASING_LAYER_ID = 'taxi-route-casing';
 const LINE_LAYER_ID = 'taxi-route-line';
 const CHEVRON_LAYER_ID = 'taxi-route-chevrons';
 const HOLD_LAYER_ID = 'taxi-route-hold-bars';
-const NAMES_LAYER_ID = 'taxi-route-names';
 const PREVIEW_LAYER_ID = 'taxi-route-preview';
 const ENDPOINTS_LAYER_ID = 'taxi-route-endpoints';
 const HANDLE_LAYER_ID = 'taxi-route-handle';
@@ -44,8 +43,6 @@ const CHEVRON_IMAGE_ID = 'taxi-chevron';
 
 const ROUTE_GREEN = '#22c55e';
 const ROUTE_CASING = 'rgba(0, 0, 0, 0.7)';
-/** Taxiway names on the route: dark text on the route's green, readable on every basemap. */
-const ROUTE_NAME_TEXT = '#052e16';
 /** A dragged route with no way through, drawn instead of a route that would not hold. */
 const PREVIEW_BLOCKED = '#ef4444';
 /** The route being replaced while a drag shows its new shape. */
@@ -58,7 +55,6 @@ export const TAXI_ROUTE_LAYER_IDS = [
   LINE_LAYER_ID,
   CHEVRON_LAYER_ID,
   HOLD_LAYER_ID,
-  NAMES_LAYER_ID,
   PREVIEW_LAYER_ID,
   ENDPOINTS_LAYER_ID,
   HANDLE_LAYER_ID,
@@ -213,7 +209,6 @@ export function addTaxiRouteLayer(map: maplibregl.Map): void {
     map.addSource(HANDLE_SOURCE_ID, { type: 'geojson', data: EMPTY_FC });
     // Derived from the route, never user-drawn state: safe to reset on mount.
     safeAddGeoJSONSource(map, HOLD_SOURCE_ID, EMPTY_FC);
-    safeAddGeoJSONSource(map, NAMES_SOURCE_ID, EMPTY_FC);
     addTaxiRouteLayers(map);
     window.appAPI?.log?.info?.('[TaxiRouteLayer] mounted');
   } catch (err) {
@@ -272,28 +267,6 @@ function addTaxiRouteLayers(map: maplibregl.Map): void {
     paint: {
       'line-color': HOLD_RED,
       'line-width': ['interpolate', ['linear'], ['zoom'], 13, 1.5, 18, 3, 22, 5],
-    },
-  });
-
-  // The route's taxiway names written along it, for reading the clearance back.
-  map.addLayer({
-    id: NAMES_LAYER_ID,
-    type: 'symbol',
-    source: NAMES_SOURCE_ID,
-    layout: {
-      'symbol-placement': 'line',
-      'symbol-spacing': 220,
-      'text-field': ['get', 'name'],
-      'text-font': labelFont(map, 'bold'),
-      'text-size': 13,
-      'text-keep-upright': true,
-      'text-max-angle': 40,
-      'text-padding': 8,
-    },
-    paint: {
-      'text-color': ROUTE_NAME_TEXT,
-      'text-halo-color': ROUTE_GREEN,
-      'text-halo-width': 3,
     },
   });
 
@@ -372,22 +345,26 @@ function addTaxiRouteLayers(map: maplibregl.Map): void {
  * with no `beforeId` moves each layer to the very top in the order they're
  * passed — so we walk the list in stack order to preserve casing → line →
  * chevrons → hold bars → preview → endpoints → handle.
+ *
+ * The airport's taxiway names then go back above the green line, so a name
+ * the route runs over stays readable for the readback. They stay under the
+ * preview, endpoints and handle, which are clicked and dragged.
  */
 export function bringTaxiRouteToFront(map: maplibregl.Map): void {
   if (!map.getStyle()) return;
   for (const id of TAXI_ROUTE_LAYER_IDS) {
     if (map.getLayer(id)) map.moveLayer(id);
   }
+  if (map.getLayer(TAXIWAY_NAMES_LAYER_ID)) {
+    map.moveLayer(
+      TAXIWAY_NAMES_LAYER_ID,
+      map.getLayer(PREVIEW_LAYER_ID) ? PREVIEW_LAYER_ID : undefined
+    );
+  }
 }
 
 export function setTaxiRoute(map: maplibregl.Map, points: RoutePoint[]): void {
   setTaxiRouteLines(map, [points]);
-}
-
-/** Taxiway names along the planned routes; empty while a route is being edited. */
-export function setTaxiRouteNames(map: maplibregl.Map, names: GeoJSON.FeatureCollection): void {
-  const src = map.getSource(NAMES_SOURCE_ID) as maplibregl.GeoJSONSource | undefined;
-  src?.setData(names);
 }
 
 /** Several routes at once: the planned departure and arrival while no route is being edited. */
@@ -445,7 +422,6 @@ export function removeTaxiRouteLayer(map: maplibregl.Map): void {
     ENDPOINTS_SOURCE_ID,
     HANDLE_SOURCE_ID,
     HOLD_SOURCE_ID,
-    NAMES_SOURCE_ID,
   ]) {
     if (map.getSource(id)) map.removeSource(id);
   }

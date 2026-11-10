@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { GuidanceLeg, GuidanceRoute } from '@/lib/taxiGuidance';
-import {
-  destinationPoint,
-  routeNameLines,
-  routeTaxiwayNames,
-  routesNameLines,
-} from './TaxiMapLabelsLayer';
+import { destinationPoint, routeNameLines, routeTaxiwayNames } from './TaxiMapLabelsLayer';
 
 function leg(name: string, isRunway = false): GuidanceLeg {
   return { name, isRunway, runways: [] };
@@ -44,19 +39,6 @@ describe('routeNameLines', () => {
   it('leaves runway and unnamed legs unlabelled', () => {
     const fc = routeNameLines(route([leg('A'), leg('09/27', true), leg(''), leg('A')]));
     expect(fc.features.map((f) => f.properties?.name)).toEqual(['A', 'A']);
-  });
-});
-
-describe('routesNameLines', () => {
-  it('labels the planned departure and arrival together', () => {
-    const departure = route([leg('A'), leg('B')]);
-    const arrival = route([leg('W')], { direction: 'arrival' });
-    const fc = routesNameLines([departure, arrival]);
-    expect(fc.features.map((f) => f.properties?.name)).toEqual(['A', 'B', 'W']);
-  });
-
-  it('is empty without a route', () => {
-    expect(routesNameLines([]).features).toEqual([]);
   });
 });
 

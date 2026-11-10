@@ -16,7 +16,6 @@
  */
 import { useEffect, useMemo, useRef } from 'react';
 import type * as maplibregl from 'maplibre-gl';
-import { routesNameLines } from '@/components/Map/layers/dynamic/TaxiMapLabelsLayer';
 import {
   type EndpointDef,
   type RoutePoint,
@@ -29,7 +28,6 @@ import {
   setTaxiRouteHandle,
   setTaxiRouteHoldBars,
   setTaxiRouteLines,
-  setTaxiRouteNames,
   setTaxiRoutePreview,
 } from '@/components/Map/layers/dynamic/TaxiRouteLayer';
 import { buildTaxiGraph, findNearestEdge, findNearestNode } from '@/lib/taxiGraph';
@@ -45,8 +43,6 @@ import {
   useTaxiRouteStore,
 } from '@/stores/taxiRouteStore';
 import type { MapRef } from './useMapSetup';
-
-const EMPTY_NAMES: GeoJSON.FeatureCollection = { type: 'FeatureCollection', features: [] };
 
 /** Pixel radius for detecting hover near route line. */
 const HIT_TOLERANCE = 18;
@@ -284,7 +280,6 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
     const routes = guidanceRoutes({ departure: departureRoute, arrival: arrivalRoute });
     const holdBars = routes.flatMap((r) => prepareRoute(r).holdBars.map(toRoutePoints));
     const endpoints = routes.flatMap((r) => buildEndpoints(toRoutePoints(prepareRoute(r).drawn)));
-    const names = routesNameLines(routes);
     const tracker = createGuidanceTracker();
     let lastStep: string | null = null;
 
@@ -312,8 +307,6 @@ export function useTaxiRouteSync(mapRef: MapRef): void {
     const apply = () => {
       addTaxiRouteLayer(map);
       setTaxiRouteHoldBars(map, holdBars);
-      // While a route is edited the planned one is stale; its names would label the old path.
-      setTaxiRouteNames(map, taxiModeActive ? EMPTY_NAMES : names);
       if (!taxiModeActive) setTaxiRouteEndpoints(map, endpoints);
       draw(true);
       bringTaxiRouteToFront(map);
