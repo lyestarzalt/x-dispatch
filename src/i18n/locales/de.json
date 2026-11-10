@@ -1053,6 +1053,12 @@
       "setHome": "Als Heimatflughafen festlegen",
       "clearHome": "Heimatflughafen entfernen"
     },
+    "menu": {
+      "open": "Karte zentrieren oder Flughafen wechseln",
+      "center": "Auf {{icao}} zentrieren",
+      "favorites": "Favoriten",
+      "noFavorites": "Keine Favoriten"
+    },
     "localTime": "Ortszeit in {{icao}}",
     "stats": {
       "elevation": "HÖHE",

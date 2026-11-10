@@ -1053,6 +1053,12 @@
       "setHome": "拠点空港に設定",
       "clearHome": "拠点空港を解除"
     },
+    "menu": {
+      "open": "地図を中央に表示、または空港を切り替え",
+      "center": "{{icao}} を中央に表示",
+      "favorites": "お気に入り",
+      "noFavorites": "お気に入りはまだありません"
+    },
     "localTime": "{{icao}}の現地時間",
     "stats": {
       "elevation": "標高",

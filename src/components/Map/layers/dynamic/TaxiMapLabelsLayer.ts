@@ -71,6 +71,11 @@ export function routeNameLines(route: GuidanceRoute): GeoJSON.FeatureCollection 
   return { type: 'FeatureCollection', features };
 }
 
+/** Several routes' taxiway names at once: the main map shows the planned departure and arrival. */
+export function routesNameLines(routes: GuidanceRoute[]): GeoJSON.FeatureCollection {
+  return { type: 'FeatureCollection', features: routes.flatMap((r) => routeNameLines(r).features) };
+}
+
 /** Taxiway names on the route, so the dim layer leaves them to the route labels. */
 export function routeTaxiwayNames(route: GuidanceRoute | null): string[] {
   if (!route) return [];

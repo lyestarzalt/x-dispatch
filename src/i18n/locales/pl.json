@@ -1053,6 +1053,12 @@
       "setHome": "Ustaw jako lotnisko bazowe",
       "clearHome": "Usuń lotnisko bazowe"
     },
+    "menu": {
+      "open": "Wyśrodkuj mapę lub zmień lotnisko",
+      "center": "Wyśrodkuj na {{icao}}",
+      "favorites": "Ulubione",
+      "noFavorites": "Brak ulubionych"
+    },
     "localTime": "Czas lokalny w {{icao}}",
     "stats": {
       "elevation": "WYS.",
