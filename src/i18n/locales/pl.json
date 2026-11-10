@@ -209,6 +209,7 @@
     "fixesUnit": "punktów",
     "runway": "Pas",
     "clear": "Wyczyść",
+    "copy": "Kopiuj",
     "directRoute": "Bezpośrednio, bez punktów trasy",
     "routeSummary": "{{fixes}} punktów na {{airways}} drogach lotniczych",
     "notUsed": "Nieużyte",
@@ -2169,7 +2170,8 @@
     "route": {
       "sid": "SID {{id}}",
       "star": "STAR {{id}}",
-      "fixesCount": "{{count}} punktów"
+      "fixesCount": "{{count}} punktów",
+      "copy": "Kopiuj trasę"
     }
   },
   "errorBoundary": {

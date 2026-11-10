@@ -209,6 +209,7 @@
     "fixesUnit": "fixes",
     "runway": "Runway",
     "clear": "Clear",
+    "copy": "Copy",
     "directRoute": "Direct, no enroute fixes",
     "routeSummary": "{{fixes}} fixes on {{airways}} airways",
     "notUsed": "Not used",
@@ -2169,7 +2170,8 @@
     "route": {
       "sid": "SID {{id}}",
       "star": "STAR {{id}}",
-      "fixesCount": "{{count}} fixes"
+      "fixesCount": "{{count}} fixes",
+      "copy": "Copy route"
     }
   },
   "errorBoundary": {

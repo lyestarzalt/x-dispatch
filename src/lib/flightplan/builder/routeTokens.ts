@@ -47,6 +47,48 @@ export function tokenizeRoute(routeText: string): string[] {
     .filter(Boolean);
 }
 
+/** One end of a route for the clipboard: the airport, its runway and its SID or STAR. */
+export interface ClipboardRouteEnd {
+  icao: string;
+  runway?: string;
+  procedure?: string;
+}
+
+function sameAirport(token: string | undefined, icao: string): boolean {
+  return token?.split('/')[0] === icao;
+}
+
+/**
+ * The route as one upper-case line in the shape SimBrief's "Copy for Charts"
+ * gives and chart apps take: `CYUL/24L CYUL5 BOBKI DCT MELTI RAGID6 CYYZ/23`.
+ * Airports and procedures already typed into the route are not repeated. Split
+ * on whitespace only: a comma joins a decimal coordinate.
+ */
+export function routeForClipboard(
+  routeText: string,
+  departure?: ClipboardRouteEnd | null,
+  arrival?: ClipboardRouteEnd | null
+): string {
+  let tokens = routeText.toUpperCase().split(/\s+/).filter(Boolean);
+  const from = departure?.icao.toUpperCase();
+  const to = arrival?.icao.toUpperCase();
+  if (from && sameAirport(tokens[0], from)) tokens = tokens.slice(1);
+  if (to && sameAirport(tokens[tokens.length - 1], to)) tokens = tokens.slice(0, -1);
+
+  const sid = departure?.procedure?.toUpperCase();
+  if (sid && tokens[0] !== sid) tokens = [sid, ...tokens];
+  const star = arrival?.procedure?.toUpperCase();
+  if (star && tokens[tokens.length - 1] !== star) tokens = [...tokens, star];
+
+  const airport = (icao: string, runway?: string) =>
+    runway ? `${icao}/${runway.toUpperCase()}` : icao;
+  return [
+    ...(from ? [airport(from, departure?.runway)] : []),
+    ...tokens,
+    ...(to ? [airport(to, arrival?.runway)] : []),
+  ].join(' ');
+}
+
 export function parseLatLon(token: string): { latitude: number; longitude: number } | null {
   const ddmm = LATLON_DDMM_RE.exec(token);
   if (ddmm) {

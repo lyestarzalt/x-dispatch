@@ -209,6 +209,7 @@
     "fixesUnit": "точек",
     "runway": "ВПП",
     "clear": "Очистить",
+    "copy": "Копировать",
     "directRoute": "Напрямую, без точек маршрута",
     "routeSummary": "{{fixes}} точек на {{airways}} воздушных трассах",
     "notUsed": "Не использованы",
@@ -2169,7 +2170,8 @@
     "route": {
       "sid": "SID {{id}}",
       "star": "STAR {{id}}",
-      "fixesCount": "Точек: {{count}}"
+      "fixesCount": "Точек: {{count}}",
+      "copy": "Копировать маршрут"
     }
   },
   "errorBoundary": {

@@ -209,6 +209,7 @@
     "fixesUnit": "Punkte",
     "runway": "Piste",
     "clear": "Leeren",
+    "copy": "Kopieren",
     "directRoute": "Direkt, keine Streckenpunkte",
     "routeSummary": "{{fixes}} Punkte auf {{airways}} Luftstraßen",
     "notUsed": "Nicht verwendet",
@@ -2169,7 +2170,8 @@
     "route": {
       "sid": "SID {{id}}",
       "star": "STAR {{id}}",
-      "fixesCount": "{{count}} Fixes"
+      "fixesCount": "{{count}} Fixes",
+      "copy": "Route kopieren"
     }
   },
   "errorBoundary": {

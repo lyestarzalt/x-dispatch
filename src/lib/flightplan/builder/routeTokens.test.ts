@@ -3,6 +3,7 @@ import {
   isProcedureName,
   lexRoute,
   parseLatLon,
+  routeForClipboard,
   stripEndpoints,
   tokenizeRoute,
 } from './routeTokens';
@@ -66,5 +67,60 @@ describe('lexRoute NAT tracks', () => {
   it('treats a NAT designator as an airway between its entry and exit fixes', () => {
     const kinds = lexRoute('MIMKU DCT GOMUP NATC CUDDY').map((t) => t.kind);
     expect(kinds).toEqual(['ident', 'direct', 'ident', 'airway', 'ident']);
+  });
+});
+
+describe('routeForClipboard', () => {
+  it('gives one upper-case line, the way SimBrief copies it', () => {
+    expect(routeForClipboard('  acora um576 milok\n dct obike/m083f370  ')).toBe(
+      'ACORA UM576 MILOK DCT OBIKE/M083F370'
+    );
+  });
+
+  it('keeps a decimal coordinate in one piece', () => {
+    expect(routeForClipboard('VALKU 52.5,-10.25 DCT')).toBe('VALKU 52.5,-10.25 DCT');
+  });
+
+  it('is empty for a blank route with no airports', () => {
+    expect(routeForClipboard(' \n ')).toBe('');
+  });
+
+  it('puts the airports and runways around it, as SimBrief copies for charts', () => {
+    expect(
+      routeForClipboard(
+        'DCT BOBKI DCT MELTI DCT TORNI RAGID6',
+        { icao: 'CYUL', runway: '24L' },
+        { icao: 'CYYZ', runway: '23' }
+      )
+    ).toBe('CYUL/24L DCT BOBKI DCT MELTI DCT TORNI RAGID6 CYYZ/23');
+  });
+
+  it('adds the chosen SID and STAR, once', () => {
+    expect(
+      routeForClipboard(
+        'bobki dct melti',
+        { icao: 'CYUL', procedure: 'CYUL5' },
+        { icao: 'CYYZ', procedure: 'RAGID6' }
+      )
+    ).toBe('CYUL CYUL5 BOBKI DCT MELTI RAGID6 CYYZ');
+    expect(
+      routeForClipboard(
+        'CYUL5 BOBKI RAGID6',
+        { icao: 'CYUL', procedure: 'CYUL5' },
+        { icao: 'CYYZ', procedure: 'RAGID6' }
+      )
+    ).toBe('CYUL CYUL5 BOBKI RAGID6 CYYZ');
+  });
+
+  it('does not repeat airports already typed into the route', () => {
+    expect(
+      routeForClipboard('cyul/24l bobki cyyz', { icao: 'CYUL', runway: '24L' }, { icao: 'CYYZ' })
+    ).toBe('CYUL/24L BOBKI CYYZ');
+  });
+
+  it('gives a direct flight as the two airports', () => {
+    expect(
+      routeForClipboard('', { icao: 'DAAG', runway: '05' }, { icao: 'OTHH', runway: '34R' })
+    ).toBe('DAAG/05 OTHH/34R');
   });
 });

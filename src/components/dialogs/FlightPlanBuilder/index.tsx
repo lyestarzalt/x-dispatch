@@ -11,6 +11,7 @@ import {
   ChevronsDownUp,
   ChevronsUpDown,
   CloudSun,
+  Copy,
   Dices,
   Eraser,
   History,
@@ -63,7 +64,7 @@ import {
   proceduresForRunway,
   suggestProcedures,
 } from '@/lib/flightplan/builder/procedures';
-import { tokenizeRoute } from '@/lib/flightplan/builder/routeTokens';
+import { routeForClipboard, tokenizeRoute } from '@/lib/flightplan/builder/routeTokens';
 import {
   cruiseFitsTrack,
   cruiseOnTracks,
@@ -674,6 +675,23 @@ function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trackRequest, clearTrackRequest]);
 
+  // Chart apps and EFBs take the route pasted in, in the shape of SimBrief's "Copy for Charts".
+  const clipboardRoute = routeForClipboard(
+    routeText,
+    departure && {
+      icao: departure.icao,
+      runway: departure.runway,
+      procedure: departure.sid?.name,
+    },
+    arrival && { icao: arrival.icao, runway: arrival.runway, procedure: arrival.star?.name }
+  );
+  const handleCopyRoute = async () => {
+    const route = clipboardRoute;
+    if (!route) return;
+    await window.appAPI.clipboardWrite(route);
+    toast.success(t('common.copiedToClipboard'));
+  };
+
   const handleRouteTyped = (text: string) => {
     setRouteText(text);
     markVisit({ route: 'typed' });
@@ -1083,6 +1101,15 @@ function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) {
               <div className="flex items-center justify-between gap-2 text-xs">
                 <div className="min-w-0 truncate">{routeStatus}</div>
                 <div className="flex shrink-0 gap-1">
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    onClick={handleCopyRoute}
+                    disabled={clipboardRoute.length === 0}
+                  >
+                    <Copy className="h-3.5 w-3.5" />
+                    {t('planBuilder.copy')}
+                  </Button>
                   <Button
                     variant="ghost"
                     size="xs"

@@ -209,6 +209,7 @@
     "fixesUnit": "フィックス",
     "runway": "滑走路",
     "clear": "クリア",
+    "copy": "コピー",
     "directRoute": "直行、経路上のフィックスなし",
     "routeSummary": "{{airways}} 本の航空路上に {{fixes}} フィックス",
     "notUsed": "未使用",
@@ -2169,7 +2170,8 @@
     "route": {
       "sid": "SID {{id}}",
       "star": "STAR {{id}}",
-      "fixesCount": "{{count}} フィックス"
+      "fixesCount": "{{count}} フィックス",
+      "copy": "ルートをコピー"
     }
   },
   "errorBoundary": {
