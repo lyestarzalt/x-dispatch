@@ -1053,6 +1053,12 @@
       "setHome": "Mark as home harbor",
       "clearHome": "Strike home harbor"
     },
+    "menu": {
+      "open": "Center the chart or change port",
+      "center": "Bring {{icao}} into view",
+      "favorites": "Favorites",
+      "noFavorites": "No treasured ports yet"
+    },
     "localTime": "Local time at {{icao}}, by the ship's bell",
     "stats": {
       "elevation": "HEIGHT",

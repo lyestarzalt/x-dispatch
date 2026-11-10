@@ -1053,6 +1053,12 @@
       "setHome": "Definir como base",
       "clearHome": "Remover base"
     },
+    "menu": {
+      "open": "Centralizar o mapa ou trocar de aeroporto",
+      "center": "Centralizar em {{icao}}",
+      "favorites": "Favoritos",
+      "noFavorites": "Sem favoritos ainda"
+    },
     "localTime": "Hora local em {{icao}}",
     "stats": {
       "elevation": "ELEV",

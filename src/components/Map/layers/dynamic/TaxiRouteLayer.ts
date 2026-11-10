@@ -21,6 +21,7 @@
  */
 import type * as maplibregl from 'maplibre-gl';
 import { labelFont } from '@/lib/map/labelFonts';
+import { TAXIWAY_NAMES_LAYER_ID } from '../airport/TaxiwayNameLayer';
 import { safeAddGeoJSONSource } from '../types';
 
 const SOURCE_ID = 'taxi-route-source';
@@ -344,11 +345,21 @@ function addTaxiRouteLayers(map: maplibregl.Map): void {
  * with no `beforeId` moves each layer to the very top in the order they're
  * passed — so we walk the list in stack order to preserve casing → line →
  * chevrons → hold bars → preview → endpoints → handle.
+ *
+ * The airport's taxiway names then go back above the green line, so a name
+ * the route runs over stays readable for the readback. They stay under the
+ * preview, endpoints and handle, which are clicked and dragged.
  */
 export function bringTaxiRouteToFront(map: maplibregl.Map): void {
   if (!map.getStyle()) return;
   for (const id of TAXI_ROUTE_LAYER_IDS) {
     if (map.getLayer(id)) map.moveLayer(id);
+  }
+  if (map.getLayer(TAXIWAY_NAMES_LAYER_ID)) {
+    map.moveLayer(
+      TAXIWAY_NAMES_LAYER_ID,
+      map.getLayer(PREVIEW_LAYER_ID) ? PREVIEW_LAYER_ID : undefined
+    );
   }
 }
 

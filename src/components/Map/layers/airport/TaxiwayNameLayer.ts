@@ -5,8 +5,11 @@ import type { ParsedAirport } from '@/types/apt';
 import { createTaxiwayNameGeoJSON } from '../../utils/geoJsonFactory';
 import { BaseLayerRenderer } from './BaseLayerRenderer';
 
+/** The taxi route keeps these labels above its green line (`bringTaxiRouteToFront`). */
+export const TAXIWAY_NAMES_LAYER_ID = 'airport-taxiway-names';
+
 export class TaxiwayNameLayer extends BaseLayerRenderer {
-  layerId = 'airport-taxiway-names';
+  layerId = TAXIWAY_NAMES_LAYER_ID;
   sourceId = 'airport-taxiway-names';
   additionalLayerIds: string[] = [];
 
