@@ -44,6 +44,10 @@ export function GraphicsSection() {
   const setTerrain3dEnabled = useMapStore((s) => s.setTerrain3dEnabled);
   const terrainShadingEnabled = useMapStore((s) => s.terrainShadingEnabled);
   const setTerrainShadingEnabled = useMapStore((s) => s.setTerrainShadingEnabled);
+  const mapTiltEnabled = useMapStore((s) => s.mapTiltEnabled);
+  const setMapTiltEnabled = useMapStore((s) => s.setMapTiltEnabled);
+  const saveGpuWhileFlying = useMapStore((s) => s.saveGpuWhileFlying);
+  const setSaveGpuWhileFlying = useMapStore((s) => s.setSaveGpuWhileFlying);
   // Off and locked on an imagery basemap; the stored preference returns with a vector style.
   const mapStyleUrl = useSettingsStore((s) => s.map.mapStyleUrl);
   const shadingAllowed = terrainShadingAllowed(mapStyleUrl);
@@ -127,6 +131,19 @@ export function GraphicsSection() {
           description={t('settings.graphics.terrain3dDesc')}
           checked={terrain3dEnabled}
           onCheckedChange={(checked) => setTerrain3dEnabled(checked)}
+        />
+        <SettingsToggleRow
+          title={t('settings.graphics.saveGpuWhileFlying')}
+          description={t('settings.graphics.saveGpuWhileFlyingDesc')}
+          checked={saveGpuWhileFlying}
+          disabled={!terrain3dEnabled}
+          onCheckedChange={(checked) => setSaveGpuWhileFlying(checked)}
+        />
+        <SettingsToggleRow
+          title={t('settings.graphics.mapTilt')}
+          description={t('settings.graphics.mapTiltDesc')}
+          checked={mapTiltEnabled}
+          onCheckedChange={(checked) => setMapTiltEnabled(checked)}
         />
         <SettingsToggleRow
           title={t('settings.graphics.terrainShading')}

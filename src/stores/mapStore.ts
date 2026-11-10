@@ -147,6 +147,10 @@ interface MapState {
   } | null;
   terrainShadingEnabled: boolean;
   terrain3dEnabled: boolean;
+  /** Right-drag and touch tilt the map; off keeps it flat, where 3D terrain costs least. */
+  mapTiltEnabled: boolean;
+  /** Suspend 3D terrain while X-Plane is connected, leaving the video memory to the sim. */
+  saveGpuWhileFlying: boolean;
 
   setLayerVisibility: (visibility: Partial<LayerVisibility>) => void;
   toggleLayer: (layer: keyof LayerVisibility) => void;
@@ -195,6 +199,8 @@ interface MapState {
   ) => void;
   setTerrainShadingEnabled: (enabled: boolean) => void;
   setTerrain3dEnabled: (enabled: boolean) => void;
+  setMapTiltEnabled: (enabled: boolean) => void;
+  setSaveGpuWhileFlying: (enabled: boolean) => void;
 }
 
 // zustand's persist middleware calls setItem after EVERY store write, even
@@ -260,6 +266,8 @@ export const useMapStore = create<MapState>()(
       } | null,
       terrainShadingEnabled: true,
       terrain3dEnabled: true,
+      mapTiltEnabled: true,
+      saveGpuWhileFlying: true,
 
       setLayerVisibility: (visibility) =>
         set((state) => ({
@@ -360,10 +368,12 @@ export const useMapStore = create<MapState>()(
       setProfileHover: (hover) => set({ profileHover: hover }),
       setTerrainShadingEnabled: (enabled) => set({ terrainShadingEnabled: enabled }),
       setTerrain3dEnabled: (enabled) => set({ terrain3dEnabled: enabled }),
+      setMapTiltEnabled: (enabled) => set({ mapTiltEnabled: enabled }),
+      setSaveGpuWhileFlying: (enabled) => set({ saveGpuWhileFlying: enabled }),
     }),
     {
       name: 'xplane-viz-map',
-      version: 18,
+      version: 19,
       storage: createJSONStorage(() => dedupedLocalStorage),
       partialize: (state) => ({
         landingCardPosition: state.landingCardPosition,
@@ -381,6 +391,8 @@ export const useMapStore = create<MapState>()(
         flightStripPosition: state.flightStripPosition,
         terrainShadingEnabled: state.terrainShadingEnabled,
         terrain3dEnabled: state.terrain3dEnabled,
+        mapTiltEnabled: state.mapTiltEnabled,
+        saveGpuWhileFlying: state.saveGpuWhileFlying,
       }),
       migrate: migrateMapState,
     }
@@ -484,6 +496,11 @@ export function migrateMapState(persisted: unknown, version: number): unknown {
     if (version < 18) {
       const filters = state.airportFilters as Record<string, unknown> | undefined;
       if (filters && filters.onlyWithProcedures === undefined) filters.onlyWithProcedures = false;
+    }
+    // v19: map tilt, on as before, and suspending 3D terrain while X-Plane is connected, on
+    if (version < 19) {
+      if (state.mapTiltEnabled === undefined) state.mapTiltEnabled = true;
+      if (state.saveGpuWhileFlying === undefined) state.saveGpuWhileFlying = true;
     }
     return state;
   }
