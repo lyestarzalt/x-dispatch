@@ -21,7 +21,7 @@ import {
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useUnits } from '@/hooks/useUnits';
 import { normalizeWidthCode } from '@/lib/airports/standIdentity';
-import { planArrival, planDeparture } from '@/lib/taxiGraph';
+import { planArrival, planDeparture, routeSummary as summarizeRoute } from '@/lib/taxiGraph';
 import { flightPlanTaxiTarget, replansAutoRoute } from '@/lib/taxiGraph/autoPlan';
 import { writeFtgRoute } from '@/lib/taxiGraph/ftgExport';
 import type { GuidanceSource } from '@/lib/taxiGuidance';
@@ -44,7 +44,6 @@ export default function TaxiRouteInline() {
   const mode = useTaxiRouteStore((s) => s.mode);
   const direction = useTaxiRouteStore((s) => s.direction);
   const networkNodeIds = useTaxiRouteStore((s) => s.networkNodeIds);
-  const autoRouteResult = useTaxiRouteStore((s) => s.autoRouteResult);
   const selectedRunway = useTaxiRouteStore((s) => s.selectedRunway);
   const graph = useTaxiRouteStore((s) => s.graph);
   const waypoints = useTaxiRouteStore((s) => s.waypoints);
@@ -191,19 +190,15 @@ export default function TaxiRouteInline() {
   const hasGraph = !!graph;
   const isFreehand = mode === 'freehand';
 
-  const routeSummary = useMemo(() => {
-    if (!autoRouteResult) return null;
-    const seen = new Set<string>();
-    const unique: string[] = [];
-    for (const name of autoRouteResult.taxiwayNames) {
-      if (name && !seen.has(name)) {
-        seen.add(name);
-        unique.push(name);
-      }
-    }
-    const distance = units.distance(metersToNauticalMiles(autoRouteResult.totalDistance));
-    return { taxiways: unique, distance };
-  }, [autoRouteResult, units]);
+  // Read from the route as it stands, so drags, via-points and undo update it at once.
+  const routeLine = useMemo(() => {
+    const summary = isNetwork ? summarizeRoute(graph, networkNodeIds) : null;
+    if (!summary || summary.taxiways.length === 0) return null;
+    return {
+      taxiways: summary.taxiways,
+      distance: units.distance(metersToNauticalMiles(summary.meters)),
+    };
+  }, [isNetwork, graph, networkNodeIds, units]);
 
   const isArrival = direction === 'arrival';
 
@@ -307,11 +302,11 @@ export default function TaxiRouteInline() {
       </div>
 
       {/* Route summary */}
-      {routeSummary && (
+      {routeLine && (
         <p className="xp-value-primary">
           {t('airportInfo.taxiRoute.summary', {
-            taxiways: routeSummary.taxiways.join(', '),
-            distance: routeSummary.distance,
+            taxiways: routeLine.taxiways.join(', '),
+            distance: routeLine.distance,
           })}
         </p>
       )}

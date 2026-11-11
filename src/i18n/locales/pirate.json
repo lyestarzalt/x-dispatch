@@ -1398,6 +1398,8 @@
     "xplaneRunning": "X-Plane be runnin' — the flight'll change via API",
     "selectDeparture": "Choose a departure berth on the chart",
     "selectAircraft": "Choose yer craft",
+    "xplaneVersion": "XP{{version}}",
+    "xplaneVersionTitle": "Rigged for X-Plane {{version}}",
     "spawnErrorAccess": "Windows scuttled th’ launch, matey. Right-click X-Dispatch and choose „Run as administrator“, then hoist th’ sails again.",
     "spawnErrorMissing": "Couldn’\t find X-Plane at th’ configured course. Check th’ X-Plane install path in Settings.",
     "spawnErrorGeneric": "X-Plane refused to launch, arr. Check th’ log fer clues (Settings > Logs).",

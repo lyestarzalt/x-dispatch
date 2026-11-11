@@ -46,6 +46,7 @@ function makeAircraft(overrides: Partial<Aircraft> & { path: string }): Aircraft
     previewImage: null,
     thumbnailImage: null,
     liveries: [],
+    xplaneVersion: 12,
     ...overrides,
   };
 }

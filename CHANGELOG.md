@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Copy the route.** The flight planner and the SimBrief Route tab copy it the way SimBrief's Copy for Charts does, ready to paste into a chart app.
 - **Click the airport's ICAO to recenter or switch.** Center the map on the airport again, or jump to your home airport or a favorite.
 - **Lock the map flat.** Turn off Tilt the map in Settings → Graphics and an accidental right-drag can't tilt it.
+- **XP12 or XP11 on every aircraft.** The aircraft list and Flight Setup show which X-Plane the aircraft was saved for.
 
 ### Changed
 
@@ -21,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Taxiway names stay readable over the green taxi route.**
+- **Liveries show the picture for the selected model.** A livery shared by several models showed another model's picture.
+- **Older scenery libraries no longer show as missing.** A library.txt saved on a classic Mac, like 000_Madagascar_Lib, is read in full.
+- **The taxi route's "via" line follows your edits.** It appears as soon as you click or drag the route.
 
 ## [2.13.0] - 2026-11-09
 

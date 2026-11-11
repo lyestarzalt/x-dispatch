@@ -1398,6 +1398,8 @@
     "xplaneRunning": "X-Plane est déjà lancé ; le vol sera modifié via l'API",
     "selectDeparture": "Sélectionnez un départ sur la carte",
     "selectAircraft": "Sélectionnez un appareil",
+    "xplaneVersion": "XP{{version}}",
+    "xplaneVersionTitle": "Enregistré pour X-Plane {{version}}",
     "spawnErrorAccess": "Windows a bloqué le lancement. Faites un clic-droit sur X-Dispatch et choisissez « Exécuter en tant qu’administrateur », puis réessayez.",
     "spawnErrorMissing": "Exécutable X-Plane introuvable au chemin configuré. Vérifiez le chemin d’installation de X-Plane dans les Paramètres.",
     "spawnErrorGeneric": "Échec du lancement de X-Plane. Consultez les journaux pour plus de détails (Paramètres > Journaux).",

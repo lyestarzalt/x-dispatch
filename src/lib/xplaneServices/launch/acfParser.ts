@@ -147,11 +147,12 @@ async function parseAcfFile(acfPath: string, xplanePath: string): Promise<Aircra
 
     const acfDir = path.dirname(acfPath);
     const acfBasename = path.basename(acfPath, '.acf');
+    const xplaneVersion = acfXPlaneVersion(content);
     const previewImage = await findPreviewImage(acfDir, acfBasename);
     const thumbnailImage = await findThumbnailImage(acfDir, acfBasename);
 
     // Find liveries
-    const liveries = await scanLiveries(acfDir);
+    const liveries = await scanLiveries(acfDir, acfBasename);
 
     // Parse fuel tank names and ratios
     //
@@ -270,6 +271,7 @@ async function parseAcfFile(acfPath: string, xplanePath: string): Promise<Aircra
       previewImage,
       thumbnailImage,
       liveries,
+      xplaneVersion,
     };
   } catch (err) {
     logger.launcher.debug(`Failed to parse: ${acfPath}`, err);
@@ -399,7 +401,19 @@ async function findThumbnailImage(acfDir: string, acfBasename: string): Promise<
   return null;
 }
 
-async function scanLiveries(acfDir: string): Promise<Livery[]> {
+/**
+ * The X-Plane version whose Plane Maker saved the .acf, from its header:
+ * `I`, then `1200 Version` (12) or `1100 Version` (11). Null when the header
+ * has no such line. `acf/_version` is the author's own number, not this.
+ */
+export function acfXPlaneVersion(content: string): number | null {
+  const match = content.slice(0, 64).match(/^\s*(\d{3,4})\s+version\b/im);
+  if (!match) return null;
+  const major = Math.floor(Number(match[1]) / 100);
+  return major > 0 ? major : null;
+}
+
+async function scanLiveries(acfDir: string, acfBasename: string): Promise<Livery[]> {
   const liveriesDir = path.join(acfDir, 'liveries');
   const liveries: Livery[] = [];
 
@@ -416,7 +430,7 @@ async function scanLiveries(acfDir: string): Promise<Livery[]> {
     for (const entry of entries) {
       if ((await isDirEntry(entry, liveriesDir)) && !entry.name.startsWith('.')) {
         const liveryPath = path.join(liveriesDir, entry.name);
-        const previewImage = await findLiveryPreview(liveryPath);
+        const previewImage = await findLiveryPreview(liveryPath, acfBasename);
 
         liveries.push({
           name: entry.name,
@@ -432,13 +446,24 @@ async function scanLiveries(acfDir: string): Promise<Livery[]> {
   return liveries;
 }
 
-async function findLiveryPreview(liveryDir: string): Promise<string | null> {
+/**
+ * A livery's picture, as X-Plane picks it: `<acf name>_icon11.png` in the
+ * livery folder (developer.x-plane.com, "Generating Icons for Aircraft").
+ * One livery folder often serves several models of the same aircraft, each
+ * with its own picture; livery makers use that to show "switch to the -800"
+ * on the models a livery does not fit. Then `icon11.png`, then another
+ * model's picture, then any image.
+ */
+async function findLiveryPreview(liveryDir: string, acfBasename: string): Promise<string | null> {
   try {
     const entries = await fs.promises.readdir(liveryDir);
+    const named = (name: string) => entries.find((e) => e.toLowerCase() === name.toLowerCase());
 
-    // Look for icon11.png or similar
+    const own = named(`${acfBasename}_icon11.png`) ?? named('icon11.png');
+    if (own) return path.join(liveryDir, own);
+
     for (const entry of entries) {
-      if (entry.endsWith('_icon11.png') || entry === 'icon11.png') {
+      if (entry.toLowerCase().endsWith('_icon11.png')) {
         return path.join(liveryDir, entry);
       }
     }

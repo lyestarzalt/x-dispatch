@@ -12,7 +12,8 @@ const MAX_LIBRARY_TXT_BYTES = 16 * 1024 * 1024;
 /** The virtual paths exported by library.txt text, as written. */
 export function parseLibraryExportLines(text: string): string[] {
   const exports: string[] = [];
-  for (const rawLine of text.split(/\r?\n/)) {
+  // A bare CR ends lines too: libraries saved on classic Mac OS (000_Madagascar_Lib, 2007) use it.
+  for (const rawLine of text.split(/\r\n|\r|\n/)) {
     const line = rawLine.trim();
     if (!line.startsWith('EXPORT')) continue;
     const tokens = line.split(/\s+/);

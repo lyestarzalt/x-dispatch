@@ -175,6 +175,18 @@ export function AircraftPreview() {
                     {selectedAircraft.icao}
                   </Badge>
                 )}
+                {/* Which X-Plane's Plane Maker saved the .acf: an XP11 aircraft runs, but was not built for 12 */}
+                {selectedAircraft.xplaneVersion && (
+                  <Badge
+                    variant="outline"
+                    className="font-mono"
+                    title={t('launcher.xplaneVersionTitle', {
+                      version: selectedAircraft.xplaneVersion,
+                    })}
+                  >
+                    {t('launcher.xplaneVersion', { version: selectedAircraft.xplaneVersion })}
+                  </Badge>
+                )}
               </div>
               <div className="text-muted-foreground mt-1 flex items-center gap-3 text-sm">
                 <span>{selectedAircraft.manufacturer}</span>

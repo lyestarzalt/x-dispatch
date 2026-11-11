@@ -35,6 +35,8 @@ export interface Aircraft {
   previewImage: string | null;
   thumbnailImage: string | null;
   liveries: Livery[];
+  /** X-Plane version whose Plane Maker saved the .acf (12, 11), null when the header does not say. */
+  xplaneVersion: number | null;
 }
 
 export interface Livery {
