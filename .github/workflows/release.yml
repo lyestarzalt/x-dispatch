@@ -111,7 +111,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y squashfs-tools
 
       - name: Set up .NET (Velopack packer)
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 8.0.x
 
