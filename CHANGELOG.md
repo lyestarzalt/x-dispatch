@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.14.0] - 2026-11-11
+
 ### Added
 
 - **Copy the route.** The flight planner and the SimBrief Route tab copy it the way SimBrief's Copy for Charts does, ready to paste into a chart app.
@@ -456,7 +458,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Releases up to 2.2.0 are listed on the [website changelog](https://x-dispatch.app/changelog/).
 
-[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.13.0...HEAD
+[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.14.0...HEAD
+[2.14.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.13.0...v2.14.0
 [2.13.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.12.0...v2.13.0
 [2.12.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.11.0...v2.12.0
 [2.11.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.10.0...v2.11.0
