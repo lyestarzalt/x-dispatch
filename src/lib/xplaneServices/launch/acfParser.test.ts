@@ -105,3 +105,58 @@ describe('aircraft version detection', () => {
     expect(aircraft?.version).toBe('');
   });
 });
+
+describe('livery pictures', () => {
+  function livery(aircraftDir: string, name: string, files: string[]): void {
+    const dir = path.join(aircraftDir, 'liveries', name);
+    fs.mkdirSync(dir, { recursive: true });
+    for (const file of files) fs.writeFileSync(path.join(dir, file), '');
+  }
+
+  it('shows the picture named after the .acf, as X-Plane does', async () => {
+    // One livery folder serves every 737 model; each model has its own picture.
+    const dir = makeAircraft('737_80NG', []);
+    livery(dir, 'United', ['737_60NG_icon11.png', '737_80NG_icon11.png', '737_90NG_icon11.png']);
+    const [aircraft] = await scanAircraftDirectory(TEMP_ROOT);
+    const united = aircraft?.liveries.find((l) => l.name === 'United');
+    expect(path.basename(united?.previewImage ?? '')).toBe('737_80NG_icon11.png');
+  });
+
+  it("falls back to icon11.png, then to another model's picture", async () => {
+    const dir = makeAircraft('Cessna_172SP', []);
+    livery(dir, 'Plain', ['Cessna_172SP_G1000_icon11.png', 'icon11.png']);
+    livery(dir, 'Other', ['Cessna_172SP_G1000_icon11.png']);
+    const [aircraft] = await scanAircraftDirectory(TEMP_ROOT);
+    const picture = (name: string) =>
+      path.basename(aircraft?.liveries.find((l) => l.name === name)?.previewImage ?? '');
+    expect(picture('Plain')).toBe('icon11.png');
+    expect(picture('Other')).toBe('Cessna_172SP_G1000_icon11.png');
+  });
+});
+
+describe('X-Plane version the .acf was saved for', () => {
+  function writeAcf(name: string, header: string[]): void {
+    const dir = path.join(TEMP_ROOT, 'Aircraft', name);
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(
+      path.join(dir, `${name}.acf`),
+      [...header, 'ACF', 'P acf/_name Test'].join('\r\n')
+    );
+  }
+
+  it('reads 12 from a Plane Maker 12 header and 11 from an older one', async () => {
+    writeAcf('New', ['I', '1200 Version']);
+    writeAcf('Old', ['I', ' 1100 Version']);
+    const aircraft = await scanAircraftDirectory(TEMP_ROOT);
+    const version = (dir: string) =>
+      aircraft.find((a) => a.path.includes(`/${dir}/`))?.xplaneVersion;
+    expect(version('New')).toBe(12);
+    expect(version('Old')).toBe(11);
+  });
+
+  it('leaves it unknown when the header has no version line', async () => {
+    writeAcf('Odd', ['I', 'something else']);
+    const [aircraft] = await scanAircraftDirectory(TEMP_ROOT);
+    expect(aircraft?.xplaneVersion).toBeNull();
+  });
+});

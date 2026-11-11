@@ -58,6 +58,23 @@ describe('parseLibraryExportLines', () => {
       'lib/g10/terrain10/fruit.ter',
     ]);
   });
+
+  it('reads every export of a library.txt saved with old Mac line endings', () => {
+    // 000_Madagascar_Lib (2007) ends its lines with a bare CR; X-Plane reads them all.
+    const text = [
+      'A',
+      '800',
+      'LIBRARY',
+      'EXPORT madagascar_lib/aircraft/c180j.obj aircraft/c180j.obj',
+      'EXPORT madagascar_lib/aircraft/husky.obj aircraft/husky.obj',
+      'EXPORT madagascar_lib/airfield/rock_line_5.obj airfield/rock_line_5.obj',
+    ].join('\r');
+    expect(parseLibraryExportLines(text)).toEqual([
+      'madagascar_lib/aircraft/c180j.obj',
+      'madagascar_lib/aircraft/husky.obj',
+      'madagascar_lib/airfield/rock_line_5.obj',
+    ]);
+  });
 });
 
 describe('libraryNameOf', () => {

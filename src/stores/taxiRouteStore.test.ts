@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { buildTaxiGraph } from '@/lib/taxiGraph';
+import { buildTaxiGraph, routeSummary } from '@/lib/taxiGraph';
 import type { TaxiNetwork } from '@/types/apt';
 import { anchorsOnTo, resolvePath, useTaxiRouteStore } from './taxiRouteStore';
 
@@ -169,5 +169,19 @@ describe('route editing', () => {
     store.undo();
     store.undo();
     expect(useTaxiRouteStore.getState().standLink.from).toEqual(from);
+  });
+});
+
+describe('route summary', () => {
+  it('names the taxiways of a route drawn by hand and dragged, as soon as it changes', () => {
+    // A clicked or dragged route never had a stored summary; the panel showed
+    // "via ..." only after a remount rebuilt it.
+    const store = useTaxiRouteStore.getState();
+    store.addNetworkNode(1);
+    store.addNetworkNode(2);
+    useTaxiRouteStore.getState().replaceNetworkNode(1, 3);
+    const after = useTaxiRouteStore.getState();
+    expect(after.autoRouteResult).toBeNull();
+    expect(routeSummary(graph, after.networkNodeIds)?.taxiways).toEqual(['A']);
   });
 });
