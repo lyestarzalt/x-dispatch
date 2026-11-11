@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { Folder, Plane, Search, Star } from 'lucide-react';
 import { motion } from 'motion/react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -54,6 +55,7 @@ function AircraftListItem({
   onSelect: () => void;
   onToggleFavorite: () => void;
 }) {
+  const { t } = useTranslation();
   const { data: imageUrl } = useAircraftImage(aircraft.previewImage);
 
   return (
@@ -86,7 +88,7 @@ function AircraftListItem({
         />
       )}
       {/* Aircraft Thumbnail */}
-      <div className="bg-muted relative h-12 w-16 flex-shrink-0 overflow-hidden rounded-lg">
+      <div className="bg-muted relative h-14 w-20 flex-shrink-0 overflow-hidden rounded-lg">
         {imageUrl ? (
           <motion.img
             src={imageUrl}
@@ -122,10 +124,29 @@ function AircraftListItem({
             <span className="text-muted-foreground/70">, {aircraftVersionLabel(aircraft)}</span>
           )}
         </div>
-        {copyLabel && (
-          <div className="text-muted-foreground flex min-w-0 items-center gap-1 font-mono text-xs">
-            <Folder className="h-3 w-3 shrink-0" />
-            <span className="truncate">{copyLabel}</span>
+        {/* Type, the X-Plane the .acf was saved for, and what tells same-named copies apart */}
+        {(aircraft.icao || aircraft.xplaneVersion || copyLabel) && (
+          <div className="mt-1 flex min-w-0 items-center gap-1.5">
+            {aircraft.icao && (
+              <Badge variant="secondary" className="text-2xs shrink-0 px-1.5 py-0 font-mono">
+                {aircraft.icao}
+              </Badge>
+            )}
+            {aircraft.xplaneVersion && (
+              <Badge
+                variant="outline"
+                className="text-2xs shrink-0 px-1.5 py-0 font-mono"
+                title={t('launcher.xplaneVersionTitle', { version: aircraft.xplaneVersion })}
+              >
+                {t('launcher.xplaneVersion', { version: aircraft.xplaneVersion })}
+              </Badge>
+            )}
+            {copyLabel && (
+              <span className="text-muted-foreground flex min-w-0 items-center gap-1 font-mono text-xs">
+                <Folder className="h-3 w-3 shrink-0" />
+                <span className="truncate">{copyLabel}</span>
+              </span>
+            )}
           </div>
         )}
       </div>
@@ -254,7 +275,7 @@ export function AircraftList({ aircraftList, isScanning }: AircraftListProps) {
   }, []);
 
   // Only a first guess: the card is sized in rem, so rows are measured to follow the font size setting.
-  const ROW_HEIGHT = 68;
+  const ROW_HEIGHT = 84;
   // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Virtual returns a mutable instance by design; it re-renders via its own subscription
   const rowVirtualizer = useVirtualizer({
     count: filteredAircraft.length,
