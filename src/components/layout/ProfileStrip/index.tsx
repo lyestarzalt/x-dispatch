@@ -16,7 +16,6 @@ import type { Feet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
 import type { Airport } from '@/lib/xplaneServices/dataService';
 import { useMapStore } from '@/stores/mapStore';
-import { usePlanBuilderStore } from '@/stores/planBuilderStore';
 
 interface ProfileStripProps {
   airports: Airport[];
@@ -38,8 +37,6 @@ function ProfileStrip({ airports }: ProfileStripProps) {
     storedPosition,
     setPosition
   );
-  // Only a full-height planner takes the bottom-left corner the strip would use.
-  const builderOpen = usePlanBuilderStore((s) => s.isOpen && s.panel === 'full');
   const view = useRouteProfile(airports);
   const handleHover = useCallback(
     (row: VerticalProfileRow | null, next: VerticalProfileRow | null) => {
@@ -75,18 +72,17 @@ function ProfileStrip({ airports }: ProfileStripProps) {
     <div
       ref={stripRef}
       data-map-dock={isDefault ? 'bottom' : undefined}
+      data-map-profile={isDefault ? '' : undefined}
       className={cn(
         'z-20 select-none',
-        // Default place: along the bottom, centred; beside the docked planner while it is open.
+        // The docked chart fits the available map width between the side panels.
         isDefault &&
-          !builderOpen &&
-          'absolute bottom-4 left-1/2 w-[min(1200px,calc(100vw-16rem))] -translate-x-1/2',
-        isDefault && builderOpen && 'absolute right-4 bottom-4 left-[28rem]',
+          'absolute right-[var(--map-profile-right,1rem)] bottom-4 left-[var(--map-profile-left,1rem)] mx-auto max-w-[1200px]',
         !isDefault && 'fixed w-[min(1200px,calc(100vw-16rem))]'
       )}
       style={!isDefault ? { left: position.x, top: position.y } : undefined}
     >
-      <div className="border-border/50 bg-card/90 rounded-lg border p-2 backdrop-blur-xl">
+      <div className="border-border/50 bg-card/90 @container rounded-lg border p-2 backdrop-blur-xl">
         <div
           className="mb-1 flex min-w-0 cursor-grab items-center gap-2 px-1 active:cursor-grabbing"
           onMouseDown={handleMouseDown}
@@ -94,9 +90,12 @@ function ProfileStrip({ airports }: ProfileStripProps) {
         >
           <GripVertical className="text-muted-foreground/60 h-4 w-4 shrink-0" />
           <Mountain className="text-muted-foreground h-4 w-4 shrink-0" />
-          <span className="xp-section-heading truncate">{t('profile.title')}</span>
+          <span className="xp-section-heading min-w-0 truncate">{t('profile.title')}</span>
           {view.routeSafeFt !== null && (
-            <Badge variant="destructive" className="text-2xs shrink-0 font-mono">
+            <Badge
+              variant="destructive"
+              className="text-2xs hidden shrink-0 font-mono @xs:inline-flex"
+            >
               {t('profile.safeAltitude')} {units.altitude(view.routeSafeFt as Feet)}
             </Badge>
           )}
@@ -106,7 +105,7 @@ function ProfileStrip({ airports }: ProfileStripProps) {
             </Badge>
           )}
           {view.isLoadingTerrain && (
-            <span className="text-muted-foreground flex items-center gap-2 truncate text-xs">
+            <span className="text-muted-foreground hidden items-center gap-2 truncate text-xs @sm:flex">
               {t('profile.loadingTerrain')}
               {view.terrainProgress && view.terrainProgress.total > 0 && (
                 <Progress
@@ -116,7 +115,7 @@ function ProfileStrip({ airports }: ProfileStripProps) {
               )}
             </span>
           )}
-          <div className="flex-1" />
+          <div className="min-w-0 flex-1" />
           <Button
             variant="ghost"
             size="icon-xs"
@@ -128,7 +127,7 @@ function ProfileStrip({ airports }: ProfileStripProps) {
           </Button>
         </div>
         {message ? (
-          <div className="text-muted-foreground flex h-24 items-center justify-center text-sm">
+          <div className="text-muted-foreground grid min-h-16 place-items-center px-1 text-center text-xs @xs:min-h-24 @xs:text-sm">
             {message}
           </div>
         ) : (
@@ -137,7 +136,7 @@ function ProfileStrip({ airports }: ProfileStripProps) {
             tocDistance={view.profile?.tocDistanceNm ?? null}
             todDistance={view.profile?.todDistanceNm ?? null}
             safeAltitudeFt={view.routeSafeFt}
-            className="h-56"
+            className="h-24 @xs:h-56"
             compact
             onHover={handleHover}
           />

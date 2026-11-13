@@ -8,8 +8,7 @@ import { cn } from '@/lib/utils/helpers';
 import { useSettingsStore } from '@/stores/settingsStore';
 
 /**
- * Toolbar clock, drawn as one outlined pill split in two segments so it sits
- * flush with the neighbouring toolbar buttons. Left segment: the time; click
+ * Toolbar clock with two segments. Left segment: the time; click
  * to switch Zulu / local. Right segment: the clock source; click to switch
  * between the simulator clock and the machine clock. The source writes the
  * same "follow X-Plane time" setting the Graphics section exposes, so the
@@ -35,20 +34,20 @@ export function ClockWidget() {
     ? t('toolbar.clock.simNotConnected')
     : t(followSimTime ? 'toolbar.clock.switchToSystem' : 'toolbar.clock.switchToSim');
 
-  const segment = 'h-full rounded-none focus-visible:ring-inset focus-visible:ring-offset-0';
+  const segment = 'h-full rounded-md focus-visible:ring-inset focus-visible:ring-offset-0';
 
   return (
-    <div className="border-border bg-card flex h-9 items-stretch overflow-hidden rounded-lg border">
+    <div className="flex h-8 shrink-0 items-stretch gap-0.5">
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
             variant="ghost"
             onClick={() => setClockMode(nextMode)}
-            className={cn(segment, 'gap-2 px-3')}
+            className={cn(segment, 'gap-1.5 px-1.5')}
             aria-label={switchModeHint}
           >
-            <Clock className="text-muted-foreground h-4 w-4" />
-            <span className="text-info font-mono text-lg font-semibold tabular-nums">
+            <Clock className="text-muted-foreground hidden h-4 w-4 xl:block" />
+            <span className="text-info font-mono text-base font-bold tabular-nums">
               {formatClock(timeMs, clockMode)}
             </span>
             <span className="text-muted-foreground font-mono text-xs font-semibold">
@@ -66,8 +65,6 @@ export function ClockWidget() {
         </TooltipContent>
       </Tooltip>
 
-      <div className="bg-border w-px" />
-
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
@@ -75,7 +72,7 @@ export function ClockWidget() {
             onClick={() => updateGraphicsSettings({ followSimTime: !followSimTime })}
             className={cn(
               segment,
-              'px-2.5 font-mono text-xs font-semibold',
+              'px-1.5 font-mono text-xs font-semibold',
               source === 'sim' ? 'text-primary' : 'text-muted-foreground',
               simWantedButOffline && 'opacity-60'
             )}

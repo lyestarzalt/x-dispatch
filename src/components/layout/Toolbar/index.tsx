@@ -60,6 +60,10 @@ import { LayersPanel } from './LayersPanel';
 
 type CustomStartMode = 'ground' | 'air' | 'carrier' | 'frigate';
 
+const toolbarButton = 'h-8 shrink-0 gap-1.5 rounded-md px-1.5 xl:px-2';
+const toolbarLabel = 'hidden max-w-24 truncate xl:inline';
+const toolbarSelection = 'bg-primary/10 text-primary';
+
 const PIN_MODE_CONFIG: { mode: CustomStartMode; icon: typeof MapPin; labelKey: string }[] = [
   { mode: 'ground', icon: MapPin, labelKey: 'toolbar.pinModes.ground' },
   { mode: 'air', icon: Plane, labelKey: 'toolbar.pinModes.air' },
@@ -163,10 +167,10 @@ function PinOptionsPopover({
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button
-          variant="outline"
+          variant="ghost"
           className={cn(
-            'h-9 rounded-l-none px-1.5',
-            isCustomPin && 'border-success/50 text-success'
+            'h-8 rounded-l-none rounded-r-md px-1',
+            isCustomPin && 'bg-success/10 text-success'
           )}
           aria-label={t('toolbar.pinCoordinates')}
         >
@@ -350,6 +354,7 @@ interface ToolbarProps {
   onNavToggle: (layer: keyof NavLayerVisibility) => void;
   onPinDrop: () => void;
   onPinDropAtCoordinates: (lat: number, lon: number) => void;
+  onActivatePlanner: () => void;
 }
 
 function Toolbar({
@@ -362,6 +367,7 @@ function Toolbar({
   onNavToggle,
   onPinDrop,
   onPinDropAtCoordinates,
+  onActivatePlanner,
 }: ToolbarProps) {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
@@ -409,6 +415,7 @@ function Toolbar({
   const simbriefData = useFlightPlanStore((s) => s.simbriefData);
   const simbriefOpen = useFlightPlanStore((s) => s.simbriefDialogOpen);
   const openPlanBuilder = usePlanBuilderStore((s) => s.open);
+  const planBuilderOpen = usePlanBuilderStore((s) => s.isOpen);
   const openSimbriefDialog = useFlightPlanStore((s) => s.openSimbriefDialog);
   const closeSimbriefDialog = useFlightPlanStore((s) => s.closeSimbriefDialog);
 
@@ -568,20 +575,21 @@ function Toolbar({
     rangeRingsEnabled;
 
   return (
-    <div className="relative flex items-center gap-3 select-none">
+    <div className="border-border/70 bg-background relative flex flex-wrap items-center gap-x-2 gap-y-1 border-b px-2 py-2 select-none sm:flex-nowrap sm:px-4">
       <ClockWidget />
 
       {/* Search */}
-      <div ref={containerRef} className="relative">
+      <div ref={containerRef} className="relative min-w-0 flex-1 sm:max-w-72">
         <Input
           ref={inputRef}
           type="text"
           placeholder={t('toolbar.searchPlaceholder')}
+          aria-label={t('toolbar.searchPlaceholder')}
           value={searchQuery}
           onChange={(e) => handleSearch(e.target.value)}
           onFocus={() => filteredAirports.length > 0 && setShowResults(true)}
           onKeyDown={handleKeyDown}
-          className="h-9 w-[300px]"
+          className="border-border/60 bg-secondary/60 h-8 rounded-md px-2"
           endIcon={
             searchQuery ? (
               <Button
@@ -614,7 +622,7 @@ function Toolbar({
             initial={{ opacity: 0, y: -4, scale: 0.99 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={quickFade}
-            className="border-border bg-popover absolute top-full right-0 left-0 z-50 mt-1 overflow-hidden rounded-lg border"
+            className="border-border bg-popover absolute top-full left-0 z-50 mt-1 w-full min-w-56 overflow-hidden rounded-lg border"
           >
             {filteredAirports.map((airport, index) => (
               <Button
@@ -637,178 +645,183 @@ function Toolbar({
         )}
       </div>
 
-      {/* Addon Manager */}
-      <DesktopOnly>
-        <Button
-          variant="outline"
-          onClick={() => openAddonManager()}
-          className="h-9 gap-2 px-3"
-          tooltip={t('toolbar.tooltips.addons')}
-        >
-          <Package className="h-4 w-4" />
-          <span className="text-sm font-medium">{t('toolbar.addons')}</span>
-        </Button>
-      </DesktopOnly>
+      {weatherRadarEnabled && <WeatherRadarPlayback controls={weatherRadarControls} />}
 
-      {/* Flight Plan dropdown */}
-      <Tooltip>
-        <DropdownMenu>
-          <TooltipTrigger asChild>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  'h-9 gap-2 px-3',
-                  (fmsData || simbriefData) && 'border-info/50 text-info'
-                )}
-              >
-                <FileUp className="h-4 w-4" />
-                <span className="text-sm font-medium">{t('toolbar.flightPlan')}</span>
-                <ChevronDown className="h-3 w-3" />
-              </Button>
-            </DropdownMenuTrigger>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{t('toolbar.tooltips.flightPlan')}</p>
-          </TooltipContent>
-          <DropdownMenuContent align="start" className="w-52">
-            <DropdownMenuItem onClick={openPlanBuilder}>
-              <Route className="mr-2 h-4 w-4" />
-              {t('toolbar.planFlight')}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={handleLoadFlightPlan}
-              disabled={isRemoteClient}
-              className={cn(fmsData && !simbriefData && 'text-info')}
+      <div className="flex min-w-0 flex-[1_1_100%] items-center justify-between gap-1 sm:flex-[1_0_auto] sm:gap-2">
+        <div className="flex items-center gap-0.5">
+          {/* Addon Manager */}
+          <DesktopOnly>
+            <Button
+              variant="ghost"
+              onClick={() => openAddonManager()}
+              className={cn(toolbarButton, addonManagerOpen && toolbarSelection)}
+              tooltip={t('toolbar.tooltips.addons')}
             >
-              <FileUp className="mr-2 h-4 w-4" />
-              {t('toolbar.loadPlan')}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => openSimbriefDialog()}
-              className={cn(simbriefData && 'text-info')}
-            >
-              <CloudDownload className="mr-2 h-4 w-4" />
-              SimBrief
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </Tooltip>
+              <Package className="h-4 w-4" />
+              <span className={toolbarLabel}>{t('toolbar.addons')}</span>
+            </Button>
+          </DesktopOnly>
 
-      {/* Explore button */}
-      <Button
-        variant="outline"
-        onClick={toggleExplore}
-        className={cn('h-9 gap-2 px-3', exploreOpen && 'border-primary/50 text-primary')}
-        tooltip={t('toolbar.tooltips.explore')}
-      >
-        <Compass className={cn('h-4 w-4', exploreOpen && 'animate-pulse')} />
-        <span className="text-sm font-medium">{t('explore.title')}</span>
-      </Button>
-
-      {/* Logbook button */}
-      <Button
-        variant="outline"
-        onClick={() => openLogbook()}
-        className={cn('h-9 gap-2 px-3', logbookOpen && 'border-primary/50 text-primary')}
-        tooltip={t('toolbar.tooltips.logbook')}
-      >
-        <BookOpen className="h-4 w-4" />
-        <span className="text-sm font-medium">{t('toolbar.logbook')}</span>
-      </Button>
-
-      <div className="flex-1" />
-
-      <div className="flex items-center gap-2">
-        {/* Layers panel */}
-        <Popover>
+          {/* Flight Plan dropdown */}
           <Tooltip>
-            <TooltipTrigger asChild>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn('h-9 gap-2 px-3', layersActive && 'border-primary/50 text-primary')}
+            <DropdownMenu>
+              <TooltipTrigger asChild>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    aria-label={t('toolbar.flightPlan')}
+                    className={cn(
+                      toolbarButton,
+                      (planBuilderOpen || fmsData || simbriefData) && toolbarSelection
+                    )}
+                  >
+                    <FileUp className="h-4 w-4" />
+                    <span className={toolbarLabel}>{t('toolbar.flightPlan')}</span>
+                    <ChevronDown className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{t('toolbar.tooltips.flightPlan')}</p>
+              </TooltipContent>
+              <DropdownMenuContent align="start" className="w-52">
+                <DropdownMenuItem
+                  onClick={() => {
+                    openPlanBuilder();
+                    onActivatePlanner();
+                  }}
                 >
-                  <Layers className="h-4 w-4" />
-                  <span className="text-sm font-medium">{t('toolbar.layers')}</span>
-                  {layersActive && <span className="bg-primary h-2 w-2 rounded-full" />}
-                  <ChevronDown className="h-3 w-3" />
-                </Button>
-              </PopoverTrigger>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{t('toolbar.tooltips.layers')}</p>
-            </TooltipContent>
+                  <Route className="mr-2 h-4 w-4" />
+                  {t('toolbar.planFlight')}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={handleLoadFlightPlan}
+                  disabled={isRemoteClient}
+                  className={cn(fmsData && !simbriefData && 'text-info')}
+                >
+                  <FileUp className="mr-2 h-4 w-4" />
+                  {t('toolbar.loadPlan')}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => openSimbriefDialog()}
+                  className={cn(simbriefData && 'text-info')}
+                >
+                  <CloudDownload className="mr-2 h-4 w-4" />
+                  SimBrief
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </Tooltip>
-          <PopoverContent align="end" sideOffset={8} className="w-96 p-0">
-            <LayersPanel
-              navDataCounts={navDataCounts}
-              onNavToggle={onNavToggle}
-              onToggleWeatherRadar={onToggleWeatherRadar}
-              onToggleVatsim={onToggleVatsim}
-              onToggleIvao={onToggleIvao}
-              vatsimPilotCount={vatsimPilotCount}
-              ivaoPilotCount={ivaoPilotCount}
-            />
-          </PopoverContent>
-        </Popover>
 
-        {/* Weather playback controls (inline, no toggle) */}
-        {weatherRadarEnabled && <WeatherRadarPlayback controls={weatherRadarControls} />}
-
-        {/* Pin Drop — split button: click = drop at center, chevron = coordinate input */}
-        <div className="flex">
+          {/* Explore button */}
           <Button
-            variant="outline"
-            onClick={handlePinDrop}
-            className={cn(
-              'h-9 gap-2 rounded-r-none border-r-0 px-3',
-              isCustomPin && 'border-success/50 text-success'
-            )}
-            tooltip={t('toolbar.tooltips.pin')}
+            variant="ghost"
+            onClick={toggleExplore}
+            className={cn(toolbarButton, exploreOpen && toolbarSelection)}
+            tooltip={t('toolbar.tooltips.explore')}
           >
-            <MapPin className="h-4 w-4" />
-            <span className="min-w-0 truncate text-sm font-medium">{t('toolbar.pin')}</span>
+            <Compass className="h-4 w-4" />
+            <span className={toolbarLabel}>{t('explore.title')}</span>
           </Button>
-          <PinOptionsPopover
-            isCustomPin={isCustomPin}
-            open={pinOptionsOpen}
-            onOpenChange={setPinOptionsOpen}
-            onSubmit={onPinDropAtCoordinates}
-          />
+
+          {/* Logbook button */}
+          <Button
+            variant="ghost"
+            onClick={() => openLogbook()}
+            className={cn(toolbarButton, logbookOpen && toolbarSelection)}
+            tooltip={t('toolbar.tooltips.logbook')}
+          >
+            <BookOpen className="h-4 w-4" />
+            <span className={toolbarLabel}>{t('toolbar.logbook')}</span>
+          </Button>
         </div>
 
-        {/* Launch */}
-        <Button
-          data-testid="open-launch-dialog"
-          variant="outline"
-          onClick={() => {
-            if (hasStartPosition) {
-              setShowLaunchDialog(true);
-            } else {
-              toast.info(t('toolbar.tooltips.launchSelectPosition'));
-            }
-          }}
-          className={cn(
-            'h-9 gap-2 px-3',
-            hasStartPosition && 'border-success/50 text-success',
-            !hasStartPosition && 'opacity-50'
-          )}
-        >
-          <Plane className="h-4 w-4" />
-          <span className="text-sm font-medium">{t('toolbar.launch')}</span>
-        </Button>
+        <div className="border-border/60 flex items-center gap-0.5 border-l pl-1 sm:gap-1 sm:pl-2">
+          {/* Layers panel */}
+          <Popover>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    aria-label={t('toolbar.layers')}
+                    className={cn(toolbarButton, layersActive && toolbarSelection)}
+                  >
+                    <Layers className="h-4 w-4" />
+                    <span className={toolbarLabel}>{t('toolbar.layers')}</span>
+                    <ChevronDown className="hidden h-3 w-3 xl:block" />
+                  </Button>
+                </PopoverTrigger>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{t('toolbar.tooltips.layers')}</p>
+              </TooltipContent>
+            </Tooltip>
+            <PopoverContent align="end" sideOffset={8} className="w-96 p-0">
+              <LayersPanel
+                navDataCounts={navDataCounts}
+                onNavToggle={onNavToggle}
+                onToggleWeatherRadar={onToggleWeatherRadar}
+                onToggleVatsim={onToggleVatsim}
+                onToggleIvao={onToggleIvao}
+                vatsimPilotCount={vatsimPilotCount}
+                ivaoPilotCount={ivaoPilotCount}
+              />
+            </PopoverContent>
+          </Popover>
 
-        {/* Settings */}
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => setShowSettings(true)}
-          className="h-9 w-10"
-          tooltip={t('toolbar.tooltips.settings')}
-        >
-          <Settings className="h-4 w-4" />
-        </Button>
+          {/* Pin Drop — split button: click = drop at center, chevron = coordinate input */}
+          <div className="flex">
+            <Button
+              variant="ghost"
+              onClick={handlePinDrop}
+              className={cn(
+                toolbarButton,
+                'rounded-r-none',
+                isCustomPin && 'bg-success/10 text-success'
+              )}
+              tooltip={t('toolbar.tooltips.pin')}
+            >
+              <MapPin className="h-4 w-4" />
+              <span className={toolbarLabel}>{t('toolbar.pin')}</span>
+            </Button>
+            <PinOptionsPopover
+              isCustomPin={isCustomPin}
+              open={pinOptionsOpen}
+              onOpenChange={setPinOptionsOpen}
+              onSubmit={onPinDropAtCoordinates}
+            />
+          </div>
+
+          {/* Launch */}
+          <Button
+            data-testid="open-launch-dialog"
+            variant={hasStartPosition ? 'default' : 'ghost'}
+            aria-label={t('toolbar.launch')}
+            onClick={() => {
+              if (hasStartPosition) {
+                setShowLaunchDialog(true);
+              } else {
+                toast.info(t('toolbar.tooltips.launchSelectPosition'));
+              }
+            }}
+            className={cn(toolbarButton, !hasStartPosition && 'text-muted-foreground')}
+          >
+            <Plane className="h-4 w-4" />
+            <span className={toolbarLabel}>{t('toolbar.launch')}</span>
+          </Button>
+
+          {/* Settings */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowSettings(true)}
+            className="h-8 w-8 rounded-md"
+            tooltip={t('toolbar.tooltips.settings')}
+          >
+            <Settings className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Dialogs */}
@@ -845,7 +858,7 @@ function WeatherRadarPlayback({ controls }: { controls: WeatherRadarControls }) 
   if (frameCount === 0) return null;
 
   return (
-    <div className="border-primary/50 bg-primary/10 animate-in fade-in slide-in-from-left-2 flex h-9 items-center gap-0.5 rounded-md border px-1.5 duration-200">
+    <div className="border-border/60 flex h-8 shrink-0 items-center gap-0.5 border-l pl-1">
       <Button
         variant="ghost"
         size="icon-xs"
@@ -876,8 +889,10 @@ function WeatherRadarPlayback({ controls }: { controls: WeatherRadarControls }) 
         <ChevronRight className="h-3.5 w-3.5" />
       </Button>
 
-      <span className="text-primary ml-1 font-mono text-xs tabular-nums">{timeDisplay}</span>
-      <span className="text-foreground/40 text-2xs mr-1 ml-0.5">
+      <span className="text-primary ml-1 hidden font-mono text-xs tabular-nums 2xl:inline">
+        {timeDisplay}
+      </span>
+      <span className="text-muted-foreground text-2xs ml-0.5 hidden tabular-nums 2xl:inline">
         {frameIndex + 1}/{frameCount}
       </span>
     </div>

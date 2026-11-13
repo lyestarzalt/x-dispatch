@@ -15,7 +15,6 @@ import { getBasemapTheme } from '@/lib/map/basemapTheme';
 import { terrainShadingAllowed } from '@/lib/map/terrainShading';
 import { resolveMapStyleArg } from '@/lib/map/tileUrlToStyle';
 import { airportBoundsHaveArea, getAirportBounds } from '@/lib/utils/geomath/airportBounds';
-import { cn } from '@/lib/utils/helpers';
 import { Airport } from '@/lib/xplaneServices/dataService';
 import {
   trackEvent,
@@ -31,6 +30,7 @@ import { useVatsimQuery } from '@/queries/useVatsimQuery';
 import { useAppStore } from '@/stores/appStore';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import { FeatureDebugInfo, useMapStore } from '@/stores/mapStore';
+import { usePlanBuilderStore } from '@/stores/planBuilderStore';
 import { planePositionFrom, usePlaneStore } from '@/stores/planeStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useStandHoverStore } from '@/stores/standHoverStore';
@@ -77,6 +77,7 @@ import {
   useVatsimSectorSync,
 } from './hooks';
 import { useMapPadding } from './hooks/useMapPadding';
+import { useMapPanelLayout } from './hooks/useMapPanelLayout';
 import { useProfileControl } from './hooks/useProfileControl';
 import { useProfileHoverSync } from './hooks/useProfileHoverSync';
 import { useSatelliteClouds } from './hooks/useSatelliteClouds';
@@ -169,6 +170,7 @@ export default function Map({ airports }: MapProps) {
   const cityLightsEnabled = useSettingsStore((s) => s.graphics.cityLights);
   const landingReportEnabled = useSettingsStore((s) => s.flights.landingReport);
   const landingFlyTo = useSettingsStore((s) => s.flights.landingFlyTo);
+  const fmsData = useFlightPlanStore((s) => s.fmsData);
 
   // Refs for stable airport click callback (avoids circular dependency)
   const renderAirportRef = useRef<
@@ -210,10 +212,22 @@ export default function Map({ airports }: MapProps) {
 
   // Map initialization
   const mapRootRef = useRef<HTMLDivElement>(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
+  const plannerOpen = usePlanBuilderStore((s) => s.isOpen);
+  const hasAirportPanel = showSidebar && selectedAirportData !== null;
+  const { singlePanel, inlineExplore, activePanel, setActivePanel } = useMapPanelLayout(
+    mapRootRef,
+    toolbarRef,
+    hasAirportPanel
+  );
+  const sharePanelSpace = singlePanel && plannerOpen && hasAirportPanel;
+  const activatePlanner = useCallback(() => setActivePanel('planner'), [setActivePanel]);
+  const activateAirport = useCallback(() => setActivePanel('airport'), [setActivePanel]);
   const { mapRef, mapContainerRef } = useMapSetup({
     airports,
     mapStyleUrl,
     onAirportClick: handleAirportClick,
+    flightPlan: fmsData,
   });
 
   // Airport renderer
@@ -476,9 +490,6 @@ export default function Map({ airports }: MapProps) {
   // useIdleOrbit({ mapRef, airportCenter: navDataLocation });
 
   // Flight plan state
-  const fmsData = useFlightPlanStore((s) => s.fmsData);
-  const profileStripOpen = useMapStore((s) => s.profileStripOpen);
-  const profileStripPosition = useMapStore((s) => s.profileStripPosition);
   const selectedWaypointIndex = useFlightPlanStore((s) => s.selectedWaypointIndex);
   const planFileName = useFlightPlanStore((s) => s.fileName);
   // Only a different plan moves the camera. The builder republishes the same plan on every
@@ -979,7 +990,7 @@ export default function Map({ airports }: MapProps) {
       </div>
 
       {/* Top bar overlay - full width, above the sidebar and the planner so search results stay visible */}
-      <div data-map-dock="top" className="absolute top-4 right-4 left-4 z-40 space-y-2">
+      <div ref={toolbarRef} data-map-dock="top" className="absolute inset-x-0 top-0 z-40">
         <Toolbar
           airports={airports}
           onSelectAirport={selectAirport}
@@ -990,8 +1001,11 @@ export default function Map({ airports }: MapProps) {
           onNavToggle={handleNavLayerToggle}
           onPinDrop={handlePinDrop}
           onPinDropAtCoordinates={handlePinDropAtCoordinates}
+          onActivatePlanner={activatePlanner}
         />
-        <FlightPlanBar onWaypointClick={handleWaypointClick} />
+        <div className="px-4 pt-2 empty:hidden">
+          <FlightPlanBar onWaypointClick={handleWaypointClick} />
+        </div>
       </div>
 
       {/* Map widgets - left side */}
@@ -1005,14 +1019,7 @@ export default function Map({ airports }: MapProps) {
 
       {/* Replay transport above the flight strip (and above the profile strip when it is open); the
           landing card floats bottom-right and is draggable */}
-      <div
-        className={cn(
-          'absolute left-1/2 z-20 -translate-x-1/2',
-          profileStripOpen && fmsData && profileStripPosition === null
-            ? 'bottom-[15.5rem]'
-            : 'bottom-24'
-        )}
-      >
+      <div className="absolute bottom-[var(--map-replay-bottom,6rem)] left-1/2 z-20 -translate-x-1/2">
         <ReplayWidget />
       </div>
       {landingReportEnabled && <LandingReportCard onShowOnMap={handleShowLanding} />}
@@ -1027,17 +1034,24 @@ export default function Map({ airports }: MapProps) {
 
       {/* Flight planner - docked left, the map is its live preview */}
       <SectionErrorBoundary name="FlightPlanBuilder">
-        <FlightPlanBuilder airports={airports} />
+        <FlightPlanBuilder
+          airports={airports}
+          foldForSpace={sharePanelSpace && activePanel === 'airport'}
+          inlineExplore={inlineExplore}
+          onActivate={activatePlanner}
+        />
       </SectionErrorBoundary>
 
       {/* Airport Info Panel - floating overlay */}
-      {showSidebar && selectedAirportData && (
+      {hasAirportPanel && (
         <SectionErrorBoundary name="AirportInfoPanel">
           <AirportInfoPanel
             onSelectRunway={navigateToRunway}
             onSelectGateAsStart={selectGateAsStart}
             onSelectRunwayEndAsStart={selectRunwayEndAsStart}
             onSelectHelipadAsStart={selectHelipadAsStart}
+            foldForSpace={sharePanelSpace && activePanel === 'planner'}
+            onActivate={activateAirport}
           />
         </SectionErrorBoundary>
       )}

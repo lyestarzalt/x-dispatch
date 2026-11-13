@@ -86,7 +86,6 @@ import {
   useTrackFeatureOpened,
 } from '@/queries';
 import { useAirportRunways } from '@/queries/useAirportRunways';
-import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import { useMapStore } from '@/stores/mapStore';
 import { type ExploreTab, routerOwnsRoute, usePlanBuilderStore } from '@/stores/planBuilderStore';
 import { usePlaneStore } from '@/stores/planeStore';
@@ -126,9 +125,17 @@ const EXPLORE_TABS = [
 
 interface FlightPlanBuilderProps {
   airports: Airport[];
+  foldForSpace: boolean;
+  inlineExplore: boolean;
+  onActivate: () => void;
 }
 
-function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) {
+function FlightPlanBuilder({
+  airports,
+  foldForSpace,
+  inlineExplore,
+  onActivate,
+}: FlightPlanBuilderProps) {
   const { t } = useTranslation();
   const units = useUnits();
   const isOpen = usePlanBuilderStore((s) => s.isOpen);
@@ -136,6 +143,7 @@ function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) {
   const close = usePlanBuilderStore((s) => s.close);
   const panel = usePlanBuilderStore((s) => s.panel);
   const setPanel = usePlanBuilderStore((s) => s.setPanel);
+  const folded = panel === 'rail' || foldForSpace;
   // Compact: a read-out of the plan for flying, sized to its content, nothing to edit.
   const compact = panel === 'half';
   const reset = usePlanBuilderStore((s) => s.reset);
@@ -196,10 +204,11 @@ function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) {
   const setProfileStripOpen = useMapStore((s) => s.setProfileStripOpen);
   const startAtDeparture = usePlanBuilderStore((s) => s.startAtDeparture);
   const aircraftCategory = usePlaneStore((s) => s.state?.aircraftCategory);
-  const showFlightPlanBar = useFlightPlanStore((s) => s.showFlightPlanBar);
   const [saving, setSaving] = useState(false);
   const explore = usePlanBuilderStore((s) => s.explore);
   const setExplore = usePlanBuilderStore((s) => s.setExplore);
+  const showExplore = explore !== null && !folded;
+  const exploreInPanel = showExplore && inlineExplore;
 
   // One visit to the planner, reported as flight_plan_closed when it closes.
   const visitRef = useRef<PlanVisit | null>(null);
@@ -756,33 +765,25 @@ function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) {
   return (
     <div
       data-map-dock="left"
+      data-map-profile-inset={!folded && panel === 'full' ? '' : undefined}
+      data-testid="planner-dock"
       className={cn(
-        'absolute left-4 z-30 transition-all duration-300 ease-out',
-        showFlightPlanBar ? 'top-28' : 'top-16',
-        panel === 'rail' ? 'w-12' : 'w-[26rem]',
-        // The compact read-out and the folded rail are as tall as their content, leaving the
-        // map's controls in the bottom-left corner clear.
-        panel === 'full' && 'bottom-4'
+        'absolute top-[var(--map-panel-top,4rem)] left-4 z-30 flex max-h-[calc(100%-var(--map-panel-top,4rem)-1rem)] flex-col',
+        folded ? 'w-12' : 'w-[26rem] max-w-[calc(75%-5rem)] max-sm:max-w-[calc(100%-6rem)]',
+        !folded && panel === 'full' && 'bottom-4'
       )}
     >
-      <div
-        className={cn(
-          'border-border/40 bg-card/95 relative flex flex-col overflow-hidden rounded-lg border backdrop-blur-sm',
-          panel !== 'rail' && 'h-full'
-        )}
-      >
+      <div className="border-border/40 bg-card/95 relative flex min-h-0 flex-auto flex-col overflow-hidden rounded-lg border backdrop-blur-sm">
         {/* Folded: a slim rail with the route's ends, same as the airport panel */}
-        <div
-          className={cn(
-            'bg-card z-20 flex flex-col items-center py-5 transition-opacity duration-200',
-            panel === 'rail' ? 'opacity-100' : 'pointer-events-none absolute inset-0 opacity-0'
-          )}
-        >
+        <div className={cn('bg-card flex flex-col items-center py-5', !folded && 'hidden')}>
           <Button
             variant="ghost"
             size="icon"
             className="mb-4 h-8 w-8"
-            onClick={() => setPanel('full')}
+            onClick={() => {
+              onActivate();
+              if (panel === 'rail') setPanel('full');
+            }}
             aria-label={t('planBuilder.expand')}
             title={t('planBuilder.expand')}
           >
@@ -799,8 +800,8 @@ function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) {
         </div>
         <header
           className={cn(
-            'border-border/30 space-y-3 border-b px-4 py-3',
-            panel === 'rail' && 'hidden'
+            'border-border/30 shrink-0 border-b px-4 py-3',
+            (folded || exploreInPanel) && 'hidden'
           )}
         >
           <div className="flex items-center justify-between gap-2">
@@ -812,12 +813,13 @@ function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) {
               <Button
                 variant="ghost"
                 size="xs"
-                className="text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground max-sm:px-1.5"
                 onClick={handleNewPlan}
                 disabled={!departure && !arrival && !routeText}
+                tooltip={t('planBuilder.newPlan')}
               >
                 <RotateCcw className="h-3.5 w-3.5" />
-                {t('planBuilder.newPlan')}
+                <span className="max-sm:hidden">{t('planBuilder.newPlan')}</span>
               </Button>
               <Button
                 variant="ghost"
@@ -852,135 +854,141 @@ function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) {
               </Button>
             </div>
           </div>
+        </header>
 
-          <div className="flex items-center gap-2">
-            <RouteEnd
-              endpoint={departure}
-              fallback={t('planBuilder.departure')}
-              nameOf={airportName}
-            />
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="text-muted-foreground hover:text-foreground shrink-0"
-              onClick={swapEndpoints}
-              disabled={compact || (!departure && !arrival)}
-              tooltip={t('planBuilder.swap')}
-            >
-              <ArrowLeftRight className="h-4 w-4" />
-            </Button>
-            <RouteEnd
-              endpoint={arrival}
-              fallback={t('planBuilder.arrival')}
-              nameOf={airportName}
-              align="right"
-            />
-          </div>
-
-          <div className="grid grid-cols-4 gap-3">
-            <Stat
-              label={t('planBuilder.distance')}
-              value={ready ? units.distance(distanceNm as NauticalMiles) : '—'}
-            />
-            <Stat
-              label={t('planBuilder.ete')}
-              value={ready ? formatDuration(estimateMinutes(distanceNm, cls) * 60) : '—'}
-            />
-            {compact ? (
-              <Stat label={t('planBuilder.cruiseShort')} value={formatLevel(cruiseAltitudeFt)} />
-            ) : (
-              <CruiseStat
-                label={t('planBuilder.cruiseShort')}
-                value={cruiseAltitudeFt}
-                onChange={setCruiseAltitude}
+        <ScrollArea className={cn('min-h-0 flex-1', (folded || exploreInPanel) && 'hidden')}>
+          <div className="border-border/30 space-y-3 border-b px-4 py-3">
+            <div className="flex items-center gap-2">
+              <RouteEnd
+                endpoint={departure}
+                fallback={t('planBuilder.departure')}
+                nameOf={airportName}
               />
-            )}
-            <Stat
-              label={t('planBuilder.fuel')}
-              value={ready ? units.weight(kgToLbs(estimateFuelKg(distanceNm, cls))) : '—'}
-            />
-          </div>
-
-          {cruiseIssue && (
-            <div className="flex items-center justify-between gap-2 text-xs">
-              <span className="text-warning flex min-w-0 items-start gap-1.5">
-                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                <span className="line-clamp-2" title={cruiseIssue.text}>
-                  {cruiseIssue.text}
-                </span>
-              </span>
-              {cruiseIssue.adjustable && (
-                <Button
-                  variant="outline"
-                  size="xs"
-                  className="shrink-0"
-                  onClick={adjustCruiseAltitude}
-                >
-                  <ArrowUpDown className="h-3.5 w-3.5" />
-                  {t('planBuilder.adjustCruise')}
-                </Button>
-              )}
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="text-muted-foreground hover:text-foreground shrink-0"
+                onClick={swapEndpoints}
+                disabled={compact || (!departure && !arrival)}
+                tooltip={t('planBuilder.swap')}
+              >
+                <ArrowLeftRight className="h-4 w-4" />
+              </Button>
+              <RouteEnd
+                endpoint={arrival}
+                fallback={t('planBuilder.arrival')}
+                nameOf={airportName}
+                align="right"
+              />
             </div>
-          )}
 
-          {compact && routeText && (
-            <p
-              className="text-muted-foreground truncate font-mono text-xs tracking-wide uppercase"
-              title={routeText}
+            <div className="grid grid-cols-4 gap-2 max-sm:grid-cols-2">
+              <Stat
+                label={t('planBuilder.distance')}
+                value={ready ? units.distance(distanceNm as NauticalMiles) : '—'}
+              />
+              <Stat
+                label={t('planBuilder.ete')}
+                value={ready ? formatDuration(estimateMinutes(distanceNm, cls) * 60) : '—'}
+              />
+              {compact ? (
+                <Stat label={t('planBuilder.cruiseShort')} value={formatLevel(cruiseAltitudeFt)} />
+              ) : (
+                <CruiseStat
+                  label={t('planBuilder.cruiseShort')}
+                  value={cruiseAltitudeFt}
+                  onChange={setCruiseAltitude}
+                />
+              )}
+              <Stat
+                label={t('planBuilder.fuel')}
+                value={ready ? units.weight(kgToLbs(estimateFuelKg(distanceNm, cls))) : '—'}
+              />
+            </div>
+
+            {cruiseIssue && (
+              <div className="flex items-center justify-between gap-2 text-xs">
+                <span className="text-warning flex min-w-0 items-start gap-1.5">
+                  <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  <span className="line-clamp-2" title={cruiseIssue.text}>
+                    {cruiseIssue.text}
+                  </span>
+                </span>
+                {cruiseIssue.adjustable && (
+                  <Button
+                    variant="outline"
+                    size="xs"
+                    className="shrink-0"
+                    onClick={adjustCruiseAltitude}
+                  >
+                    <ArrowUpDown className="h-3.5 w-3.5" />
+                    {t('planBuilder.adjustCruise')}
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {compact && routeText && (
+              <p
+                className="text-muted-foreground truncate font-mono text-xs tracking-wide uppercase"
+                title={routeText}
+              >
+                {routeText}
+              </p>
+            )}
+
+            <div
+              className={cn(
+                'flex flex-wrap items-center justify-between gap-2',
+                compact && 'hidden'
+              )}
             >
-              {routeText}
-            </p>
-          )}
+              <span className="xp-label min-w-0 truncate">{t('planBuilder.aircraft')}</span>
+              <ToggleGroup
+                type="single"
+                size="xs"
+                variant="outline"
+                value={cls}
+                onValueChange={(v) => {
+                  if (!v) return;
+                  setAircraftClass(v as RangeRingCategory);
+                  rerouteAfterCruise.current =
+                    autoRouting || routerOwnsRoute({ routeText, autoRoutedText });
+                }}
+              >
+                {CLASSES.map((c) => (
+                  <ToggleGroupItem key={c} value={c}>
+                    {t(`planBuilder.class.${c}`)}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            </div>
 
-          <div className={cn('flex items-center justify-between gap-3', compact && 'hidden')}>
-            <span className="xp-label min-w-0 truncate">{t('planBuilder.aircraft')}</span>
             <ToggleGroup
               type="single"
               size="xs"
-              variant="outline"
-              value={cls}
-              onValueChange={(v) => {
-                if (!v) return;
-                setAircraftClass(v as RangeRingCategory);
-                rerouteAfterCruise.current =
-                  autoRouting || routerOwnsRoute({ routeText, autoRoutedText });
-              }}
+              variant="subtle"
+              value={explore ?? ''}
+              onValueChange={(v) => setExplore(v ? (v as ExploreTab) : null)}
+              className={cn('w-full', compact && 'hidden')}
             >
-              {CLASSES.map((c) => (
-                <ToggleGroupItem key={c} value={c}>
-                  {t(`planBuilder.class.${c}`)}
-                </ToggleGroupItem>
+              {EXPLORE_TABS.map(({ id, icon: Icon }) => (
+                <Tooltip key={id}>
+                  <TooltipTrigger asChild>
+                    <ToggleGroupItem
+                      value={id}
+                      className="min-w-0 flex-1"
+                      aria-label={t(`explore.tabs.${id}`)}
+                    >
+                      <Icon />
+                    </ToggleGroupItem>
+                  </TooltipTrigger>
+                  <TooltipContent>{t(`explore.tabs.${id}`)}</TooltipContent>
+                </Tooltip>
               ))}
             </ToggleGroup>
           </div>
-
-          <ToggleGroup
-            type="single"
-            size="xs"
-            variant="subtle"
-            value={explore ?? ''}
-            onValueChange={(v) => setExplore(v ? (v as ExploreTab) : null)}
-            className={cn('w-full', compact && 'hidden')}
-          >
-            {EXPLORE_TABS.map(({ id, icon: Icon }) => (
-              <Tooltip key={id}>
-                <TooltipTrigger asChild>
-                  <ToggleGroupItem
-                    value={id}
-                    className="min-w-0 flex-1"
-                    aria-label={t(`explore.tabs.${id}`)}
-                  >
-                    <Icon />
-                  </ToggleGroupItem>
-                </TooltipTrigger>
-                <TooltipContent>{t(`explore.tabs.${id}`)}</TooltipContent>
-              </Tooltip>
-            ))}
-          </ToggleGroup>
-        </header>
-
-        <ScrollArea className={cn('min-h-0 flex-1', panel !== 'full' && 'hidden')}>
-          <div className="space-y-5 p-4">
+          <div className={cn('space-y-5 p-4', compact && 'hidden')}>
             <div className="space-y-3">
               <section className="border-border space-y-3 rounded-lg border p-3">
                 <EndpointLabel icon={PlaneTakeoff}>{t('planBuilder.departure')}</EndpointLabel>
@@ -1206,8 +1214,8 @@ function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) {
 
         <footer
           className={cn(
-            'border-border/30 space-y-2 border-t px-4 py-3',
-            panel === 'rail' && 'hidden'
+            'border-border/30 shrink-0 space-y-2 border-t px-4 py-3',
+            (folded || exploreInPanel) && 'hidden'
           )}
         >
           {savedPath && (
@@ -1222,14 +1230,14 @@ function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) {
             <Button
               variant={profileStripOpen ? 'secondary' : 'ghost'}
               size="xs"
-              className="mr-auto"
+              className="mr-auto max-sm:px-1.5"
               onClick={() => setProfileStripOpen(!profileStripOpen)}
               disabled={!ready}
               aria-pressed={profileStripOpen}
               tooltip={profileStripOpen ? t('profile.hide') : t('profile.show')}
             >
               <Mountain className="h-3.5 w-3.5" />
-              {t('planBuilder.profileShort')}
+              <span className="max-sm:hidden">{t('planBuilder.profileShort')}</span>
             </Button>
             <Button
               variant="outline"
@@ -1239,9 +1247,11 @@ function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) {
                 markVisit({ startSet: true });
               }}
               disabled={!departure}
+              tooltip={t('planBuilder.setStart')}
+              className="max-sm:px-1.5"
             >
               <PlaneTakeoff className="h-3.5 w-3.5" />
-              {t('planBuilder.setStart')}
+              <span className="max-sm:hidden">{t('planBuilder.setStart')}</span>
             </Button>
             <Button size="xs" onClick={handleSave} disabled={!ready || saving}>
               <Save className="h-3.5 w-3.5" />
@@ -1250,22 +1260,22 @@ function FlightPlanBuilder({ airports }: FlightPlanBuilderProps) {
           </div>
         </footer>
       </div>
-      {explore && (
+      {showExplore && (
         <ExploreFlyout
+          docked={!exploreInPanel}
           airports={airports}
           aircraftClass={cls}
           tab={explore}
           onRandomArrival={(icao) => markVisit({ randomArrival: icao })}
           onClose={() => setExplore(null)}
-          className="absolute top-0 bottom-0 left-full ml-2 w-80"
+          className={
+            exploreInPanel ? 'absolute inset-0' : 'absolute top-0 bottom-0 left-full ml-2 w-80'
+          }
         />
       )}
     </div>
   );
 }
 
-// The planner stays mounted beside the map, and the Map component renders on
-// many store changes that have nothing to do with it. Its only prop is the
-// airport list, which is stable between data loads, so a memo keeps those
-// renders out of the planner tree.
+// Keep unrelated map updates out of the planner tree.
 export default memo(FlightPlanBuilder);

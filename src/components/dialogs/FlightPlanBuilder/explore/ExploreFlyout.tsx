@@ -45,6 +45,7 @@ interface ExploreFlyoutProps {
   /** A random destination became the plan's arrival. */
   onRandomArrival: (icao: string) => void;
   onClose: () => void;
+  docked: boolean;
   className?: string;
 }
 
@@ -58,6 +59,7 @@ export function ExploreFlyout({
   tab,
   onRandomArrival,
   onClose,
+  docked,
   className,
 }: ExploreFlyoutProps) {
   const { t } = useTranslation();
@@ -101,6 +103,8 @@ export function ExploreFlyout({
 
   return (
     <div
+      data-map-dock={docked ? 'left' : undefined}
+      data-map-profile-inset={docked ? '' : undefined}
       className={cn(
         'border-border/40 bg-card/95 flex flex-col overflow-hidden rounded-lg border backdrop-blur-sm',
         className

@@ -34,7 +34,6 @@ import { cn } from '@/lib/utils/helpers';
 import { trackEvent } from '@/queries/useAnalytics';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import { useAppStore } from '@/stores/appStore';
-import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { Runway } from '@/types/apt';
 import { NamedPosition } from '@/types/geo';
@@ -61,6 +60,8 @@ interface AirportInfoPanelProps {
   onSelectGateAsStart?: (gate: NamedPosition) => void;
   onSelectRunwayEndAsStart?: (runwayEnd: NamedPosition) => void;
   onSelectHelipadAsStart?: (helipad: NamedPosition) => void;
+  foldForSpace: boolean;
+  onActivate: () => void;
 }
 
 function AirportInfoPanel({
@@ -68,6 +69,8 @@ function AirportInfoPanel({
   onSelectGateAsStart,
   onSelectRunwayEndAsStart,
   onSelectHelipadAsStart,
+  foldForSpace,
+  onActivate,
 }: AirportInfoPanelProps) {
   const { t } = useTranslation();
   const units = useUnits();
@@ -75,7 +78,6 @@ function AirportInfoPanel({
   const icao = useAppStore((s) => s.selectedICAO);
   const clearAirport = useAppStore((s) => s.clearAirport);
   const selectedStartPosition = useAppStore((s) => s.startPosition);
-  const showFlightPlanBar = useFlightPlanStore((s) => s.showFlightPlanBar);
   const favoriteIcaos = useSettingsStore((s) => s.airports.favoriteIcaos);
   const homeIcao = useSettingsStore((s) => s.airports.homeIcao);
   const toggleFavoriteAirport = useSettingsStore((s) => s.toggleFavoriteAirport);
@@ -88,6 +90,7 @@ function AirportInfoPanel({
   const flightCategory = vatsimMetarData?.flightCategory ?? null;
 
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const folded = isCollapsed || foldForSpace;
   const [activeTab, setActiveTab] = useState<TabId>('info');
   const handleTabChange = (value: string) => {
     setActiveTab(value as TabId);
@@ -133,10 +136,11 @@ function AirportInfoPanel({
   return (
     <div
       data-map-dock="right"
+      data-map-profile-inset=""
+      data-testid="airport-dock"
       className={cn(
-        'absolute right-4 bottom-4 z-20 transition-all duration-300 ease-out',
-        showFlightPlanBar ? 'top-28' : 'top-16',
-        isCollapsed ? 'w-12' : 'w-80'
+        'absolute top-[var(--map-panel-top,4rem)] right-4 bottom-4 z-20',
+        folded ? 'w-12' : 'w-80 max-w-[calc(100%-6rem)]'
       )}
     >
       <div className="border-border/40 bg-card/95 relative flex h-full flex-col overflow-hidden rounded-lg border backdrop-blur-sm">
@@ -144,14 +148,18 @@ function AirportInfoPanel({
         <div
           className={cn(
             'bg-card/95 absolute inset-0 z-20 flex flex-col items-center py-5 transition-opacity duration-200',
-            isCollapsed ? 'opacity-100' : 'pointer-events-none opacity-0'
+            !folded && 'hidden'
           )}
         >
           <Button
             variant="ghost"
             size="icon"
             className="mb-4 h-8 w-8"
-            onClick={() => setIsCollapsed(false)}
+            onClick={() => {
+              onActivate();
+              setIsCollapsed(false);
+            }}
+            tooltip={airport.id}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -160,216 +168,223 @@ function AirportInfoPanel({
           </IcaoCode>
         </div>
 
-        {/* Header - Dense pilot info */}
-        <div className="border-border/30 border-b px-4 pt-3 pb-3">
-          {/* Row 1: ICAO, elevation and transition altitude; fold and close at the right */}
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex min-w-0 items-baseline gap-2">
-              {/* The ICAO opens a menu: bring this airport back into view, or jump to a favorite. */}
-              <DropdownMenu>
-                <h1 className="text-info font-mono text-xl font-bold tracking-tight">
-                  <DropdownMenuTrigger
-                    className="group hover:text-info/80 flex items-center gap-1 rounded-sm"
-                    aria-label={t('airportInfo.menu.open')}
-                  >
-                    {airport.id}
-                    <ChevronDown className="text-muted-foreground/60 group-hover:text-foreground h-3.5 w-3.5" />
-                  </DropdownMenuTrigger>
-                </h1>
-                <DropdownMenuContent align="start" className="max-h-80 w-64 overflow-y-auto">
-                  <DropdownMenuItem onSelect={requestFrameAirport}>
-                    <Crosshair />
-                    <span className="min-w-0 truncate">
-                      {t('airportInfo.menu.center', { icao: airport.id })}
-                    </span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel className="xp-section-heading font-normal">
-                    {t('airportInfo.menu.favorites')}
-                  </DropdownMenuLabel>
-                  {favoriteAirports.length === 0 ? (
-                    <DropdownMenuItem disabled>
-                      <span className="min-w-0 truncate">{t('airportInfo.menu.noFavorites')}</span>
+        <div className={cn('flex min-h-0 flex-1 flex-col', folded && 'hidden')}>
+          {/* Header - Dense pilot info */}
+          <div className="border-border/30 border-b px-4 pt-3 pb-3">
+            {/* Row 1: ICAO, elevation and transition altitude; fold and close at the right */}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex min-w-0 items-baseline gap-2">
+                {/* The ICAO opens a menu: bring this airport back into view, or jump to a favorite. */}
+                <DropdownMenu>
+                  <h1 className="text-info font-mono text-xl font-bold tracking-tight">
+                    <DropdownMenuTrigger
+                      className="group hover:text-info/80 flex items-center gap-1 rounded-sm"
+                      aria-label={t('airportInfo.menu.open')}
+                    >
+                      {airport.id}
+                      <ChevronDown className="text-muted-foreground/60 group-hover:text-foreground h-3.5 w-3.5" />
+                    </DropdownMenuTrigger>
+                  </h1>
+                  <DropdownMenuContent align="start" className="max-h-80 w-64 overflow-y-auto">
+                    <DropdownMenuItem onSelect={requestFrameAirport}>
+                      <Crosshair />
+                      <span className="min-w-0 truncate">
+                        {t('airportInfo.menu.center', { icao: airport.id })}
+                      </span>
                     </DropdownMenuItem>
-                  ) : (
-                    favoriteAirports.map((favorite) => (
-                      <DropdownMenuItem
-                        key={favorite.icao}
-                        disabled={favorite.icao === airport.id}
-                        onSelect={() => requestSelectAirport(favorite.icao)}
-                      >
-                        {favorite.isHome ? (
-                          <Home className="text-primary" />
-                        ) : (
-                          <Star className="text-warning fill-current" />
-                        )}
-                        <span className="text-info font-mono font-bold">{favorite.icao}</span>
-                        {favorite.name && (
-                          <span className="text-muted-foreground min-w-0 truncate">
-                            {favorite.name}
-                          </span>
-                        )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel className="xp-section-heading font-normal">
+                      {t('airportInfo.menu.favorites')}
+                    </DropdownMenuLabel>
+                    {favoriteAirports.length === 0 ? (
+                      <DropdownMenuItem disabled>
+                        <span className="min-w-0 truncate">
+                          {t('airportInfo.menu.noFavorites')}
+                        </span>
                       </DropdownMenuItem>
-                    ))
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <span className="text-muted-foreground font-mono text-xs whitespace-nowrap">
-                {elevation}
-                {transitionAlt ? ` · TA ${transitionAlt}` : ''}
+                    ) : (
+                      favoriteAirports.map((favorite) => (
+                        <DropdownMenuItem
+                          key={favorite.icao}
+                          disabled={favorite.icao === airport.id}
+                          onSelect={() => requestSelectAirport(favorite.icao)}
+                        >
+                          {favorite.isHome ? (
+                            <Home className="text-primary" />
+                          ) : (
+                            <Star className="text-warning fill-current" />
+                          )}
+                          <span className="text-info font-mono font-bold">{favorite.icao}</span>
+                          {favorite.name && (
+                            <span className="text-muted-foreground min-w-0 truncate">
+                              {favorite.name}
+                            </span>
+                          )}
+                        </DropdownMenuItem>
+                      ))
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <span className="text-muted-foreground font-mono text-xs whitespace-nowrap">
+                  {elevation}
+                  {transitionAlt ? ` · TA ${transitionAlt}` : ''}
+                </span>
+              </div>
+              <div className="flex shrink-0 items-center">
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className="text-muted-foreground/40 hover:text-foreground"
+                  onClick={() => setIsCollapsed(true)}
+                  tooltip={t('airportInfo.actions.collapse')}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className="text-muted-foreground hover:text-foreground"
+                  onClick={clearAirport}
+                  tooltip={t('common.close')}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Row 2: name and IATA, with favourite, home and the flight category */}
+            <div className="mt-1 flex items-center justify-between gap-2">
+              <div className="flex min-w-0 items-baseline gap-2">
+                <p className="text-muted-foreground truncate text-sm">{airport.name}</p>
+                {airport.metadata.iata_code && airport.metadata.iata_code !== airport.id && (
+                  <span className="text-muted-foreground shrink-0 font-mono text-xs">
+                    ({airport.metadata.iata_code})
+                  </span>
+                )}
+              </div>
+              <div className="flex shrink-0 items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className="text-muted-foreground/60 hover:text-foreground"
+                  onClick={() => toggleFavoriteAirport(airport.id)}
+                  tooltip={
+                    favoriteIcaos.includes(airport.id)
+                      ? t('airportInfo.actions.removeFavorite')
+                      : t('airportInfo.actions.addFavorite')
+                  }
+                >
+                  <Star
+                    className={cn(
+                      'h-4 w-4',
+                      favoriteIcaos.includes(airport.id) && 'text-warning fill-current'
+                    )}
+                  />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className="text-muted-foreground/60 hover:text-foreground"
+                  onClick={() => setHomeAirport(homeIcao === airport.id ? null : airport.id)}
+                  tooltip={
+                    homeIcao === airport.id
+                      ? t('airportInfo.actions.clearHome')
+                      : t('airportInfo.actions.setHome')
+                  }
+                >
+                  <Home
+                    className={cn(
+                      'h-4 w-4',
+                      homeIcao === airport.id && 'text-primary fill-current'
+                    )}
+                  />
+                </Button>
+                {flightCategory && (
+                  <Badge
+                    variant={
+                      flightCategory === 'VFR'
+                        ? 'cat-emerald'
+                        : flightCategory === 'MVFR'
+                          ? 'cat-sky'
+                          : flightCategory === 'IFR'
+                            ? 'cat-red'
+                            : 'cat-fuchsia'
+                    }
+                    className="ml-1 px-2 py-0.5 font-mono text-xs font-bold"
+                  >
+                    {flightCategory}
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            {/* Row 3: Location */}
+            {(airport.metadata.city || airport.metadata.country) && (
+              <p className="text-muted-foreground text-sm">
+                {[
+                  airport.metadata.city,
+                  airport.metadata.state,
+                  formatAirportCountry(airport.metadata.country),
+                ]
+                  .filter(Boolean)
+                  .join(', ')}
+              </p>
+            )}
+
+            {/* Row 4: Local time at the airport */}
+            <AirportLocalClock
+              icao={airport.id}
+              latitude={airport.latitude}
+              longitude={airport.longitude}
+              className="mt-1"
+            />
+          </div>
+
+          {/* Selected position indicator */}
+          {selectedStartPosition && (
+            <div className="border-border/30 bg-cat-emerald/5 flex items-center justify-between border-b px-4 py-2">
+              <span className="text-cat-emerald/80 text-sm">{t('airportInfo.tabs.start')}</span>
+              <span className="text-cat-emerald font-mono text-sm font-medium">
+                {selectedStartPosition.name}
               </span>
             </div>
-            <div className="flex shrink-0 items-center">
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                className="text-muted-foreground/40 hover:text-foreground"
-                onClick={() => setIsCollapsed(true)}
-                tooltip={t('airportInfo.actions.collapse')}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                className="text-muted-foreground hover:text-foreground"
-                onClick={clearAirport}
-                tooltip={t('common.close')}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Row 2: name and IATA, with favourite, home and the flight category */}
-          <div className="mt-1 flex items-center justify-between gap-2">
-            <div className="flex min-w-0 items-baseline gap-2">
-              <p className="text-muted-foreground truncate text-sm">{airport.name}</p>
-              {airport.metadata.iata_code && airport.metadata.iata_code !== airport.id && (
-                <span className="text-muted-foreground shrink-0 font-mono text-xs">
-                  ({airport.metadata.iata_code})
-                </span>
-              )}
-            </div>
-            <div className="flex shrink-0 items-center gap-1">
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                className="text-muted-foreground/60 hover:text-foreground"
-                onClick={() => toggleFavoriteAirport(airport.id)}
-                tooltip={
-                  favoriteIcaos.includes(airport.id)
-                    ? t('airportInfo.actions.removeFavorite')
-                    : t('airportInfo.actions.addFavorite')
-                }
-              >
-                <Star
-                  className={cn(
-                    'h-4 w-4',
-                    favoriteIcaos.includes(airport.id) && 'text-warning fill-current'
-                  )}
-                />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                className="text-muted-foreground/60 hover:text-foreground"
-                onClick={() => setHomeAirport(homeIcao === airport.id ? null : airport.id)}
-                tooltip={
-                  homeIcao === airport.id
-                    ? t('airportInfo.actions.clearHome')
-                    : t('airportInfo.actions.setHome')
-                }
-              >
-                <Home
-                  className={cn('h-4 w-4', homeIcao === airport.id && 'text-primary fill-current')}
-                />
-              </Button>
-              {flightCategory && (
-                <Badge
-                  variant={
-                    flightCategory === 'VFR'
-                      ? 'cat-emerald'
-                      : flightCategory === 'MVFR'
-                        ? 'cat-sky'
-                        : flightCategory === 'IFR'
-                          ? 'cat-red'
-                          : 'cat-fuchsia'
-                  }
-                  className="ml-1 px-2 py-0.5 font-mono text-xs font-bold"
-                >
-                  {flightCategory}
-                </Badge>
-              )}
-            </div>
-          </div>
-
-          {/* Row 3: Location */}
-          {(airport.metadata.city || airport.metadata.country) && (
-            <p className="text-muted-foreground text-sm">
-              {[
-                airport.metadata.city,
-                airport.metadata.state,
-                formatAirportCountry(airport.metadata.country),
-              ]
-                .filter(Boolean)
-                .join(', ')}
-            </p>
           )}
 
-          {/* Row 4: Local time at the airport */}
-          <AirportLocalClock
-            icao={airport.id}
-            latitude={airport.latitude}
-            longitude={airport.longitude}
-            className="mt-1"
-          />
+          {/* Tab Navigation + Content */}
+          <Tabs
+            value={activeTab}
+            onValueChange={handleTabChange}
+            className="flex min-h-0 flex-1 flex-col"
+          >
+            <TabsList variant="line" className="border-border/30">
+              {TABS.map((tab) => (
+                <TabsTrigger key={tab.id} value={tab.id} className="min-w-0 flex-1 gap-1.5 text-xs">
+                  {tab.icon}
+                  <span className="truncate">{t(tab.labelKey)}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+
+            <ScrollArea className="flex-1">
+              <div className="p-4">
+                <TabsContent value="info" className="mt-0">
+                  <InfoTab />
+                </TabsContent>
+                <TabsContent value="start" className="mt-0">
+                  <StartTab
+                    onSelectGate={onSelectGateAsStart}
+                    onSelectRunwayEnd={onSelectRunwayEndAsStart}
+                    onSelectRunway={onSelectRunway}
+                    onSelectHelipad={onSelectHelipadAsStart}
+                  />
+                </TabsContent>
+                <TabsContent value="proc" className="mt-0">
+                  <RouteTab />
+                </TabsContent>
+              </div>
+            </ScrollArea>
+          </Tabs>
         </div>
-
-        {/* Selected position indicator */}
-        {selectedStartPosition && (
-          <div className="border-border/30 bg-cat-emerald/5 flex items-center justify-between border-b px-4 py-2">
-            <span className="text-cat-emerald/80 text-sm">{t('airportInfo.tabs.start')}</span>
-            <span className="text-cat-emerald font-mono text-sm font-medium">
-              {selectedStartPosition.name}
-            </span>
-          </div>
-        )}
-
-        {/* Tab Navigation + Content */}
-        <Tabs
-          value={activeTab}
-          onValueChange={handleTabChange}
-          className="flex min-h-0 flex-1 flex-col"
-        >
-          <TabsList variant="line" className="border-border/30">
-            {TABS.map((tab) => (
-              <TabsTrigger key={tab.id} value={tab.id} className="min-w-0 flex-1 gap-1.5 text-xs">
-                {tab.icon}
-                <span className="truncate">{t(tab.labelKey)}</span>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-
-          <ScrollArea className="flex-1">
-            <div className="p-4">
-              <TabsContent value="info" className="mt-0">
-                <InfoTab />
-              </TabsContent>
-              <TabsContent value="start" className="mt-0">
-                <StartTab
-                  onSelectGate={onSelectGateAsStart}
-                  onSelectRunwayEnd={onSelectRunwayEndAsStart}
-                  onSelectRunway={onSelectRunway}
-                  onSelectHelipad={onSelectHelipadAsStart}
-                />
-              </TabsContent>
-              <TabsContent value="proc" className="mt-0">
-                <RouteTab />
-              </TabsContent>
-            </div>
-          </ScrollArea>
-        </Tabs>
       </div>
     </div>
   );

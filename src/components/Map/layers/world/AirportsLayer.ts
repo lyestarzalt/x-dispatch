@@ -173,29 +173,45 @@ const SELECTED_FADE_HIGH = 13;
 
 export function buildOpacityExpression(
   stops: OpacityStops,
-  selectedIcao: string | null
+  selectedIcao: string | null,
+  routeIcaos: readonly string[] = [],
+  backgroundOpacity = 0.4
 ): maplibregl.ExpressionSpecification | number {
-  if (!selectedIcao) {
+  if (!selectedIcao && !routeIcaos.length) {
     return stops.length === 1 && stops[0]![0] === 0 ? stops[0]![1] : stopsToInterpolate(stops);
   }
+
+  const foregroundIcaos = selectedIcao ? [...routeIcaos, selectedIcao] : [...routeIcaos];
+  const opacityAtStop = (value: number): number | maplibregl.ExpressionSpecification =>
+    routeIcaos.length
+      ? [
+          'case',
+          ['in', ['get', 'icao'], ['literal', foregroundIcaos]],
+          value,
+          value * backgroundOpacity,
+        ]
+      : value;
+
+  if (!selectedIcao && stops.length === 1) return opacityAtStop(stops[0]![1]);
+
   const lastValue = stops[stops.length - 1]![1];
-  const extended: Array<number | maplibregl.ExpressionSpecification> = stops.flatMap(([z, v]) => [
-    z,
-    v,
-  ]);
-  extended.push(SELECTED_FADE_LOW, lastValue);
-  extended.push(SELECTED_FADE_HIGH, [
-    'case',
-    ['==', ['get', 'icao'], selectedIcao],
-    0,
-    lastValue,
-  ] as maplibregl.ExpressionSpecification);
+  const extended = stops.flatMap(([z, v]) => [z, opacityAtStop(v)]);
+  if (selectedIcao) {
+    const lastOpacity = opacityAtStop(lastValue);
+    extended.push(SELECTED_FADE_LOW, lastOpacity);
+    extended.push(SELECTED_FADE_HIGH, [
+      'case',
+      ['==', ['get', 'icao'], selectedIcao],
+      0,
+      lastOpacity,
+    ]);
+  }
   return ['interpolate', ['linear'], ['zoom'], ...extended] as maplibregl.ExpressionSpecification;
 }
 
 type MarkerLayer = {
   id: string;
-  property: 'circle-opacity' | 'icon-opacity';
+  property: 'circle-opacity' | 'circle-stroke-opacity' | 'icon-opacity';
   stops: OpacityStops;
 };
 
@@ -204,6 +220,7 @@ const MARKER_LAYERS: ReadonlyArray<MarkerLayer> = [
   { id: 'airports-glow', property: 'circle-opacity', stops: GLOW_OPACITY_STOPS },
   { id: 'airports-halo', property: 'circle-opacity', stops: HALO_OPACITY_STOPS },
   { id: 'airports', property: 'circle-opacity', stops: DOT_OPACITY_STOPS },
+  { id: 'airports', property: 'circle-stroke-opacity', stops: FULL_OPACITY_STOPS },
   { id: 'airports-favorite', property: 'icon-opacity', stops: FULL_OPACITY_STOPS },
 ];
 
@@ -241,7 +258,8 @@ export function setupAirportsLayer(
   theme: BasemapTheme,
   favoriteIcaos: ReadonlySet<string> = new Set(),
   homeIcao: string | null = null,
-  selectedIcao: string | null = null
+  selectedIcao: string | null = null,
+  routeIcaos: readonly string[] = []
 ): void {
   const colors = AIRPORT_THEME_COLORS[theme];
   loadPinImage(map, colors.pinBodyColor);
@@ -305,6 +323,7 @@ export function setupAirportsLayer(
       'circle-radius': DOT_RADIUS,
       'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 0, 0, 4, 0.5, 8, 1],
       'circle-stroke-color': AIRPORT_DOT_STROKE,
+      'circle-stroke-opacity': 1,
       'circle-opacity': stopsToInterpolate(DOT_OPACITY_STOPS),
     },
   });
@@ -354,6 +373,7 @@ export function setupAirportsLayer(
       ],
       'text-halo-color': colors.labelHalo,
       'text-halo-width': 1,
+      'text-opacity': 1,
     },
   });
 
@@ -369,11 +389,8 @@ export function setupAirportsLayer(
     },
   });
 
-  // Catch the case where `setSelectedAirportIcao` was called before
-  // `map.on('load', ...)` fired — at that point the layers didn't exist
-  // and `setPaintProperty` no-op'd.
-  if (selectedIcao) {
-    setSelectedAirportIcao(map, selectedIcao);
+  if (selectedIcao || routeIcaos.length) {
+    applyAirportEmphasis(map, selectedIcao, routeIcaos);
   }
 }
 
@@ -395,11 +412,27 @@ export function applyAirportTheme(map: maplibregl.Map, theme: BasemapTheme): voi
   loadStarImages(map);
 }
 
-/** Fade the planet-marker for the open airport between zoom 11 → 13. */
-export function setSelectedAirportIcao(map: maplibregl.Map, selectedIcao: string | null): void {
+/** Dim airports away from the flight plan and fade the selected marker at airport-detail zoom. */
+export function applyAirportEmphasis(
+  map: maplibregl.Map,
+  selectedIcao: string | null,
+  routeIcaos: readonly string[]
+): void {
   for (const { id, property, stops } of MARKER_LAYERS) {
     if (!map.getLayer(id)) continue;
-    map.setPaintProperty(id, property, buildOpacityExpression(stops, selectedIcao));
+    map.setPaintProperty(id, property, buildOpacityExpression(stops, selectedIcao, routeIcaos));
+  }
+  if (map.getLayer('airport-labels')) {
+    map.setPaintProperty(
+      'airport-labels',
+      'text-opacity',
+      buildOpacityExpression(
+        FULL_OPACITY_STOPS,
+        null,
+        routeIcaos.length && selectedIcao ? [...routeIcaos, selectedIcao] : routeIcaos,
+        0.26
+      )
+    );
   }
 }
 
