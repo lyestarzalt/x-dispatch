@@ -122,4 +122,30 @@ describe('buildOpacityExpression', () => {
     expect(idxOf11).toBeGreaterThan(-1);
     expect(stops[idxOf11 + 1]).toBe(1);
   });
+
+  it('dims labels away from the loaded route and restores them when it clears', () => {
+    expect(buildOpacityExpression([[0, 1]], null, ['KJFK', 'EGLL'], 0.26)).toEqual([
+      'case',
+      ['in', ['get', 'icao'], ['literal', ['KJFK', 'EGLL']]],
+      1,
+      0.26,
+    ]);
+    expect(buildOpacityExpression([[0, 1]], null, [])).toBe(1);
+  });
+
+  it('keeps the selected marker prominent until airport detail takes over', () => {
+    const expr = buildOpacityExpression([[0, 1]], 'EGKK', ['KJFK', 'EGLL']) as unknown[];
+    const foreground = [
+      'case',
+      ['in', ['get', 'icao'], ['literal', ['KJFK', 'EGLL', 'EGKK']]],
+      1,
+      0.4,
+    ];
+    expect(expr.slice(-4)).toEqual([
+      11,
+      foreground,
+      13,
+      ['case', ['==', ['get', 'icao'], 'EGKK'], 0, foreground],
+    ]);
+  });
 });

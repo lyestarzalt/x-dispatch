@@ -43,14 +43,23 @@ describe('dockPadding', () => {
     expect(dockPadding(MAP, [{ side: 'left', rect: box(16, 64, 0, 0) }])).toEqual(NO_PADDING);
   });
 
-  it('never lets one axis lose more than two thirds of the map', () => {
+  it('shares the horizontal padding budget between oversized docks', () => {
     const docks: DockRect[] = [
       { side: 'left', rect: box(0, 0, 900, 900) },
       { side: 'right', rect: box(700, 0, 900, 900) },
     ];
     const padding = dockPadding(MAP, docks, 0);
-    expect(padding.left).toBeCloseTo(1600 / 3);
-    expect(padding.right).toBeCloseTo(1600 / 3);
+    expect(padding.left).toBeCloseTo(600);
+    expect(padding.right).toBeCloseTo(600);
+  });
+
+  it('frames the map beyond an expanded panel and its opposite rail at high zoom', () => {
+    const map = box(0, 0, 788, 455);
+    const docks: DockRect[] = [
+      { side: 'left', rect: box(18, 155, 468, 280) },
+      { side: 'right', rect: box(716, 155, 54, 280) },
+    ];
+    expect(dockPadding(map, docks)).toMatchObject({ left: 498, right: 84 });
   });
 });
 

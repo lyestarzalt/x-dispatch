@@ -23,6 +23,7 @@ export const DOCK_GAP_PX = 12;
 export interface DockRect {
   side: DockSide;
   rect: Pick<DOMRect, 'left' | 'right' | 'top' | 'bottom' | 'width' | 'height'>;
+  boundsProfile?: boolean;
 }
 
 /** MapLibre's padding with every side present. */
@@ -54,11 +55,15 @@ export function dockPadding(
     if (reach <= 0) continue;
     padding[side] = Math.max(padding[side], reach + gap);
   }
-  // Leave at least a third of each axis for the map itself.
-  const maxX = container.width / 3;
+  // A single expanded panel can use more than one third of a narrow window.
+  // Share the horizontal budget so the camera frames what is still visible.
+  const maxHorizontal = container.width * 0.75;
+  const horizontal = padding.left + padding.right;
+  if (horizontal > maxHorizontal) {
+    padding.left *= maxHorizontal / horizontal;
+    padding.right *= maxHorizontal / horizontal;
+  }
   const maxY = container.height / 3;
-  padding.left = Math.min(padding.left, maxX);
-  padding.right = Math.min(padding.right, maxX);
   padding.top = Math.min(padding.top, maxY);
   padding.bottom = Math.min(padding.bottom, maxY);
   return padding;
@@ -77,7 +82,13 @@ export function measureDocks(root: HTMLElement): DockRect[] {
   const docks: DockRect[] = [];
   root.querySelectorAll<HTMLElement>('[data-map-dock]').forEach((el) => {
     const side = el.getAttribute('data-map-dock');
-    if (isDockSide(side)) docks.push({ side, rect: el.getBoundingClientRect() });
+    if (isDockSide(side)) {
+      docks.push({
+        side,
+        rect: el.getBoundingClientRect(),
+        boundsProfile: el.hasAttribute('data-map-profile-inset'),
+      });
+    }
   });
   return docks;
 }
@@ -104,19 +115,51 @@ export function useMapPadding({ mapRef, rootRef, onChange }: UseMapPaddingOption
   }, [onChange]);
 
   useEffect(() => {
+    if (!rootRef.current) return;
     const root = rootRef.current;
-    if (!root) return;
     let current: Padding = NO_PADDING;
     let applied = false;
     let waitingForMoveEnd = false;
+
+    let observedProfile: HTMLElement | null = null;
+    const resize = new ResizeObserver(apply);
 
     // Runs straight from the DOM observers, before React's effects: a panel that opens and
     // flies the map somewhere in the same tick then flies with the padding already in place.
     // MapLibre's setPadding is a jumpTo, which stops a running camera animation, so a change
     // that lands mid-flight waits for the flight to end.
-    const apply = () => {
+    function apply() {
       const map = mapRef.current;
       if (!map || !root.isConnected) return;
+      const bounds = root.getBoundingClientRect();
+      const profile = root.querySelector<HTMLElement>('[data-map-dock="bottom"][data-map-profile]');
+      if (profile !== observedProfile) {
+        if (observedProfile) resize.unobserve(observedProfile);
+        if (profile) resize.observe(profile);
+        observedProfile = profile;
+      }
+      const docks = measureDocks(root);
+      let profileLeft = 0;
+      let profileRight = 0;
+      for (const { side, rect, boundsProfile } of docks) {
+        if (!boundsProfile || rect.width === 0 || rect.height === 0) continue;
+        if (side === 'left') profileLeft = Math.max(profileLeft, rect.right - bounds.left);
+        if (side === 'right') profileRight = Math.max(profileRight, bounds.right - rect.left);
+      }
+      for (const [side, inset] of [
+        ['left', profileLeft],
+        ['right', profileRight],
+      ] as const) {
+        const property = `--map-profile-${side}`;
+        const value = inset ? `${inset + DOCK_GAP_PX}px` : '';
+        if (root.style.getPropertyValue(property) !== value)
+          root.style.setProperty(property, value);
+      }
+      const profileHeight = profile?.getBoundingClientRect().height ?? 0;
+      const replayBottom = profileHeight ? `calc(${profileHeight}px + 1.75rem)` : '';
+      if (root.style.getPropertyValue('--map-replay-bottom') !== replayBottom) {
+        root.style.setProperty('--map-replay-bottom', replayBottom);
+      }
       if (map.isMoving()) {
         if (!waitingForMoveEnd) {
           waitingForMoveEnd = true;
@@ -129,7 +172,7 @@ export function useMapPadding({ mapRef, rootRef, onChange }: UseMapPaddingOption
         }
         return;
       }
-      const next = dockPadding(root.getBoundingClientRect(), measureDocks(root));
+      const next = dockPadding(bounds, docks);
       if (samePadding(next, current)) return;
       const previous = current;
       const first = !applied;
@@ -141,7 +184,7 @@ export function useMapPadding({ mapRef, rootRef, onChange }: UseMapPaddingOption
       // Nobody moved the camera: take the padding back and glide into it instead of jumping.
       map.setPadding(previous);
       map.easeTo({ padding: next, duration: PADDING_EASE_MS });
-    };
+    }
 
     // Panels mount, unmount, collapse or move: watch the tree, then settle after their transition.
     const mutations = new MutationObserver(apply);
@@ -149,10 +192,17 @@ export function useMapPadding({ mapRef, rootRef, onChange }: UseMapPaddingOption
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ['class', 'style', 'data-map-dock'],
+      attributeFilter: [
+        'class',
+        'style',
+        'data-map-dock',
+        'data-map-profile-inset',
+        'data-map-profile',
+      ],
     });
-    const resize = new ResizeObserver(apply);
     resize.observe(root);
+    const toolbar = root.querySelector('[data-map-dock="top"]');
+    if (toolbar) resize.observe(toolbar);
     root.addEventListener('transitionend', apply);
     apply();
 

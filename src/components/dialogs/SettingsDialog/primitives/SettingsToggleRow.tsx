@@ -12,10 +12,6 @@ interface SettingsToggleRowProps {
 }
 
 /**
- * Bordered row: label/description on the left, switch on the right.
- *
- * Canonical shape: `rounded-lg border p-4`, label uses
- * `text-sm font-medium`, description uses `text-sm text-muted-foreground`.
  * The switch is linked to the title via `aria-labelledby` so screen
  * readers announce the toggle's name.
  */
@@ -29,8 +25,13 @@ export function SettingsToggleRow({
 }: SettingsToggleRowProps) {
   const titleId = useId();
   return (
-    <div className={cn('flex items-center justify-between rounded-lg border p-4', className)}>
-      <div className="min-w-0 space-y-1 pr-3">
+    <div
+      className={cn(
+        'border-border/60 flex items-center justify-between gap-4 border-b pb-3 last:border-b-0 last:pb-0',
+        className
+      )}
+    >
+      <div className="min-w-0 space-y-1">
         <p id={titleId} className="text-sm font-medium">
           {title}
         </p>

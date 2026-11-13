@@ -127,8 +127,8 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
       <DialogContent className="h-[85vh] max-w-4xl gap-0 overflow-hidden p-0">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="flex h-full">
           {/* Sidebar Navigation */}
-          <div className="bg-muted/30 flex w-56 flex-col border-r">
-            <div className="p-4">
+          <div className="bg-muted/30 flex w-56 shrink-0 flex-col border-r max-sm:w-40">
+            <div className="shrink-0 p-4">
               <DialogHeader>
                 <DialogTitle className="text-base font-semibold">{t('settings.title')}</DialogTitle>
                 <DialogDescription className="text-sm">{t('settings.subtitle')}</DialogDescription>
@@ -137,33 +137,35 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
 
             <Separator />
 
-            <nav className="flex-1 p-2">
+            <nav className="min-h-0 flex-1 overflow-y-auto p-2">
               <TabsList className="flex h-auto w-full flex-col gap-1 bg-transparent p-0">
                 {TABS.map(({ id, icon: Icon, labelKey }) => (
                   <TabsTrigger
                     key={id}
                     value={id}
                     className={cn(
-                      'w-full justify-start gap-3 px-3 py-2.5 text-sm font-medium',
-                      'data-[state=active]:bg-background data-[state=active]:shadow-sm',
-                      'hover:bg-background/50 transition-colors'
+                      'w-full min-w-0 justify-start gap-3 px-3 py-2 text-sm font-medium',
+                      'data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none',
+                      'hover:bg-accent/50 transition-colors'
                     )}
                   >
-                    <Icon className="h-4 w-4" />
-                    {labelKey.startsWith('settings.') ? t(labelKey) : labelKey}
+                    <Icon className="h-4 w-4 shrink-0" />
+                    <span className="min-w-0 truncate">
+                      {labelKey.startsWith('settings.') ? t(labelKey) : labelKey}
+                    </span>
                   </TabsTrigger>
                 ))}
               </TabsList>
             </nav>
 
             {/* Version Footer */}
-            <div className="border-t p-4">
+            <div className="shrink-0 border-t p-4">
               <p className="text-muted-foreground font-mono text-sm">{version && `v${version}`}</p>
             </div>
           </div>
 
           {/* Content Area */}
-          <div className="relative min-h-0 flex-1">
+          <div className="relative min-h-0 min-w-0 flex-1">
             <TabsContent
               value="xplane"
               className="absolute inset-0 mt-0 overflow-y-auto data-[state=inactive]:hidden"

@@ -55,7 +55,7 @@ export function TitleBar() {
     <header
       onDoubleClick={handleDoubleClick}
       className={cn(
-        'border-border/40 bg-background text-muted-foreground relative z-[70] flex w-full shrink-0 items-center gap-2 border-b text-xs select-none',
+        'bg-background text-muted-foreground relative z-[70] flex w-full shrink-0 items-center gap-2 text-xs select-none',
         // The bar dims with the OS controls when the window is inactive.
         'transition-opacity [html[data-window-inactive]_&]:opacity-50'
       )}
@@ -67,7 +67,7 @@ export function TitleBar() {
       }}
     >
       {!isMac && !window.appAPI?.isRemoteClient && <AppMenuButton />}
-      <span className="text-foreground font-medium tracking-tight">X-Dispatch</span>
+      <span className="text-foreground font-medium">X-Dispatch</span>
       {version && <span className="font-mono">{t('titleBar.version', { version })}</span>}
       {installation && (
         <>

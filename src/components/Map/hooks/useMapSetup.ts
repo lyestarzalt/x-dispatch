@@ -10,10 +10,11 @@ import { Airport } from '@/lib/xplaneServices/dataService';
 import { useAppStore } from '@/stores/appStore';
 import { useMapStore } from '@/stores/mapStore';
 import { useSettingsStore } from '@/stores/settingsStore';
+import type { EnrichedFlightPlan } from '@/types/fms';
 import { ilsLayer } from '../layers/navigation';
 import { overlayClaimsClick } from '../layers/types';
 import {
-  setSelectedAirportIcao,
+  applyAirportEmphasis,
   setupAirportsLayer,
   updateAirportFavoriteFlags,
 } from '../layers/world/AirportsLayer';
@@ -123,6 +124,7 @@ interface UseMapSetupOptions {
   airports: Airport[];
   mapStyleUrl: string;
   onAirportClick: (icao: string, coords: [number, number]) => Promise<void>;
+  flightPlan: EnrichedFlightPlan | null;
 }
 
 interface UseMapSetupReturn {
@@ -135,6 +137,7 @@ export function useMapSetup({
   airports,
   mapStyleUrl,
   onAirportClick,
+  flightPlan,
 }: UseMapSetupOptions): UseMapSetupReturn {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -169,6 +172,19 @@ export function useMapSetup({
   // here so `setupAirportsLayer` can pick up its initial value at map-load
   // time (the live-update effect below handles subsequent changes).
   const selectedIcao = useAppStore((s) => s.selectedICAO);
+  const hasRoute = flightPlan !== null && flightPlan.waypoints.length >= 2;
+  const departureIcao = flightPlan?.departure.icao;
+  const arrivalIcao = flightPlan?.arrival.icao;
+  const alternateIcao = flightPlan?.alternate?.icao;
+  const routeIcaos = useMemo(
+    () =>
+      hasRoute
+        ? [departureIcao, arrivalIcao, alternateIcao].flatMap((icao) =>
+            icao ? [icao.toUpperCase()] : []
+          )
+        : [],
+    [hasRoute, departureIcao, arrivalIcao, alternateIcao]
+  );
 
   // Refs let the map-setup effect read the latest favourites/home at the
   // moment it fires `setupAirportsLayer`, without making them effect deps
@@ -176,6 +192,7 @@ export function useMapSetup({
   const favoriteIcaoSetRef = useRef(favoriteIcaoSet);
   const homeIcaoRef = useRef(homeIcao);
   const selectedIcaoRef = useRef(selectedIcao);
+  const routeIcaosRef = useRef(routeIcaos);
   const airportsRef = useRef(airports);
 
   useEffect(() => {
@@ -185,6 +202,7 @@ export function useMapSetup({
     favoriteIcaoSetRef.current = favoriteIcaoSet;
     homeIcaoRef.current = homeIcao;
     selectedIcaoRef.current = selectedIcao;
+    routeIcaosRef.current = routeIcaos;
     airportsRef.current = airports;
   });
 
@@ -256,7 +274,8 @@ export function useMapSetup({
         getBasemapTheme(mapStyleUrl),
         favoriteIcaoSetRef.current,
         homeIcaoRef.current,
-        selectedIcaoRef.current
+        selectedIcaoRef.current,
+        routeIcaosRef.current
       );
       setupAirportPopup(map, airportPopupRef, (icao: string, coords: [number, number]) =>
         onAirportClickRef.current(icao, coords)
@@ -324,15 +343,12 @@ export function useMapSetup({
     updateAirportFavoriteFlags(map, airportsRef.current, favoriteIcaoSet, homeIcao);
   }, [favoriteIcaoSet, homeIcao]);
 
-  // Live-refresh the selected-airport fade. If the style isn't loaded yet
-  // (e.g. cold-start auto-nav fires before `map.on('load', …)` resolves),
-  // `setupAirportsLayer` re-applies it from selectedIcaoRef at the end of
-  // setup so we don't miss the initial selection.
+  // Airport layers may still be loading initially or during a basemap swap.
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !map.isStyleLoaded()) return;
-    setSelectedAirportIcao(map, selectedIcao);
-  }, [selectedIcao]);
+    if (!map) return;
+    return runWhenStyleIsReady(map, () => applyAirportEmphasis(map, selectedIcao, routeIcaos));
+  }, [selectedIcao, routeIcaos]);
 
   return {
     mapRef,
