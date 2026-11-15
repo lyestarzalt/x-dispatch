@@ -147,6 +147,7 @@ export const DESKTOP_ONLY_CHANNELS: readonly string[] = [
   'addon:scenery:move',
   'addon:scenery:restore',
   'addon:scenery:saveOrder',
+  'addon:scenery:setEnabled',
   'addon:scenery:sort',
   'addon:scenery:toggle',
   'analytics:setConsent',

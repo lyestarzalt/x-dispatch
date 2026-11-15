@@ -46,18 +46,39 @@ export function useSceneryList(enabled = true) {
     },
     enabled,
     staleTime: 0,
+    // A missing scenery_packs.ini or an unreadable folder is the same on every try;
+    // retrying only files the failure several times.
+    retry: false,
   });
 }
 
 /**
- * Auto-sort scenery entries by priority.
+ * Auto-sort scenery entries by priority, with the user's own tiers for some packs.
  */
 export function useScenerySort() {
   const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: async () => {
-      const result = await window.addonManagerAPI.scenery.sort();
+    mutationFn: async (overrides: Record<string, number> = {}) => {
+      const result = await window.addonManagerAPI.scenery.sort(overrides);
+      if (!result.ok) {
+        throw sceneryError(result.error as SceneryError);
+      }
+      return result.value;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: addonKeys.sceneryList });
+    },
+  });
+}
+
+/**
+ * Switch several packs on or off in one write.
+ */
+export function useScenerySetEnabled() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ folderNames, enabled }: { folderNames: string[]; enabled: boolean }) => {
+      const result = await window.addonManagerAPI.scenery.setEnabled(folderNames, enabled);
       if (!result.ok) {
         throw sceneryError(result.error as SceneryError);
       }

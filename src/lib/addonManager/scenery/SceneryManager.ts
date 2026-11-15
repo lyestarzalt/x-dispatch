@@ -15,6 +15,7 @@ import {
   ok,
 } from '../core/types';
 import { classifyScenery } from './classifier';
+import { findSceneryConflicts } from './conflicts';
 import { scanSceneryFolder } from './folderScanner';
 import { backupSceneryPacksIni, parseSceneryPacksIni, writeSceneryPacksIni } from './iniParser';
 import type { LibraryIndex } from './missingLibraries';
@@ -227,7 +228,15 @@ export class SceneryManager {
     });
 
     // Return in INI file order (analyze is read-only — never writes to the INI)
-    return ok(slots.filter((e): e is SceneryEntry => e !== null));
+    const entries = slots.filter((e): e is SceneryEntry => e !== null);
+    if (classify) {
+      const conflicts = findSceneryConflicts(entries);
+      for (const entry of entries) {
+        const found = conflicts.get(entry.folderName);
+        if (found) entry.conflicts = found;
+      }
+    }
+    return ok(entries);
   }
 
   /**
@@ -289,13 +298,17 @@ export class SceneryManager {
   }
 
   /**
-   * Sort entries by priority, stable within same tier.
+   * Sort entries by priority, stable within same tier. A pack the user filed under
+   * another tier sorts by that tier.
    */
-  sort(entries: SceneryEntry[]): SceneryEntry[] {
+  sort(entries: SceneryEntry[], overrides: Record<string, SceneryPriority> = {}): SceneryEntry[] {
+    const tierOf = (entry: SceneryEntry) => overrides[entry.folderName] ?? entry.priority;
     return [...entries].sort((a, b) => {
       // Primary: by priority (lower = higher in file)
-      if (a.priority !== b.priority) {
-        return a.priority - b.priority;
+      const tierA = tierOf(a);
+      const tierB = tierOf(b);
+      if (tierA !== tierB) {
+        return tierA - tierB;
       }
       // Secondary: preserve original order within same tier
       return a.originalIndex - b.originalIndex;
@@ -310,7 +323,8 @@ export class SceneryManager {
    */
   async save(
     entries: SceneryEntry[],
-    preserveOrder = true
+    preserveOrder = true,
+    overrides: Record<string, SceneryPriority> = {}
   ): Promise<Result<{ backupPath: string }, SceneryError>> {
     // Create backup first
     const backupResult = backupSceneryPacksIni(this.iniPath, this.backupDir);
@@ -319,7 +333,7 @@ export class SceneryManager {
     }
 
     // Sort entries unless preserveOrder is true
-    const toWrite = preserveOrder ? entries : this.sort(entries);
+    const toWrite = preserveOrder ? entries : this.sort(entries, overrides);
 
     const writeResult = writeSceneryPacksIni(this.iniPath, toWrite);
     if (!writeResult.ok) {
@@ -334,6 +348,37 @@ export class SceneryManager {
    */
   async toggle(folderName: string): Promise<Result<SceneryEntry, SceneryError>> {
     return this.locked(() => this.toggleNow(folderName));
+  }
+
+  /**
+   * Switch several packs on or off in one write and one backup, for a group or
+   * a selection. Names that are not in the list are reported, nothing else changes.
+   */
+  async setEnabled(
+    folderNames: string[],
+    enabled: boolean
+  ): Promise<Result<SceneryEntry[], SceneryError>> {
+    return this.locked(async () => {
+      const analyzeResult = await this.analyze({ classify: false });
+      if (!analyzeResult.ok) return analyzeResult;
+      const entries = analyzeResult.value;
+      const wanted = new Set(folderNames);
+      const changed: SceneryEntry[] = [];
+      for (const entry of entries) {
+        if (!wanted.has(entry.folderName)) continue;
+        wanted.delete(entry.folderName);
+        if (entry.enabled !== enabled) {
+          entry.enabled = enabled;
+          changed.push(entry);
+        }
+      }
+      const [missing] = wanted;
+      if (missing !== undefined) return err({ code: 'FOLDER_NOT_FOUND', folderName: missing });
+      if (changed.length === 0) return ok(changed);
+      const saveResult = await this.save(entries);
+      if (!saveResult.ok) return saveResult;
+      return ok(changed);
+    });
   }
 
   private async toggleNow(folderName: string): Promise<Result<SceneryEntry, SceneryError>> {

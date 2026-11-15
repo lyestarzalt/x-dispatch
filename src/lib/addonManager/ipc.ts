@@ -8,6 +8,7 @@ import logger from '@/lib/utils/logger';
 import { BrowserManager } from './browser';
 import type { BrowserError } from './core/types';
 import { err } from './core/types';
+import { SceneryPriority } from './core/types';
 import { type AddonFailureSubject, reportAddonFailure } from './failureReport';
 import { InstallerManager } from './installer';
 import type { InstallResult, InstallTask } from './installer/types';
@@ -100,10 +101,28 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     return manager.analyze();
   });
 
-  handleAddon('addon:scenery:sort', async () => {
+  handleAddon('addon:scenery:sort', async (_event, overrides: unknown) => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return { ok: false, error: { code: 'INI_NOT_FOUND', path: 'X-Plane path not configured' } };
+    }
+
+    // The user's own tier for some packs: folder name to a priority tier number.
+    const tiers = new Set<number>(
+      Object.values(SceneryPriority).filter((v) => typeof v === 'number')
+    );
+    const safeOverrides: Record<string, SceneryPriority> = {};
+    if (overrides && typeof overrides === 'object') {
+      for (const [name, tier] of Object.entries(overrides as Record<string, unknown>)) {
+        if (
+          typeof tier === 'number' &&
+          tiers.has(tier) &&
+          name.length <= 500 &&
+          !name.includes('..')
+        ) {
+          safeOverrides[name] = tier as SceneryPriority;
+        }
+      }
     }
 
     const manager = new SceneryManager(xplanePath);
@@ -114,9 +133,32 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
         return analyzeResult;
       }
 
-      return manager.save(analyzeResult.value, false); // Explicit sort requested by user
+      return manager.save(analyzeResult.value, false, safeOverrides); // Explicit sort requested by user
     });
   });
+
+  handleAddon(
+    'addon:scenery:setEnabled',
+    async (_event, folderNames: unknown, enabled: unknown) => {
+      const xplanePath = getXPlanePath();
+      if (!xplanePath) {
+        return { ok: false, error: { code: 'INI_NOT_FOUND', path: 'X-Plane path not configured' } };
+      }
+      if (
+        !Array.isArray(folderNames) ||
+        folderNames.length === 0 ||
+        folderNames.length > 5000 ||
+        !folderNames.every(
+          (n) => typeof n === 'string' && n.length > 0 && n.length <= 500 && !n.includes('..')
+        ) ||
+        typeof enabled !== 'boolean'
+      ) {
+        return { ok: false, error: { code: 'FOLDER_NOT_FOUND', folderName: String(folderNames) } };
+      }
+      const manager = new SceneryManager(xplanePath);
+      return manager.setEnabled(folderNames as string[], enabled);
+    }
+  );
 
   handleAddon('addon:scenery:saveOrder', async (_event, folderNames: unknown) => {
     const xplanePath = getXPlanePath();
