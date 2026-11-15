@@ -348,6 +348,12 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
 
     // Addon Manager API
     addonManagerAPI: {
+      gateway: {
+        installed: (icao: string) => t.invoke('addon:gateway:installed', icao),
+        install: (icao: string, sceneryId: number, force: boolean) =>
+          t.invoke('addon:gateway:install', icao, sceneryId, force),
+        remove: (icao: string) => t.invoke('addon:gateway:remove', icao),
+      },
       scenery: {
         analyze: () => t.invoke('addon:scenery:analyze'),
         sort: (overrides?: Record<string, number>) =>

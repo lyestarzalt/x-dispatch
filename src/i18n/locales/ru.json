@@ -1206,7 +1206,25 @@
     "gateway": {
       "updateAvailable": "На Gateway есть более новый релиз",
       "credit": "от {{artist}}, {{date}}",
-      "viewOnGateway": "Открыть в Gateway"
+      "viewOnGateway": "Открыть в Gateway",
+      "install": "Установить",
+      "update": "Обновить",
+      "installing": "Установка…",
+      "remove": "Удалить",
+      "installedFrom": "Установлено из Gateway, заявка {{id}}",
+      "installed": "{{icao}} установлен из Gateway",
+      "removed": "Сценарий Gateway для {{icao}} удалён",
+      "conflictTitle": "Другой пакет уже покрывает {{icao}}",
+      "conflictBody": "{{pack}} содержит этот аэропорт. X-Plane берёт первый включённый пакет, так что установка из Gateway может ничего не изменить, пока вы его не отключите. Всё равно установить?",
+      "installAnyway": "Всё равно установить",
+      "restartHint": "Запустите X-Plane один раз, чтобы он подхватил новый пакет.",
+      "errors": {
+        "DOWNLOAD_FAILED": "Gateway не ответил. Проверьте соединение и попробуйте снова.",
+        "BAD_PACKAGE": "Gateway прислал что-то, что не является пакетом сценария.",
+        "INSTALL_FAILED": "Не удалось установить пакет.",
+        "NOT_INSTALLED": "Для этого аэропорта не установлен пакет Gateway.",
+        "INVALID_INPUT": "Сначала укажите папку X-Plane."
+      }
     },
     "taxiRoute": {
       "taxiTo": "Руление к",

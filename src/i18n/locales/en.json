@@ -1206,7 +1206,25 @@
     "gateway": {
       "updateAvailable": "Gateway has a newer release",
       "credit": "by {{artist}}, {{date}}",
-      "viewOnGateway": "View on Gateway"
+      "viewOnGateway": "View on Gateway",
+      "install": "Install",
+      "update": "Update",
+      "installing": "Installing…",
+      "remove": "Remove",
+      "installedFrom": "Installed from the Gateway, submission {{id}}",
+      "installed": "{{icao}} installed from the Gateway",
+      "removed": "{{icao}} Gateway scenery removed",
+      "conflictTitle": "Another pack already covers {{icao}}",
+      "conflictBody": "{{pack}} declares this airport. X-Plane uses the first enabled pack, so installing from the Gateway may change nothing until you disable it. Install anyway?",
+      "installAnyway": "Install anyway",
+      "restartHint": "Start X-Plane once so it picks up the new pack.",
+      "errors": {
+        "DOWNLOAD_FAILED": "The Gateway did not answer. Check the connection and try again.",
+        "BAD_PACKAGE": "The Gateway sent something that is not a scenery pack.",
+        "INSTALL_FAILED": "The pack could not be installed.",
+        "NOT_INSTALLED": "No Gateway pack is installed for this airport.",
+        "INVALID_INPUT": "Set the X-Plane folder first."
+      }
     },
     "taxiRoute": {
       "taxiTo": "Taxi to",

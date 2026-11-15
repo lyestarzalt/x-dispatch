@@ -10,6 +10,7 @@ import type { BrowserError } from './core/types';
 import { err } from './core/types';
 import { SceneryPriority } from './core/types';
 import { type AddonFailureSubject, reportAddonFailure } from './failureReport';
+import { installGatewayScenery, readGatewayMarker, removeGatewayScenery } from './gateway';
 import { InstallerManager } from './installer';
 import type { InstallResult, InstallTask } from './installer/types';
 import { SceneryManager } from './scenery/SceneryManager';
@@ -26,7 +27,15 @@ import { SceneryManager } from './scenery/SceneryManager';
  *
  * @param getXPlanePath - Function to get the current X-Plane path
  */
-export function registerAddonManagerIPC(getXPlanePath: () => string | null): void {
+export interface AddonManagerIpcDeps {
+  /** A remote JSON document, fetched with the main process's timeout and size cap. */
+  fetchJson: (url: string) => Promise<{ data: string | null; error: string | null }>;
+}
+
+export function registerAddonManagerIPC(
+  getXPlanePath: () => string | null,
+  deps: AddonManagerIpcDeps
+): void {
   let lastBrowsedDir: string | null = null;
   const env = { platform: process.platform, appVersion: app.getVersion() };
 
@@ -90,6 +99,40 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
   };
 
   // ===== SCENERY MANAGER =====
+
+  // ---------- Scenery Gateway ----------
+
+  handle('addon:gateway:installed', async (_event, icao: unknown) => {
+    const xplanePath = getXPlanePath();
+    if (!xplanePath || typeof icao !== 'string') return null;
+    return readGatewayMarker(xplanePath, icao);
+  });
+
+  handleAddon(
+    'addon:gateway:install',
+    async (_event, icao: unknown, sceneryId: unknown, force: unknown = false) => {
+      const xplanePath = getXPlanePath();
+      if (!xplanePath) return { ok: false, error: { code: 'INVALID_INPUT', field: 'xplanePath' } };
+      if (typeof icao !== 'string' || typeof sceneryId !== 'number' || typeof force !== 'boolean') {
+        return { ok: false, error: { code: 'INVALID_INPUT', field: 'request' } };
+      }
+      return installGatewayScenery(
+        {
+          xplanePath,
+          fetchScenery: (id) => deps.fetchJson(`https://gateway.x-plane.com/apiv1/scenery/${id}`),
+        },
+        { icao, sceneryId, force }
+      );
+    }
+  );
+
+  handleAddon('addon:gateway:remove', async (_event, icao: unknown) => {
+    const xplanePath = getXPlanePath();
+    if (!xplanePath) return { ok: false, error: { code: 'INVALID_INPUT', field: 'xplanePath' } };
+    if (typeof icao !== 'string')
+      return { ok: false, error: { code: 'INVALID_INPUT', field: 'icao' } };
+    return removeGatewayScenery(xplanePath, icao);
+  });
 
   handleAddon('addon:scenery:analyze', async () => {
     const xplanePath = getXPlanePath();

@@ -1206,7 +1206,25 @@
     "gateway": {
       "updateAvailable": "Gateway ma nowszą wersję",
       "credit": "od {{artist}}, {{date}}",
-      "viewOnGateway": "Zobacz na Gateway"
+      "viewOnGateway": "Zobacz na Gateway",
+      "install": "Zainstaluj",
+      "update": "Aktualizuj",
+      "installing": "Instalowanie…",
+      "remove": "Usuń",
+      "installedFrom": "Zainstalowano z Gateway, zgłoszenie {{id}}",
+      "installed": "{{icao}} zainstalowano z Gateway",
+      "removed": "Usunięto scenerię Gateway dla {{icao}}",
+      "conflictTitle": "Inny pakiet już obejmuje {{icao}}",
+      "conflictBody": "{{pack}} deklaruje to lotnisko. X-Plane używa pierwszego włączonego pakietu, więc instalacja z Gateway może nic nie zmienić, dopóki go nie wyłączysz. Zainstalować mimo to?",
+      "installAnyway": "Zainstaluj mimo to",
+      "restartHint": "Uruchom raz X-Plane, aby wczytał nowy pakiet.",
+      "errors": {
+        "DOWNLOAD_FAILED": "Gateway nie odpowiedział. Sprawdź połączenie i spróbuj ponownie.",
+        "BAD_PACKAGE": "Gateway przysłał coś, co nie jest pakietem scenerii.",
+        "INSTALL_FAILED": "Nie udało się zainstalować pakietu.",
+        "NOT_INSTALLED": "Dla tego lotniska nie zainstalowano pakietu Gateway.",
+        "INVALID_INPUT": "Najpierw ustaw folder X-Plane."
+      }
     },
     "taxiRoute": {
       "taxiTo": "Kołowanie do",

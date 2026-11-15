@@ -37,6 +37,13 @@ function detectMarkerType(filePath: string): AddonType | null {
   if (ext === '.acf') return 'Aircraft';
   if (basename === 'library.txt') return 'SceneryLibrary';
   if (ext === '.dsf') return 'Scenery';
+  // A Gateway airport ships apt.dat and no tiles; apt.dat elsewhere is not a marker.
+  if (
+    basename === 'apt.dat' &&
+    path.basename(path.dirname(filePath)).toLowerCase() === 'earth nav data'
+  ) {
+    return 'Scenery';
+  }
   if (basename === 'cycle.json') return 'Navdata';
   if (ext === '.xpl') return 'Plugin';
   if (ext === '.lua') return 'LuaScript';
@@ -271,7 +278,7 @@ export function detectAddons(
         (e) =>
           e.path.startsWith(root) &&
           e.path.toLowerCase().includes('earth nav data') &&
-          e.path.toLowerCase().endsWith('.dsf')
+          (e.path.toLowerCase().endsWith('.dsf') || e.path.toLowerCase().endsWith('/apt.dat'))
       );
       if (hasDsf) continue; // Skip, will be detected as Scenery
     }

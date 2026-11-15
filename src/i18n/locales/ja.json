@@ -1206,7 +1206,25 @@
     "gateway": {
       "updateAvailable": "Gatewayに新しいリリースがあります",
       "credit": "{{artist}}、{{date}}",
-      "viewOnGateway": "Gatewayで表示"
+      "viewOnGateway": "Gatewayで表示",
+      "install": "インストール",
+      "update": "更新",
+      "installing": "インストール中…",
+      "remove": "削除",
+      "installedFrom": "Gateway からインストール済み、投稿 {{id}}",
+      "installed": "{{icao}} を Gateway からインストールしました",
+      "removed": "{{icao}} の Gateway シーナリーを削除しました",
+      "conflictTitle": "別のパックがすでに {{icao}} を含んでいます",
+      "conflictBody": "{{pack}} がこの空港を含んでいます。X-Plane は有効な最初のパックを使うため、無効にするまで Gateway からのインストールは反映されないかもしれません。それでもインストールしますか？",
+      "installAnyway": "それでもインストール",
+      "restartHint": "新しいパックを認識させるため X-Plane を一度起動してください。",
+      "errors": {
+        "DOWNLOAD_FAILED": "Gateway から応答がありません。接続を確認して再試行してください。",
+        "BAD_PACKAGE": "Gateway から届いたものはシーナリーパックではありません。",
+        "INSTALL_FAILED": "パックをインストールできませんでした。",
+        "NOT_INSTALLED": "この空港の Gateway パックはインストールされていません。",
+        "INVALID_INPUT": "先に X-Plane フォルダーを設定してください。"
+      }
     },
     "taxiRoute": {
       "taxiTo": "地上走行先",

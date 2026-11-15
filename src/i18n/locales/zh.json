@@ -1206,7 +1206,25 @@
     "gateway": {
       "updateAvailable": "Gateway 有更新的版本",
       "credit": "{{artist}}，{{date}}",
-      "viewOnGateway": "在 Gateway 上查看"
+      "viewOnGateway": "在 Gateway 上查看",
+      "install": "安装",
+      "update": "更新",
+      "installing": "正在安装…",
+      "remove": "移除",
+      "installedFrom": "已从 Gateway 安装，提交 {{id}}",
+      "installed": "已从 Gateway 安装 {{icao}}",
+      "removed": "已移除 {{icao}} 的 Gateway 地景",
+      "conflictTitle": "另一个包已包含 {{icao}}",
+      "conflictBody": "{{pack}} 包含此机场。X-Plane 使用第一个启用的包，因此在你禁用它之前，从 Gateway 安装可能不起作用。仍要安装？",
+      "installAnyway": "仍要安装",
+      "restartHint": "启动一次 X-Plane 以识别新包。",
+      "errors": {
+        "DOWNLOAD_FAILED": "Gateway 没有响应。请检查网络后重试。",
+        "BAD_PACKAGE": "Gateway 返回的内容不是地景包。",
+        "INSTALL_FAILED": "无法安装该包。",
+        "NOT_INSTALLED": "此机场未安装 Gateway 包。",
+        "INVALID_INPUT": "请先设置 X-Plane 文件夹。"
+      }
     },
     "taxiRoute": {
       "taxiTo": "滑行至",

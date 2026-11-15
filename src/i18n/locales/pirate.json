@@ -1206,7 +1206,25 @@
     "gateway": {
       "updateAvailable": "Gateway has a newer chart",
       "credit": "charted by {{artist}}, {{date}}",
-      "viewOnGateway": "Spy on Gateway"
+      "viewOnGateway": "Spy on Gateway",
+      "install": "Hoist aboard",
+      "update": "Refit",
+      "installing": "Haulin’ in…",
+      "remove": "Scuttle",
+      "installedFrom": "Hauled from the Gateway, submission {{id}}",
+      "installed": "{{icao}} hauled from the Gateway",
+      "removed": "{{icao}} Gateway scenery scuttled",
+      "conflictTitle": "Another chest already claims {{icao}}",
+      "conflictBody": "{{pack}} claims this port. X-Plane sails with the first hoisted chest, so the Gateway haul may change naught till ye strike it. Hoist anyway?",
+      "installAnyway": "Hoist anyway",
+      "restartHint": "Set sail in X-Plane once so it spies the new chest.",
+      "errors": {
+        "DOWNLOAD_FAILED": "The Gateway sent no word. Check yer line and try again.",
+        "BAD_PACKAGE": "The Gateway sent somethin’ that ain’t a scenery chest.",
+        "INSTALL_FAILED": "The chest couldn’t be hoisted.",
+        "NOT_INSTALLED": "No Gateway chest be hoisted fer this port.",
+        "INVALID_INPUT": "Chart the X-Plane folder first."
+      }
     },
     "taxiRoute": {
       "taxiTo": "Taxi ta",

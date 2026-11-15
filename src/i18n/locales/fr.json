@@ -1206,7 +1206,25 @@
     "gateway": {
       "updateAvailable": "Une version plus récente est disponible sur Gateway",
       "credit": "par {{artist}}, {{date}}",
-      "viewOnGateway": "Voir sur Gateway"
+      "viewOnGateway": "Voir sur Gateway",
+      "install": "Installer",
+      "update": "Mettre à jour",
+      "installing": "Installation…",
+      "remove": "Retirer",
+      "installedFrom": "Installé depuis le Gateway, soumission {{id}}",
+      "installed": "{{icao}} installé depuis le Gateway",
+      "removed": "Scène Gateway de {{icao}} retirée",
+      "conflictTitle": "Un autre paquet couvre déjà {{icao}}",
+      "conflictBody": "{{pack}} déclare cet aéroport. X-Plane utilise le premier paquet actif, l’installation depuis le Gateway peut donc ne rien changer tant qu’il n’est pas désactivé. Installer quand même ?",
+      "installAnyway": "Installer quand même",
+      "restartHint": "Lancez X-Plane une fois pour qu’il prenne le nouveau paquet.",
+      "errors": {
+        "DOWNLOAD_FAILED": "Le Gateway n’a pas répondu. Vérifiez la connexion et réessayez.",
+        "BAD_PACKAGE": "Le Gateway a envoyé quelque chose qui n’est pas un paquet de scène.",
+        "INSTALL_FAILED": "Le paquet n’a pas pu être installé.",
+        "NOT_INSTALLED": "Aucun paquet Gateway n’est installé pour cet aéroport.",
+        "INVALID_INPUT": "Définissez d’abord le dossier X-Plane."
+      }
     },
     "taxiRoute": {
       "taxiTo": "Roulage vers",

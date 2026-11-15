@@ -111,6 +111,9 @@ vi.mock('@/queries', () => ({
 
 vi.mock('@/queries/useGatewayQuery', () => ({
   useGatewayUpdateCheck: () => ({ data: undefined }),
+  useGatewayInstall: () => ({ mutateAsync: async () => undefined, isPending: false }),
+  useGatewayRemove: () => ({ mutateAsync: async () => undefined, isPending: false }),
+  GatewayActionError: class extends Error {},
 }));
 
 vi.mock('@/queries/useAddonManager', () => ({
