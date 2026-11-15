@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Departures and arrivals in Explore → Online.** Each staffed airport shows how many flights are filed out of it and into it.
+- **VATSIM and IVAO switches on the airport card.** Compare the two networks at an airport without opening Layers.
+
+### Changed
+
+- **Active runways lead the runway list.**
+- **Staffed frequencies lead the frequency list.** Online positions come first, from ATIS to centre.
+
+### Fixed
+
+- **Localizer-only approaches show LOC, not ILS.** KSAN 27 and KSEE 27R have no glideslope.
+- **The gate filter shows each code's real wingspan.** Code A and code B both read 20 m.
+
 ## [2.14.0] - 2026-11-11
 
 ### Added

@@ -1,3 +1,5 @@
+import { type Feet, metersToFeet } from '@/lib/utils/geomath';
+
 export type StandOperation = 'airline' | 'cargo' | 'general_aviation' | 'military' | 'none';
 
 export const STAND_OPERATIONS: readonly StandOperation[] = [
@@ -31,6 +33,11 @@ export const WIDTH_CODE_WINGSPAN_M: Record<StandCode, number> & Record<string, n
     E: 65,
     F: 80,
   };
+
+/** The widest wingspan a code letter takes, in feet for `useUnits().length`. */
+export function standSpanFeet(code: StandCode): Feet {
+  return metersToFeet(WIDTH_CODE_WINGSPAN_M[code]);
+}
 
 /** The narrowest code whose stands take this wingspan, or undefined beyond code F. */
 export function smallestStandCodeFor(wingspanM: number): StandCode | undefined {

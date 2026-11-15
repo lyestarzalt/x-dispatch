@@ -33,7 +33,7 @@ export function GateSizeTag({ code, forRoute = false, className }: GateSizeTagPr
   const wingspanM = code ? WIDTH_CODE_WINGSPAN_M[code] : undefined;
   if (wingspanM === undefined) return null;
 
-  const span = units.shortDistance(metersToFeet(wingspanM));
+  const span = units.length(metersToFeet(wingspanM));
   const label = forRoute ? t('explore.gateSizeRoute', { span }) : t('explore.gateSize', { span });
 
   return (

@@ -130,3 +130,23 @@ export function trafficCountsForAirport(
   }
   return { departures, arrivals };
 }
+
+/** Filed departures and arrivals per airport, in one pass over the network's pilots. */
+export function trafficCountsByAirport(
+  pilots: NetworkPilot[]
+): Map<string, { departures: number; arrivals: number }> {
+  const counts = new Map<string, { departures: number; arrivals: number }>();
+  const at = (icao: string) => {
+    let entry = counts.get(icao);
+    if (!entry) {
+      entry = { departures: 0, arrivals: 0 };
+      counts.set(icao, entry);
+    }
+    return entry;
+  };
+  for (const p of pilots) {
+    if (p.flightPlan?.departure) at(p.flightPlan.departure).departures++;
+    if (p.flightPlan?.arrival) at(p.flightPlan.arrival).arrivals++;
+  }
+  return counts;
+}

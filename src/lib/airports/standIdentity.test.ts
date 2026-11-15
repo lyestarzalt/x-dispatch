@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { formatLength } from '@/lib/utils/units/length';
 import {
   airlineName,
   isWideBody,
@@ -6,9 +7,17 @@ import {
   normalizeWidthCode,
   smallestStandCodeFor,
   standFits,
+  standSpanFeet,
 } from './standIdentity';
 
 describe('standIdentity', () => {
+  it('shows each code letter with its own ICAO wingspan (GitHub #367)', () => {
+    const spans = (['A', 'B', 'C', 'D', 'E', 'F'] as const).map((code) =>
+      formatLength(standSpanFeet(code), 'm', () => 'm')
+    );
+    expect(spans).toEqual(['15 m', '24 m', '36 m', '52 m', '65 m', '80 m']);
+  });
+
   it('normalises operation types and falls back to none', () => {
     expect(normalizeOperation('Airline')).toBe('airline');
     expect(normalizeOperation('general_aviation')).toBe('general_aviation');

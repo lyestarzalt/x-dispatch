@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Radar } from 'lucide-react';
-import { VatsimWordmark } from '@/components/icons/BrandMarks';
+import { PlaneLanding, PlaneTakeoff } from 'lucide-react';
+import { NetworkPicker } from '@/components/layout/NetworkPicker';
 import { Badge } from '@/components/ui/badge';
-import { Toggle } from '@/components/ui/toggle';
 import { useUnits } from '@/hooks/useUnits';
 import { greatCircleNm } from '@/lib/flightplan/builder/geometry';
+import { trafficCountsByAirport } from '@/lib/networkTraffic/stations';
 import type { NauticalMiles } from '@/lib/utils/geomath';
 import type { Airport } from '@/lib/xplaneServices/dataService';
 import { useNetworkTraffic } from '@/queries/useNetworkTraffic';
@@ -23,12 +23,11 @@ interface OnlineTabProps {
 export function OnlineTab({ airports, onPick }: OnlineTabProps) {
   const { t } = useTranslation();
   const units = useUnits();
-  const { network } = useNetworkTraffic();
+  const { network, pilots } = useNetworkTraffic();
   const staffing = useMapStore((s) => s.atcStaffing);
-  const setVatsimEnabled = useMapStore((s) => s.setVatsimEnabled);
-  const setIvaoEnabled = useMapStore((s) => s.setIvaoEnabled);
   const departure = usePlanBuilderStore((s) => s.departure);
 
+  const traffic = useMemo(() => trafficCountsByAirport(pilots), [pilots]);
   const byIcao = useMemo(() => new Map(airports.map((a) => [a.icao, a])), [airports]);
   const rows = useMemo(() => {
     const from = departure
@@ -40,42 +39,17 @@ export function OnlineTab({ airports, onPick }: OnlineTabProps) {
       const distanceNm = from
         ? greatCircleNm(from, { latitude: airport.lat, longitude: airport.lon })
         : null;
-      return [{ airport, roles: entry.roles, distanceNm }];
+      const counts = traffic.get(airport.icao.toUpperCase());
+      return [{ airport, roles: entry.roles, distanceNm, counts }];
     });
     return list.sort((a, b) =>
       a.distanceNm !== null && b.distanceNm !== null
         ? a.distanceNm - b.distanceNm
         : a.airport.icao.localeCompare(b.airport.icao)
     );
-  }, [staffing, byIcao, departure]);
+  }, [staffing, byIcao, departure, traffic]);
 
-  // The same two switches as the Layers panel, so a pilot who opens this list
-  // with no network on does not have to leave it to pick one.
-  const networkPicker = (
-    <div className="mb-2 flex items-center gap-2">
-      <Toggle
-        variant="subtle"
-        size="xs"
-        pressed={network === 'vatsim'}
-        onPressedChange={(on) => setVatsimEnabled(on)}
-        aria-label={t('toolbar.vatsim')}
-        className="data-[state=off]:bg-secondary/40 data-[state=off]:text-muted-foreground flex-1 justify-center data-[state=on]:ring-0"
-      >
-        <VatsimWordmark className="h-3.5" />
-      </Toggle>
-      <Toggle
-        variant="subtle"
-        size="xs"
-        pressed={network === 'ivao'}
-        onPressedChange={(on) => setIvaoEnabled(on)}
-        aria-label="IVAO"
-        className="data-[state=off]:bg-secondary/40 data-[state=off]:text-muted-foreground flex-1 justify-center data-[state=on]:ring-0"
-      >
-        <Radar className="shrink-0" />
-        IVAO
-      </Toggle>
-    </div>
-  );
+  const networkPicker = <NetworkPicker className="mb-2" />;
 
   if (network === null) {
     return (
@@ -100,7 +74,7 @@ export function OnlineTab({ airports, onPick }: OnlineTabProps) {
   return (
     <div className="space-y-0.5">
       {networkPicker}
-      {rows.slice(0, 60).map(({ airport, roles, distanceNm }) => (
+      {rows.slice(0, 60).map(({ airport, roles, distanceNm, counts }) => (
         <button
           key={airport.icao}
           onClick={() => onPick(airport)}
@@ -125,6 +99,24 @@ export function OnlineTab({ airports, onPick }: OnlineTabProps) {
                   {role}
                 </Badge>
               ))}
+              {counts && (
+                <span className="ml-auto flex shrink-0 items-center gap-2 text-xs">
+                  <span
+                    className="text-cat-emerald flex items-center gap-1"
+                    aria-label={`${counts.departures} ${t('airportInfo.conditions.departures')}`}
+                  >
+                    <PlaneTakeoff className="h-3 w-3" />
+                    <span className="font-mono tabular-nums">{counts.departures}</span>
+                  </span>
+                  <span
+                    className="text-cat-amber flex items-center gap-1"
+                    aria-label={`${counts.arrivals} ${t('airportInfo.conditions.arrivals')}`}
+                  >
+                    <PlaneLanding className="h-3 w-3" />
+                    <span className="font-mono tabular-nums">{counts.arrivals}</span>
+                  </span>
+                </span>
+              )}
             </div>
           </div>
         </button>
