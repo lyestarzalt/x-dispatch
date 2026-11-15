@@ -113,6 +113,10 @@ vi.mock('@/queries/useGatewayQuery', () => ({
   useGatewayUpdateCheck: () => ({ data: undefined }),
 }));
 
+vi.mock('@/queries/useAddonManager', () => ({
+  useSceneryList: () => ({ data: undefined }),
+}));
+
 vi.mock('@/queries/useNetworkTraffic', () => ({
   useNetworkTraffic: () => networkState,
 }));

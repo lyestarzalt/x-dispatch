@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { parseDsfHeader } from '../core/dsfParser';
 import { type SceneryClassification, createDefaultClassification } from '../core/types';
+import { readAptIdents } from './aptIdents';
 
 const MAX_APT_DAT_DEPTH = 5;
 const MAX_DSF_SEARCH_DEPTH = 3;
@@ -151,6 +152,11 @@ export async function scanSceneryFolder(folderPath: string): Promise<SceneryClas
           // Search for apt.dat and DSF files inside Earth nav data
           const earthNavResult = await scanEarthNavData(entryPath);
           classification.hasAptDat = earthNavResult.hasAptDat;
+          if (earthNavResult.aptDatPath) {
+            classification.airportIcaos = await readAptIdents(earthNavResult.aptDatPath).catch(
+              () => []
+            );
+          }
           classification.hasDsf = earthNavResult.hasDsf;
           classification.dsfCount = earthNavResult.dsfCount;
           classification.dsfFilenames = earthNavResult.dsfFilenames;
@@ -176,6 +182,8 @@ export async function scanSceneryFolder(folderPath: string): Promise<SceneryClas
 
 interface EarthNavScanResult {
   hasAptDat: boolean;
+  /** The first valid apt.dat, the one X-Plane reads. */
+  aptDatPath: string;
   hasDsf: boolean;
   firstDsfPath: string;
   dsfCount: number;
@@ -186,6 +194,7 @@ interface EarthNavScanResult {
 async function scanEarthNavData(earthNavPath: string): Promise<EarthNavScanResult> {
   const result: EarthNavScanResult = {
     hasAptDat: false,
+    aptDatPath: '',
     hasDsf: false,
     firstDsfPath: '',
     dsfCount: 0,
@@ -206,6 +215,7 @@ async function scanEarthNavData(earthNavPath: string): Promise<EarthNavScanResul
         if (await isFileEntry(entry, dir)) {
           if (lowerName === 'apt.dat' && (await isValidAptDat(entryPath))) {
             result.hasAptDat = true;
+            if (!result.aptDatPath) result.aptDatPath = entryPath;
           }
 
           if (lowerName.endsWith('.dsf')) {

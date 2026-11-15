@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { packForAirport } from '@/lib/addonManager/scenery/conflicts';
 import {
   ATC_ROLE_BADGE_VARIANTS,
   type AtcBadgeVariant,
@@ -12,6 +13,7 @@ import { trafficCountsForAirport } from '@/lib/networkTraffic/stations';
 import { formatFrequency } from '@/lib/utils/format';
 import { runwayLengthFeet } from '@/lib/utils/geomath';
 import { useAirportATC, useNavDataQuery } from '@/queries';
+import { useSceneryList } from '@/queries/useAddonManager';
 import { useGatewayUpdateCheck } from '@/queries/useGatewayQuery';
 import { useNetworkTraffic } from '@/queries/useNetworkTraffic';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
@@ -100,6 +102,12 @@ export default function InfoTab() {
     50
   );
   const { data: gatewayUpdate } = useGatewayUpdateCheck(icao, isCustom);
+  // Only what the Scenery tab already scanned this session: the panel never starts a scan.
+  const { data: sceneryEntries } = useSceneryList(false);
+  const sceneryPack = useMemo(
+    () => (isCustom && icao && sceneryEntries ? packForAirport(sceneryEntries, icao) : null),
+    [isCustom, icao, sceneryEntries]
+  );
   // Area-control facilities over the airport, appended to the FREQUENCIES
   // list. Towers stay out — the airport's own rows already carry them.
   const { data: atcControllers } = useAirportATC(
@@ -268,6 +276,20 @@ export default function InfoTab() {
           </div>
           <ExternalLink className="text-primary/30 group-hover:text-primary/60 h-3.5 w-3.5 shrink-0" />
         </Button>
+      )}
+
+      {sceneryPack && (
+        <p
+          className="text-muted-foreground min-w-0 truncate text-xs"
+          title={sceneryPack.winner ?? ''}
+        >
+          {sceneryPack.count > 1
+            ? t('airportInfo.sceneryPackShadowed', {
+                pack: sceneryPack.winner ?? '',
+                count: sceneryPack.count,
+              })
+            : t('airportInfo.sceneryPack', { pack: sceneryPack.winner ?? '' })}
+        </p>
       )}
 
       <ConditionsCard
