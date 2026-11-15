@@ -1,6 +1,6 @@
 /**
  * RAR Extraction Module
- * Extracts RAR4 and RAR5 archives (single or multi-volume) with node-unrar-js.
+ * Extracts RAR4 and RAR5 archives (single or multi-volume); the engine runs on a worker thread.
  */
 import * as fs from 'fs';
 import * as path from 'path';
@@ -9,6 +9,7 @@ import { err, ok } from '../../core/types';
 import type { InstallerError } from '../types';
 import type { ExtractOptions, ExtractResult } from './options';
 import { emptyStats, normalizeEntryPath, resolveEntryTarget } from './options';
+import { extractRarInWorker, listRarInWorker } from './rarWorker';
 
 interface UnrarFailure {
   reason?: string;
@@ -41,7 +42,8 @@ export function rarErrorCode(
 }
 
 /**
- * Extract a RAR archive
+ * Extract a RAR archive. The engine runs on a worker thread; this side decides
+ * which entries to write where and reports progress as they land.
  */
 export async function extractRar(
   options: ExtractOptions
@@ -49,46 +51,35 @@ export async function extractRar(
   const { archivePath, targetDir, password, onProgress } = options;
 
   try {
-    const { createExtractorFromFile } = await import('node-unrar-js');
-
-    // Entries are written straight to where they belong: the engine is told the
-    // final relative name, so there is no "move the add-on folder up" step.
-    const targets = new Map<string, string>();
-    const extractor = await createExtractorFromFile({
-      filepath: archivePath,
-      targetPath: targetDir,
-      password,
-      filenameTransform: (name) => targets.get(normalizeEntryPath(name)) ?? name,
-    });
+    const list = await listRarInWorker(archivePath, password);
+    if (list.headerEncrypted && !password) {
+      return err({ code: 'PASSWORD_REQUIRED', path: archivePath });
+    }
 
     const stats = emptyStats();
     const extractedFiles: string[] = [];
-
     fs.mkdirSync(targetDir, { recursive: true });
 
+    // Entries are written straight to where they belong: the engine is told the
+    // final relative name, so there is no "move the add-on folder up" step.
+    const targets: Record<string, string> = {};
     const wanted: string[] = [];
-    const list = extractor.getFileList();
-    if (list.arcHeader.flags.headerEncrypted && !password) {
-      return err({ code: 'PASSWORD_REQUIRED', path: archivePath });
-    }
-    for (const header of list.fileHeaders) {
-      if (header.flags.directory) continue;
+    for (const header of list.headers) {
+      if (header.directory) continue;
       const sanitized = resolveEntryTarget(header.name, options);
       if (!sanitized) {
         stats.skippedFiles++;
         continue;
       }
-      targets.set(normalizeEntryPath(header.name), sanitized);
+      targets[normalizeEntryPath(header.name)] = sanitized;
       wanted.push(header.name);
     }
 
     if (wanted.length === 0) return ok({ stats, extractedFiles });
 
-    // The generator drives the extraction; it must be walked to the end.
-    const extracted = extractor.extract({ files: wanted });
-    for (const file of extracted.files) {
-      const sanitized = targets.get(normalizeEntryPath(file.fileHeader.name));
-      if (!sanitized) continue;
+    await extractRarInWorker({ archivePath, password, targetDir, wanted, targets }, (name) => {
+      const sanitized = targets[normalizeEntryPath(name)];
+      if (!sanitized) return;
       stats.totalFiles++;
       const fullPath = path.join(targetDir, sanitized);
       try {
@@ -99,7 +90,7 @@ export async function extractRar(
       } catch {
         stats.failedFiles++;
       }
-    }
+    });
 
     return ok({ stats, extractedFiles });
   } catch (e) {

@@ -948,19 +948,64 @@
         "allClear": "X-Dispatch ne signale rien dans ce journal.",
         "noMatches": "Aucune entrée ne correspond au filtre actuel."
       },
-      "entriesHeader": "Entrées du journal",
-      "entryCount": "Affichage de {{shown}} sur {{total}} entrées",
-      "showHeader": "Afficher l'en-tête pré-démarrage ({{count}} lignes)",
-      "hideHeader": "Masquer l'en-tête pré-démarrage",
       "filter": {
         "all": "Tous",
-        "errorsWarnings": "Erreurs + Avertissements",
         "errors": "Erreurs",
         "warnings": "Avertissements"
       },
       "openExternal": "Ouvrir Log.txt",
       "searchPlaceholder": "Rechercher dans le journal…",
-      "openFailed": "Impossible d'ouvrir Log.txt."
+      "openFailed": "Impossible d'ouvrir Log.txt.",
+      "session": {
+        "title": "Dernière session",
+        "clean": "Arrêt propre",
+        "crashed": "Plantage",
+        "stopped": "Terminée sans ligne d’arrêt (plantage, ou encore en cours)",
+        "beta": "Bêta",
+        "version": "X-Plane",
+        "driver": "pilote",
+        "noIssues": "Aucune ligne de problème connue.",
+        "context_one": "{{count}} ligne autour du plantage",
+        "context_other": "{{count}} lignes autour du plantage",
+        "times": "×{{count}}",
+        "unknown": "Pas un journal X-Plane"
+      },
+      "issues": {
+        "plugin_manager_error": "Erreur du gestionnaire de plugins",
+        "scenery_pack_problem": "Problème de paquet de scène",
+        "aircraft_unusable": "Avion inutilisable",
+        "vulkan_alert": "Alerte Vulkan",
+        "system_alert": "Alerte système",
+        "plugin_assert": "Assertion de plugin",
+        "plugin_error": "Erreur de plugin",
+        "vulkan_error": "Erreur Vulkan",
+        "graphics_error": "Erreur graphique",
+        "aircraft_error": "Erreur d’avion",
+        "memory_heavy": "Forte pression mémoire",
+        "plugin_support_file": "Fichier de support de plugin manquant",
+        "out_of_memory": "Mémoire épuisée",
+        "memory_status": "État de la mémoire",
+        "access_violation": "Violation d’accès",
+        "dsf_error": "Erreur de tuile DSF",
+        "scenery_error": "Erreur de scène",
+        "network_error": "Erreur réseau",
+        "weather_error": "Erreur météo",
+        "sound_error": "Erreur audio",
+        "memory_negative": "Pression mémoire négative",
+        "textures_degraded": "Textures dégradées",
+        "runloop_backed_up": "Boucle d’exécution en retard",
+        "nvapi": "Erreur API NVIDIA",
+        "injector_disabled": "Injecteur d’overlay désactivé",
+        "plugin_twice": "Plugin chargé deux fois",
+        "tls_failed": "Connexion TLS échouée",
+        "memory_regular": "Pression mémoire normale",
+        "dataref_replaced": "Dataref remplacé",
+        "betterpushback_warn": "Avertissement BetterPushback",
+        "art_controls": "Art controls modifiés"
+      },
+      "lines_one": "{{count}} ligne d’erreur",
+      "lines_other": "{{count}} lignes d’erreur",
+      "showAll": "Tout afficher ({{count}})"
     },
     "flights": {
       "title": "Vols",
@@ -1206,7 +1251,25 @@
     "gateway": {
       "updateAvailable": "Une version plus récente est disponible sur Gateway",
       "credit": "par {{artist}}, {{date}}",
-      "viewOnGateway": "Voir sur Gateway"
+      "viewOnGateway": "Voir sur Gateway",
+      "install": "Installer",
+      "update": "Mettre à jour",
+      "installing": "Installation…",
+      "remove": "Retirer",
+      "installedFrom": "Installé depuis le Gateway, soumission {{id}}",
+      "installed": "{{icao}} installé depuis le Gateway",
+      "removed": "Scène Gateway de {{icao}} retirée",
+      "conflictTitle": "Un autre paquet couvre déjà {{icao}}",
+      "conflictBody": "{{pack}} déclare cet aéroport. X-Plane utilise le premier paquet actif, l’installation depuis le Gateway peut donc ne rien changer tant qu’il n’est pas désactivé. Installer quand même ?",
+      "installAnyway": "Installer quand même",
+      "restartHint": "Lancez X-Plane une fois pour qu’il prenne le nouveau paquet.",
+      "errors": {
+        "DOWNLOAD_FAILED": "Le Gateway n’a pas répondu. Vérifiez la connexion et réessayez.",
+        "BAD_PACKAGE": "Le Gateway a envoyé quelque chose qui n’est pas un paquet de scène.",
+        "INSTALL_FAILED": "Le paquet n’a pas pu être installé.",
+        "NOT_INSTALLED": "Aucun paquet Gateway n’est installé pour cet aéroport.",
+        "INVALID_INPUT": "Définissez d’abord le dossier X-Plane."
+      }
     },
     "taxiRoute": {
       "taxiTo": "Roulage vers",
@@ -1235,7 +1298,9 @@
       "twr": "TWR",
       "app": "APP",
       "ctr": "CTR"
-    }
+    },
+    "sceneryPack": "Scène : {{pack}}",
+    "sceneryPackShadowed": "Scène : {{pack}} ({{count}} paquets couvrent cet aéroport)"
   },
   "navigation": {
     "heading": "CAP",
@@ -1727,6 +1792,8 @@
         "INVALID_PASSWORD": "Mot de passe incorrect pour cette archive.",
         "EXTRACTION_FAILED": "L'archive n'a pas pu être lue. Elle est peut-être incomplète ou endommagée ; téléchargez-la à nouveau.",
         "MISSING_VOLUME": "La partie {{missing}} de cette archive fractionnée manque. Placez toutes les parties dans le même dossier.",
+        "VERIFY_MARKERS": "Le dossier extrait n'est pas un add-on complet, rien n'a été modifié.",
+        "VERIFY_FAILED": "Certains fichiers ne sont pas à leur place après l'installation : {{files}}. Réinstallez-le.",
         "PATH_TRAVERSAL": "L'archive contient des chemins de fichiers dangereux et a été refusée.",
         "SIZE_EXCEEDED": "L'archive est trop volumineuse pour être installée.",
         "SUSPICIOUS_RATIO": "L'archive ressemble à une bombe zip et a été refusée.",
@@ -1763,6 +1830,10 @@
         "backedUp": "Anciens fichiers sauvegardés dans {{path}}",
         "noneSelected": "Sélectionnez au moins un add-on à installer",
         "selectToInstall": "Installer"
+      },
+      "variant": {
+        "label": "Variante",
+        "asShipped": "Telle que livrée"
       }
     },
     "browser": {
@@ -1851,7 +1922,19 @@
         "overlays": "Superpositions",
         "airportMesh": "Maillage aéroport",
         "mesh": "Maillage terrain",
-        "unrecognized": "Non reconnu"
+        "unrecognized": "Non reconnu",
+        "title": "Groupes",
+        "new": "Nouveau groupe",
+        "newTitle": "Nouveau groupe de scènes",
+        "newDescription": "Nommez le groupe. Les paquets sélectionnés y entrent, et un préfixe de nom ajoute des paquets automatiquement.",
+        "name": "Nom",
+        "namePlaceholder": "Mes tuiles ortho",
+        "prefix": "Le nom du dossier commence par",
+        "prefixPlaceholder": "zOrtho4XP_",
+        "create": "Créer",
+        "remove": "Supprimer le groupe",
+        "state": "{{on}} sur {{total}} actifs",
+        "all": "Tous les paquets"
       },
       "badge": {
         "airports": "Aéroport",
@@ -1859,7 +1942,33 @@
         "libraries": "Bibliothèque",
         "other": "Autre",
         "overlays": "Overlay",
-        "mesh": "Mesh"
+        "mesh": "Mesh",
+        "airportMesh": "Maillage d’aéroport"
+      },
+      "conflicts": {
+        "title": "Partagé avec d’autres paquets",
+        "badge_one": "{{count}} chevauchement",
+        "badge_other": "{{count}} chevauchements",
+        "filter_one": "{{count}} chevauchement",
+        "filter_other": "{{count}} chevauchements",
+        "airportOtherWins": "X-Plane utilise {{pack}}",
+        "airportThisWins": "Ce paquet l’emporte sur {{packs}}",
+        "airportAllOff": "Aussi dans {{packs}}, tous désactivés",
+        "tile": "Tuile aussi dans {{packs}}"
+      },
+      "selection": {
+        "select": "Sélectionner pour une action groupée",
+        "count_one": "{{count}} sélectionné",
+        "count_other": "{{count}} sélectionnés",
+        "enable": "Activer",
+        "disable": "Désactiver",
+        "clear": "Effacer",
+        "group": "Grouper…"
+      },
+      "category": {
+        "set": "Définir la catégorie",
+        "reset": "Revenir à la détection",
+        "byYou": "Catégorie définie par vous ; le tri automatique l’utilise"
       }
     },
     "liveryDialog": {

@@ -390,13 +390,41 @@ declare global {
       onTrafficUpdate: (callback: (snapshot: TrafficSnapshot) => void) => () => void;
     };
     addonManagerAPI: {
+      gateway: {
+        installed: (
+          icao: string
+        ) => Promise<import('@/lib/addonManager/gateway').GatewayMarker | null>;
+        install: (
+          icao: string,
+          sceneryId: number,
+          force: boolean
+        ) => Promise<
+          | { ok: true; value: { folderName: string } }
+          | { ok: false; error: import('@/lib/addonManager/gateway').GatewayError }
+        >;
+        remove: (
+          icao: string
+        ) => Promise<
+          | { ok: true; value: undefined }
+          | { ok: false; error: import('@/lib/addonManager/gateway').GatewayError }
+        >;
+      };
       scenery: {
         analyze: () => Promise<
           | { ok: true; value: import('@/lib/addonManager/core/types').SceneryEntry[] }
           | { ok: false; error: import('@/lib/addonManager/core/types').SceneryError }
         >;
-        sort: () => Promise<
+        sort: (
+          overrides?: Record<string, number>
+        ) => Promise<
           | { ok: true; value: { backupPath: string } }
+          | { ok: false; error: import('@/lib/addonManager/core/types').SceneryError }
+        >;
+        setEnabled: (
+          folderNames: string[],
+          enabled: boolean
+        ) => Promise<
+          | { ok: true; value: import('@/lib/addonManager/core/types').SceneryEntry[] }
           | { ok: false; error: import('@/lib/addonManager/core/types').SceneryError }
         >;
         saveOrder: (

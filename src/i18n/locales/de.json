@@ -948,19 +948,64 @@
         "allClear": "Keine Auffälligkeiten in diesem Protokoll.",
         "noMatches": "Keine Einträge entsprechen dem aktuellen Filter."
       },
-      "entriesHeader": "Protokolleinträge",
-      "entryCount": "Zeige {{shown}} von {{total}} Einträgen",
-      "showHeader": "Header vor dem Start anzeigen ({{count}} Zeilen)",
-      "hideHeader": "Header vor dem Start ausblenden",
       "filter": {
         "all": "Alle",
-        "errorsWarnings": "Fehler + Warnungen",
         "errors": "Fehler",
         "warnings": "Warnungen"
       },
       "openExternal": "Log.txt öffnen",
       "searchPlaceholder": "Protokoll durchsuchen…",
-      "openFailed": "Log.txt konnte nicht geöffnet werden."
+      "openFailed": "Log.txt konnte nicht geöffnet werden.",
+      "session": {
+        "title": "Letzte Sitzung",
+        "clean": "Sauber beendet",
+        "crashed": "Abgestürzt",
+        "stopped": "Ohne Beenden-Zeile geendet (Absturz oder läuft noch)",
+        "beta": "Beta",
+        "version": "X-Plane",
+        "driver": "Treiber",
+        "noIssues": "Keine bekannten Problemzeilen.",
+        "context_one": "{{count}} Zeile um den Absturz",
+        "context_other": "{{count}} Zeilen um den Absturz",
+        "times": "×{{count}}",
+        "unknown": "Kein X-Plane-Log"
+      },
+      "issues": {
+        "plugin_manager_error": "Plugin-Manager-Fehler",
+        "scenery_pack_problem": "Problem mit Szeneriepaket",
+        "aircraft_unusable": "Flugzeug unbrauchbar",
+        "vulkan_alert": "Vulkan-Warnung",
+        "system_alert": "Systemwarnung",
+        "plugin_assert": "Plugin-Assert",
+        "plugin_error": "Plugin-Fehler",
+        "vulkan_error": "Vulkan-Fehler",
+        "graphics_error": "Grafikfehler",
+        "aircraft_error": "Flugzeugfehler",
+        "memory_heavy": "Starker Speicherdruck",
+        "plugin_support_file": "Plugin-Hilfsdatei fehlt",
+        "out_of_memory": "Kein Speicher mehr",
+        "memory_status": "Speicherstatus-Ausgabe",
+        "access_violation": "Zugriffsverletzung",
+        "dsf_error": "DSF-Kachelfehler",
+        "scenery_error": "Szeneriefehler",
+        "network_error": "Netzwerkfehler",
+        "weather_error": "Wetterfehler",
+        "sound_error": "Soundfehler",
+        "memory_negative": "Negativer Speicherdruck",
+        "textures_degraded": "Texturen reduziert",
+        "runloop_backed_up": "Run-Loop im Rückstand",
+        "nvapi": "NVIDIA-API-Fehler",
+        "injector_disabled": "Overlay-Injektor deaktiviert",
+        "plugin_twice": "Plugin doppelt geladen",
+        "tls_failed": "TLS-Verbindung fehlgeschlagen",
+        "memory_regular": "Normaler Speicherdruck",
+        "dataref_replaced": "Dataref ersetzt",
+        "betterpushback_warn": "BetterPushback-Warnung",
+        "art_controls": "Art Controls geändert"
+      },
+      "lines_one": "{{count}} Fehlerzeile",
+      "lines_other": "{{count}} Fehlerzeilen",
+      "showAll": "Alle {{count}} anzeigen"
     },
     "flights": {
       "title": "Flüge",
@@ -1206,7 +1251,25 @@
     "gateway": {
       "updateAvailable": "Auf Gateway ist eine neuere Version verfügbar",
       "credit": "von {{artist}}, {{date}}",
-      "viewOnGateway": "Auf Gateway ansehen"
+      "viewOnGateway": "Auf Gateway ansehen",
+      "install": "Installieren",
+      "update": "Aktualisieren",
+      "installing": "Wird installiert…",
+      "remove": "Entfernen",
+      "installedFrom": "Vom Gateway installiert, Einreichung {{id}}",
+      "installed": "{{icao}} vom Gateway installiert",
+      "removed": "Gateway-Szenerie für {{icao}} entfernt",
+      "conflictTitle": "Ein anderes Paket deckt {{icao}} bereits ab",
+      "conflictBody": "{{pack}} enthält diesen Flughafen. X-Plane nimmt das erste aktive Paket, die Gateway-Installation ändert also vielleicht nichts, bis du es deaktivierst. Trotzdem installieren?",
+      "installAnyway": "Trotzdem installieren",
+      "restartHint": "Starte X-Plane einmal, damit es das neue Paket übernimmt.",
+      "errors": {
+        "DOWNLOAD_FAILED": "Das Gateway hat nicht geantwortet. Prüfe die Verbindung und versuche es erneut.",
+        "BAD_PACKAGE": "Das Gateway hat etwas geschickt, das kein Szeneriepaket ist.",
+        "INSTALL_FAILED": "Das Paket konnte nicht installiert werden.",
+        "NOT_INSTALLED": "Für diesen Flughafen ist kein Gateway-Paket installiert.",
+        "INVALID_INPUT": "Lege zuerst den X-Plane-Ordner fest."
+      }
     },
     "taxiRoute": {
       "taxiTo": "Rollen zu",
@@ -1235,7 +1298,9 @@
       "twr": "TWR",
       "app": "APP",
       "ctr": "CTR"
-    }
+    },
+    "sceneryPack": "Szenerie: {{pack}}",
+    "sceneryPackShadowed": "Szenerie: {{pack}} ({{count}} Pakete decken diesen Flughafen ab)"
   },
   "navigation": {
     "heading": "KURS",
@@ -1727,6 +1792,8 @@
         "INVALID_PASSWORD": "Falsches Passwort für dieses Archiv.",
         "EXTRACTION_FAILED": "Das Archiv konnte nicht gelesen werden. Es ist eventuell unvollständig oder beschädigt; lade es erneut herunter.",
         "MISSING_VOLUME": "Teil {{missing}} dieses gesplitteten Archivs fehlt. Lege alle Teile in denselben Ordner.",
+        "VERIFY_MARKERS": "Der entpackte Ordner ist kein vollständiges Add-on, es wurde nichts geändert.",
+        "VERIFY_FAILED": "Einige Dateien sind nach der Installation nicht an ihrem Platz: {{files}}. Installiere es erneut.",
         "PATH_TRAVERSAL": "Das Archiv enthält unsichere Dateipfade und wurde abgelehnt.",
         "SIZE_EXCEEDED": "Das Archiv ist zu groß für die Installation.",
         "SUSPICIOUS_RATIO": "Das Archiv sieht wie eine Zip-Bombe aus und wurde abgelehnt.",
@@ -1763,6 +1830,10 @@
         "backedUp": "Vorherige Dateien gesichert unter {{path}}",
         "noneSelected": "Wähle mindestens ein Add-on zur Installation",
         "selectToInstall": "Installieren"
+      },
+      "variant": {
+        "label": "Variante",
+        "asShipped": "Wie geliefert"
       }
     },
     "browser": {
@@ -1851,7 +1922,19 @@
         "overlays": "Overlays",
         "airportMesh": "Flughafen-Mesh",
         "mesh": "Gelände-Mesh",
-        "unrecognized": "Nicht erkannt"
+        "unrecognized": "Nicht erkannt",
+        "title": "Gruppen",
+        "new": "Neue Gruppe",
+        "newTitle": "Neue Szeneriegruppe",
+        "newDescription": "Gib der Gruppe einen Namen. Die ausgewählten Pakete kommen hinein, ein Namenspräfix fügt Pakete automatisch hinzu.",
+        "name": "Name",
+        "namePlaceholder": "Meine Ortho-Kacheln",
+        "prefix": "Ordnername beginnt mit",
+        "prefixPlaceholder": "zOrtho4XP_",
+        "create": "Erstellen",
+        "remove": "Gruppe entfernen",
+        "state": "{{on}} von {{total}} an",
+        "all": "Alle Pakete"
       },
       "badge": {
         "airports": "Flughafen",
@@ -1859,7 +1942,33 @@
         "libraries": "Bibliothek",
         "other": "Sonstige",
         "overlays": "Overlay",
-        "mesh": "Mesh"
+        "mesh": "Mesh",
+        "airportMesh": "Flughafen-Mesh"
+      },
+      "conflicts": {
+        "title": "Mit anderen Paketen geteilt",
+        "badge_one": "{{count}} Überschneidung",
+        "badge_other": "{{count}} Überschneidungen",
+        "filter_one": "{{count}} Überschneidung",
+        "filter_other": "{{count}} Überschneidungen",
+        "airportOtherWins": "X-Plane verwendet {{pack}}",
+        "airportThisWins": "Dieses Paket gewinnt gegen {{packs}}",
+        "airportAllOff": "Auch in {{packs}}, alle deaktiviert",
+        "tile": "Kachel auch in {{packs}}"
+      },
+      "selection": {
+        "select": "Für eine Stapelaktion auswählen",
+        "count_one": "{{count}} ausgewählt",
+        "count_other": "{{count}} ausgewählt",
+        "enable": "Aktivieren",
+        "disable": "Deaktivieren",
+        "clear": "Aufheben",
+        "group": "Gruppieren…"
+      },
+      "category": {
+        "set": "Kategorie festlegen",
+        "reset": "Zurück zur Erkennung",
+        "byYou": "Kategorie von dir gesetzt; Auto-Sortierung nutzt sie"
       }
     },
     "liveryDialog": {

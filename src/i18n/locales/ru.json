@@ -948,19 +948,64 @@
         "allClear": "Проблем в этом журнале не найдено.",
         "noMatches": "Нет записей, соответствующих текущему фильтру."
       },
-      "entriesHeader": "Записи журнала",
-      "entryCount": "Показано {{shown}} из {{total}} записей",
-      "showHeader": "Показать заголовок до запуска ({{count}} строк)",
-      "hideHeader": "Скрыть заголовок до запуска",
       "filter": {
         "all": "Все",
-        "errorsWarnings": "Ошибки + предупреждения",
         "errors": "Ошибки",
         "warnings": "Предупреждения"
       },
       "openExternal": "Открыть Log.txt",
       "searchPlaceholder": "Поиск в журнале…",
-      "openFailed": "Не удалось открыть Log.txt."
+      "openFailed": "Не удалось открыть Log.txt.",
+      "session": {
+        "title": "Последний сеанс",
+        "clean": "Завершён штатно",
+        "crashed": "Сбой",
+        "stopped": "Завершён без строки выхода (сбой или ещё запущен)",
+        "beta": "Бета",
+        "version": "X-Plane",
+        "driver": "драйвер",
+        "noIssues": "Известных проблемных строк нет.",
+        "context_one": "{{count}} строка около сбоя",
+        "context_other": "{{count}} строк около сбоя",
+        "times": "×{{count}}",
+        "unknown": "Это не лог X-Plane"
+      },
+      "issues": {
+        "plugin_manager_error": "Ошибка менеджера плагинов",
+        "scenery_pack_problem": "Проблема с пакетом сценария",
+        "aircraft_unusable": "Самолёт непригоден",
+        "vulkan_alert": "Предупреждение Vulkan",
+        "system_alert": "Системное предупреждение",
+        "plugin_assert": "Assert плагина",
+        "plugin_error": "Ошибка плагина",
+        "vulkan_error": "Ошибка Vulkan",
+        "graphics_error": "Графическая ошибка",
+        "aircraft_error": "Ошибка самолёта",
+        "memory_heavy": "Сильная нехватка памяти",
+        "plugin_support_file": "Нет файла поддержки плагина",
+        "out_of_memory": "Память исчерпана",
+        "memory_status": "Дамп состояния памяти",
+        "access_violation": "Нарушение доступа",
+        "dsf_error": "Ошибка тайла DSF",
+        "scenery_error": "Ошибка сценария",
+        "network_error": "Сетевая ошибка",
+        "weather_error": "Ошибка погоды",
+        "sound_error": "Ошибка звука",
+        "memory_negative": "Отрицательное давление памяти",
+        "textures_degraded": "Текстуры понижены",
+        "runloop_backed_up": "Главный цикл отстаёт",
+        "nvapi": "Ошибка NVIDIA API",
+        "injector_disabled": "Инжектор оверлея отключён",
+        "plugin_twice": "Плагин загружен дважды",
+        "tls_failed": "Сбой TLS-соединения",
+        "memory_regular": "Обычное давление памяти",
+        "dataref_replaced": "Dataref заменён",
+        "betterpushback_warn": "Предупреждение BetterPushback",
+        "art_controls": "Изменены art controls"
+      },
+      "lines_one": "{{count}} строка с ошибкой",
+      "lines_other": "{{count}} строк с ошибками",
+      "showAll": "Показать все ({{count}})"
     },
     "flights": {
       "title": "Полёты",
@@ -1206,7 +1251,25 @@
     "gateway": {
       "updateAvailable": "На Gateway есть более новый релиз",
       "credit": "от {{artist}}, {{date}}",
-      "viewOnGateway": "Открыть в Gateway"
+      "viewOnGateway": "Открыть в Gateway",
+      "install": "Установить",
+      "update": "Обновить",
+      "installing": "Установка…",
+      "remove": "Удалить",
+      "installedFrom": "Установлено из Gateway, заявка {{id}}",
+      "installed": "{{icao}} установлен из Gateway",
+      "removed": "Сценарий Gateway для {{icao}} удалён",
+      "conflictTitle": "Другой пакет уже покрывает {{icao}}",
+      "conflictBody": "{{pack}} содержит этот аэропорт. X-Plane берёт первый включённый пакет, так что установка из Gateway может ничего не изменить, пока вы его не отключите. Всё равно установить?",
+      "installAnyway": "Всё равно установить",
+      "restartHint": "Запустите X-Plane один раз, чтобы он подхватил новый пакет.",
+      "errors": {
+        "DOWNLOAD_FAILED": "Gateway не ответил. Проверьте соединение и попробуйте снова.",
+        "BAD_PACKAGE": "Gateway прислал что-то, что не является пакетом сценария.",
+        "INSTALL_FAILED": "Не удалось установить пакет.",
+        "NOT_INSTALLED": "Для этого аэропорта не установлен пакет Gateway.",
+        "INVALID_INPUT": "Сначала укажите папку X-Plane."
+      }
     },
     "taxiRoute": {
       "taxiTo": "Руление к",
@@ -1235,7 +1298,9 @@
       "twr": "TWR",
       "app": "APP",
       "ctr": "CTR"
-    }
+    },
+    "sceneryPack": "Сценарий: {{pack}}",
+    "sceneryPackShadowed": "Сценарий: {{pack}} ({{count}} пакетов покрывают этот аэропорт)"
   },
   "navigation": {
     "heading": "КУРС",
@@ -1727,6 +1792,8 @@
         "INVALID_PASSWORD": "Неверный пароль для этого архива.",
         "EXTRACTION_FAILED": "Не удалось прочитать архив. Возможно, он неполный или повреждён; скачайте его заново.",
         "MISSING_VOLUME": "Не хватает части {{missing}} этого разделённого архива. Положите все части в одну папку.",
+        "VERIFY_MARKERS": "Распакованная папка не является полным дополнением, поэтому ничего не изменено.",
+        "VERIFY_FAILED": "После установки некоторые файлы не оказались на месте: {{files}}. Установите его заново.",
         "PATH_TRAVERSAL": "Архив содержит небезопасные пути к файлам и был отклонён.",
         "SIZE_EXCEEDED": "Архив слишком велик для установки.",
         "SUSPICIOUS_RATIO": "Архив похож на zip-бомбу и был отклонён.",
@@ -1763,6 +1830,10 @@
         "backedUp": "Прежние файлы сохранены в {{path}}",
         "noneSelected": "Выберите хотя бы одно дополнение для установки",
         "selectToInstall": "Установить"
+      },
+      "variant": {
+        "label": "Вариант",
+        "asShipped": "Как поставляется"
       }
     },
     "browser": {
@@ -1851,7 +1922,19 @@
         "overlays": "Наложения",
         "airportMesh": "Сетка аэропорта",
         "mesh": "Сетка рельефа",
-        "unrecognized": "Не распознано"
+        "unrecognized": "Не распознано",
+        "title": "Группы",
+        "new": "Новая группа",
+        "newTitle": "Новая группа сценариев",
+        "newDescription": "Назовите группу. Выбранные пакеты войдут в неё, а префикс имени добавит пакеты автоматически.",
+        "name": "Название",
+        "namePlaceholder": "Мои орто-тайлы",
+        "prefix": "Имя папки начинается с",
+        "prefixPlaceholder": "zOrtho4XP_",
+        "create": "Создать",
+        "remove": "Удалить группу",
+        "state": "Включено {{on}} из {{total}}",
+        "all": "Все пакеты"
       },
       "badge": {
         "airports": "Аэропорт",
@@ -1859,7 +1942,33 @@
         "libraries": "Библиотека",
         "other": "Другое",
         "overlays": "Оверлей",
-        "mesh": "Меш"
+        "mesh": "Меш",
+        "airportMesh": "Меш аэропорта"
+      },
+      "conflicts": {
+        "title": "Общее с другими пакетами",
+        "badge_one": "{{count}} пересечение",
+        "badge_other": "{{count}} пересечений",
+        "filter_one": "{{count}} пересечение",
+        "filter_other": "{{count}} пересечений",
+        "airportOtherWins": "X-Plane использует {{pack}}",
+        "airportThisWins": "Этот пакет имеет приоритет над {{packs}}",
+        "airportAllOff": "Также в {{packs}}, все отключены",
+        "tile": "Тайл также в {{packs}}"
+      },
+      "selection": {
+        "select": "Выбрать для группового действия",
+        "count_one": "Выбрано: {{count}}",
+        "count_other": "Выбрано: {{count}}",
+        "enable": "Включить",
+        "disable": "Выключить",
+        "clear": "Снять",
+        "group": "Сгруппировать…"
+      },
+      "category": {
+        "set": "Задать категорию",
+        "reset": "Вернуть определённую",
+        "byYou": "Категория задана вами; автосортировка её учитывает"
       }
     },
     "liveryDialog": {

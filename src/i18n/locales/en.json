@@ -948,19 +948,64 @@
         "allClear": "X-Dispatch did not flag anything in this log.",
         "noMatches": "No entries match the current filter."
       },
-      "entriesHeader": "Log entries",
-      "entryCount": "Showing {{shown}} of {{total}} entries",
-      "showHeader": "Show pre-runtime header ({{count}} lines)",
-      "hideHeader": "Hide pre-runtime header",
       "filter": {
         "all": "All",
-        "errorsWarnings": "Errors + Warnings",
         "errors": "Errors",
         "warnings": "Warnings"
       },
       "openExternal": "Open Log.txt",
       "searchPlaceholder": "Search log…",
-      "openFailed": "Could not open Log.txt."
+      "openFailed": "Could not open Log.txt.",
+      "session": {
+        "title": "Last session",
+        "clean": "Shut down cleanly",
+        "crashed": "Crashed",
+        "stopped": "Ended without a shutdown line (crash, or still running)",
+        "beta": "Beta",
+        "version": "X-Plane",
+        "driver": "driver",
+        "noIssues": "No known trouble lines.",
+        "context_one": "{{count}} line around the crash",
+        "context_other": "{{count}} lines around the crash",
+        "times": "×{{count}}",
+        "unknown": "Not an X-Plane log"
+      },
+      "issues": {
+        "plugin_manager_error": "Plugin manager error",
+        "scenery_pack_problem": "Scenery pack problem",
+        "aircraft_unusable": "Aircraft unusable",
+        "vulkan_alert": "Vulkan alert",
+        "system_alert": "System alert",
+        "plugin_assert": "Plugin assert",
+        "plugin_error": "Plugin error",
+        "vulkan_error": "Vulkan error",
+        "graphics_error": "Graphics error",
+        "aircraft_error": "Aircraft error",
+        "memory_heavy": "Heavy memory pressure",
+        "plugin_support_file": "Missing plugin support file",
+        "out_of_memory": "Out of memory",
+        "memory_status": "Memory status dump",
+        "access_violation": "Access violation",
+        "dsf_error": "DSF tile error",
+        "scenery_error": "Scenery error",
+        "network_error": "Network error",
+        "weather_error": "Weather error",
+        "sound_error": "Sound error",
+        "memory_negative": "Negative memory pressure",
+        "textures_degraded": "Textures degraded",
+        "runloop_backed_up": "Run loop backed up",
+        "nvapi": "NVIDIA API error",
+        "injector_disabled": "Overlay injector disabled",
+        "plugin_twice": "Plugin loaded twice",
+        "tls_failed": "TLS connection failed",
+        "memory_regular": "Regular memory pressure",
+        "dataref_replaced": "Dataref replaced",
+        "betterpushback_warn": "BetterPushback warning",
+        "art_controls": "Art controls modified"
+      },
+      "lines_one": "{{count}} error line",
+      "lines_other": "{{count}} error lines",
+      "showAll": "Show all {{count}}"
     },
     "flights": {
       "title": "Flights",
@@ -1206,7 +1251,25 @@
     "gateway": {
       "updateAvailable": "Gateway has a newer release",
       "credit": "by {{artist}}, {{date}}",
-      "viewOnGateway": "View on Gateway"
+      "viewOnGateway": "View on Gateway",
+      "install": "Install",
+      "update": "Update",
+      "installing": "Installing…",
+      "remove": "Remove",
+      "installedFrom": "Installed from the Gateway, submission {{id}}",
+      "installed": "{{icao}} installed from the Gateway",
+      "removed": "{{icao}} Gateway scenery removed",
+      "conflictTitle": "Another pack already covers {{icao}}",
+      "conflictBody": "{{pack}} declares this airport. X-Plane uses the first enabled pack, so installing from the Gateway may change nothing until you disable it. Install anyway?",
+      "installAnyway": "Install anyway",
+      "restartHint": "Start X-Plane once so it picks up the new pack.",
+      "errors": {
+        "DOWNLOAD_FAILED": "The Gateway did not answer. Check the connection and try again.",
+        "BAD_PACKAGE": "The Gateway sent something that is not a scenery pack.",
+        "INSTALL_FAILED": "The pack could not be installed.",
+        "NOT_INSTALLED": "No Gateway pack is installed for this airport.",
+        "INVALID_INPUT": "Set the X-Plane folder first."
+      }
     },
     "taxiRoute": {
       "taxiTo": "Taxi to",
@@ -1235,7 +1298,9 @@
       "twr": "TWR",
       "app": "APP",
       "ctr": "CTR"
-    }
+    },
+    "sceneryPack": "Scenery: {{pack}}",
+    "sceneryPackShadowed": "Scenery: {{pack}} ({{count}} packs cover this airport)"
   },
   "navigation": {
     "heading": "HEADING",
@@ -1727,6 +1792,8 @@
         "INVALID_PASSWORD": "Wrong password for this archive.",
         "EXTRACTION_FAILED": "The archive couldn't be read. It may be incomplete or damaged; download it again.",
         "MISSING_VOLUME": "Part {{missing}} of this split archive is missing. Put all parts in the same folder.",
+        "VERIFY_MARKERS": "The extracted folder is not a complete add-on, so nothing was changed.",
+        "VERIFY_FAILED": "Some files did not land in place after the install: {{files}}. Install it again.",
         "PATH_TRAVERSAL": "The archive contains unsafe file paths and was refused.",
         "SIZE_EXCEEDED": "The archive is too large to install.",
         "SUSPICIOUS_RATIO": "The archive looks like a zip bomb and was refused.",
@@ -1763,6 +1830,10 @@
         "backedUp": "Previous files backed up to {{path}}",
         "noneSelected": "Select at least one add-on to install",
         "selectToInstall": "Install"
+      },
+      "variant": {
+        "label": "Variant",
+        "asShipped": "As shipped"
       }
     },
     "browser": {
@@ -1851,7 +1922,19 @@
         "overlays": "Overlays",
         "airportMesh": "Airport Mesh",
         "mesh": "Terrain Mesh",
-        "unrecognized": "Unrecognized"
+        "unrecognized": "Unrecognized",
+        "title": "Groups",
+        "new": "New group",
+        "newTitle": "New scenery group",
+        "newDescription": "Name the group. The selected packs join it, and a name prefix adds packs automatically.",
+        "name": "Name",
+        "namePlaceholder": "My ortho tiles",
+        "prefix": "Folder name starts with",
+        "prefixPlaceholder": "zOrtho4XP_",
+        "create": "Create",
+        "remove": "Remove group",
+        "state": "{{on}} of {{total}} on",
+        "all": "All packs"
       },
       "badge": {
         "airports": "Airport",
@@ -1859,7 +1942,33 @@
         "libraries": "Library",
         "other": "Other",
         "overlays": "Overlay",
-        "mesh": "Mesh"
+        "mesh": "Mesh",
+        "airportMesh": "Airport mesh"
+      },
+      "conflicts": {
+        "title": "Shared with other packs",
+        "badge_one": "{{count}} overlap",
+        "badge_other": "{{count}} overlaps",
+        "filter_one": "{{count}} overlap",
+        "filter_other": "{{count}} overlaps",
+        "airportOtherWins": "X-Plane uses {{pack}}",
+        "airportThisWins": "This pack wins over {{packs}}",
+        "airportAllOff": "Also in {{packs}}, all disabled",
+        "tile": "Tile also in {{packs}}"
+      },
+      "selection": {
+        "select": "Select for a batch action",
+        "count_one": "{{count}} selected",
+        "count_other": "{{count}} selected",
+        "enable": "Enable",
+        "disable": "Disable",
+        "clear": "Clear",
+        "group": "Group…"
+      },
+      "category": {
+        "set": "Set category",
+        "reset": "Back to detected",
+        "byYou": "Category set by you; Auto-Sort uses it"
       }
     },
     "liveryDialog": {

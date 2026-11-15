@@ -4,6 +4,7 @@ import type { Result } from '../../core/types';
 import { err, ok } from '../../core/types';
 import { openZipFile } from '../extraction/multiVolumeReader';
 import { rarErrorCode } from '../extraction/rarExtractor';
+import { listRarInWorker } from '../extraction/rarWorker';
 import {
   type SevenZipFailure,
   collectSevenZipStderr,
@@ -159,34 +160,26 @@ async function listSevenZipEntries(
 }
 
 /**
- * List RAR archive entries using node-unrar-js
+ * List RAR archive entries, on a worker thread so a large archive never stalls the app.
  */
 async function listRarEntries(
   archivePath: string,
   password: string | undefined
 ): Promise<Result<ArchiveEntry[], InstallerError>> {
-  const { createExtractorFromFile } = await import('node-unrar-js');
-
   try {
-    const extractor = await createExtractorFromFile({ filepath: archivePath, password });
-    const fileList = extractor.getFileList();
-
-    if (fileList.arcHeader.flags.headerEncrypted && !password) {
+    const list = await listRarInWorker(archivePath, password);
+    if (list.headerEncrypted && !password) {
       return err({ code: 'PASSWORD_REQUIRED', path: archivePath });
     }
-
-    const entries: ArchiveEntry[] = [];
-    for (const header of fileList.fileHeaders) {
-      entries.push({
+    return ok(
+      list.headers.map((header) => ({
         path: header.name,
-        isDirectory: header.flags.directory,
+        isDirectory: header.directory,
         uncompressedSize: header.unpSize,
         compressedSize: header.packSize,
-        encrypted: header.flags.encrypted,
-      });
-    }
-
-    return ok(entries);
+        encrypted: header.encrypted,
+      }))
+    );
   } catch (e) {
     return err(rarErrorCode(e, archivePath, password));
   }

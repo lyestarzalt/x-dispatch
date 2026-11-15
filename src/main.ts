@@ -2691,7 +2691,10 @@ function registerIpcHandlers() {
   });
 
   // Addon Manager IPC handlers (extracted to separate module)
-  registerAddonManagerIPC(() => dataManager.getXPlanePath());
+  registerAddonManagerIPC(() => dataManager.getXPlanePath(), {
+    // A Gateway pack is a base64 zip inside JSON: tens of megabytes on a slow link.
+    fetchJson: (url) => proxyFetch(url, { timeoutMs: 180_000, maxBytes: 512 * 1024 * 1024 }),
+  });
   registerCompanionAppsIPC(() => mainWindow);
   registerSharedPlanIpc({ handle, on, broadcast });
   registerFlightRecorderIPC({

@@ -4,7 +4,7 @@
  * and nothing may escape the target folder.
  */
 import type { VerificationStats } from '../types';
-import { IGNORE_PATTERNS } from '../types';
+import { isIgnoredName } from '../types';
 
 export interface ExtractOptions {
   /** The archive file, or a folder when the source is a dropped directory. */
@@ -42,7 +42,7 @@ export function normalizeEntryPath(entryPath: string): string {
  */
 export function shouldIgnore(filePath: string): boolean {
   const parts = normalizeEntryPath(filePath).split('/');
-  return parts.some((part) => IGNORE_PATTERNS.includes(part));
+  return parts.some(isIgnoredName);
 }
 
 /**

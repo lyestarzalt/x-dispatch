@@ -55,6 +55,8 @@ export interface SceneryClassification {
   /** Full paths of the first few tiles, enough to learn which libraries the pack needs. */
   dsfPaths: string[];
   libraryExports: string[];
+  /** Airports the pack's apt.dat declares, upper case, for spotting packs that overlap. */
+  airportIcaos?: string[];
 }
 
 /**
@@ -72,6 +74,8 @@ export interface SceneryEntry {
   sceneryPath?: string;
   /** Libraries the pack's tiles reference that no installed package exports. */
   missingLibraries?: string[];
+  /** Other packs that declare the same airports or ship the same mesh tiles. */
+  conflicts?: import('../scenery/conflicts').SceneryConflicts;
 }
 
 /**
@@ -190,12 +194,19 @@ export function browserErrorText(error: BrowserError): AddonErrorText {
       return { key: `${family}.SCAN_FAILED`, params: { reason: error.reason } };
     case 'TOGGLE_FAILED':
       if (isPluginInUse(error.reason)) return { key: `${family}.PLUGIN_IN_USE`, params: {} };
-      if (error.reason.includes('EPERM')) return { key: `${family}.PERMISSION_DENIED`, params: {} };
+      if (isPermissionDenied(error.reason))
+        return { key: `${family}.PERMISSION_DENIED`, params: {} };
       return { key: `${family}.TOGGLE_FAILED`, params: { reason: error.reason } };
     case 'DELETE_FAILED':
-      if (error.reason.includes('EPERM')) return { key: `${family}.PERMISSION_DENIED`, params: {} };
+      if (isPermissionDenied(error.reason))
+        return { key: `${family}.PERMISSION_DENIED`, params: {} };
       return { key: `${family}.DELETE_FAILED`, params: { reason: error.reason } };
   }
+}
+
+/** EPERM is Windows refusing a protected folder; EACCES is the POSIX spelling of the same. */
+function isPermissionDenied(reason: string): boolean {
+  return /\b(EPERM|EACCES)\b/.test(reason);
 }
 
 /**

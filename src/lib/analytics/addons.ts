@@ -48,6 +48,8 @@ export function addonDetectReason(code: string | undefined): AnalyticsAddonDetec
 
 const INSTALL_ERRORS: Record<string, AnalyticsAddonInstallError> = {
   EXTRACTION_FAILED: 'extraction_failed',
+  VERIFY_MARKERS: 'verify_failed',
+  VERIFY_FAILED: 'verify_failed',
   MISSING_VOLUME: 'missing_volume',
   PASSWORD_REQUIRED: 'password_required',
   INVALID_PASSWORD: 'invalid_password',

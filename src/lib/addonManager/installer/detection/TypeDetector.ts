@@ -6,8 +6,9 @@ import type {
   DetectedItem,
   DetectedLiveryInfo,
 } from '../types';
-import { ADDON_TYPE_PRIORITY, IGNORE_PATTERNS, PLATFORM_FOLDERS } from '../types';
+import { ADDON_TYPE_PRIORITY, PLATFORM_FOLDERS, isIgnoredName } from '../types';
 import { matchLivery } from './liveryPatterns';
+import { detectSceneryVariants } from './sceneryVariants';
 
 /** A file that tells the add-on's type, and the folder it belongs to. */
 interface Marker {
@@ -23,7 +24,7 @@ interface Marker {
  */
 function shouldIgnore(filePath: string): boolean {
   const parts = filePath.split('/');
-  return parts.some((part) => IGNORE_PATTERNS.includes(part));
+  return parts.some(isIgnoredName);
 }
 
 /**
@@ -36,6 +37,13 @@ function detectMarkerType(filePath: string): AddonType | null {
   if (ext === '.acf') return 'Aircraft';
   if (basename === 'library.txt') return 'SceneryLibrary';
   if (ext === '.dsf') return 'Scenery';
+  // A Gateway airport ships apt.dat and no tiles; apt.dat elsewhere is not a marker.
+  if (
+    basename === 'apt.dat' &&
+    path.basename(path.dirname(filePath)).toLowerCase() === 'earth nav data'
+  ) {
+    return 'Scenery';
+  }
   if (basename === 'cycle.json') return 'Navdata';
   if (ext === '.xpl') return 'Plugin';
   if (ext === '.lua') return 'LuaScript';
@@ -270,7 +278,7 @@ export function detectAddons(
         (e) =>
           e.path.startsWith(root) &&
           e.path.toLowerCase().includes('earth nav data') &&
-          e.path.toLowerCase().endsWith('.dsf')
+          (e.path.toLowerCase().endsWith('.dsf') || e.path.toLowerCase().endsWith('/apt.dat'))
       );
       if (hasDsf) continue; // Skip, will be detected as Scenery
     }
@@ -296,6 +304,10 @@ export function detectAddons(
       warnings: [],
     };
     if (marker.liveryInfo) item.liveryInfo = marker.liveryInfo;
+    if (marker.type === 'Scenery') {
+      const variants = detectSceneryVariants(entries, internalRoot ?? '');
+      if (variants.length > 0) item.variants = variants;
+    }
 
     // Add to skip prefixes
     if (internalRoot) {

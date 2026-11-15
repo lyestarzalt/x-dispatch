@@ -3,23 +3,30 @@ import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { AlertTriangle, FolderOpen, GripVertical, Power, Trash2 } from 'lucide-react';
+import { AlertTriangle, FolderOpen, GripVertical, Layers, Power, Tag, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
+  ContextMenuRadioGroup,
+  ContextMenuRadioItem,
   ContextMenuSeparator,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from '@/components/ui/context-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import type { SceneryEntry } from '@/lib/addonManager/core/types';
+import { type SceneryEntry, SceneryPriority } from '@/lib/addonManager/core/types';
 import { cn } from '@/lib/utils/helpers';
 import { MissingLibraryLinks } from './MissingLibraryLinks';
 import { PriorityBadge } from './PriorityBadge';
+import { SceneryConflictList } from './SceneryConflictList';
 
 interface SortableSceneryEntryProps {
   entry: SceneryEntry;
@@ -29,7 +36,27 @@ interface SortableSceneryEntryProps {
   onOpenFolder: (fullPath: string) => void;
   onDelete: (folderName: string) => void;
   disabled: boolean;
+  /** The tier the row shows and sorts by: the user's choice when set. */
+  priority: SceneryPriority;
+  /** The user filed this pack under a tier themselves. */
+  overridden: boolean;
+  onSetCategory: (folderName: string, tier: SceneryPriority | null) => void;
+  selected: boolean;
+  /** Any row is selected, so every row shows its checkbox. */
+  selecting: boolean;
+  onSelect: (folderName: string, selected: boolean) => void;
 }
+
+/** Tiers a user may file a pack under, with their badge text; Global Airports has its own row. */
+const CHOOSABLE_TIERS: Array<[SceneryPriority, string | { literal: string }]> = [
+  [SceneryPriority.FixedHighPriority, { literal: 'SAM' }],
+  [SceneryPriority.Airport, 'airports'],
+  [SceneryPriority.Library, 'libraries'],
+  [SceneryPriority.Other, 'other'],
+  [SceneryPriority.Overlay, 'overlays'],
+  [SceneryPriority.AirportMesh, 'airportMesh'],
+  [SceneryPriority.Mesh, 'mesh'],
+];
 
 // Memoized: the tab re-renders on every keystroke in the search box and on
 // every mutation flag flip, and scenery lists run to hundreds of rows.
@@ -41,6 +68,12 @@ export const SortableSceneryEntry = memo(function SortableSceneryEntry({
   onOpenFolder,
   onDelete,
   disabled,
+  priority,
+  overridden,
+  onSetCategory,
+  selected,
+  selecting,
+  onSelect,
 }: SortableSceneryEntryProps) {
   const { t } = useTranslation();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -69,6 +102,17 @@ export const SortableSceneryEntry = memo(function SortableSceneryEntry({
             !isDragging && 'hover:border-border hover:bg-card'
           )}
         >
+          {/* Selection for batch actions */}
+          <Checkbox
+            checked={selected}
+            onCheckedChange={(checked) => onSelect(entry.folderName, checked === true)}
+            aria-label={t('addonManager.scenery.selection.select')}
+            className={cn(
+              'transition-opacity',
+              selected || selecting ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+            )}
+          />
+
           {/* Position number */}
           <div
             className={cn(
@@ -107,7 +151,12 @@ export const SortableSceneryEntry = memo(function SortableSceneryEntry({
           </div>
 
           {/* Priority badge */}
-          <PriorityBadge priority={entry.priority} />
+          <span
+            className={cn(overridden && 'ring-primary/50 rounded-md ring-1')}
+            title={overridden ? t('addonManager.scenery.category.byYou') : undefined}
+          >
+            <PriorityBadge priority={priority} />
+          </span>
 
           {/* Folder name */}
           <div className="min-w-0 flex-1">
@@ -137,6 +186,36 @@ export const SortableSceneryEntry = memo(function SortableSceneryEntry({
               </PopoverTrigger>
               <PopoverContent align="end" className="w-80 p-3">
                 <MissingLibraryLinks libraries={entry.missingLibraries} />
+              </PopoverContent>
+            </Popover>
+          )}
+
+          {/* Other packs that cover the same airports or tiles */}
+          {entry.conflicts && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <button type="button" className="shrink-0">
+                  <Badge
+                    variant={
+                      entry.conflicts.duplicateAirports.some(
+                        (dup) => dup.winner !== null && dup.winner !== entry.folderName
+                      )
+                        ? 'warning'
+                        : 'secondary'
+                    }
+                    className="gap-1 text-xs"
+                  >
+                    <Layers className="h-3 w-3" />
+                    {t('addonManager.scenery.conflicts.badge', {
+                      count:
+                        entry.conflicts.duplicateAirports.length +
+                        entry.conflicts.duplicateTiles.length,
+                    })}
+                  </Badge>
+                </button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-80 p-3">
+                <SceneryConflictList folderName={entry.folderName} conflicts={entry.conflicts} />
               </PopoverContent>
             </Popover>
           )}
@@ -182,6 +261,36 @@ export const SortableSceneryEntry = memo(function SortableSceneryEntry({
           <FolderOpen className="mr-2 h-3.5 w-3.5" />
           {t('addonManager.sceneryEntry.openFolder')}
         </ContextMenuItem>
+        <ContextMenuSub>
+          <ContextMenuSubTrigger>
+            <Tag className="mr-2 h-3.5 w-3.5" />
+            {t('addonManager.scenery.category.set')}
+          </ContextMenuSubTrigger>
+          <ContextMenuSubContent>
+            <ContextMenuRadioGroup
+              value={String(priority)}
+              onValueChange={(value) =>
+                onSetCategory(entry.folderName, Number(value) as SceneryPriority)
+              }
+            >
+              {CHOOSABLE_TIERS.map(([tier, label]) => (
+                <ContextMenuRadioItem key={tier} value={String(tier)}>
+                  {typeof label === 'string'
+                    ? t(`addonManager.scenery.badge.${label}`)
+                    : label.literal}
+                </ContextMenuRadioItem>
+              ))}
+            </ContextMenuRadioGroup>
+            {overridden && (
+              <>
+                <ContextMenuSeparator />
+                <ContextMenuItem onSelect={() => onSetCategory(entry.folderName, null)}>
+                  {t('addonManager.scenery.category.reset')}
+                </ContextMenuItem>
+              </>
+            )}
+          </ContextMenuSubContent>
+        </ContextMenuSub>
         <ContextMenuSeparator />
         <ContextMenuItem
           onSelect={() => onDelete(entry.folderName)}

@@ -948,19 +948,64 @@
         "allClear": "未发现明显问题。",
         "noMatches": "没有条目匹配当前筛选。"
       },
-      "entriesHeader": "日志条目",
-      "entryCount": "显示 {{total}} 条中的 {{shown}} 条",
-      "showHeader": "显示启动前日志开头（{{count}} 行）",
-      "hideHeader": "隐藏启动前日志开头",
       "filter": {
         "all": "全部",
-        "errorsWarnings": "错误 + 警告",
         "errors": "错误",
         "warnings": "警告"
       },
       "openExternal": "打开 Log.txt",
       "searchPlaceholder": "搜索日志…",
-      "openFailed": "无法打开 Log.txt。"
+      "openFailed": "无法打开 Log.txt。",
+      "session": {
+        "title": "上次会话",
+        "clean": "正常退出",
+        "crashed": "崩溃",
+        "stopped": "没有退出记录就结束了（崩溃，或仍在运行）",
+        "beta": "测试版",
+        "version": "X-Plane",
+        "driver": "驱动",
+        "noIssues": "没有已知的问题行。",
+        "context_one": "崩溃前后 {{count}} 行",
+        "context_other": "崩溃前后 {{count}} 行",
+        "times": "×{{count}}",
+        "unknown": "不是 X-Plane 日志"
+      },
+      "issues": {
+        "plugin_manager_error": "插件管理器错误",
+        "scenery_pack_problem": "地景包有问题",
+        "aircraft_unusable": "机体不可用",
+        "vulkan_alert": "Vulkan 警告",
+        "system_alert": "系统警告",
+        "plugin_assert": "插件断言",
+        "plugin_error": "插件错误",
+        "vulkan_error": "Vulkan 错误",
+        "graphics_error": "图形错误",
+        "aircraft_error": "机体错误",
+        "memory_heavy": "内存压力大",
+        "plugin_support_file": "缺少插件支持文件",
+        "out_of_memory": "内存不足",
+        "memory_status": "内存状态输出",
+        "access_violation": "访问冲突",
+        "dsf_error": "DSF 地块错误",
+        "scenery_error": "地景错误",
+        "network_error": "网络错误",
+        "weather_error": "天气错误",
+        "sound_error": "声音错误",
+        "memory_negative": "内存压力为负",
+        "textures_degraded": "纹理已降级",
+        "runloop_backed_up": "主循环积压",
+        "nvapi": "NVIDIA API 错误",
+        "injector_disabled": "已禁用覆盖注入",
+        "plugin_twice": "插件被加载两次",
+        "tls_failed": "TLS 连接失败",
+        "memory_regular": "内存压力正常",
+        "dataref_replaced": "Dataref 被替换",
+        "betterpushback_warn": "BetterPushback 警告",
+        "art_controls": "Art controls 已修改"
+      },
+      "lines_one": "{{count}} 条错误",
+      "lines_other": "{{count}} 条错误",
+      "showAll": "显示全部 {{count}} 条"
     },
     "flights": {
       "title": "飞行",
@@ -1206,7 +1251,25 @@
     "gateway": {
       "updateAvailable": "Gateway 有更新的版本",
       "credit": "{{artist}}，{{date}}",
-      "viewOnGateway": "在 Gateway 上查看"
+      "viewOnGateway": "在 Gateway 上查看",
+      "install": "安装",
+      "update": "更新",
+      "installing": "正在安装…",
+      "remove": "移除",
+      "installedFrom": "已从 Gateway 安装，提交 {{id}}",
+      "installed": "已从 Gateway 安装 {{icao}}",
+      "removed": "已移除 {{icao}} 的 Gateway 地景",
+      "conflictTitle": "另一个包已包含 {{icao}}",
+      "conflictBody": "{{pack}} 包含此机场。X-Plane 使用第一个启用的包，因此在你禁用它之前，从 Gateway 安装可能不起作用。仍要安装？",
+      "installAnyway": "仍要安装",
+      "restartHint": "启动一次 X-Plane 以识别新包。",
+      "errors": {
+        "DOWNLOAD_FAILED": "Gateway 没有响应。请检查网络后重试。",
+        "BAD_PACKAGE": "Gateway 返回的内容不是地景包。",
+        "INSTALL_FAILED": "无法安装该包。",
+        "NOT_INSTALLED": "此机场未安装 Gateway 包。",
+        "INVALID_INPUT": "请先设置 X-Plane 文件夹。"
+      }
     },
     "taxiRoute": {
       "taxiTo": "滑行至",
@@ -1235,7 +1298,9 @@
       "twr": "TWR",
       "app": "APP",
       "ctr": "CTR"
-    }
+    },
+    "sceneryPack": "地景：{{pack}}",
+    "sceneryPackShadowed": "地景：{{pack}}（{{count}} 个包包含此机场）"
   },
   "navigation": {
     "heading": "航向",
@@ -1727,6 +1792,8 @@
         "INVALID_PASSWORD": "此压缩包的密码错误。",
         "EXTRACTION_FAILED": "无法读取压缩包。它可能不完整或已损坏，请重新下载。",
         "MISSING_VOLUME": "此分卷压缩包缺少第 {{missing}} 部分。请把所有分卷放在同一文件夹中。",
+        "VERIFY_MARKERS": "解压出的文件夹不是完整的插件，因此未做任何更改。",
+        "VERIFY_FAILED": "安装后有些文件没有就位：{{files}}。请重新安装。",
         "PATH_TRAVERSAL": "压缩包包含不安全的文件路径，已拒绝。",
         "SIZE_EXCEEDED": "压缩包太大，无法安装。",
         "SUSPICIOUS_RATIO": "压缩包疑似 zip 炸弹，已拒绝。",
@@ -1763,6 +1830,10 @@
         "backedUp": "之前的文件已备份到 {{path}}",
         "noneSelected": "请至少选择一个插件进行安装",
         "selectToInstall": "安装"
+      },
+      "variant": {
+        "label": "变体",
+        "asShipped": "保持原样"
       }
     },
     "browser": {
@@ -1851,7 +1922,19 @@
         "overlays": "叠加层",
         "airportMesh": "机场网格",
         "mesh": "地形网格",
-        "unrecognized": "未识别"
+        "unrecognized": "未识别",
+        "title": "分组",
+        "new": "新建分组",
+        "newTitle": "新建地景分组",
+        "newDescription": "为分组命名。选中的包将加入，名称前缀会自动加入匹配的包。",
+        "name": "名称",
+        "namePlaceholder": "我的正射地块",
+        "prefix": "文件夹名以此开头",
+        "prefixPlaceholder": "zOrtho4XP_",
+        "create": "创建",
+        "remove": "删除分组",
+        "state": "{{total}} 个中 {{on}} 个已启用",
+        "all": "全部包"
       },
       "badge": {
         "airports": "机场",
@@ -1859,7 +1942,33 @@
         "libraries": "库",
         "other": "其他",
         "overlays": "叠加",
-        "mesh": "网格"
+        "mesh": "网格",
+        "airportMesh": "机场地形"
+      },
+      "conflicts": {
+        "title": "与其他包重叠",
+        "badge_one": "{{count}} 处重叠",
+        "badge_other": "{{count}} 处重叠",
+        "filter_one": "{{count}} 处重叠",
+        "filter_other": "{{count}} 处重叠",
+        "airportOtherWins": "X-Plane 使用 {{pack}}",
+        "airportThisWins": "此包优先于 {{packs}}",
+        "airportAllOff": "也在 {{packs}} 中，均已禁用",
+        "tile": "地块也在 {{packs}} 中"
+      },
+      "selection": {
+        "select": "选中以进行批量操作",
+        "count_one": "已选 {{count}} 个",
+        "count_other": "已选 {{count}} 个",
+        "enable": "启用",
+        "disable": "禁用",
+        "clear": "清除",
+        "group": "分组…"
+      },
+      "category": {
+        "set": "设置类别",
+        "reset": "恢复为检测结果",
+        "byYou": "由你设置的类别；自动排序会采用"
       }
     },
     "liveryDialog": {

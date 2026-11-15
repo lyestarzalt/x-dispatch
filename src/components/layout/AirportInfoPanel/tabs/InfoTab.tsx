@@ -1,7 +1,19 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ExternalLink } from 'lucide-react';
+import { Download, ExternalLink, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import { packForAirport } from '@/lib/addonManager/scenery/conflicts';
 import {
   ATC_ROLE_BADGE_VARIANTS,
   type AtcBadgeVariant,
@@ -11,8 +23,15 @@ import { airportRunwayUse } from '@/lib/networkTraffic/atis';
 import { trafficCountsForAirport } from '@/lib/networkTraffic/stations';
 import { formatFrequency } from '@/lib/utils/format';
 import { runwayLengthFeet } from '@/lib/utils/geomath';
+import { toastError } from '@/lib/utils/toastError';
 import { useAirportATC, useNavDataQuery } from '@/queries';
-import { useGatewayUpdateCheck } from '@/queries/useGatewayQuery';
+import { useSceneryList } from '@/queries/useAddonManager';
+import {
+  GatewayActionError,
+  useGatewayInstall,
+  useGatewayRemove,
+  useGatewayUpdateCheck,
+} from '@/queries/useGatewayQuery';
 import { useNetworkTraffic } from '@/queries/useNetworkTraffic';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import { useAppStore } from '@/stores/appStore';
@@ -100,6 +119,46 @@ export default function InfoTab() {
     50
   );
   const { data: gatewayUpdate } = useGatewayUpdateCheck(icao, isCustom);
+  const gatewayInstall = useGatewayInstall();
+  const gatewayRemove = useGatewayRemove();
+  // A custom pack already covers the airport: the install waits for a yes.
+  const [gatewayConflict, setGatewayConflict] = useState<string | null>(null);
+  const installFromGateway = async (force: boolean) => {
+    if (!icao || !gatewayUpdate) return;
+    try {
+      await gatewayInstall.mutateAsync({
+        icao,
+        sceneryId: gatewayUpdate.recommendedPackId,
+        force,
+      });
+      toast.success(t('airportInfo.gateway.installed', { icao }), {
+        description: t('airportInfo.gateway.restartHint'),
+      });
+    } catch (e) {
+      if (e instanceof GatewayActionError && e.error.code === 'CONFLICT') {
+        setGatewayConflict(e.error.pack);
+        return;
+      }
+      const code = e instanceof GatewayActionError ? e.error.code : 'INSTALL_FAILED';
+      toastError('addon_manager', t(`airportInfo.gateway.errors.${code}`));
+    }
+  };
+  const removeFromGateway = async () => {
+    if (!icao) return;
+    try {
+      await gatewayRemove.mutateAsync(icao);
+      toast.success(t('airportInfo.gateway.removed', { icao }));
+    } catch (e) {
+      const code = e instanceof GatewayActionError ? e.error.code : 'INSTALL_FAILED';
+      toastError('addon_manager', t(`airportInfo.gateway.errors.${code}`));
+    }
+  };
+  // Only what the Scenery tab already scanned this session: the panel never starts a scan.
+  const { data: sceneryEntries } = useSceneryList(false);
+  const sceneryPack = useMemo(
+    () => (isCustom && icao && sceneryEntries ? packForAirport(sceneryEntries, icao) : null),
+    [isCustom, icao, sceneryEntries]
+  );
   // Area-control facilities over the airport, appended to the FREQUENCIES
   // list. Towers stay out — the airport's own rows already carry them.
   const { data: atcControllers } = useAirportATC(
@@ -237,37 +296,108 @@ export default function InfoTab() {
 
   return (
     <div className="space-y-4">
-      {/* Gateway update banner (kept) */}
-      {gatewayUpdate && (
-        <Button
-          variant="ghost"
-          onClick={() => window.appAPI.openExternal(gatewayUpdate.gatewayUrl)}
-          className="group border-primary/15 bg-primary/5 hover:bg-primary/10 h-auto w-full gap-3 border p-3 text-left"
-        >
-          <img
-            src={gatewayLogo}
-            alt=""
-            className="h-5 w-auto shrink-0 opacity-50 transition-opacity group-hover:opacity-70"
-          />
+      {/* Gateway: a newer submission than X-Plane ships, or the pack we installed */}
+      {gatewayUpdate && (gatewayUpdate.hasUpdate || gatewayUpdate.installedByUs) && (
+        <div className="border-primary/15 bg-primary/5 flex items-center gap-3 rounded-lg border p-3">
+          <img src={gatewayLogo} alt="" className="h-5 w-auto shrink-0 opacity-50" />
           <div className="min-w-0 flex-1">
-            <p className="text-primary text-xs">{t('airportInfo.gateway.updateAvailable')}</p>
-            {(gatewayUpdate.artistName || gatewayUpdate.dateApproved) && (
-              <p className="text-muted-foreground text-2xs mt-0.5">
-                {t('airportInfo.gateway.credit', {
-                  artist: gatewayUpdate.artistName,
-                  date: gatewayUpdate.dateApproved
-                    ? new Date(gatewayUpdate.dateApproved).toLocaleDateString(undefined, {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                      })
-                    : '',
-                })}
-              </p>
-            )}
+            <p className="text-primary truncate text-xs">
+              {gatewayUpdate.hasUpdate
+                ? t('airportInfo.gateway.updateAvailable')
+                : t('airportInfo.gateway.installedFrom', { id: gatewayUpdate.currentPackId })}
+            </p>
+            {gatewayUpdate.hasUpdate &&
+              (gatewayUpdate.artistName || gatewayUpdate.dateApproved) && (
+                <p className="text-muted-foreground text-2xs mt-0.5 truncate">
+                  {t('airportInfo.gateway.credit', {
+                    artist: gatewayUpdate.artistName,
+                    date: gatewayUpdate.dateApproved
+                      ? new Date(gatewayUpdate.dateApproved).toLocaleDateString(undefined, {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        })
+                      : '',
+                  })}
+                </p>
+              )}
           </div>
-          <ExternalLink className="text-primary/30 group-hover:text-primary/60 h-3.5 w-3.5 shrink-0" />
-        </Button>
+          {gatewayUpdate.hasUpdate && (
+            <Button
+              size="xs"
+              className="shrink-0"
+              disabled={gatewayInstall.isPending}
+              onClick={() => installFromGateway(false)}
+            >
+              <Download className="h-3.5 w-3.5" />
+              {gatewayInstall.isPending
+                ? t('airportInfo.gateway.installing')
+                : gatewayUpdate.installedByUs
+                  ? t('airportInfo.gateway.update')
+                  : t('airportInfo.gateway.install')}
+            </Button>
+          )}
+          {gatewayUpdate.installedByUs && (
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="hover:text-destructive shrink-0"
+              disabled={gatewayRemove.isPending}
+              onClick={removeFromGateway}
+              tooltip={t('airportInfo.gateway.remove')}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="shrink-0"
+            onClick={() => window.appAPI.openExternal(gatewayUpdate.gatewayUrl)}
+            tooltip={t('airportInfo.gateway.viewOnGateway')}
+          >
+            <ExternalLink className="text-primary/60 h-3.5 w-3.5" />
+          </Button>
+        </div>
+      )}
+
+      <AlertDialog
+        open={gatewayConflict !== null}
+        onOpenChange={(open) => !open && setGatewayConflict(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('airportInfo.gateway.conflictTitle', { icao })}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('airportInfo.gateway.conflictBody', { pack: gatewayConflict ?? '' })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setGatewayConflict(null);
+                void installFromGateway(true);
+              }}
+            >
+              {t('airportInfo.gateway.installAnyway')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {sceneryPack && (
+        <p
+          className="text-muted-foreground min-w-0 truncate text-xs"
+          title={sceneryPack.winner ?? ''}
+        >
+          {sceneryPack.count > 1
+            ? t('airportInfo.sceneryPackShadowed', {
+                pack: sceneryPack.winner ?? '',
+                count: sceneryPack.count,
+              })
+            : t('airportInfo.sceneryPack', { pack: sceneryPack.winner ?? '' })}
+        </p>
       )}
 
       <ConditionsCard

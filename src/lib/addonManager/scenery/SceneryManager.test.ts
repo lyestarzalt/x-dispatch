@@ -4,6 +4,7 @@ import * as path from 'path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { buildMinimalLnk } from '@/lib/utils/buildLnkFixture';
 import { buildDsf } from '../core/dsfFixture';
+import { SceneryPriority } from '../core/types';
 
 vi.mock('@/lib/utils/logger', () => {
   const noop = () => {};
@@ -225,5 +226,53 @@ describe('SceneryManager \u2014 one write at a time', () => {
     expect(written).toContain('SCENERY_PACK_DISABLED Custom Scenery/Alpha/');
     expect(written).toContain('SCENERY_PACK_DISABLED Custom Scenery/Bravo/');
     expect(written).toContain('SCENERY_PACK_DISABLED Custom Scenery/Charlie/');
+  });
+});
+
+describe('SceneryManager — batch enable and tier overrides', () => {
+  function airport(name: string) {
+    const dir = path.join(customScenery, name, 'Earth nav data');
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, 'apt.dat'), 'I\n1000 Version\n1 10 0 0 EGLL Test\n99\n');
+  }
+
+  it('switches several packs in one write and reports the ones that changed', async () => {
+    for (const name of ['A', 'B', 'C']) airport(name);
+    fs.writeFileSync(
+      path.join(customScenery, 'scenery_packs.ini'),
+      'I\n1000 Version\nSCENERY\n\nSCENERY_PACK Custom Scenery/A/\nSCENERY_PACK Custom Scenery/B/\nSCENERY_PACK_DISABLED Custom Scenery/C/\n'
+    );
+    const manager = new SceneryManager(xpRoot);
+    const result = await manager.setEnabled(['A', 'C'], false);
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error(result.error.code);
+    expect(result.value.map((e) => e.folderName)).toEqual(['A']);
+    const ini = fs.readFileSync(path.join(customScenery, 'scenery_packs.ini'), 'utf8');
+    expect(ini).toContain('SCENERY_PACK_DISABLED Custom Scenery/A/');
+    expect(ini).toContain('SCENERY_PACK Custom Scenery/B/');
+    expect(ini).toContain('SCENERY_PACK_DISABLED Custom Scenery/C/');
+  });
+
+  it('names a pack that is not there instead of writing', async () => {
+    airport('A');
+    const manager = new SceneryManager(xpRoot);
+    const result = await manager.setEnabled(['A', 'Nope'], true);
+    expect(result).toEqual({ ok: false, error: { code: 'FOLDER_NOT_FOUND', folderName: 'Nope' } });
+  });
+
+  it('sorts a pack by the tier the user gave it', async () => {
+    airport('Airport');
+    const lib = path.join(customScenery, 'Odd');
+    fs.mkdirSync(lib, { recursive: true });
+    fs.writeFileSync(path.join(lib, 'readme.txt'), 'nothing recognisable');
+    const manager = new SceneryManager(xpRoot);
+    const analyzed = await manager.analyze();
+    if (!analyzed.ok) throw new Error(analyzed.error.code);
+    const byDefault = manager.sort(analyzed.value).map((e) => e.folderName);
+    expect(byDefault.indexOf('Odd')).toBeGreaterThan(byDefault.indexOf('Airport'));
+    const overridden = manager
+      .sort(analyzed.value, { Odd: SceneryPriority.FixedHighPriority })
+      .map((e) => e.folderName);
+    expect(overridden.indexOf('Odd')).toBeLessThan(overridden.indexOf('Airport'));
   });
 });

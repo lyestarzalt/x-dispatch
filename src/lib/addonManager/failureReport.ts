@@ -44,6 +44,8 @@ const USER_SIDE_CODES = new Set([
   'NOT_FOUND',
   'INVALID_INPUT',
   'PATH_TRAVERSAL',
+  // X-Plane has not run yet, so it has not written the file.
+  'INI_NOT_FOUND',
 ]);
 
 const PERMISSION_PATTERN = /\b(EPERM|EACCES)\b/;

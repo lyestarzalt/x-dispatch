@@ -348,9 +348,18 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
 
     // Addon Manager API
     addonManagerAPI: {
+      gateway: {
+        installed: (icao: string) => t.invoke('addon:gateway:installed', icao),
+        install: (icao: string, sceneryId: number, force: boolean) =>
+          t.invoke('addon:gateway:install', icao, sceneryId, force),
+        remove: (icao: string) => t.invoke('addon:gateway:remove', icao),
+      },
       scenery: {
         analyze: () => t.invoke('addon:scenery:analyze'),
-        sort: () => t.invoke('addon:scenery:sort'),
+        sort: (overrides?: Record<string, number>) =>
+          t.invoke('addon:scenery:sort', overrides ?? {}),
+        setEnabled: (folderNames: string[], enabled: boolean) =>
+          t.invoke('addon:scenery:setEnabled', folderNames, enabled),
         saveOrder: (folderNames: string[]) => t.invoke('addon:scenery:saveOrder', folderNames),
         toggle: (folderName: string) => t.invoke('addon:scenery:toggle', folderName),
         deleteScenery: (folderName: string) => t.invoke('addon:scenery:delete', folderName),

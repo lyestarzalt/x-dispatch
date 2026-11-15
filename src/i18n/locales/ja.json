@@ -948,19 +948,64 @@
         "allClear": "このログに問題は見つかりませんでした。",
         "noMatches": "現在のフィルターに該当するエントリはありません。"
       },
-      "entriesHeader": "ログエントリ",
-      "entryCount": "{{total}} 件中 {{shown}} 件を表示",
-      "showHeader": "起動前ヘッダーを表示（{{count}} 行）",
-      "hideHeader": "起動前ヘッダーを非表示",
       "filter": {
         "all": "すべて",
-        "errorsWarnings": "エラー + 警告",
         "errors": "エラー",
         "warnings": "警告"
       },
       "openExternal": "Log.txt を開く",
       "searchPlaceholder": "ログを検索…",
-      "openFailed": "Log.txt を開けませんでした。"
+      "openFailed": "Log.txt を開けませんでした。",
+      "session": {
+        "title": "前回のセッション",
+        "clean": "正常終了",
+        "crashed": "クラッシュ",
+        "stopped": "終了行なしで終わっています（クラッシュ、または実行中）",
+        "beta": "ベータ",
+        "version": "X-Plane",
+        "driver": "ドライバー",
+        "noIssues": "既知の問題行はありません。",
+        "context_one": "クラッシュ前後の {{count}} 行",
+        "context_other": "クラッシュ前後の {{count}} 行",
+        "times": "×{{count}}",
+        "unknown": "X-Plane のログではありません"
+      },
+      "issues": {
+        "plugin_manager_error": "プラグインマネージャーのエラー",
+        "scenery_pack_problem": "シーナリーパックの問題",
+        "aircraft_unusable": "機体が使用不能",
+        "vulkan_alert": "Vulkan 警告",
+        "system_alert": "システム警告",
+        "plugin_assert": "プラグインのアサート",
+        "plugin_error": "プラグインエラー",
+        "vulkan_error": "Vulkan エラー",
+        "graphics_error": "グラフィックエラー",
+        "aircraft_error": "機体エラー",
+        "memory_heavy": "メモリ逼迫（重）",
+        "plugin_support_file": "プラグイン補助ファイルの欠落",
+        "out_of_memory": "メモリ不足",
+        "memory_status": "メモリ状態の出力",
+        "access_violation": "アクセス違反",
+        "dsf_error": "DSF タイルエラー",
+        "scenery_error": "シーナリーエラー",
+        "network_error": "ネットワークエラー",
+        "weather_error": "気象エラー",
+        "sound_error": "サウンドエラー",
+        "memory_negative": "メモリ逼迫（負）",
+        "textures_degraded": "テクスチャ劣化",
+        "runloop_backed_up": "ランループ遅延",
+        "nvapi": "NVIDIA API エラー",
+        "injector_disabled": "オーバーレイ注入を無効化",
+        "plugin_twice": "プラグインの二重読み込み",
+        "tls_failed": "TLS 接続失敗",
+        "memory_regular": "メモリ逼迫（通常）",
+        "dataref_replaced": "Dataref の置き換え",
+        "betterpushback_warn": "BetterPushback の警告",
+        "art_controls": "Art controls 変更"
+      },
+      "lines_one": "エラー行 {{count}} 件",
+      "lines_other": "エラー行 {{count}} 件",
+      "showAll": "すべて表示（{{count}}）"
     },
     "flights": {
       "title": "フライト",
@@ -1206,7 +1251,25 @@
     "gateway": {
       "updateAvailable": "Gatewayに新しいリリースがあります",
       "credit": "{{artist}}、{{date}}",
-      "viewOnGateway": "Gatewayで表示"
+      "viewOnGateway": "Gatewayで表示",
+      "install": "インストール",
+      "update": "更新",
+      "installing": "インストール中…",
+      "remove": "削除",
+      "installedFrom": "Gateway からインストール済み、投稿 {{id}}",
+      "installed": "{{icao}} を Gateway からインストールしました",
+      "removed": "{{icao}} の Gateway シーナリーを削除しました",
+      "conflictTitle": "別のパックがすでに {{icao}} を含んでいます",
+      "conflictBody": "{{pack}} がこの空港を含んでいます。X-Plane は有効な最初のパックを使うため、無効にするまで Gateway からのインストールは反映されないかもしれません。それでもインストールしますか？",
+      "installAnyway": "それでもインストール",
+      "restartHint": "新しいパックを認識させるため X-Plane を一度起動してください。",
+      "errors": {
+        "DOWNLOAD_FAILED": "Gateway から応答がありません。接続を確認して再試行してください。",
+        "BAD_PACKAGE": "Gateway から届いたものはシーナリーパックではありません。",
+        "INSTALL_FAILED": "パックをインストールできませんでした。",
+        "NOT_INSTALLED": "この空港の Gateway パックはインストールされていません。",
+        "INVALID_INPUT": "先に X-Plane フォルダーを設定してください。"
+      }
     },
     "taxiRoute": {
       "taxiTo": "地上走行先",
@@ -1235,7 +1298,9 @@
       "twr": "TWR",
       "app": "APP",
       "ctr": "CTR"
-    }
+    },
+    "sceneryPack": "シーナリー: {{pack}}",
+    "sceneryPackShadowed": "シーナリー: {{pack}}（{{count}} 個のパックがこの空港を含む）"
   },
   "navigation": {
     "heading": "方位",
@@ -1727,6 +1792,8 @@
         "INVALID_PASSWORD": "このアーカイブのパスワードが違います。",
         "EXTRACTION_FAILED": "アーカイブを読み取れませんでした。不完全か破損している可能性があります。もう一度ダウンロードしてください。",
         "MISSING_VOLUME": "この分割アーカイブのパート {{missing}} がありません。すべてのパートを同じフォルダーに置いてください。",
+        "VERIFY_MARKERS": "展開したフォルダーは完全なアドオンではないため、何も変更していません。",
+        "VERIFY_FAILED": "インストール後に一部のファイルが所定の場所にありません: {{files}}。もう一度インストールしてください。",
         "PATH_TRAVERSAL": "アーカイブに安全でないファイルパスが含まれているため拒否しました。",
         "SIZE_EXCEEDED": "アーカイブが大きすぎてインストールできません。",
         "SUSPICIOUS_RATIO": "アーカイブが zip 爆弾のように見えるため拒否しました。",
@@ -1763,6 +1830,10 @@
         "backedUp": "以前のファイルを {{path}} にバックアップしました",
         "noneSelected": "インストールするアドオンを 1 つ以上選んでください",
         "selectToInstall": "インストール"
+      },
+      "variant": {
+        "label": "バリエーション",
+        "asShipped": "配布時のまま"
       }
     },
     "browser": {
@@ -1851,7 +1922,19 @@
         "overlays": "オーバーレイ",
         "airportMesh": "空港メッシュ",
         "mesh": "地形メッシュ",
-        "unrecognized": "認識不能"
+        "unrecognized": "認識不能",
+        "title": "グループ",
+        "new": "新しいグループ",
+        "newTitle": "新しいシーナリーグループ",
+        "newDescription": "グループ名を付けます。選択中のパックが加わり、名前の接頭辞で自動的にパックを追加できます。",
+        "name": "名前",
+        "namePlaceholder": "自分のオルソタイル",
+        "prefix": "フォルダー名の先頭",
+        "prefixPlaceholder": "zOrtho4XP_",
+        "create": "作成",
+        "remove": "グループを削除",
+        "state": "{{total}} 個中 {{on}} 個が有効",
+        "all": "すべてのパック"
       },
       "badge": {
         "airports": "空港",
@@ -1859,7 +1942,33 @@
         "libraries": "ライブラリ",
         "other": "その他",
         "overlays": "オーバーレイ",
-        "mesh": "メッシュ"
+        "mesh": "メッシュ",
+        "airportMesh": "空港メッシュ"
+      },
+      "conflicts": {
+        "title": "他のパックと重複",
+        "badge_one": "{{count}} 件の重複",
+        "badge_other": "{{count}} 件の重複",
+        "filter_one": "{{count}} 件の重複",
+        "filter_other": "{{count}} 件の重複",
+        "airportOtherWins": "X-Plane は {{pack}} を使用",
+        "airportThisWins": "このパックが {{packs}} より優先",
+        "airportAllOff": "{{packs}} にもあり、すべて無効",
+        "tile": "タイルは {{packs}} にもあり"
+      },
+      "selection": {
+        "select": "一括操作のために選択",
+        "count_one": "{{count}} 件選択",
+        "count_other": "{{count}} 件選択",
+        "enable": "有効化",
+        "disable": "無効化",
+        "clear": "解除",
+        "group": "グループ化…"
+      },
+      "category": {
+        "set": "カテゴリを設定",
+        "reset": "検出結果に戻す",
+        "byYou": "自分で設定したカテゴリ。自動並べ替えに使われます"
       }
     },
     "liveryDialog": {

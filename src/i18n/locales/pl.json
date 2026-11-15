@@ -948,19 +948,64 @@
         "allClear": "W tym dzienniku nie wykryto problemów.",
         "noMatches": "Żadne wpisy nie pasują do bieżącego filtra."
       },
-      "entriesHeader": "Wpisy dziennika",
-      "entryCount": "Pokazano {{shown}} z {{total}} wpisów",
-      "showHeader": "Pokaż nagłówek sprzed uruchomienia ({{count}} wierszy)",
-      "hideHeader": "Ukryj nagłówek sprzed uruchomienia",
       "filter": {
         "all": "Wszystko",
-        "errorsWarnings": "Błędy + Ostrzeżenia",
         "errors": "Błędy",
         "warnings": "Ostrzeżenia"
       },
       "openExternal": "Otwórz Log.txt",
       "searchPlaceholder": "Szukaj w dzienniku…",
-      "openFailed": "Nie można otworzyć Log.txt."
+      "openFailed": "Nie można otworzyć Log.txt.",
+      "session": {
+        "title": "Ostatnia sesja",
+        "clean": "Zamknięto poprawnie",
+        "crashed": "Awaria",
+        "stopped": "Zakończono bez wiersza zamknięcia (awaria lub nadal działa)",
+        "beta": "Beta",
+        "version": "X-Plane",
+        "driver": "sterownik",
+        "noIssues": "Brak znanych wierszy z problemami.",
+        "context_one": "{{count}} wiersz wokół awarii",
+        "context_other": "{{count}} wierszy wokół awarii",
+        "times": "×{{count}}",
+        "unknown": "To nie jest log X-Plane"
+      },
+      "issues": {
+        "plugin_manager_error": "Błąd menedżera wtyczek",
+        "scenery_pack_problem": "Problem z pakietem scenerii",
+        "aircraft_unusable": "Samolot nieużyteczny",
+        "vulkan_alert": "Alert Vulkan",
+        "system_alert": "Alert systemowy",
+        "plugin_assert": "Asercja wtyczki",
+        "plugin_error": "Błąd wtyczki",
+        "vulkan_error": "Błąd Vulkan",
+        "graphics_error": "Błąd grafiki",
+        "aircraft_error": "Błąd samolotu",
+        "memory_heavy": "Silna presja pamięci",
+        "plugin_support_file": "Brak pliku pomocniczego wtyczki",
+        "out_of_memory": "Brak pamięci",
+        "memory_status": "Zrzut stanu pamięci",
+        "access_violation": "Naruszenie dostępu",
+        "dsf_error": "Błąd kafelka DSF",
+        "scenery_error": "Błąd scenerii",
+        "network_error": "Błąd sieci",
+        "weather_error": "Błąd pogody",
+        "sound_error": "Błąd dźwięku",
+        "memory_negative": "Ujemna presja pamięci",
+        "textures_degraded": "Tekstury obniżone",
+        "runloop_backed_up": "Pętla główna opóźniona",
+        "nvapi": "Błąd API NVIDIA",
+        "injector_disabled": "Wstrzykiwacz nakładki wyłączony",
+        "plugin_twice": "Wtyczka załadowana dwukrotnie",
+        "tls_failed": "Połączenie TLS nieudane",
+        "memory_regular": "Zwykła presja pamięci",
+        "dataref_replaced": "Dataref zastąpiony",
+        "betterpushback_warn": "Ostrzeżenie BetterPushback",
+        "art_controls": "Zmienione art controls"
+      },
+      "lines_one": "{{count}} wiersz błędu",
+      "lines_other": "{{count}} wierszy błędów",
+      "showAll": "Pokaż wszystkie ({{count}})"
     },
     "flights": {
       "title": "Loty",
@@ -1206,7 +1251,25 @@
     "gateway": {
       "updateAvailable": "Gateway ma nowszą wersję",
       "credit": "od {{artist}}, {{date}}",
-      "viewOnGateway": "Zobacz na Gateway"
+      "viewOnGateway": "Zobacz na Gateway",
+      "install": "Zainstaluj",
+      "update": "Aktualizuj",
+      "installing": "Instalowanie…",
+      "remove": "Usuń",
+      "installedFrom": "Zainstalowano z Gateway, zgłoszenie {{id}}",
+      "installed": "{{icao}} zainstalowano z Gateway",
+      "removed": "Usunięto scenerię Gateway dla {{icao}}",
+      "conflictTitle": "Inny pakiet już obejmuje {{icao}}",
+      "conflictBody": "{{pack}} deklaruje to lotnisko. X-Plane używa pierwszego włączonego pakietu, więc instalacja z Gateway może nic nie zmienić, dopóki go nie wyłączysz. Zainstalować mimo to?",
+      "installAnyway": "Zainstaluj mimo to",
+      "restartHint": "Uruchom raz X-Plane, aby wczytał nowy pakiet.",
+      "errors": {
+        "DOWNLOAD_FAILED": "Gateway nie odpowiedział. Sprawdź połączenie i spróbuj ponownie.",
+        "BAD_PACKAGE": "Gateway przysłał coś, co nie jest pakietem scenerii.",
+        "INSTALL_FAILED": "Nie udało się zainstalować pakietu.",
+        "NOT_INSTALLED": "Dla tego lotniska nie zainstalowano pakietu Gateway.",
+        "INVALID_INPUT": "Najpierw ustaw folder X-Plane."
+      }
     },
     "taxiRoute": {
       "taxiTo": "Kołowanie do",
@@ -1235,7 +1298,9 @@
       "twr": "TWR",
       "app": "APP",
       "ctr": "CTR"
-    }
+    },
+    "sceneryPack": "Sceneria: {{pack}}",
+    "sceneryPackShadowed": "Sceneria: {{pack}} ({{count}} pakietów obejmuje to lotnisko)"
   },
   "navigation": {
     "heading": "KURS",
@@ -1727,6 +1792,8 @@
         "INVALID_PASSWORD": "Błędne hasło do tego archiwum.",
         "EXTRACTION_FAILED": "Nie udało się odczytać archiwum. Może być niekompletne lub uszkodzone; pobierz je ponownie.",
         "MISSING_VOLUME": "Brakuje części {{missing}} tego podzielonego archiwum. Umieść wszystkie części w tym samym folderze.",
+        "VERIFY_MARKERS": "Rozpakowany folder nie jest kompletnym dodatkiem, więc nic nie zmieniono.",
+        "VERIFY_FAILED": "Po instalacji niektóre pliki nie trafiły na miejsce: {{files}}. Zainstaluj go ponownie.",
         "PATH_TRAVERSAL": "Archiwum zawiera niebezpieczne ścieżki plików i zostało odrzucone.",
         "SIZE_EXCEEDED": "Archiwum jest za duże, aby je zainstalować.",
         "SUSPICIOUS_RATIO": "Archiwum wygląda na bombę zip i zostało odrzucone.",
@@ -1763,6 +1830,10 @@
         "backedUp": "Poprzednie pliki zapisano w {{path}}",
         "noneSelected": "Wybierz co najmniej jeden dodatek do instalacji",
         "selectToInstall": "Zainstaluj"
+      },
+      "variant": {
+        "label": "Wariant",
+        "asShipped": "Jak dostarczono"
       }
     },
     "browser": {
@@ -1851,7 +1922,19 @@
         "overlays": "Nakładki",
         "airportMesh": "Siatka lotniska",
         "mesh": "Siatka terenu",
-        "unrecognized": "Nierozpoznane"
+        "unrecognized": "Nierozpoznane",
+        "title": "Grupy",
+        "new": "Nowa grupa",
+        "newTitle": "Nowa grupa scenerii",
+        "newDescription": "Nazwij grupę. Zaznaczone pakiety dołączą, a prefiks nazwy dodaje pakiety automatycznie.",
+        "name": "Nazwa",
+        "namePlaceholder": "Moje kafelki orto",
+        "prefix": "Nazwa folderu zaczyna się od",
+        "prefixPlaceholder": "zOrtho4XP_",
+        "create": "Utwórz",
+        "remove": "Usuń grupę",
+        "state": "{{on}} z {{total}} włączonych",
+        "all": "Wszystkie pakiety"
       },
       "badge": {
         "airports": "Lotnisko",
@@ -1859,7 +1942,33 @@
         "libraries": "Biblioteka",
         "other": "Inne",
         "overlays": "Nakładka",
-        "mesh": "Siatka"
+        "mesh": "Siatka",
+        "airportMesh": "Siatka lotniska"
+      },
+      "conflicts": {
+        "title": "Współdzielone z innymi pakietami",
+        "badge_one": "{{count}} nakładanie",
+        "badge_other": "{{count}} nakładań",
+        "filter_one": "{{count}} nakładanie",
+        "filter_other": "{{count}} nakładań",
+        "airportOtherWins": "X-Plane używa {{pack}}",
+        "airportThisWins": "Ten pakiet wygrywa z {{packs}}",
+        "airportAllOff": "Także w {{packs}}, wszystkie wyłączone",
+        "tile": "Kafelek także w {{packs}}"
+      },
+      "selection": {
+        "select": "Zaznacz do akcji zbiorczej",
+        "count_one": "{{count}} zaznaczony",
+        "count_other": "{{count}} zaznaczonych",
+        "enable": "Włącz",
+        "disable": "Wyłącz",
+        "clear": "Wyczyść",
+        "group": "Grupuj…"
+      },
+      "category": {
+        "set": "Ustaw kategorię",
+        "reset": "Wróć do wykrytej",
+        "byYou": "Kategoria ustawiona przez ciebie; autosortowanie jej używa"
       }
     },
     "liveryDialog": {

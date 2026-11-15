@@ -20,15 +20,19 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import {
   AlertCircle,
+  Boxes,
   Check,
   Globe,
   GripVertical,
   History,
+  Layers,
+  Plus,
   RefreshCw,
   Save,
   Search,
   Sparkles,
   Undo2,
+  X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -41,10 +45,16 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
-import type { SceneryEntry } from '@/lib/addonManager/core/types';
+import type { SceneryEntry, SceneryPriority } from '@/lib/addonManager/core/types';
+import {
+  buildSmartGroups,
+  customGroupMembers,
+  effectivePriority,
+} from '@/lib/addonManager/scenery/groups';
 import { errorMessage } from '@/lib/utils/errors';
 import { cn } from '@/lib/utils/helpers';
 import { toastError } from '@/lib/utils/toastError';
@@ -54,9 +64,12 @@ import {
   useSceneryDelete,
   useSceneryList,
   useSceneryRestore,
+  useScenerySetEnabled,
   useScenerySort,
   useSceneryToggle,
 } from '@/queries/useAddonManager';
+import { useXPlanePath } from '@/queries/useAppQuery';
+import { sceneryPrefsFor, useSceneryPrefsStore } from '@/stores/sceneryPrefsStore';
 import { SortableSceneryEntry } from '../components/SceneryEntry';
 
 function GlobalAirportsRow({
@@ -151,6 +164,21 @@ export function SceneryTab() {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [freeReorder, setFreeReorder] = useState(false);
+  const [conflictsOnly, setConflictsOnly] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(() => new Set());
+  const [activeGroup, setActiveGroup] = useState<string | null>(null);
+  const [newGroupOpen, setNewGroupOpen] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
+  const [newGroupPrefix, setNewGroupPrefix] = useState('');
+  const setEnabledMutation = useScenerySetEnabled();
+
+  // The user's own tiers and groups for this X-Plane folder
+  const { data: xplanePath = null } = useXPlanePath();
+  const prefs = useSceneryPrefsStore((s) => sceneryPrefsFor(s, xplanePath));
+  const setCategoryOverride = useSceneryPrefsStore((s) => s.setCategoryOverride);
+  const addCustomGroup = useSceneryPrefsStore((s) => s.addCustomGroup);
+  const removeCustomGroup = useSceneryPrefsStore((s) => s.removeCustomGroup);
+  const overrides = prefs.categoryOverrides;
 
   // Sync local state when remote data changes. We need a local fork so the
   // user can stage reorders/toggles before saving back.
@@ -165,15 +193,44 @@ export function SceneryTab() {
   const stats = useMemo(() => {
     const enabled = localEntries.filter((e) => e.enabled).length;
     const disabled = localEntries.length - enabled;
-    return { total: localEntries.length, enabled, disabled };
+    const conflicts = localEntries.filter((e) => e.conflicts).length;
+    return { total: localEntries.length, enabled, disabled, conflicts };
   }, [localEntries]);
 
-  // Filter by search query (show all if empty)
+  // Families of packs that switch together: read off the names, plus the user's own
+  const groups = useMemo(() => {
+    const smart = buildSmartGroups(localEntries).map((g) => ({
+      key: g.key,
+      label: g.label,
+      custom: null as string | null,
+      members: g.members,
+    }));
+    const custom = prefs.customGroups.map((g) => ({
+      key: `custom:${g.id}`,
+      label: g.name,
+      custom: g.id,
+      members: customGroupMembers(g, localEntries),
+    }));
+    return [...custom, ...smart];
+  }, [localEntries, prefs.customGroups]);
+  const groupMembers = useMemo(
+    () => new Set(groups.find((g) => g.key === activeGroup)?.members.map((m) => m.folderName)),
+    [groups, activeGroup]
+  );
+
+  // Filter by search query, the conflicts switch and the chosen group (show all if empty)
   const filteredEntries = useMemo(() => {
-    if (!searchQuery.trim()) return localEntries;
-    const q = searchQuery.toLowerCase();
-    return localEntries.filter((e) => e.folderName.toLowerCase().includes(q) || e.isGlobalAirports);
-  }, [localEntries, searchQuery]);
+    const q = searchQuery.trim().toLowerCase();
+    const group = activeGroup && groups.some((g) => g.key === activeGroup);
+    if (!q && !conflictsOnly && !group) return localEntries;
+    return localEntries.filter(
+      (e) =>
+        e.isGlobalAirports ||
+        ((!q || e.folderName.toLowerCase().includes(q)) &&
+          (!conflictsOnly || e.conflicts) &&
+          (!group || groupMembers.has(e.folderName)))
+    );
+  }, [localEntries, searchQuery, conflictsOnly, activeGroup, groups, groupMembers]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -190,6 +247,47 @@ export function SceneryTab() {
   const handleOpenFolder = useCallback((fullPath: string) => {
     window.appAPI.openPath(fullPath);
   }, []);
+  const handleSelect = useCallback((name: string, isSelected: boolean) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (isSelected) next.add(name);
+      else next.delete(name);
+      return next;
+    });
+  }, []);
+  const handleSetCategory = useCallback(
+    (name: string, tier: SceneryPriority | null) => {
+      if (xplanePath) setCategoryOverride(xplanePath, name, tier);
+    },
+    [xplanePath, setCategoryOverride]
+  );
+  const { mutateAsync: setEnabledAsync } = setEnabledMutation;
+  const setManyEnabled = useCallback(
+    async (folderNames: string[], enabled: boolean) => {
+      if (folderNames.length === 0) return;
+      try {
+        await setEnabledAsync({ folderNames, enabled });
+      } catch (e) {
+        toastError('addon_manager', errorMessage(e));
+      }
+    },
+    [setEnabledAsync]
+  );
+  const handleCreateGroup = () => {
+    const name = newGroupName.trim();
+    if (!xplanePath || !name) return;
+    const prefix = newGroupPrefix.trim();
+    const id = addCustomGroup(xplanePath, {
+      name,
+      members: [...selected],
+      ...(prefix ? { rule: { mode: 'prefix' as const, pattern: prefix } } : {}),
+    });
+    setNewGroupOpen(false);
+    setNewGroupName('');
+    setNewGroupPrefix('');
+    setSelected(new Set());
+    setActiveGroup(`custom:${id}`);
+  };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -202,7 +300,11 @@ export function SceneryTab() {
       const oldEntry = localEntries[oldIndex];
       const newEntry = localEntries[newIndex];
       if (!oldEntry || !newEntry) return;
-      if (!freeReorder && oldEntry.priority !== newEntry.priority) return;
+      if (
+        !freeReorder &&
+        effectivePriority(oldEntry, overrides) !== effectivePriority(newEntry, overrides)
+      )
+        return;
 
       setLocalEntries(arrayMove(localEntries, oldIndex, newIndex));
       setHasUnsavedChanges(true);
@@ -226,7 +328,7 @@ export function SceneryTab() {
 
   const handleAutoSort = async () => {
     try {
-      await sortMutation.mutateAsync();
+      await sortMutation.mutateAsync(overrides);
       setHasUnsavedChanges(false);
     } catch (e) {
       toastError('addon_manager', errorMessage(e));
@@ -287,6 +389,7 @@ export function SceneryTab() {
     );
   }
 
+  const isBatching = setEnabledMutation.isPending;
   const isPending =
     sortMutation.isPending ||
     saveOrderMutation.isPending ||
@@ -312,6 +415,18 @@ export function SceneryTab() {
               <span className="bg-warning h-1.5 w-1.5 animate-pulse rounded-full" />
               {t('addonManager.scenery.unsavedChanges')}
             </span>
+          )}
+          {stats.conflicts > 0 && (
+            <Button
+              variant={conflictsOnly ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => setConflictsOnly((v) => !v)}
+              aria-pressed={conflictsOnly}
+              className="text-warning gap-1.5"
+            >
+              <Layers className="h-3.5 w-3.5" />
+              {t('addonManager.scenery.conflicts.filter', { count: stats.conflicts })}
+            </Button>
           )}
           <label className="text-muted-foreground flex items-center gap-2 text-xs">
             <Switch
@@ -435,6 +550,115 @@ export function SceneryTab() {
         />
       </div>
 
+      {/* Groups: families of packs that switch together */}
+      {(groups.length > 0 || selected.size > 0) && (
+        <div className="border-border flex items-center gap-2 overflow-x-auto border-b px-4 py-2">
+          <Boxes className="text-muted-foreground h-3.5 w-3.5 shrink-0" />
+          <Button
+            variant={activeGroup === null ? 'secondary' : 'ghost'}
+            size="xs"
+            className="shrink-0"
+            onClick={() => setActiveGroup(null)}
+          >
+            {t('addonManager.scenery.groups.all')}
+          </Button>
+          {groups.map((group) => {
+            const on = group.members.filter((m) => m.enabled).length;
+            return (
+              <div
+                key={group.key}
+                className={cn(
+                  'border-border flex shrink-0 items-center gap-1.5 rounded-md border pr-1.5',
+                  activeGroup === group.key && 'border-primary/50 bg-primary/5'
+                )}
+              >
+                <button
+                  type="button"
+                  className="flex min-w-0 items-center gap-1.5 px-2 py-1 text-xs"
+                  onClick={() => setActiveGroup(activeGroup === group.key ? null : group.key)}
+                  title={group.members.map((m) => m.folderName).join('\n')}
+                >
+                  <span className="max-w-40 truncate">{group.label}</span>
+                  <span className="text-muted-foreground tabular-nums">
+                    {t('addonManager.scenery.groups.state', { on, total: group.members.length })}
+                  </span>
+                </button>
+                <Switch
+                  checked={on === group.members.length}
+                  onCheckedChange={(checked) =>
+                    setManyEnabled(
+                      group.members.map((m) => m.folderName),
+                      checked
+                    )
+                  }
+                  disabled={isPending || isBatching}
+                  className="scale-75"
+                  aria-label={group.label}
+                />
+                {group.custom && (
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="h-5 w-5"
+                    onClick={() => {
+                      if (xplanePath) removeCustomGroup(xplanePath, group.custom!);
+                      if (activeGroup === group.key) setActiveGroup(null);
+                    }}
+                    tooltip={t('addonManager.scenery.groups.remove')}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+            );
+          })}
+          {selected.size > 0 && (
+            <>
+              <span className="bg-border mx-1 h-5 w-px shrink-0" />
+              <span className="text-muted-foreground shrink-0 text-xs">
+                {t('addonManager.scenery.selection.count', { count: selected.size })}
+              </span>
+              <Button
+                variant="ghost"
+                size="xs"
+                className="shrink-0"
+                disabled={isPending || isBatching}
+                onClick={() => setManyEnabled([...selected], true)}
+              >
+                {t('addonManager.scenery.selection.enable')}
+              </Button>
+              <Button
+                variant="ghost"
+                size="xs"
+                className="shrink-0"
+                disabled={isPending || isBatching}
+                onClick={() => setManyEnabled([...selected], false)}
+              >
+                {t('addonManager.scenery.selection.disable')}
+              </Button>
+              <Button
+                variant="ghost"
+                size="xs"
+                className="shrink-0"
+                disabled={!xplanePath}
+                onClick={() => setNewGroupOpen(true)}
+              >
+                <Plus className="h-3 w-3" />
+                {t('addonManager.scenery.selection.group')}
+              </Button>
+              <Button
+                variant="ghost"
+                size="xs"
+                className="shrink-0"
+                onClick={() => setSelected(new Set())}
+              >
+                {t('addonManager.scenery.selection.clear')}
+              </Button>
+            </>
+          )}
+        </div>
+      )}
+
       {/* Scenery list */}
       <ScrollArea className="flex-1">
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -463,6 +687,12 @@ export function SceneryTab() {
                     onOpenFolder={handleOpenFolder}
                     onDelete={handleDeleteRequest}
                     disabled={isPending}
+                    priority={effectivePriority(entry, overrides)}
+                    overridden={entry.folderName in overrides}
+                    onSetCategory={handleSetCategory}
+                    selected={selected.has(entry.folderName)}
+                    selecting={selected.size > 0}
+                    onSelect={handleSelect}
                   />
                 )
               )}
@@ -470,6 +700,48 @@ export function SceneryTab() {
           </SortableContext>
         </DndContext>
       </ScrollArea>
+
+      {/* New custom group */}
+      <Dialog open={newGroupOpen} onOpenChange={setNewGroupOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('addonManager.scenery.groups.newTitle')}</DialogTitle>
+            <DialogDescription>{t('addonManager.scenery.groups.newDescription')}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="scenery-group-name">{t('addonManager.scenery.groups.name')}</Label>
+              <Input
+                id="scenery-group-name"
+                value={newGroupName}
+                onChange={(e) => setNewGroupName(e.target.value)}
+                placeholder={t('addonManager.scenery.groups.namePlaceholder')}
+                autoFocus
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="scenery-group-prefix">
+                {t('addonManager.scenery.groups.prefix')}
+              </Label>
+              <Input
+                id="scenery-group-prefix"
+                value={newGroupPrefix}
+                onChange={(e) => setNewGroupPrefix(e.target.value)}
+                placeholder={t('addonManager.scenery.groups.prefixPlaceholder')}
+                className="font-mono"
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" size="sm" onClick={() => setNewGroupOpen(false)}>
+              {t('common.cancel')}
+            </Button>
+            <Button size="sm" onClick={handleCreateGroup} disabled={!newGroupName.trim()}>
+              {t('addonManager.scenery.groups.create')}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Backups Dialog */}
       <Dialog open={showBackups} onOpenChange={setShowBackups}>

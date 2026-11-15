@@ -948,19 +948,64 @@
         "allClear": "Th' bilge be clean — nothin' flagged in this scroll.",
         "noMatches": "No entries match yer filter, matey."
       },
-      "entriesHeader": "Cap'n's log entries",
-      "entryCount": "Showin' {{shown}} of {{total}} entries, savvy?",
-      "showHeader": "Unfurl th' pre-runtime header ({{count}} lines)",
-      "hideHeader": "Roll up th' pre-runtime header",
       "filter": {
         "all": "All hands",
-        "errorsWarnings": "Foul winds + squalls",
         "errors": "Foul winds",
         "warnings": "Squalls"
       },
       "openExternal": "Pry open Log.txt",
       "searchPlaceholder": "Search th' scroll…",
-      "openFailed": "Couldn't pry open Log.txt, matey."
+      "openFailed": "Couldn't pry open Log.txt, matey.",
+      "session": {
+        "title": "Last voyage",
+        "clean": "Made port safely",
+        "crashed": "Ran aground",
+        "stopped": "Log ends with no farewell (ran aground, or still at sea)",
+        "beta": "Beta",
+        "version": "X-Plane",
+        "driver": "driver",
+        "noIssues": "No known trouble lines.",
+        "context_one": "{{count}} line about the wreck",
+        "context_other": "{{count}} lines about the wreck",
+        "times": "×{{count}}",
+        "unknown": "Not an X-Plane log"
+      },
+      "issues": {
+        "plugin_manager_error": "Plugin manager error",
+        "scenery_pack_problem": "Scenery pack problem",
+        "aircraft_unusable": "Aircraft unusable",
+        "vulkan_alert": "Vulkan alert",
+        "system_alert": "System alert",
+        "plugin_assert": "Plugin assert",
+        "plugin_error": "Plugin error",
+        "vulkan_error": "Vulkan error",
+        "graphics_error": "Graphics error",
+        "aircraft_error": "Aircraft error",
+        "memory_heavy": "Heavy memory pressure",
+        "plugin_support_file": "Missing plugin support file",
+        "out_of_memory": "Out of memory",
+        "memory_status": "Memory status dump",
+        "access_violation": "Access violation",
+        "dsf_error": "DSF tile error",
+        "scenery_error": "Scenery error",
+        "network_error": "Network error",
+        "weather_error": "Weather error",
+        "sound_error": "Sound error",
+        "memory_negative": "Negative memory pressure",
+        "textures_degraded": "Textures degraded",
+        "runloop_backed_up": "Run loop backed up",
+        "nvapi": "NVIDIA API error",
+        "injector_disabled": "Overlay injector disabled",
+        "plugin_twice": "Plugin loaded twice",
+        "tls_failed": "TLS connection failed",
+        "memory_regular": "Regular memory pressure",
+        "dataref_replaced": "Dataref replaced",
+        "betterpushback_warn": "BetterPushback warning",
+        "art_controls": "Art controls modified"
+      },
+      "lines_one": "{{count}} error line",
+      "lines_other": "{{count}} error lines",
+      "showAll": "Show the lot ({{count}})"
     },
     "flights": {
       "title": "Voyages",
@@ -1206,7 +1251,25 @@
     "gateway": {
       "updateAvailable": "Gateway has a newer chart",
       "credit": "charted by {{artist}}, {{date}}",
-      "viewOnGateway": "Spy on Gateway"
+      "viewOnGateway": "Spy on Gateway",
+      "install": "Hoist aboard",
+      "update": "Refit",
+      "installing": "Haulin’ in…",
+      "remove": "Scuttle",
+      "installedFrom": "Hauled from the Gateway, submission {{id}}",
+      "installed": "{{icao}} hauled from the Gateway",
+      "removed": "{{icao}} Gateway scenery scuttled",
+      "conflictTitle": "Another chest already claims {{icao}}",
+      "conflictBody": "{{pack}} claims this port. X-Plane sails with the first hoisted chest, so the Gateway haul may change naught till ye strike it. Hoist anyway?",
+      "installAnyway": "Hoist anyway",
+      "restartHint": "Set sail in X-Plane once so it spies the new chest.",
+      "errors": {
+        "DOWNLOAD_FAILED": "The Gateway sent no word. Check yer line and try again.",
+        "BAD_PACKAGE": "The Gateway sent somethin’ that ain’t a scenery chest.",
+        "INSTALL_FAILED": "The chest couldn’t be hoisted.",
+        "NOT_INSTALLED": "No Gateway chest be hoisted fer this port.",
+        "INVALID_INPUT": "Chart the X-Plane folder first."
+      }
     },
     "taxiRoute": {
       "taxiTo": "Taxi ta",
@@ -1235,7 +1298,9 @@
       "twr": "TWR",
       "app": "APP",
       "ctr": "CTR"
-    }
+    },
+    "sceneryPack": "Scenery: {{pack}}",
+    "sceneryPackShadowed": "Scenery: {{pack}} ({{count}} chests claim this port)"
   },
   "navigation": {
     "heading": "HEADING",
@@ -1727,6 +1792,8 @@
         "INVALID_PASSWORD": "Wrong secret word for this chest.",
         "EXTRACTION_FAILED": "The chest wouldnae open. It may be short a plank or rotten; fetch it again.",
         "MISSING_VOLUME": "Part {{missing}} o' this split chest be missin'. Stow all parts in the same hold.",
+        "VERIFY_MARKERS": "The unpacked chest ain't a whole add-on, so nothin' were touched.",
+        "VERIFY_FAILED": "Some files never made it aboard after the install: {{files}}. Install it again, matey.",
         "PATH_TRAVERSAL": "The chest hides treacherous paths and was tossed overboard.",
         "SIZE_EXCEEDED": "The chest be too heavy to haul aboard.",
         "SUSPICIOUS_RATIO": "The chest smells o' a zip bomb and was tossed overboard.",
@@ -1763,6 +1830,10 @@
         "backedUp": "Old planks stowed at {{path}}",
         "noneSelected": "Pick at least one add-on to haul aboard",
         "selectToInstall": "Haul aboard"
+      },
+      "variant": {
+        "label": "Flavour",
+        "asShipped": "As she came"
       }
     },
     "browser": {
@@ -1851,7 +1922,19 @@
         "overlays": "Overlay charts",
         "airportMesh": "Airport terrain mesh",
         "mesh": "Terrain mesh",
-        "unrecognized": "Mystery cargo"
+        "unrecognized": "Mystery cargo",
+        "title": "Crews",
+        "new": "New crew",
+        "newTitle": "New scenery crew",
+        "newDescription": "Name the crew. The marked chests join it, and a name prefix presses chests into it automatically.",
+        "name": "Name",
+        "namePlaceholder": "Me ortho tiles",
+        "prefix": "Folder name starts with",
+        "prefixPlaceholder": "zOrtho4XP_",
+        "create": "Create",
+        "remove": "Disband crew",
+        "state": "{{on}} o’ {{total}} hoisted",
+        "all": "All chests"
       },
       "badge": {
         "airports": "Port",
@@ -1859,7 +1942,33 @@
         "libraries": "Chest",
         "other": "Odds",
         "overlays": "Overlay",
-        "mesh": "Mesh"
+        "mesh": "Mesh",
+        "airportMesh": "Port mesh"
+      },
+      "conflicts": {
+        "title": "Shared with other chests",
+        "badge_one": "{{count}} overlap",
+        "badge_other": "{{count}} overlaps",
+        "filter_one": "{{count}} overlap",
+        "filter_other": "{{count}} overlaps",
+        "airportOtherWins": "X-Plane sails with {{pack}}",
+        "airportThisWins": "This chest beats {{packs}}",
+        "airportAllOff": "Also in {{packs}}, all scuttled",
+        "tile": "Tile also in {{packs}}"
+      },
+      "selection": {
+        "select": "Mark fer a crew action",
+        "count_one": "{{count}} marked",
+        "count_other": "{{count}} marked",
+        "enable": "Hoist",
+        "disable": "Strike",
+        "clear": "Unmark",
+        "group": "Crew up…"
+      },
+      "category": {
+        "set": "Set the flag",
+        "reset": "Back to what we spied",
+        "byYou": "Flag set by ye; Auto-Sort heeds it"
       }
     },
     "liveryDialog": {

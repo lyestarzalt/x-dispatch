@@ -8,7 +8,9 @@ import logger from '@/lib/utils/logger';
 import { BrowserManager } from './browser';
 import type { BrowserError } from './core/types';
 import { err } from './core/types';
+import { SceneryPriority } from './core/types';
 import { type AddonFailureSubject, reportAddonFailure } from './failureReport';
+import { installGatewayScenery, readGatewayMarker, removeGatewayScenery } from './gateway';
 import { InstallerManager } from './installer';
 import type { InstallResult, InstallTask } from './installer/types';
 import { SceneryManager } from './scenery/SceneryManager';
@@ -25,7 +27,15 @@ import { SceneryManager } from './scenery/SceneryManager';
  *
  * @param getXPlanePath - Function to get the current X-Plane path
  */
-export function registerAddonManagerIPC(getXPlanePath: () => string | null): void {
+export interface AddonManagerIpcDeps {
+  /** A remote JSON document, fetched with the main process's timeout and size cap. */
+  fetchJson: (url: string) => Promise<{ data: string | null; error: string | null }>;
+}
+
+export function registerAddonManagerIPC(
+  getXPlanePath: () => string | null,
+  deps: AddonManagerIpcDeps
+): void {
   let lastBrowsedDir: string | null = null;
   const env = { platform: process.platform, appVersion: app.getVersion() };
 
@@ -90,6 +100,40 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
 
   // ===== SCENERY MANAGER =====
 
+  // ---------- Scenery Gateway ----------
+
+  handle('addon:gateway:installed', async (_event, icao: unknown) => {
+    const xplanePath = getXPlanePath();
+    if (!xplanePath || typeof icao !== 'string') return null;
+    return readGatewayMarker(xplanePath, icao);
+  });
+
+  handleAddon(
+    'addon:gateway:install',
+    async (_event, icao: unknown, sceneryId: unknown, force: unknown = false) => {
+      const xplanePath = getXPlanePath();
+      if (!xplanePath) return { ok: false, error: { code: 'INVALID_INPUT', field: 'xplanePath' } };
+      if (typeof icao !== 'string' || typeof sceneryId !== 'number' || typeof force !== 'boolean') {
+        return { ok: false, error: { code: 'INVALID_INPUT', field: 'request' } };
+      }
+      return installGatewayScenery(
+        {
+          xplanePath,
+          fetchScenery: (id) => deps.fetchJson(`https://gateway.x-plane.com/apiv1/scenery/${id}`),
+        },
+        { icao, sceneryId, force }
+      );
+    }
+  );
+
+  handleAddon('addon:gateway:remove', async (_event, icao: unknown) => {
+    const xplanePath = getXPlanePath();
+    if (!xplanePath) return { ok: false, error: { code: 'INVALID_INPUT', field: 'xplanePath' } };
+    if (typeof icao !== 'string')
+      return { ok: false, error: { code: 'INVALID_INPUT', field: 'icao' } };
+    return removeGatewayScenery(xplanePath, icao);
+  });
+
   handleAddon('addon:scenery:analyze', async () => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
@@ -100,10 +144,28 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
     return manager.analyze();
   });
 
-  handleAddon('addon:scenery:sort', async () => {
+  handleAddon('addon:scenery:sort', async (_event, overrides: unknown) => {
     const xplanePath = getXPlanePath();
     if (!xplanePath) {
       return { ok: false, error: { code: 'INI_NOT_FOUND', path: 'X-Plane path not configured' } };
+    }
+
+    // The user's own tier for some packs: folder name to a priority tier number.
+    const tiers = new Set<number>(
+      Object.values(SceneryPriority).filter((v) => typeof v === 'number')
+    );
+    const safeOverrides: Record<string, SceneryPriority> = {};
+    if (overrides && typeof overrides === 'object') {
+      for (const [name, tier] of Object.entries(overrides as Record<string, unknown>)) {
+        if (
+          typeof tier === 'number' &&
+          tiers.has(tier) &&
+          name.length <= 500 &&
+          !name.includes('..')
+        ) {
+          safeOverrides[name] = tier as SceneryPriority;
+        }
+      }
     }
 
     const manager = new SceneryManager(xplanePath);
@@ -114,9 +176,32 @@ export function registerAddonManagerIPC(getXPlanePath: () => string | null): voi
         return analyzeResult;
       }
 
-      return manager.save(analyzeResult.value, false); // Explicit sort requested by user
+      return manager.save(analyzeResult.value, false, safeOverrides); // Explicit sort requested by user
     });
   });
+
+  handleAddon(
+    'addon:scenery:setEnabled',
+    async (_event, folderNames: unknown, enabled: unknown) => {
+      const xplanePath = getXPlanePath();
+      if (!xplanePath) {
+        return { ok: false, error: { code: 'INI_NOT_FOUND', path: 'X-Plane path not configured' } };
+      }
+      if (
+        !Array.isArray(folderNames) ||
+        folderNames.length === 0 ||
+        folderNames.length > 5000 ||
+        !folderNames.every(
+          (n) => typeof n === 'string' && n.length > 0 && n.length <= 500 && !n.includes('..')
+        ) ||
+        typeof enabled !== 'boolean'
+      ) {
+        return { ok: false, error: { code: 'FOLDER_NOT_FOUND', folderName: String(folderNames) } };
+      }
+      const manager = new SceneryManager(xplanePath);
+      return manager.setEnabled(folderNames as string[], enabled);
+    }
+  );
 
   handleAddon('addon:scenery:saveOrder', async (_event, folderNames: unknown) => {
     const xplanePath = getXPlanePath();

@@ -9,17 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Scenery packs that cover the same airport are flagged.** The Scenery tab names the pack X-Plane uses, and the airport card says which pack is in use.
+- **Scenery groups and batch switches.** SimHeaven, ortho and airport families get one switch each; select rows to enable, disable or group them yourself.
+- **Set a scenery pack's category by hand.** Right-click a pack to file it under the right tier; Auto-Sort follows your choice and never touches your order otherwise.
+- **Pick a scenery variant at install.** Packs that ship option folders let you choose one before installing.
+- **Install Gateway airports from the airport card.** When the Gateway has a newer version than your X-Plane ships, install, update or remove it in one click.
+- **Last session summary in Settings → X-Plane logs.** How the last run ended, the build and GPU, and the known trouble lines.
 - **Departures and arrivals in Explore → Online.** Each staffed airport shows how many flights are filed out of it and into it.
 - **VATSIM and IVAO switches on the airport card.** Compare the two networks at an airport without opening Layers.
 - **Departure and arrival runways on the airport card.** When the ATIS gives different runways for takeoff and landing, the card lists them apart and tags each runway DEP or ARR.
 
 ### Changed
 
+- **Installs are checked file by file.** Every file is verified in place and re-extracted when missing, and the pack folder never appears half written.
+- **Plugin and aircraft switches are all or nothing.** A rename that fails puts everything back.
+- **The X-Plane log page shows errors only and folds repeats.** Identical lines collapse into one with a count.
 - **Active runways lead the runway list.**
 - **Staffed frequencies lead the frequency list.** Online positions come first, from ATIS to centre.
 
 ### Fixed
 
+- **Large RAR archives no longer freeze the app.** RAR reading runs on its own thread.
+- **Overwriting an add-on whose folder replaced a file works.** A CSL folder linked from another drive keeps receiving its files.
 - **Localizer-only approaches show LOC, not ILS.** KSAN 27 and KSEE 27R have no glideslope.
 - **The gate filter shows each code's real wingspan.** Code A and code B both read 20 m.
 
