@@ -1108,6 +1108,7 @@
       "arrivals": "到达"
     },
     "activeRunway": "使用跑道",
+    "activeRunways": "使用跑道",
     "windAligned": "· 与风向对齐，偏差 {{delta}}°",
     "atisLabel": "ATIS {{letter}}",
     "runwaysHeading": "跑道",

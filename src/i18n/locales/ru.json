@@ -1108,6 +1108,7 @@
       "arrivals": "Прилёты"
     },
     "activeRunway": "Активная ВПП",
+    "activeRunways": "Активные ВПП",
     "windAligned": "· с учётом ветра, отклонение {{delta}}°",
     "atisLabel": "ATIS {{letter}}",
     "runwaysHeading": "ВПП",

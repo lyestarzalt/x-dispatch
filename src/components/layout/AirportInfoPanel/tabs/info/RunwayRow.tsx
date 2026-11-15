@@ -3,6 +3,7 @@ import { runwayLengthFeet } from '@/lib/utils/geomath';
 import type { Runway } from '@/types/apt';
 import { SurfaceType } from '@/types/apt';
 import type { Navaid } from '@/types/navigation';
+import type { EndUse } from './ActiveRunwayLine';
 import { RunwayEndCard } from './RunwayEndCard';
 import { runwayEndKey } from './runwayEndKey';
 
@@ -25,12 +26,12 @@ export function RunwayRow({
   runway,
   ilsByEnd,
   gsByEnd,
-  activeEndNames,
+  endUse,
 }: {
   runway: Runway;
   ilsByEnd: Map<string, Navaid>;
   gsByEnd: Map<string, Navaid>;
-  activeEndNames: Set<string>;
+  endUse: Map<string, EndUse>;
 }) {
   const units = useUnits();
   const lengthDisplay = units.length(runwayLengthFeet(runway.ends[0], runway.ends[1]));
@@ -40,8 +41,7 @@ export function RunwayRow({
 
   // The active end reads first within its pair.
   const secondOnly =
-    activeEndNames.has(runwayEndKey(runway.ends[1].name)) &&
-    !activeEndNames.has(runwayEndKey(runway.ends[0].name));
+    endUse.has(runwayEndKey(runway.ends[1].name)) && !endUse.has(runwayEndKey(runway.ends[0].name));
   const endOrder: readonly (0 | 1)[] = secondOnly ? [1, 0] : [0, 1];
 
   return (
@@ -57,7 +57,7 @@ export function RunwayRow({
             surface={surface}
             ils={ilsByEnd.get(key)}
             gs={gsByEnd.get(key)}
-            active={activeEndNames.has(key)}
+            use={endUse.get(key) ?? null}
           />
         );
       })}

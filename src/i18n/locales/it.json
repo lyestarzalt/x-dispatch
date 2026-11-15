@@ -1108,6 +1108,7 @@
       "arrivals": "Arrivi"
     },
     "activeRunway": "Pista attiva",
+    "activeRunways": "Piste attive",
     "windAligned": "· allineata al vento, {{delta}}° di deviazione",
     "atisLabel": "ATIS {{letter}}",
     "runwaysHeading": "Piste",
