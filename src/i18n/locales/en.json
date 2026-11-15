@@ -1235,7 +1235,9 @@
       "twr": "TWR",
       "app": "APP",
       "ctr": "CTR"
-    }
+    },
+    "sceneryPack": "Scenery: {{pack}}",
+    "sceneryPackShadowed": "Scenery: {{pack}} ({{count}} packs cover this airport)"
   },
   "navigation": {
     "heading": "HEADING",
@@ -1727,6 +1729,8 @@
         "INVALID_PASSWORD": "Wrong password for this archive.",
         "EXTRACTION_FAILED": "The archive couldn't be read. It may be incomplete or damaged; download it again.",
         "MISSING_VOLUME": "Part {{missing}} of this split archive is missing. Put all parts in the same folder.",
+        "VERIFY_MARKERS": "The extracted folder is not a complete add-on, so nothing was changed.",
+        "VERIFY_FAILED": "Some files did not land in place after the install: {{files}}. Install it again.",
         "PATH_TRAVERSAL": "The archive contains unsafe file paths and was refused.",
         "SIZE_EXCEEDED": "The archive is too large to install.",
         "SUSPICIOUS_RATIO": "The archive looks like a zip bomb and was refused.",
@@ -1851,7 +1855,19 @@
         "overlays": "Overlays",
         "airportMesh": "Airport Mesh",
         "mesh": "Terrain Mesh",
-        "unrecognized": "Unrecognized"
+        "unrecognized": "Unrecognized",
+        "title": "Groups",
+        "new": "New group",
+        "newTitle": "New scenery group",
+        "newDescription": "Name the group. The selected packs join it, and a name prefix adds packs automatically.",
+        "name": "Name",
+        "namePlaceholder": "My ortho tiles",
+        "prefix": "Folder name starts with",
+        "prefixPlaceholder": "zOrtho4XP_",
+        "create": "Create",
+        "remove": "Remove group",
+        "state": "{{on}} of {{total}} on",
+        "all": "All packs"
       },
       "badge": {
         "airports": "Airport",
@@ -1859,7 +1875,33 @@
         "libraries": "Library",
         "other": "Other",
         "overlays": "Overlay",
-        "mesh": "Mesh"
+        "mesh": "Mesh",
+        "airportMesh": "Airport mesh"
+      },
+      "conflicts": {
+        "title": "Shared with other packs",
+        "badge_one": "{{count}} overlap",
+        "badge_other": "{{count}} overlaps",
+        "filter_one": "{{count}} overlap",
+        "filter_other": "{{count}} overlaps",
+        "airportOtherWins": "X-Plane uses {{pack}}",
+        "airportThisWins": "This pack wins over {{packs}}",
+        "airportAllOff": "Also in {{packs}}, all disabled",
+        "tile": "Tile also in {{packs}}"
+      },
+      "selection": {
+        "select": "Select for a batch action",
+        "count_one": "{{count}} selected",
+        "count_other": "{{count}} selected",
+        "enable": "Enable",
+        "disable": "Disable",
+        "clear": "Clear",
+        "group": "Group…"
+      },
+      "category": {
+        "set": "Set category",
+        "reset": "Back to detected",
+        "byYou": "Category set by you; Auto-Sort uses it"
       }
     },
     "liveryDialog": {

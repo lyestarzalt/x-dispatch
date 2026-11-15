@@ -4,7 +4,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type { ArchiveEntry } from '../types';
-import { IGNORE_PATTERNS, INSTALLER_CONSTANTS } from '../types';
+import { INSTALLER_CONSTANTS, isIgnoredName } from '../types';
 
 /** Every file and folder under `dir`, as archive-style entries with `/` paths. */
 export async function listDirectoryEntries(
@@ -22,7 +22,7 @@ export async function listDirectoryEntries(
       return;
     }
     for (const child of children) {
-      if (IGNORE_PATTERNS.includes(child.name)) continue;
+      if (isIgnoredName(child.name)) continue;
       const childRelative = relative ? `${relative}/${child.name}` : child.name;
       const childPath = path.join(current, child.name);
       if (child.isDirectory()) {

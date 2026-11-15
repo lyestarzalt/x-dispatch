@@ -458,7 +458,7 @@ export function InstallerTab() {
                         </p>
                         {!result.success && (
                           <p className="text-destructive/80 text-xs">
-                            {errorText(result.errorCode, result.error ?? '')}
+                            {errorText(result.errorCode, result.error ?? '', result.errorParams)}
                           </p>
                         )}
                         {result.backupPath && (

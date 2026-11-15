@@ -1235,7 +1235,9 @@
       "twr": "TWR",
       "app": "APP",
       "ctr": "CTR"
-    }
+    },
+    "sceneryPack": "Scenario: {{pack}}",
+    "sceneryPackShadowed": "Scenario: {{pack}} ({{count}} pacchetti coprono questo aeroporto)"
   },
   "navigation": {
     "heading": "PRUA",
@@ -1727,6 +1729,8 @@
         "INVALID_PASSWORD": "Password errata per questo archivio.",
         "EXTRACTION_FAILED": "Impossibile leggere l'archivio. Potrebbe essere incompleto o danneggiato; scaricalo di nuovo.",
         "MISSING_VOLUME": "Manca la parte {{missing}} di questo archivio diviso. Metti tutte le parti nella stessa cartella.",
+        "VERIFY_MARKERS": "La cartella estratta non è un add-on completo, quindi non è stato modificato nulla.",
+        "VERIFY_FAILED": "Alcuni file non sono al loro posto dopo l'installazione: {{files}}. Installalo di nuovo.",
         "PATH_TRAVERSAL": "L'archivio contiene percorsi non sicuri ed è stato rifiutato.",
         "SIZE_EXCEEDED": "L'archivio è troppo grande per essere installato.",
         "SUSPICIOUS_RATIO": "L'archivio sembra una zip bomb ed è stato rifiutato.",
@@ -1851,7 +1855,19 @@
         "overlays": "Overlay",
         "airportMesh": "Mesh aeroporto",
         "mesh": "Mesh terreno",
-        "unrecognized": "Non riconosciuto"
+        "unrecognized": "Non riconosciuto",
+        "title": "Gruppi",
+        "new": "Nuovo gruppo",
+        "newTitle": "Nuovo gruppo di scenari",
+        "newDescription": "Dai un nome al gruppo. I pacchetti selezionati entrano, e un prefisso del nome aggiunge pacchetti automaticamente.",
+        "name": "Nome",
+        "namePlaceholder": "Le mie tile ortho",
+        "prefix": "Il nome della cartella inizia con",
+        "prefixPlaceholder": "zOrtho4XP_",
+        "create": "Crea",
+        "remove": "Rimuovi gruppo",
+        "state": "{{on}} di {{total}} attivi",
+        "all": "Tutti i pacchetti"
       },
       "badge": {
         "airports": "Aeroporto",
@@ -1859,7 +1875,33 @@
         "libraries": "Libreria",
         "other": "Altro",
         "overlays": "Overlay",
-        "mesh": "Mesh"
+        "mesh": "Mesh",
+        "airportMesh": "Mesh aeroporto"
+      },
+      "conflicts": {
+        "title": "Condiviso con altri pacchetti",
+        "badge_one": "{{count}} sovrapposizione",
+        "badge_other": "{{count}} sovrapposizioni",
+        "filter_one": "{{count}} sovrapposizione",
+        "filter_other": "{{count}} sovrapposizioni",
+        "airportOtherWins": "X-Plane usa {{pack}}",
+        "airportThisWins": "Questo pacchetto prevale su {{packs}}",
+        "airportAllOff": "Anche in {{packs}}, tutti disattivati",
+        "tile": "Tile anche in {{packs}}"
+      },
+      "selection": {
+        "select": "Seleziona per un’azione in blocco",
+        "count_one": "{{count}} selezionato",
+        "count_other": "{{count}} selezionati",
+        "enable": "Attiva",
+        "disable": "Disattiva",
+        "clear": "Annulla",
+        "group": "Raggruppa…"
+      },
+      "category": {
+        "set": "Imposta categoria",
+        "reset": "Torna a quella rilevata",
+        "byYou": "Categoria impostata da te; l’ordinamento automatico la usa"
       }
     },
     "liveryDialog": {

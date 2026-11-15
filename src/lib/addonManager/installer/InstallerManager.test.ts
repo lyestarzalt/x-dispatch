@@ -515,6 +515,94 @@ describe('InstallerManager.analyze', () => {
     expect(again.value[0]?.warnings).toEqual([]);
   });
 
+  it('stages beside the X-Plane folder, leaves nothing behind and verifies every file', async () => {
+    const zip = await archive('Bird.zip', {
+      'Bird/bird.acf': 'acf',
+      'Bird/objects/wing.obj': 'obj',
+      'Bird/liveries/Red/wing.png': 'png',
+    });
+    const manager = new InstallerManager(xplane);
+    const { result } = await installFirst(manager, zip);
+    expect(result?.success).toBe(true);
+    expect(result?.verificationStats).toEqual({
+      totalFiles: 3,
+      verifiedFiles: 3,
+      failedFiles: 0,
+      skippedFiles: 0,
+    });
+    const leftovers = fs
+      .readdirSync(xplane)
+      .concat(fs.readdirSync(path.join(xplane, 'Aircraft')))
+      .filter((name) => name.startsWith('.xdispatch-'));
+    expect(leftovers).toEqual([]);
+  });
+
+  it('still installs when the staging folder sits on another drive', async () => {
+    const zip = await archive('Bird.zip', { 'Bird/bird.acf': 'acf', 'Bird/wing.obj': 'obj' });
+    const realRename = fs.promises.rename.bind(fs.promises);
+    const spy = vi.spyOn(fs.promises, 'rename').mockImplementationOnce(async () => {
+      throw Object.assign(new Error('cross-device link not permitted'), { code: 'EXDEV' });
+    });
+    try {
+      const manager = new InstallerManager(xplane);
+      const { result } = await installFirst(manager, zip);
+      expect(result?.success).toBe(true);
+      expect(spy.mock.calls.length).toBeGreaterThanOrEqual(2);
+      expect(readTree(path.join(xplane, 'Aircraft', 'Bird'))).toEqual({
+        'bird.acf': 'acf',
+        'wing.obj': 'obj',
+      });
+      const leftovers = fs
+        .readdirSync(path.join(xplane, 'Aircraft'))
+        .filter((name) => name.startsWith('.xdispatch-'));
+      expect(leftovers).toEqual([]);
+    } finally {
+      spy.mockRestore();
+      await realRename;
+    }
+  });
+
+  it('skips AppleDouble resource forks like any other packaging junk', async () => {
+    const zip = await archive('Bird.zip', {
+      'Bird/bird.acf': 'acf',
+      'Bird/._bird.acf': 'fork',
+      'Bird/objects/._wing.obj': 'fork',
+      'Bird/objects/wing.obj': 'obj',
+    });
+    const manager = new InstallerManager(xplane);
+    const { result } = await installFirst(manager, zip);
+    expect(result?.success).toBe(true);
+    expect(readTree(path.join(xplane, 'Aircraft', 'Bird'))).toEqual({
+      'bird.acf': 'acf',
+      'objects/wing.obj': 'obj',
+    });
+  });
+
+  it('puts back a file that went missing in the move', async () => {
+    const zip = await archive('Bird.zip', {
+      'Bird/bird.acf': 'acf',
+      'Bird/objects/wing.obj': 'obj',
+    });
+    const realRename = fs.promises.rename.bind(fs.promises);
+    const spy = vi.spyOn(fs.promises, 'rename').mockImplementationOnce(async (src, dst) => {
+      await realRename(src, dst);
+      // A file lost between staging and the final folder
+      fs.rmSync(path.join(String(dst), 'objects', 'wing.obj'));
+    });
+    try {
+      const manager = new InstallerManager(xplane);
+      const { result } = await installFirst(manager, zip);
+      expect(result?.success).toBe(true);
+      expect(result?.verificationStats?.verifiedFiles).toBe(2);
+      expect(readTree(path.join(xplane, 'Aircraft', 'Bird'))).toEqual({
+        'bird.acf': 'acf',
+        'objects/wing.obj': 'obj',
+      });
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
   it('reports progress that only ever grows and ends at the total', async () => {
     // Random bytes: repeated text compresses so well it trips the zip-bomb guard
     const noise = (n: number) => crypto.randomBytes(n).toString('base64').slice(0, n);

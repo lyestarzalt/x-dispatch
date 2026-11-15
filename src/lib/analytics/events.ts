@@ -161,6 +161,7 @@ export const ANALYTICS_ADDON_DETECT_REASONS = [
 /** Why an install failed: the installer's code or the file system error class. */
 export const ANALYTICS_ADDON_INSTALL_ERRORS = [
   'extraction_failed',
+  'verify_failed',
   'missing_volume',
   'password_required',
   'invalid_password',

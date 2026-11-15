@@ -1235,7 +1235,9 @@
       "twr": "TWR",
       "app": "APP",
       "ctr": "CTR"
-    }
+    },
+    "sceneryPack": "Szenerie: {{pack}}",
+    "sceneryPackShadowed": "Szenerie: {{pack}} ({{count}} Pakete decken diesen Flughafen ab)"
   },
   "navigation": {
     "heading": "KURS",
@@ -1727,6 +1729,8 @@
         "INVALID_PASSWORD": "Falsches Passwort für dieses Archiv.",
         "EXTRACTION_FAILED": "Das Archiv konnte nicht gelesen werden. Es ist eventuell unvollständig oder beschädigt; lade es erneut herunter.",
         "MISSING_VOLUME": "Teil {{missing}} dieses gesplitteten Archivs fehlt. Lege alle Teile in denselben Ordner.",
+        "VERIFY_MARKERS": "Der entpackte Ordner ist kein vollständiges Add-on, es wurde nichts geändert.",
+        "VERIFY_FAILED": "Einige Dateien sind nach der Installation nicht an ihrem Platz: {{files}}. Installiere es erneut.",
         "PATH_TRAVERSAL": "Das Archiv enthält unsichere Dateipfade und wurde abgelehnt.",
         "SIZE_EXCEEDED": "Das Archiv ist zu groß für die Installation.",
         "SUSPICIOUS_RATIO": "Das Archiv sieht wie eine Zip-Bombe aus und wurde abgelehnt.",
@@ -1851,7 +1855,19 @@
         "overlays": "Overlays",
         "airportMesh": "Flughafen-Mesh",
         "mesh": "Gelände-Mesh",
-        "unrecognized": "Nicht erkannt"
+        "unrecognized": "Nicht erkannt",
+        "title": "Gruppen",
+        "new": "Neue Gruppe",
+        "newTitle": "Neue Szeneriegruppe",
+        "newDescription": "Gib der Gruppe einen Namen. Die ausgewählten Pakete kommen hinein, ein Namenspräfix fügt Pakete automatisch hinzu.",
+        "name": "Name",
+        "namePlaceholder": "Meine Ortho-Kacheln",
+        "prefix": "Ordnername beginnt mit",
+        "prefixPlaceholder": "zOrtho4XP_",
+        "create": "Erstellen",
+        "remove": "Gruppe entfernen",
+        "state": "{{on}} von {{total}} an",
+        "all": "Alle Pakete"
       },
       "badge": {
         "airports": "Flughafen",
@@ -1859,7 +1875,33 @@
         "libraries": "Bibliothek",
         "other": "Sonstige",
         "overlays": "Overlay",
-        "mesh": "Mesh"
+        "mesh": "Mesh",
+        "airportMesh": "Flughafen-Mesh"
+      },
+      "conflicts": {
+        "title": "Mit anderen Paketen geteilt",
+        "badge_one": "{{count}} Überschneidung",
+        "badge_other": "{{count}} Überschneidungen",
+        "filter_one": "{{count}} Überschneidung",
+        "filter_other": "{{count}} Überschneidungen",
+        "airportOtherWins": "X-Plane verwendet {{pack}}",
+        "airportThisWins": "Dieses Paket gewinnt gegen {{packs}}",
+        "airportAllOff": "Auch in {{packs}}, alle deaktiviert",
+        "tile": "Kachel auch in {{packs}}"
+      },
+      "selection": {
+        "select": "Für eine Stapelaktion auswählen",
+        "count_one": "{{count}} ausgewählt",
+        "count_other": "{{count}} ausgewählt",
+        "enable": "Aktivieren",
+        "disable": "Deaktivieren",
+        "clear": "Aufheben",
+        "group": "Gruppieren…"
+      },
+      "category": {
+        "set": "Kategorie festlegen",
+        "reset": "Zurück zur Erkennung",
+        "byYou": "Kategorie von dir gesetzt; Auto-Sortierung nutzt sie"
       }
     },
     "liveryDialog": {

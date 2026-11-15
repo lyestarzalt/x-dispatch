@@ -1235,7 +1235,9 @@
       "twr": "TWR",
       "app": "APP",
       "ctr": "CTR"
-    }
+    },
+    "sceneryPack": "地景：{{pack}}",
+    "sceneryPackShadowed": "地景：{{pack}}（{{count}} 个包包含此机场）"
   },
   "navigation": {
     "heading": "航向",
@@ -1727,6 +1729,8 @@
         "INVALID_PASSWORD": "此压缩包的密码错误。",
         "EXTRACTION_FAILED": "无法读取压缩包。它可能不完整或已损坏，请重新下载。",
         "MISSING_VOLUME": "此分卷压缩包缺少第 {{missing}} 部分。请把所有分卷放在同一文件夹中。",
+        "VERIFY_MARKERS": "解压出的文件夹不是完整的插件，因此未做任何更改。",
+        "VERIFY_FAILED": "安装后有些文件没有就位：{{files}}。请重新安装。",
         "PATH_TRAVERSAL": "压缩包包含不安全的文件路径，已拒绝。",
         "SIZE_EXCEEDED": "压缩包太大，无法安装。",
         "SUSPICIOUS_RATIO": "压缩包疑似 zip 炸弹，已拒绝。",
@@ -1851,7 +1855,19 @@
         "overlays": "叠加层",
         "airportMesh": "机场网格",
         "mesh": "地形网格",
-        "unrecognized": "未识别"
+        "unrecognized": "未识别",
+        "title": "分组",
+        "new": "新建分组",
+        "newTitle": "新建地景分组",
+        "newDescription": "为分组命名。选中的包将加入，名称前缀会自动加入匹配的包。",
+        "name": "名称",
+        "namePlaceholder": "我的正射地块",
+        "prefix": "文件夹名以此开头",
+        "prefixPlaceholder": "zOrtho4XP_",
+        "create": "创建",
+        "remove": "删除分组",
+        "state": "{{total}} 个中 {{on}} 个已启用",
+        "all": "全部包"
       },
       "badge": {
         "airports": "机场",
@@ -1859,7 +1875,33 @@
         "libraries": "库",
         "other": "其他",
         "overlays": "叠加",
-        "mesh": "网格"
+        "mesh": "网格",
+        "airportMesh": "机场地形"
+      },
+      "conflicts": {
+        "title": "与其他包重叠",
+        "badge_one": "{{count}} 处重叠",
+        "badge_other": "{{count}} 处重叠",
+        "filter_one": "{{count}} 处重叠",
+        "filter_other": "{{count}} 处重叠",
+        "airportOtherWins": "X-Plane 使用 {{pack}}",
+        "airportThisWins": "此包优先于 {{packs}}",
+        "airportAllOff": "也在 {{packs}} 中，均已禁用",
+        "tile": "地块也在 {{packs}} 中"
+      },
+      "selection": {
+        "select": "选中以进行批量操作",
+        "count_one": "已选 {{count}} 个",
+        "count_other": "已选 {{count}} 个",
+        "enable": "启用",
+        "disable": "禁用",
+        "clear": "清除",
+        "group": "分组…"
+      },
+      "category": {
+        "set": "设置类别",
+        "reset": "恢复为检测结果",
+        "byYou": "由你设置的类别；自动排序会采用"
       }
     },
     "liveryDialog": {

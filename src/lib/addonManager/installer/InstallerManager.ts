@@ -19,6 +19,7 @@ import {
   parseVersionFile,
 } from './detection/versionInfo';
 import { extractArchive, probeArchiveEntry, readArchiveEntry } from './extraction';
+import { assertSameTree, mergeInto, moveIntoPlace } from './move';
 import {
   createInstallTask,
   isFlyWithLuaInstalled,
@@ -32,8 +33,10 @@ import type {
   InstallTask,
   InstallerError,
   NestedArchiveStep,
+  VerificationStats,
 } from './types';
 import { INSTALLER_CONSTANTS, getInstallerErrorMessage } from './types';
+import { expectedFiles, verifyMarkers, verifyPlacement } from './verify';
 
 export interface InstallOptions {
   /** Progress callback */
@@ -539,18 +542,40 @@ export class InstallerManager {
   }
 
   /**
+   * Where an add-on is extracted before it moves into place: a hidden folder on the
+   * same volume as the target, so the move is one rename. The X-Plane folder comes
+   * first, then the target's parent; the OS temp folder is the last resort and may
+   * sit on another drive.
+   */
+  private async stagingDir(targetPath: string): Promise<string> {
+    const name = `.xdispatch-staging-${crypto.randomUUID()}`;
+    const bases = [this.xplanePath, path.dirname(targetPath), os.tmpdir()];
+    for (const base of bases) {
+      const dir = path.join(base, name);
+      try {
+        await fs.promises.mkdir(dir, { recursive: true });
+        return dir;
+      } catch {
+        // Not writable here: try the next base.
+      }
+    }
+    throw Object.assign(new Error(`No writable staging folder for ${targetPath}`), {
+      code: 'EACCES',
+    });
+  }
+
+  /**
    * Install a single task
    */
   private async installTask(
     task: InstallTask,
     onProgress: (bytes: number, file: string) => void
   ): Promise<InstallResult> {
-    const tempDir = tempPath('install');
+    let tempDir: string | null = null;
     let source: OpenedSource | null = null;
 
     try {
-      // Create temp directory
-      await fs.promises.mkdir(tempDir, { recursive: true });
+      tempDir = await this.stagingDir(task.targetPath);
 
       const opened = await this.openSource(task);
       if (!opened.ok) {
@@ -564,7 +589,7 @@ export class InstallerManager {
       }
       source = opened.value;
 
-      // Extract to temp directory
+      // Extract to the staging folder
       const extractResult = await extractArchive(source.format, {
         archivePath: source.readPath,
         volumes: source.volumes,
@@ -584,6 +609,23 @@ export class InstallerManager {
         };
       }
 
+      // The folder must look like an add-on of its type before anything on disk changes.
+      const problem = await verifyMarkers(tempDir, task.addonType);
+      if (problem) {
+        const error: InstallerError = {
+          code: 'VERIFY_MARKERS',
+          path: task.targetPath,
+          problem,
+        };
+        logger.addon.warn(`Extracted ${task.displayName} is not a ${task.addonType}: ${problem}`);
+        return {
+          taskId: task.id,
+          success: false,
+          error: getInstallerErrorMessage(error),
+          errorCode: error.code,
+        };
+      }
+
       // Handle installation mode
       let backupPath: string | undefined;
       if (task.installMode === 'clean' && task.conflictExists) {
@@ -594,45 +636,42 @@ export class InstallerManager {
       // Move/merge to target
       await fs.promises.mkdir(path.dirname(task.targetPath), { recursive: true });
 
-      if (task.installMode === 'overwrite' && task.conflictExists) {
-        // Merge files
+      if (fs.existsSync(task.targetPath)) {
+        // Overwrite keeps files the new version does not replace; a clean install
+        // only gets here for navdata, where Custom Data is shared.
         await this.copyMerge(tempDir, task.targetPath);
+        await fs.promises.rm(tempDir, { recursive: true, force: true });
       } else {
-        // Fresh install or clean install - just rename
-        if (fs.existsSync(task.targetPath)) {
-          // Merge if target exists (shouldn't happen for clean, but be safe)
-          await this.copyMerge(tempDir, task.targetPath);
-        } else {
-          try {
-            await fs.promises.rename(tempDir, task.targetPath);
-          } catch (err: unknown) {
-            // EXDEV: rename fails across different drives (e.g., temp on C:, X-Plane on D:)
-            if ((err as NodeJS.ErrnoException).code === 'EXDEV') {
-              await fs.promises.cp(tempDir, task.targetPath, { recursive: true });
-              await fs.promises.rm(tempDir, { recursive: true, force: true });
-            } else {
-              throw err;
-            }
-          }
-        }
+        await moveIntoPlace(tempDir, task.targetPath);
       }
-
-      // Cleanup temp if it still exists
-      await fs.promises.rm(tempDir, { recursive: true, force: true });
+      tempDir = null;
 
       if (backupPath) await this.restoreAfterClean(task, backupPath);
+
+      // Prove placement: every listed file sits in the final folder at full size.
+      const verified = await this.verifyInstall(task, source);
+      if (!verified.ok) {
+        return {
+          taskId: task.id,
+          success: false,
+          error: getInstallerErrorMessage(verified.error),
+          errorCode: verified.error.code,
+          errorParams:
+            verified.error.code === 'VERIFY_FAILED'
+              ? { files: verified.error.files.join(', ') }
+              : undefined,
+          backupPath,
+        };
+      }
 
       return {
         taskId: task.id,
         success: true,
         backupPath,
-        verificationStats: extractResult.value.stats,
+        verificationStats: verified.value,
       };
     } catch (e) {
       logger.addon.error(`Install failed for ${task.displayName}`, e);
-      // Cleanup temp on failure
-      await fs.promises.rm(tempDir, { recursive: true, force: true }).catch(() => {});
-
       return {
         taskId: task.id,
         success: false,
@@ -640,8 +679,54 @@ export class InstallerManager {
         errorCode: (e as NodeJS.ErrnoException | null)?.code ?? 'UNKNOWN',
       };
     } finally {
+      if (tempDir) await fs.promises.rm(tempDir, { recursive: true, force: true }).catch(() => {});
       await source?.cleanup();
     }
+  }
+
+  /**
+   * Compare the install folder with the archive's listing. A missing or short file
+   * is extracted again on its own, a few times, before the install counts as failed.
+   */
+  private async verifyInstall(
+    task: InstallTask,
+    source: OpenedSource
+  ): Promise<Result<VerificationStats, InstallerError>> {
+    const listed = await listArchiveEntries(source, task.password);
+    if (!listed.ok) return listed;
+    const expected = expectedFiles(listed.value, { internalRoot: task.archiveInternalRoot });
+
+    let { stats, misplaced } = await verifyPlacement(task.targetPath, expected);
+    for (
+      let attempt = 1;
+      misplaced.length > 0 && attempt <= INSTALLER_CONSTANTS.VERIFY_RETRIES;
+      attempt++
+    ) {
+      logger.addon.warn(
+        `${misplaced.length} file(s) of ${task.displayName} not in place, re-extracting (attempt ${attempt})`
+      );
+      await extractArchive(source.format, {
+        archivePath: source.readPath,
+        volumes: source.volumes,
+        targetDir: task.targetPath,
+        internalRoot: task.archiveInternalRoot,
+        password: task.password,
+        only: misplaced.map((file) => file.entryPath),
+      });
+      ({ stats, misplaced } = await verifyPlacement(task.targetPath, expected));
+    }
+
+    if (misplaced.length > 0) {
+      const named = misplaced
+        .slice(0, INSTALLER_CONSTANTS.VERIFY_FAILED_NAMED_FILES)
+        .map((file) => file.relative);
+      if (misplaced.length > named.length) named.push(`+${misplaced.length - named.length}`);
+      logger.addon.warn(
+        `Verification failed for ${task.displayName}: ${misplaced.length} of ${expected.length} files`
+      );
+      return err({ code: 'VERIFY_FAILED', path: task.targetPath, files: named });
+    }
+    return ok(stats);
   }
 
   /**
@@ -664,6 +749,7 @@ export class InstallerManager {
         const backupLiveries = path.join(backupDir, 'liveries');
         await fs.promises.mkdir(backupLiveries, { recursive: true });
         await fs.promises.cp(liveriesDir, backupLiveries, { recursive: true });
+        await assertSameTree(liveriesDir, backupLiveries, 'liveries backup');
         saved = true;
       }
     }
@@ -774,7 +860,6 @@ export class InstallerManager {
    */
   private async copyMerge(src: string, dst: string): Promise<void> {
     if (!fs.existsSync(src)) return;
-    await fs.promises.mkdir(dst, { recursive: true });
-    await fs.promises.cp(src, dst, { recursive: true, force: true });
+    await mergeInto(src, dst);
   }
 }

@@ -11,7 +11,9 @@ import { macDocumentTypesInfo } from './src/lib/nativeShell/fileAssociations';
 const config: ForgeConfig = {
   packagerConfig: {
     asar: {
-      unpackDir: 'node_modules/7zip-bin',
+      // 7-Zip is spawned as a process and the RAR engine runs on a worker thread:
+      // both read their files from disk, not through the archive.
+      unpackDir: '{node_modules/7zip-bin,node_modules/node-unrar-js}',
       // Native modules cannot load from inside the archive.
       unpack: '**/*.node',
     },

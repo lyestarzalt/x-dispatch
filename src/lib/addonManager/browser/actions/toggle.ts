@@ -5,6 +5,29 @@ import type { BrowserError, Result } from '../../core/types';
 import { err, ok } from '../../core/types';
 
 /**
+ * Rename every pair in order; if one fails, put the ones already renamed back so
+ * an add-on is never left half enabled. Throws the original error after the rollback.
+ */
+function renameAllOrNone(pairs: Array<[string, string]>): void {
+  const done: Array<[string, string]> = [];
+  try {
+    for (const [from, to] of pairs) {
+      fs.renameSync(from, to);
+      done.push([from, to]);
+    }
+  } catch (e) {
+    for (const [from, to] of done.reverse()) {
+      try {
+        fs.renameSync(to, from);
+      } catch {
+        // Best effort: the original error is the one worth reporting.
+      }
+    }
+    throw e;
+  }
+}
+
+/**
  * Validate path is within base directory (prevent traversal).
  */
 function validatePathWithin(basePath: string, targetPath: string): boolean {
@@ -52,19 +75,21 @@ export function toggleAircraft(
   try {
     if (acfFiles.length > 0) {
       // Disable: rename ALL .acf to .xfma
-      for (const file of acfFiles) {
-        const oldPath = path.join(folder, file.name);
-        const newPath = path.join(folder, file.name.replace(/\.acf$/i, '.xfma'));
-        fs.renameSync(oldPath, newPath);
-      }
+      renameAllOrNone(
+        acfFiles.map((file) => [
+          path.join(folder, file.name),
+          path.join(folder, file.name.replace(/\.acf$/i, '.xfma')),
+        ])
+      );
       return ok(false); // Now disabled
     } else if (xfmaFiles.length > 0) {
       // Enable: rename ALL .xfma to .acf
-      for (const file of xfmaFiles) {
-        const oldPath = path.join(folder, file.name);
-        const newPath = path.join(folder, file.name.replace(/\.xfma$/i, '.acf'));
-        fs.renameSync(oldPath, newPath);
-      }
+      renameAllOrNone(
+        xfmaFiles.map((file) => [
+          path.join(folder, file.name),
+          path.join(folder, file.name.replace(/\.xfma$/i, '.acf')),
+        ])
+      );
       return ok(true); // Now enabled
     }
   } catch (e) {
@@ -131,15 +156,11 @@ export function togglePlugin(
   try {
     if (xplFiles.length > 0) {
       // Disable: rename ALL .xpl to .xfmp
-      for (const file of xplFiles) {
-        fs.renameSync(file, file.replace(/\.xpl$/i, '.xfmp'));
-      }
+      renameAllOrNone(xplFiles.map((file) => [file, file.replace(/\.xpl$/i, '.xfmp')]));
       return ok(false);
     } else if (xfmpFiles.length > 0) {
       // Enable: rename ALL .xfmp to .xpl
-      for (const file of xfmpFiles) {
-        fs.renameSync(file, file.replace(/\.xfmp$/i, '.xpl'));
-      }
+      renameAllOrNone(xfmpFiles.map((file) => [file, file.replace(/\.xfmp$/i, '.xpl')]));
       return ok(true);
     }
   } catch (e) {

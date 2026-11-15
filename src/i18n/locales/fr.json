@@ -1235,7 +1235,9 @@
       "twr": "TWR",
       "app": "APP",
       "ctr": "CTR"
-    }
+    },
+    "sceneryPack": "Scène : {{pack}}",
+    "sceneryPackShadowed": "Scène : {{pack}} ({{count}} paquets couvrent cet aéroport)"
   },
   "navigation": {
     "heading": "CAP",
@@ -1727,6 +1729,8 @@
         "INVALID_PASSWORD": "Mot de passe incorrect pour cette archive.",
         "EXTRACTION_FAILED": "L'archive n'a pas pu être lue. Elle est peut-être incomplète ou endommagée ; téléchargez-la à nouveau.",
         "MISSING_VOLUME": "La partie {{missing}} de cette archive fractionnée manque. Placez toutes les parties dans le même dossier.",
+        "VERIFY_MARKERS": "Le dossier extrait n'est pas un add-on complet, rien n'a été modifié.",
+        "VERIFY_FAILED": "Certains fichiers ne sont pas à leur place après l'installation : {{files}}. Réinstallez-le.",
         "PATH_TRAVERSAL": "L'archive contient des chemins de fichiers dangereux et a été refusée.",
         "SIZE_EXCEEDED": "L'archive est trop volumineuse pour être installée.",
         "SUSPICIOUS_RATIO": "L'archive ressemble à une bombe zip et a été refusée.",
@@ -1851,7 +1855,19 @@
         "overlays": "Superpositions",
         "airportMesh": "Maillage aéroport",
         "mesh": "Maillage terrain",
-        "unrecognized": "Non reconnu"
+        "unrecognized": "Non reconnu",
+        "title": "Groupes",
+        "new": "Nouveau groupe",
+        "newTitle": "Nouveau groupe de scènes",
+        "newDescription": "Nommez le groupe. Les paquets sélectionnés y entrent, et un préfixe de nom ajoute des paquets automatiquement.",
+        "name": "Nom",
+        "namePlaceholder": "Mes tuiles ortho",
+        "prefix": "Le nom du dossier commence par",
+        "prefixPlaceholder": "zOrtho4XP_",
+        "create": "Créer",
+        "remove": "Supprimer le groupe",
+        "state": "{{on}} sur {{total}} actifs",
+        "all": "Tous les paquets"
       },
       "badge": {
         "airports": "Aéroport",
@@ -1859,7 +1875,33 @@
         "libraries": "Bibliothèque",
         "other": "Autre",
         "overlays": "Overlay",
-        "mesh": "Mesh"
+        "mesh": "Mesh",
+        "airportMesh": "Maillage d’aéroport"
+      },
+      "conflicts": {
+        "title": "Partagé avec d’autres paquets",
+        "badge_one": "{{count}} chevauchement",
+        "badge_other": "{{count}} chevauchements",
+        "filter_one": "{{count}} chevauchement",
+        "filter_other": "{{count}} chevauchements",
+        "airportOtherWins": "X-Plane utilise {{pack}}",
+        "airportThisWins": "Ce paquet l’emporte sur {{packs}}",
+        "airportAllOff": "Aussi dans {{packs}}, tous désactivés",
+        "tile": "Tuile aussi dans {{packs}}"
+      },
+      "selection": {
+        "select": "Sélectionner pour une action groupée",
+        "count_one": "{{count}} sélectionné",
+        "count_other": "{{count}} sélectionnés",
+        "enable": "Activer",
+        "disable": "Désactiver",
+        "clear": "Effacer",
+        "group": "Grouper…"
+      },
+      "category": {
+        "set": "Définir la catégorie",
+        "reset": "Revenir à la détection",
+        "byYou": "Catégorie définie par vous ; le tri automatique l’utilise"
       }
     },
     "liveryDialog": {

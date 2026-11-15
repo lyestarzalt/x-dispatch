@@ -147,6 +147,8 @@ export interface InstallResult {
   error?: string;
   /** On failure: the installer's error code, or the file system's (EACCES, ENOSPC, ...). */
   errorCode?: string;
+  /** Values the error's message interpolates, such as the files that failed verification. */
+  errorParams?: Record<string, string | number>;
   verificationStats?: VerificationStats;
 }
 
@@ -171,7 +173,11 @@ export type InstallerError =
   | { code: 'SIZE_EXCEEDED'; size: number; limit: number }
   | { code: 'SUSPICIOUS_RATIO'; ratio: number; limit: number }
   | { code: 'DISK_SPACE'; required: number; available: number }
-  | { code: 'INSTALL_FAILED'; path: string; reason: string };
+  | { code: 'INSTALL_FAILED'; path: string; reason: string }
+  /** The add-on's folder does not look like one of its type after extraction. */
+  | { code: 'VERIFY_MARKERS'; path: string; problem: string }
+  /** Files the archive listed are missing or short in the install folder. */
+  | { code: 'VERIFY_FAILED'; path: string; files: string[] };
 
 /**
  * Constants
@@ -189,12 +195,29 @@ export const INSTALLER_CONSTANTS = {
   /** Progress events are IPC messages; a 20,000-file scenery must not send 20,000 of them. */
   PROGRESS_THROTTLE_MS: 50,
   MIN_FREE_SPACE: 1024 * 1024 * 1024, // 1 GB
+  /** A misplaced file is re-extracted this many times before the install fails. */
+  VERIFY_RETRIES: 3,
+  /** Waits before each rename attempt; read-only bits are cleared from the second one. */
+  RENAME_BACKOFF_MS: [0, 50, 150],
+  /** How many misplaced files the error names. */
+  VERIFY_FAILED_NAMED_FILES: 3,
 } as const;
 
 /**
  * Files/folders to ignore during extraction
  */
 export const IGNORE_PATTERNS = ['__MACOSX', '.DS_Store', 'Thumbs.db', 'desktop.ini', '.git'];
+
+/**
+ * Whether one path component is packaging junk: the names above, in any case, and
+ * AppleDouble resource forks (`._plane.acf`). A name that merely contains one of
+ * them (`DS_Store.txt`, `Thumbs.db.backup`) is a real file.
+ */
+export function isIgnoredName(name: string): boolean {
+  if (name.startsWith('._')) return true;
+  const lower = name.toLowerCase();
+  return IGNORE_PATTERNS.some((pattern) => pattern.toLowerCase() === lower);
+}
 
 /**
  * Platform folders for plugin detection
@@ -218,6 +241,10 @@ export function getInstallerErrorMessage(error: InstallerError): string {
       return `Extraction failed: ${error.reason}`;
     case 'MISSING_VOLUME':
       return `Missing part of a split archive: ${error.missing}`;
+    case 'VERIFY_MARKERS':
+      return `The extracted folder is not a complete add-on (${error.problem}): ${error.path}`;
+    case 'VERIFY_FAILED':
+      return `Files did not land in place after the install: ${error.files.join(', ')}`;
     case 'PATH_TRAVERSAL':
       return `Invalid path detected: ${error.path}`;
     case 'SIZE_EXCEEDED':

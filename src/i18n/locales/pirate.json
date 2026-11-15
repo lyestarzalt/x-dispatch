@@ -1235,7 +1235,9 @@
       "twr": "TWR",
       "app": "APP",
       "ctr": "CTR"
-    }
+    },
+    "sceneryPack": "Scenery: {{pack}}",
+    "sceneryPackShadowed": "Scenery: {{pack}} ({{count}} chests claim this port)"
   },
   "navigation": {
     "heading": "HEADING",
@@ -1727,6 +1729,8 @@
         "INVALID_PASSWORD": "Wrong secret word for this chest.",
         "EXTRACTION_FAILED": "The chest wouldnae open. It may be short a plank or rotten; fetch it again.",
         "MISSING_VOLUME": "Part {{missing}} o' this split chest be missin'. Stow all parts in the same hold.",
+        "VERIFY_MARKERS": "The unpacked chest ain't a whole add-on, so nothin' were touched.",
+        "VERIFY_FAILED": "Some files never made it aboard after the install: {{files}}. Install it again, matey.",
         "PATH_TRAVERSAL": "The chest hides treacherous paths and was tossed overboard.",
         "SIZE_EXCEEDED": "The chest be too heavy to haul aboard.",
         "SUSPICIOUS_RATIO": "The chest smells o' a zip bomb and was tossed overboard.",
@@ -1851,7 +1855,19 @@
         "overlays": "Overlay charts",
         "airportMesh": "Airport terrain mesh",
         "mesh": "Terrain mesh",
-        "unrecognized": "Mystery cargo"
+        "unrecognized": "Mystery cargo",
+        "title": "Crews",
+        "new": "New crew",
+        "newTitle": "New scenery crew",
+        "newDescription": "Name the crew. The marked chests join it, and a name prefix presses chests into it automatically.",
+        "name": "Name",
+        "namePlaceholder": "Me ortho tiles",
+        "prefix": "Folder name starts with",
+        "prefixPlaceholder": "zOrtho4XP_",
+        "create": "Create",
+        "remove": "Disband crew",
+        "state": "{{on}} o’ {{total}} hoisted",
+        "all": "All chests"
       },
       "badge": {
         "airports": "Port",
@@ -1859,7 +1875,33 @@
         "libraries": "Chest",
         "other": "Odds",
         "overlays": "Overlay",
-        "mesh": "Mesh"
+        "mesh": "Mesh",
+        "airportMesh": "Port mesh"
+      },
+      "conflicts": {
+        "title": "Shared with other chests",
+        "badge_one": "{{count}} overlap",
+        "badge_other": "{{count}} overlaps",
+        "filter_one": "{{count}} overlap",
+        "filter_other": "{{count}} overlaps",
+        "airportOtherWins": "X-Plane sails with {{pack}}",
+        "airportThisWins": "This chest beats {{packs}}",
+        "airportAllOff": "Also in {{packs}}, all scuttled",
+        "tile": "Tile also in {{packs}}"
+      },
+      "selection": {
+        "select": "Mark fer a crew action",
+        "count_one": "{{count}} marked",
+        "count_other": "{{count}} marked",
+        "enable": "Hoist",
+        "disable": "Strike",
+        "clear": "Unmark",
+        "group": "Crew up…"
+      },
+      "category": {
+        "set": "Set the flag",
+        "reset": "Back to what we spied",
+        "byYou": "Flag set by ye; Auto-Sort heeds it"
       }
     },
     "liveryDialog": {

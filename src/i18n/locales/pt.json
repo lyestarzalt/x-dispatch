@@ -1235,7 +1235,9 @@
       "twr": "TWR",
       "app": "APP",
       "ctr": "CTR"
-    }
+    },
+    "sceneryPack": "Cenário: {{pack}}",
+    "sceneryPackShadowed": "Cenário: {{pack}} ({{count}} pacotes cobrem este aeroporto)"
   },
   "navigation": {
     "heading": "PROA",
@@ -1727,6 +1729,8 @@
         "INVALID_PASSWORD": "Senha incorreta para este arquivo.",
         "EXTRACTION_FAILED": "Não foi possível ler o arquivo. Ele pode estar incompleto ou danificado; baixe-o novamente.",
         "MISSING_VOLUME": "Falta a parte {{missing}} deste arquivo dividido. Coloque todas as partes na mesma pasta.",
+        "VERIFY_MARKERS": "A pasta extraída não é um add-on completo, por isso nada foi alterado.",
+        "VERIFY_FAILED": "Alguns ficheiros não ficaram no lugar após a instalação: {{files}}. Instale-o novamente.",
         "PATH_TRAVERSAL": "O arquivo contém caminhos inseguros e foi recusado.",
         "SIZE_EXCEEDED": "O arquivo é grande demais para ser instalado.",
         "SUSPICIOUS_RATIO": "O arquivo parece uma zip bomb e foi recusado.",
@@ -1851,7 +1855,19 @@
         "overlays": "Sobreposições",
         "airportMesh": "Malha de aeroporto",
         "mesh": "Malha de terreno",
-        "unrecognized": "Não reconhecido"
+        "unrecognized": "Não reconhecido",
+        "title": "Grupos",
+        "new": "Novo grupo",
+        "newTitle": "Novo grupo de cenários",
+        "newDescription": "Dê um nome ao grupo. Os pacotes selecionados juntam-se, e um prefixo de nome adiciona pacotes automaticamente.",
+        "name": "Nome",
+        "namePlaceholder": "As minhas tiles orto",
+        "prefix": "O nome da pasta começa por",
+        "prefixPlaceholder": "zOrtho4XP_",
+        "create": "Criar",
+        "remove": "Remover grupo",
+        "state": "{{on}} de {{total}} ativos",
+        "all": "Todos os pacotes"
       },
       "badge": {
         "airports": "Aeroporto",
@@ -1859,7 +1875,33 @@
         "libraries": "Biblioteca",
         "other": "Outro",
         "overlays": "Overlay",
-        "mesh": "Malha"
+        "mesh": "Malha",
+        "airportMesh": "Malha de aeroporto"
+      },
+      "conflicts": {
+        "title": "Partilhado com outros pacotes",
+        "badge_one": "{{count}} sobreposição",
+        "badge_other": "{{count}} sobreposições",
+        "filter_one": "{{count}} sobreposição",
+        "filter_other": "{{count}} sobreposições",
+        "airportOtherWins": "O X-Plane usa {{pack}}",
+        "airportThisWins": "Este pacote prevalece sobre {{packs}}",
+        "airportAllOff": "Também em {{packs}}, todos desativados",
+        "tile": "Tile também em {{packs}}"
+      },
+      "selection": {
+        "select": "Selecionar para uma ação em lote",
+        "count_one": "{{count}} selecionado",
+        "count_other": "{{count}} selecionados",
+        "enable": "Ativar",
+        "disable": "Desativar",
+        "clear": "Limpar",
+        "group": "Agrupar…"
+      },
+      "category": {
+        "set": "Definir categoria",
+        "reset": "Voltar à detetada",
+        "byYou": "Categoria definida por si; a ordenação automática usa-a"
       }
     },
     "liveryDialog": {

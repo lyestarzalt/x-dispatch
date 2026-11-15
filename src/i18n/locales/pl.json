@@ -1235,7 +1235,9 @@
       "twr": "TWR",
       "app": "APP",
       "ctr": "CTR"
-    }
+    },
+    "sceneryPack": "Sceneria: {{pack}}",
+    "sceneryPackShadowed": "Sceneria: {{pack}} ({{count}} pakietów obejmuje to lotnisko)"
   },
   "navigation": {
     "heading": "KURS",
@@ -1727,6 +1729,8 @@
         "INVALID_PASSWORD": "Błędne hasło do tego archiwum.",
         "EXTRACTION_FAILED": "Nie udało się odczytać archiwum. Może być niekompletne lub uszkodzone; pobierz je ponownie.",
         "MISSING_VOLUME": "Brakuje części {{missing}} tego podzielonego archiwum. Umieść wszystkie części w tym samym folderze.",
+        "VERIFY_MARKERS": "Rozpakowany folder nie jest kompletnym dodatkiem, więc nic nie zmieniono.",
+        "VERIFY_FAILED": "Po instalacji niektóre pliki nie trafiły na miejsce: {{files}}. Zainstaluj go ponownie.",
         "PATH_TRAVERSAL": "Archiwum zawiera niebezpieczne ścieżki plików i zostało odrzucone.",
         "SIZE_EXCEEDED": "Archiwum jest za duże, aby je zainstalować.",
         "SUSPICIOUS_RATIO": "Archiwum wygląda na bombę zip i zostało odrzucone.",
@@ -1851,7 +1855,19 @@
         "overlays": "Nakładki",
         "airportMesh": "Siatka lotniska",
         "mesh": "Siatka terenu",
-        "unrecognized": "Nierozpoznane"
+        "unrecognized": "Nierozpoznane",
+        "title": "Grupy",
+        "new": "Nowa grupa",
+        "newTitle": "Nowa grupa scenerii",
+        "newDescription": "Nazwij grupę. Zaznaczone pakiety dołączą, a prefiks nazwy dodaje pakiety automatycznie.",
+        "name": "Nazwa",
+        "namePlaceholder": "Moje kafelki orto",
+        "prefix": "Nazwa folderu zaczyna się od",
+        "prefixPlaceholder": "zOrtho4XP_",
+        "create": "Utwórz",
+        "remove": "Usuń grupę",
+        "state": "{{on}} z {{total}} włączonych",
+        "all": "Wszystkie pakiety"
       },
       "badge": {
         "airports": "Lotnisko",
@@ -1859,7 +1875,33 @@
         "libraries": "Biblioteka",
         "other": "Inne",
         "overlays": "Nakładka",
-        "mesh": "Siatka"
+        "mesh": "Siatka",
+        "airportMesh": "Siatka lotniska"
+      },
+      "conflicts": {
+        "title": "Współdzielone z innymi pakietami",
+        "badge_one": "{{count}} nakładanie",
+        "badge_other": "{{count}} nakładań",
+        "filter_one": "{{count}} nakładanie",
+        "filter_other": "{{count}} nakładań",
+        "airportOtherWins": "X-Plane używa {{pack}}",
+        "airportThisWins": "Ten pakiet wygrywa z {{packs}}",
+        "airportAllOff": "Także w {{packs}}, wszystkie wyłączone",
+        "tile": "Kafelek także w {{packs}}"
+      },
+      "selection": {
+        "select": "Zaznacz do akcji zbiorczej",
+        "count_one": "{{count}} zaznaczony",
+        "count_other": "{{count}} zaznaczonych",
+        "enable": "Włącz",
+        "disable": "Wyłącz",
+        "clear": "Wyczyść",
+        "group": "Grupuj…"
+      },
+      "category": {
+        "set": "Ustaw kategorię",
+        "reset": "Wróć do wykrytej",
+        "byYou": "Kategoria ustawiona przez ciebie; autosortowanie jej używa"
       }
     },
     "liveryDialog": {

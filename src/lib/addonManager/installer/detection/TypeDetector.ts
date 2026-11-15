@@ -6,7 +6,7 @@ import type {
   DetectedItem,
   DetectedLiveryInfo,
 } from '../types';
-import { ADDON_TYPE_PRIORITY, IGNORE_PATTERNS, PLATFORM_FOLDERS } from '../types';
+import { ADDON_TYPE_PRIORITY, PLATFORM_FOLDERS, isIgnoredName } from '../types';
 import { matchLivery } from './liveryPatterns';
 
 /** A file that tells the add-on's type, and the folder it belongs to. */
@@ -23,7 +23,7 @@ interface Marker {
  */
 function shouldIgnore(filePath: string): boolean {
   const parts = filePath.split('/');
-  return parts.some((part) => IGNORE_PATTERNS.includes(part));
+  return parts.some(isIgnoredName);
 }
 
 /**

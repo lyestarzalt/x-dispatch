@@ -1235,7 +1235,9 @@
       "twr": "TWR",
       "app": "APP",
       "ctr": "CTR"
-    }
+    },
+    "sceneryPack": "Escenario: {{pack}}",
+    "sceneryPackShadowed": "Escenario: {{pack}} ({{count}} paquetes cubren este aeropuerto)"
   },
   "navigation": {
     "heading": "RUMBO",
@@ -1727,6 +1729,8 @@
         "INVALID_PASSWORD": "Contraseña incorrecta para este archivo.",
         "EXTRACTION_FAILED": "No se pudo leer el archivo. Puede estar incompleto o dañado; descárgalo de nuevo.",
         "MISSING_VOLUME": "Falta la parte {{missing}} de este archivo dividido. Pon todas las partes en la misma carpeta.",
+        "VERIFY_MARKERS": "La carpeta extraída no es un complemento completo, así que no se cambió nada.",
+        "VERIFY_FAILED": "Algunos archivos no quedaron en su sitio tras la instalación: {{files}}. Instálalo de nuevo.",
         "PATH_TRAVERSAL": "El archivo contiene rutas inseguras y se rechazó.",
         "SIZE_EXCEEDED": "El archivo es demasiado grande para instalarlo.",
         "SUSPICIOUS_RATIO": "El archivo parece una bomba zip y se rechazó.",
@@ -1851,7 +1855,19 @@
         "overlays": "Superposiciones",
         "airportMesh": "Malla de aeropuerto",
         "mesh": "Malla de terreno",
-        "unrecognized": "No reconocido"
+        "unrecognized": "No reconocido",
+        "title": "Grupos",
+        "new": "Nuevo grupo",
+        "newTitle": "Nuevo grupo de escenarios",
+        "newDescription": "Nombra el grupo. Los paquetes seleccionados se unen, y un prefijo de nombre añade paquetes automáticamente.",
+        "name": "Nombre",
+        "namePlaceholder": "Mis teselas orto",
+        "prefix": "El nombre de carpeta empieza por",
+        "prefixPlaceholder": "zOrtho4XP_",
+        "create": "Crear",
+        "remove": "Quitar grupo",
+        "state": "{{on}} de {{total}} activos",
+        "all": "Todos los paquetes"
       },
       "badge": {
         "airports": "Aeropuerto",
@@ -1859,7 +1875,33 @@
         "libraries": "Biblioteca",
         "other": "Otro",
         "overlays": "Overlay",
-        "mesh": "Malla"
+        "mesh": "Malla",
+        "airportMesh": "Malla de aeropuerto"
+      },
+      "conflicts": {
+        "title": "Compartido con otros paquetes",
+        "badge_one": "{{count}} solapamiento",
+        "badge_other": "{{count}} solapamientos",
+        "filter_one": "{{count}} solapamiento",
+        "filter_other": "{{count}} solapamientos",
+        "airportOtherWins": "X-Plane usa {{pack}}",
+        "airportThisWins": "Este paquete prevalece sobre {{packs}}",
+        "airportAllOff": "También en {{packs}}, todos desactivados",
+        "tile": "Tesela también en {{packs}}"
+      },
+      "selection": {
+        "select": "Seleccionar para una acción en lote",
+        "count_one": "{{count}} seleccionado",
+        "count_other": "{{count}} seleccionados",
+        "enable": "Activar",
+        "disable": "Desactivar",
+        "clear": "Limpiar",
+        "group": "Agrupar…"
+      },
+      "category": {
+        "set": "Definir categoría",
+        "reset": "Volver a la detectada",
+        "byYou": "Categoría definida por ti; la ordenación automática la usa"
       }
     },
     "liveryDialog": {
