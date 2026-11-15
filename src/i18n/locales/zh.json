@@ -1767,6 +1767,10 @@
         "backedUp": "之前的文件已备份到 {{path}}",
         "noneSelected": "请至少选择一个插件进行安装",
         "selectToInstall": "安装"
+      },
+      "variant": {
+        "label": "变体",
+        "asShipped": "保持原样"
       }
     },
     "browser": {

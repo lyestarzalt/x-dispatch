@@ -12,6 +12,7 @@ import { checkCompressionRatio, listArchiveEntries } from './detection/ArchiveSc
 import { detectAddons } from './detection/TypeDetector';
 import type { ArchiveSource } from './detection/archiveFormat';
 import { isArchiveFileName, prepareArchiveSource } from './detection/archiveFormat';
+import type { SceneryVariant } from './detection/sceneryVariants';
 import {
   VERSION_FILES,
   VERSION_FILE_MAX_BYTES,
@@ -36,7 +37,7 @@ import type {
   VerificationStats,
 } from './types';
 import { INSTALLER_CONSTANTS, getInstallerErrorMessage } from './types';
-import { expectedFiles, verifyMarkers, verifyPlacement } from './verify';
+import { expectedFiles, verifyMarkers, verifyPlacement, withVariant } from './verify';
 
 export interface InstallOptions {
   /** Progress callback */
@@ -56,6 +57,52 @@ function tempPath(prefix: string): string {
 /** The archive to read for a task, after opening every enclosing archive. */
 interface OpenedSource extends ArchiveSource {
   cleanup: () => Promise<void>;
+}
+
+/** An option folder's path inside the pack folder, or null when it sits outside it. */
+function variantRelativeDir(root: string, internalRoot: string | undefined): string | null {
+  const prefix = internalRoot ?? '';
+  if (!root.startsWith(prefix)) return null;
+  return root.slice(prefix.length).replace(/\/$/, '') || null;
+}
+
+/**
+ * Lay a variant's files over the installed pack: extract just those entries to a
+ * scratch folder, then copy each to where the base file was.
+ */
+async function applyVariant(
+  source: OpenedSource,
+  task: InstallTask,
+  variant: SceneryVariant,
+  files: SceneryVariant['files']
+): Promise<void> {
+  if (files.length === 0) return;
+  const scratch = tempPath('variant');
+  try {
+    const extracted = await extractArchive(source.format, {
+      archivePath: source.readPath,
+      volumes: source.volumes,
+      targetDir: scratch,
+      password: task.password,
+      only: files.map((file) => file.source),
+    });
+    if (!extracted.ok) {
+      throw Object.assign(new Error(getInstallerErrorMessage(extracted.error)), {
+        code: extracted.error.code,
+      });
+    }
+    for (const file of files) {
+      const from = path.join(scratch, ...file.source.split('/'));
+      const to = path.join(task.targetPath, ...file.destination.split('/'));
+      await fs.promises.mkdir(path.dirname(to), { recursive: true });
+      await fs.promises.copyFile(from, to);
+    }
+    logger.addon.info(
+      `Applied variant ${variant.name} to ${task.displayName}: ${files.length} file(s)`
+    );
+  } finally {
+    await fs.promises.rm(scratch, { recursive: true, force: true }).catch(() => {});
+  }
 }
 
 /** Tiles read per scenery item, and the largest one worth extracting for its header. */
@@ -609,6 +656,17 @@ export class InstallerManager {
         };
       }
 
+      // Option folders never install as such: the chosen one is laid over the base below.
+      for (const variant of task.variants ?? []) {
+        const relative = variantRelativeDir(variant.root, task.archiveInternalRoot);
+        if (relative) {
+          await fs.promises.rm(path.join(tempDir, ...relative.split('/')), {
+            recursive: true,
+            force: true,
+          });
+        }
+      }
+
       // The folder must look like an add-on of its type before anything on disk changes.
       const problem = await verifyMarkers(tempDir, task.addonType);
       if (problem) {
@@ -648,8 +706,11 @@ export class InstallerManager {
 
       if (backupPath) await this.restoreAfterClean(task, backupPath);
 
+      const variant = task.variants?.find((candidate) => candidate.root === task.variant);
+      if (variant) await applyVariant(source, task, variant, variant.files);
+
       // Prove placement: every listed file sits in the final folder at full size.
-      const verified = await this.verifyInstall(task, source);
+      const verified = await this.verifyInstall(task, source, variant);
       if (!verified.ok) {
         return {
           taskId: task.id,
@@ -690,11 +751,16 @@ export class InstallerManager {
    */
   private async verifyInstall(
     task: InstallTask,
-    source: OpenedSource
+    source: OpenedSource,
+    variant?: SceneryVariant
   ): Promise<Result<VerificationStats, InstallerError>> {
     const listed = await listArchiveEntries(source, task.password);
     if (!listed.ok) return listed;
-    const expected = expectedFiles(listed.value, { internalRoot: task.archiveInternalRoot });
+    let expected = expectedFiles(listed.value, {
+      internalRoot: task.archiveInternalRoot,
+      exclude: (task.variants ?? []).map((candidate) => candidate.root),
+    });
+    if (variant) expected = withVariant(expected, variant);
 
     let { stats, misplaced } = await verifyPlacement(task.targetPath, expected);
     for (
@@ -705,14 +771,26 @@ export class InstallerManager {
       logger.addon.warn(
         `${misplaced.length} file(s) of ${task.displayName} not in place, re-extracting (attempt ${attempt})`
       );
-      await extractArchive(source.format, {
-        archivePath: source.readPath,
-        volumes: source.volumes,
-        targetDir: task.targetPath,
-        internalRoot: task.archiveInternalRoot,
-        password: task.password,
-        only: misplaced.map((file) => file.entryPath),
-      });
+      const fromBase = misplaced.filter((file) => !file.fromVariant);
+      if (fromBase.length > 0) {
+        await extractArchive(source.format, {
+          archivePath: source.readPath,
+          volumes: source.volumes,
+          targetDir: task.targetPath,
+          internalRoot: task.archiveInternalRoot,
+          password: task.password,
+          only: fromBase.map((file) => file.entryPath),
+        });
+      }
+      const fromVariant = new Set(misplaced.filter((f) => f.fromVariant).map((f) => f.entryPath));
+      if (variant && fromVariant.size > 0) {
+        await applyVariant(
+          source,
+          task,
+          variant,
+          variant.files.filter((file) => fromVariant.has(file.source))
+        );
+      }
       ({ stats, misplaced } = await verifyPlacement(task.targetPath, expected));
     }
 

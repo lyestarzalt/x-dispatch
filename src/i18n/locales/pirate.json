@@ -1767,6 +1767,10 @@
         "backedUp": "Old planks stowed at {{path}}",
         "noneSelected": "Pick at least one add-on to haul aboard",
         "selectToInstall": "Haul aboard"
+      },
+      "variant": {
+        "label": "Flavour",
+        "asShipped": "As she came"
       }
     },
     "browser": {

@@ -82,6 +82,8 @@ export interface DetectedItem {
   versionInfo?: VersionInfo;
   liveryInfo?: DetectedLiveryInfo;
   navdataInfo?: NavdataInfo;
+  /** Option folders a scenery package ships, each a set of replacement navigation files. */
+  variants?: import('./detection/sceneryVariants').SceneryVariant[];
   warnings: InstallerWarning[];
 }
 
@@ -113,6 +115,8 @@ export interface InstallTask extends DetectedItem {
   /** What is installed at `targetPath` now, when something is. */
   existingVersion?: string;
   existingNavdata?: NavdataInfo;
+  /** The chosen variant's root, one of `variants`; unset installs the package as shipped. */
+  variant?: string;
 }
 
 export interface BackupOptions {

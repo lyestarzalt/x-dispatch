@@ -6,7 +6,7 @@
  */
 import * as fs from 'fs';
 import * as path from 'path';
-import { resolveEntryTarget } from './extraction/options';
+import { normalizeEntryPath, resolveEntryTarget } from './extraction/options';
 import type { AddonType, ArchiveEntry, VerificationStats } from './types';
 
 /** A file the archive promised that is not in place after the move. */
@@ -16,12 +16,15 @@ export interface MisplacedFile {
   /** The archive entry it came from, for a targeted re-extraction. */
   entryPath: string;
   reason: 'missing' | 'size';
+  fromVariant?: boolean;
 }
 
 export interface ExpectedFile {
   relative: string;
   entryPath: string;
   size: number;
+  /** The file comes from the chosen variant, not from the base listing. */
+  fromVariant?: boolean;
 }
 
 /** Why an add-on's folder does not look like one of its type. */
@@ -35,16 +38,37 @@ const MARKER_DEPTH: Record<string, number> = { acf: 3, nav: 5, xpl: 4, lua: 2 };
  */
 export function expectedFiles(
   entries: ArchiveEntry[],
-  options: { internalRoot?: string }
+  options: { internalRoot?: string; exclude?: string[] }
 ): ExpectedFile[] {
   const expected: ExpectedFile[] = [];
+  const exclude = (options.exclude ?? []).map(normalizeEntryPath);
   for (const entry of entries) {
     if (entry.isDirectory || entry.path.endsWith('/')) continue;
+    const normalized = normalizeEntryPath(entry.path);
+    if (exclude.some((prefix) => normalized.startsWith(prefix))) continue;
     const relative = resolveEntryTarget(entry.path, options);
     if (!relative) continue;
     expected.push({ relative, entryPath: entry.path, size: entry.uncompressedSize });
   }
   return expected;
+}
+
+/** The listing with a variant's replacements in place of the base files they overwrite. */
+export function withVariant(
+  expected: ExpectedFile[],
+  variant: { files: Array<{ source: string; destination: string; size: number }> }
+): ExpectedFile[] {
+  const replaced = new Map(variant.files.map((file) => [file.destination, file]));
+  const kept = expected.filter((file) => !replaced.has(file.relative));
+  for (const file of variant.files) {
+    kept.push({
+      relative: file.destination,
+      entryPath: file.source,
+      size: file.size,
+      fromVariant: true,
+    });
+  }
+  return kept;
 }
 
 /** Stat every expected file in `targetDir`; a missing or short file is misplaced. */
@@ -58,10 +82,20 @@ export async function verifyPlacement(
     try {
       const stat = await fs.promises.stat(full);
       if (stat.size !== file.size) {
-        misplaced.push({ relative: file.relative, entryPath: file.entryPath, reason: 'size' });
+        misplaced.push({
+          relative: file.relative,
+          entryPath: file.entryPath,
+          reason: 'size',
+          fromVariant: file.fromVariant,
+        });
       }
     } catch {
-      misplaced.push({ relative: file.relative, entryPath: file.entryPath, reason: 'missing' });
+      misplaced.push({
+        relative: file.relative,
+        entryPath: file.entryPath,
+        reason: 'missing',
+        fromVariant: file.fromVariant,
+      });
     }
   }
   return {

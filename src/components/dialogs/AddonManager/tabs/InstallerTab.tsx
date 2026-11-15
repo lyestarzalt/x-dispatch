@@ -156,6 +156,14 @@ export function InstallerTab() {
     );
   };
 
+  const setVariant = (id: string, variantRoot: string) => {
+    setTasks((current) =>
+      current.map((task) =>
+        task.id === id ? { ...task, variant: variantRoot === '' ? undefined : variantRoot } : task
+      )
+    );
+  };
+
   const chosenTasks = tasks.filter((task) => selected[task.id]);
 
   const handleInstall = async () => {
@@ -321,6 +329,7 @@ export function InstallerTab() {
                         : undefined
                     }
                     onInstallModeChange={(mode) => setInstallMode(task.id, mode)}
+                    onVariantChange={(root) => setVariant(task.id, root)}
                   />
                 ))}
               </div>

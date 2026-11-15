@@ -1767,6 +1767,10 @@
         "backedUp": "Archivos anteriores respaldados en {{path}}",
         "noneSelected": "Selecciona al menos un add-on para instalar",
         "selectToInstall": "Instalar"
+      },
+      "variant": {
+        "label": "Variante",
+        "asShipped": "Como viene"
       }
     },
     "browser": {

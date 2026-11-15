@@ -628,3 +628,42 @@ describe('InstallerManager.analyze', () => {
     expect(seen[seen.length - 1]).toBe(tasks[0]?.estimatedSize);
   });
 });
+
+describe('InstallerManager — scenery variants', () => {
+  const files = {
+    'EGLL/Earth nav data/apt.dat': 'I\n1000 Version\n1 10 0 0 EGLL Base\n99\n',
+    'EGLL/Earth nav data/+50-001/+51-001.dsf': 'base tile',
+    'EGLL/Options/No trees/Earth nav data/+50-001/+51-001.dsf': 'tile without trees',
+    'EGLL/Options/No trees/readme.txt': 'docs',
+  };
+
+  it('lists the options and installs the package as shipped without them', async () => {
+    const zip = await archive('EGLL.zip', files);
+    const manager = new InstallerManager(xplane);
+    const { item, result } = await installFirst(manager, zip);
+    expect(item.variants?.map((v) => v.name)).toEqual(['No trees']);
+    expect(result?.success).toBe(true);
+    expect(readTree(path.join(xplane, 'Custom Scenery', 'EGLL'))).toEqual({
+      'Earth nav data/apt.dat': files['EGLL/Earth nav data/apt.dat'],
+      'Earth nav data/+50-001/+51-001.dsf': 'base tile',
+    });
+  });
+
+  it('lays the chosen option over the base files and verifies the result', async () => {
+    const zip = await archive('EGLL.zip', files);
+    const manager = new InstallerManager(xplane);
+    const analyzed = await manager.analyze([zip]);
+    if (!analyzed.ok || !analyzed.value[0]) throw new Error('nothing detected');
+    const [task] = manager.prepareInstallTasks([analyzed.value[0]]);
+    if (!task) throw new Error('no task');
+    task.variant = task.variants?.[0]?.root;
+    const installed = await manager.install([task]);
+    if (!installed.ok) throw new Error(installed.error.code);
+    expect(installed.value[0]?.success).toBe(true);
+    expect(installed.value[0]?.verificationStats?.failedFiles).toBe(0);
+    expect(readTree(path.join(xplane, 'Custom Scenery', 'EGLL'))).toEqual({
+      'Earth nav data/apt.dat': files['EGLL/Earth nav data/apt.dat'],
+      'Earth nav data/+50-001/+51-001.dsf': 'tile without trees',
+    });
+  });
+});

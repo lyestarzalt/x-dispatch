@@ -1767,6 +1767,10 @@
         "backedUp": "以前のファイルを {{path}} にバックアップしました",
         "noneSelected": "インストールするアドオンを 1 つ以上選んでください",
         "selectToInstall": "インストール"
+      },
+      "variant": {
+        "label": "バリエーション",
+        "asShipped": "配布時のまま"
       }
     },
     "browser": {

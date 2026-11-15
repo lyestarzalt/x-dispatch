@@ -8,6 +8,7 @@ import type {
 } from '../types';
 import { ADDON_TYPE_PRIORITY, PLATFORM_FOLDERS, isIgnoredName } from '../types';
 import { matchLivery } from './liveryPatterns';
+import { detectSceneryVariants } from './sceneryVariants';
 
 /** A file that tells the add-on's type, and the folder it belongs to. */
 interface Marker {
@@ -296,6 +297,10 @@ export function detectAddons(
       warnings: [],
     };
     if (marker.liveryInfo) item.liveryInfo = marker.liveryInfo;
+    if (marker.type === 'Scenery') {
+      const variants = detectSceneryVariants(entries, internalRoot ?? '');
+      if (variants.length > 0) item.variants = variants;
+    }
 
     // Add to skip prefixes
     if (internalRoot) {

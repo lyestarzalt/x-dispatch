@@ -15,6 +15,13 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import type { DetectedItem, InstallTask } from '@/lib/addonManager/installer/types';
 import { cn } from '@/lib/utils/helpers';
@@ -104,6 +111,8 @@ interface DetectedItemCardProps {
   onSelectedChange?: (selected: boolean) => void;
   /** When given and the add-on is already installed, the card offers overwrite or clean install. */
   onInstallModeChange?: (mode: ConflictMode) => void;
+  /** When given and the package ships option folders, the card offers them; '' is as shipped. */
+  onVariantChange?: (variantRoot: string) => void;
 }
 
 function isTask(item: DetectedItem | InstallTask): item is InstallTask {
@@ -115,6 +124,7 @@ export function DetectedItemCard({
   selected,
   onSelectedChange,
   onInstallModeChange,
+  onVariantChange,
 }: DetectedItemCardProps) {
   const { t } = useTranslation();
   const [warningsOpen, setWarningsOpen] = useState(false);
@@ -261,6 +271,26 @@ export function DetectedItemCard({
               ? t('addonManager.installer.review.cleanHint')
               : t('addonManager.installer.review.overwriteHint')}
           </p>
+        </div>
+      )}
+
+      {/* Option folders: the chosen one replaces the base navigation files */}
+      {task && task.variants && task.variants.length > 0 && onVariantChange && (
+        <div className="border-border/50 flex items-center gap-3 border-t px-3 py-2">
+          <span className="xp-label shrink-0">{t('addonManager.installer.variant.label')}</span>
+          <Select value={task.variant ?? ''} onValueChange={onVariantChange}>
+            <SelectTrigger className="h-8 min-w-0 flex-1 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">{t('addonManager.installer.variant.asShipped')}</SelectItem>
+              {task.variants.map((variant) => (
+                <SelectItem key={variant.root} value={variant.root}>
+                  {variant.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       )}
 
