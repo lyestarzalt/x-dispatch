@@ -948,13 +948,8 @@
         "allClear": "X-Dispatch ne signale rien dans ce journal.",
         "noMatches": "Aucune entrée ne correspond au filtre actuel."
       },
-      "entriesHeader": "Entrées du journal",
-      "entryCount": "Affichage de {{shown}} sur {{total}} entrées",
-      "showHeader": "Afficher l'en-tête pré-démarrage ({{count}} lignes)",
-      "hideHeader": "Masquer l'en-tête pré-démarrage",
       "filter": {
         "all": "Tous",
-        "errorsWarnings": "Erreurs + Avertissements",
         "errors": "Erreurs",
         "warnings": "Avertissements"
       },
@@ -972,7 +967,8 @@
         "noIssues": "Aucune ligne de problème connue.",
         "context_one": "{{count}} ligne autour du plantage",
         "context_other": "{{count}} lignes autour du plantage",
-        "times": "×{{count}}"
+        "times": "×{{count}}",
+        "unknown": "Pas un journal X-Plane"
       },
       "issues": {
         "plugin_manager_error": "Erreur du gestionnaire de plugins",
@@ -1006,7 +1002,10 @@
         "dataref_replaced": "Dataref remplacé",
         "betterpushback_warn": "Avertissement BetterPushback",
         "art_controls": "Art controls modifiés"
-      }
+      },
+      "lines_one": "{{count}} ligne d’erreur",
+      "lines_other": "{{count}} lignes d’erreur",
+      "showAll": "Tout afficher ({{count}})"
     },
     "flights": {
       "title": "Vols",

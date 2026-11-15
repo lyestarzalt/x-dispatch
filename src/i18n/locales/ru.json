@@ -948,13 +948,8 @@
         "allClear": "Проблем в этом журнале не найдено.",
         "noMatches": "Нет записей, соответствующих текущему фильтру."
       },
-      "entriesHeader": "Записи журнала",
-      "entryCount": "Показано {{shown}} из {{total}} записей",
-      "showHeader": "Показать заголовок до запуска ({{count}} строк)",
-      "hideHeader": "Скрыть заголовок до запуска",
       "filter": {
         "all": "Все",
-        "errorsWarnings": "Ошибки + предупреждения",
         "errors": "Ошибки",
         "warnings": "Предупреждения"
       },
@@ -972,7 +967,8 @@
         "noIssues": "Известных проблемных строк нет.",
         "context_one": "{{count}} строка около сбоя",
         "context_other": "{{count}} строк около сбоя",
-        "times": "×{{count}}"
+        "times": "×{{count}}",
+        "unknown": "Это не лог X-Plane"
       },
       "issues": {
         "plugin_manager_error": "Ошибка менеджера плагинов",
@@ -1006,7 +1002,10 @@
         "dataref_replaced": "Dataref заменён",
         "betterpushback_warn": "Предупреждение BetterPushback",
         "art_controls": "Изменены art controls"
-      }
+      },
+      "lines_one": "{{count}} строка с ошибкой",
+      "lines_other": "{{count}} строк с ошибками",
+      "showAll": "Показать все ({{count}})"
     },
     "flights": {
       "title": "Полёты",

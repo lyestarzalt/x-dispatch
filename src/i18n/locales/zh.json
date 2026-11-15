@@ -948,13 +948,8 @@
         "allClear": "未发现明显问题。",
         "noMatches": "没有条目匹配当前筛选。"
       },
-      "entriesHeader": "日志条目",
-      "entryCount": "显示 {{total}} 条中的 {{shown}} 条",
-      "showHeader": "显示启动前日志开头（{{count}} 行）",
-      "hideHeader": "隐藏启动前日志开头",
       "filter": {
         "all": "全部",
-        "errorsWarnings": "错误 + 警告",
         "errors": "错误",
         "warnings": "警告"
       },
@@ -972,7 +967,8 @@
         "noIssues": "没有已知的问题行。",
         "context_one": "崩溃前后 {{count}} 行",
         "context_other": "崩溃前后 {{count}} 行",
-        "times": "×{{count}}"
+        "times": "×{{count}}",
+        "unknown": "不是 X-Plane 日志"
       },
       "issues": {
         "plugin_manager_error": "插件管理器错误",
@@ -1006,7 +1002,10 @@
         "dataref_replaced": "Dataref 被替换",
         "betterpushback_warn": "BetterPushback 警告",
         "art_controls": "Art controls 已修改"
-      }
+      },
+      "lines_one": "{{count}} 条错误",
+      "lines_other": "{{count}} 条错误",
+      "showAll": "显示全部 {{count}} 条"
     },
     "flights": {
       "title": "飞行",

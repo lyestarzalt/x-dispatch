@@ -948,13 +948,8 @@
         "allClear": "Nenhum problema assinalado neste registo.",
         "noMatches": "Nenhuma entrada corresponde ao filtro atual."
       },
-      "entriesHeader": "Entradas do registo",
-      "entryCount": "A mostrar {{shown}} de {{total}} entradas",
-      "showHeader": "Mostrar cabeçalho pré-arranque ({{count}} linhas)",
-      "hideHeader": "Ocultar cabeçalho pré-arranque",
       "filter": {
         "all": "Tudo",
-        "errorsWarnings": "Erros + Avisos",
         "errors": "Erros",
         "warnings": "Avisos"
       },
@@ -972,7 +967,8 @@
         "noIssues": "Sem linhas de problemas conhecidos.",
         "context_one": "{{count}} linha em torno da falha",
         "context_other": "{{count}} linhas em torno da falha",
-        "times": "×{{count}}"
+        "times": "×{{count}}",
+        "unknown": "Não é um registo do X-Plane"
       },
       "issues": {
         "plugin_manager_error": "Erro do gestor de plugins",
@@ -1006,7 +1002,10 @@
         "dataref_replaced": "Dataref substituído",
         "betterpushback_warn": "Aviso do BetterPushback",
         "art_controls": "Art controls modificados"
-      }
+      },
+      "lines_one": "{{count}} linha de erro",
+      "lines_other": "{{count}} linhas de erro",
+      "showAll": "Mostrar todas ({{count}})"
     },
     "flights": {
       "title": "Voos",

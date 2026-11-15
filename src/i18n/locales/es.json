@@ -948,13 +948,8 @@
         "allClear": "No hay incidencias en este registro.",
         "noMatches": "Ninguna entrada coincide con el filtro actual."
       },
-      "entriesHeader": "Entradas del registro",
-      "entryCount": "Mostrando {{shown}} de {{total}} entradas",
-      "showHeader": "Mostrar cabecera previa al inicio ({{count}} líneas)",
-      "hideHeader": "Ocultar cabecera previa al inicio",
       "filter": {
         "all": "Todo",
-        "errorsWarnings": "Errores + Avisos",
         "errors": "Errores",
         "warnings": "Avisos"
       },
@@ -972,7 +967,8 @@
         "noIssues": "Sin líneas de problemas conocidos.",
         "context_one": "{{count}} línea en torno al fallo",
         "context_other": "{{count}} líneas en torno al fallo",
-        "times": "×{{count}}"
+        "times": "×{{count}}",
+        "unknown": "No es un registro de X-Plane"
       },
       "issues": {
         "plugin_manager_error": "Error del gestor de plugins",
@@ -1006,7 +1002,10 @@
         "dataref_replaced": "Dataref reemplazado",
         "betterpushback_warn": "Aviso de BetterPushback",
         "art_controls": "Art controls modificados"
-      }
+      },
+      "lines_one": "{{count}} línea de error",
+      "lines_other": "{{count}} líneas de error",
+      "showAll": "Mostrar las {{count}}"
     },
     "flights": {
       "title": "Vuelos",

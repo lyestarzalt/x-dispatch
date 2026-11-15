@@ -948,13 +948,8 @@
         "allClear": "Th' bilge be clean — nothin' flagged in this scroll.",
         "noMatches": "No entries match yer filter, matey."
       },
-      "entriesHeader": "Cap'n's log entries",
-      "entryCount": "Showin' {{shown}} of {{total}} entries, savvy?",
-      "showHeader": "Unfurl th' pre-runtime header ({{count}} lines)",
-      "hideHeader": "Roll up th' pre-runtime header",
       "filter": {
         "all": "All hands",
-        "errorsWarnings": "Foul winds + squalls",
         "errors": "Foul winds",
         "warnings": "Squalls"
       },
@@ -972,7 +967,8 @@
         "noIssues": "No known trouble lines.",
         "context_one": "{{count}} line about the wreck",
         "context_other": "{{count}} lines about the wreck",
-        "times": "×{{count}}"
+        "times": "×{{count}}",
+        "unknown": "Not an X-Plane log"
       },
       "issues": {
         "plugin_manager_error": "Plugin manager error",
@@ -1006,7 +1002,10 @@
         "dataref_replaced": "Dataref replaced",
         "betterpushback_warn": "BetterPushback warning",
         "art_controls": "Art controls modified"
-      }
+      },
+      "lines_one": "{{count}} error line",
+      "lines_other": "{{count}} error lines",
+      "showAll": "Show the lot ({{count}})"
     },
     "flights": {
       "title": "Voyages",

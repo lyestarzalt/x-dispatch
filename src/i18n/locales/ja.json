@@ -948,13 +948,8 @@
         "allClear": "このログに問題は見つかりませんでした。",
         "noMatches": "現在のフィルターに該当するエントリはありません。"
       },
-      "entriesHeader": "ログエントリ",
-      "entryCount": "{{total}} 件中 {{shown}} 件を表示",
-      "showHeader": "起動前ヘッダーを表示（{{count}} 行）",
-      "hideHeader": "起動前ヘッダーを非表示",
       "filter": {
         "all": "すべて",
-        "errorsWarnings": "エラー + 警告",
         "errors": "エラー",
         "warnings": "警告"
       },
@@ -972,7 +967,8 @@
         "noIssues": "既知の問題行はありません。",
         "context_one": "クラッシュ前後の {{count}} 行",
         "context_other": "クラッシュ前後の {{count}} 行",
-        "times": "×{{count}}"
+        "times": "×{{count}}",
+        "unknown": "X-Plane のログではありません"
       },
       "issues": {
         "plugin_manager_error": "プラグインマネージャーのエラー",
@@ -1006,7 +1002,10 @@
         "dataref_replaced": "Dataref の置き換え",
         "betterpushback_warn": "BetterPushback の警告",
         "art_controls": "Art controls 変更"
-      }
+      },
+      "lines_one": "エラー行 {{count}} 件",
+      "lines_other": "エラー行 {{count}} 件",
+      "showAll": "すべて表示（{{count}}）"
     },
     "flights": {
       "title": "フライト",

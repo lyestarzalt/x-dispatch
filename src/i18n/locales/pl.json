@@ -948,13 +948,8 @@
         "allClear": "W tym dzienniku nie wykryto problemów.",
         "noMatches": "Żadne wpisy nie pasują do bieżącego filtra."
       },
-      "entriesHeader": "Wpisy dziennika",
-      "entryCount": "Pokazano {{shown}} z {{total}} wpisów",
-      "showHeader": "Pokaż nagłówek sprzed uruchomienia ({{count}} wierszy)",
-      "hideHeader": "Ukryj nagłówek sprzed uruchomienia",
       "filter": {
         "all": "Wszystko",
-        "errorsWarnings": "Błędy + Ostrzeżenia",
         "errors": "Błędy",
         "warnings": "Ostrzeżenia"
       },
@@ -972,7 +967,8 @@
         "noIssues": "Brak znanych wierszy z problemami.",
         "context_one": "{{count}} wiersz wokół awarii",
         "context_other": "{{count}} wierszy wokół awarii",
-        "times": "×{{count}}"
+        "times": "×{{count}}",
+        "unknown": "To nie jest log X-Plane"
       },
       "issues": {
         "plugin_manager_error": "Błąd menedżera wtyczek",
@@ -1006,7 +1002,10 @@
         "dataref_replaced": "Dataref zastąpiony",
         "betterpushback_warn": "Ostrzeżenie BetterPushback",
         "art_controls": "Zmienione art controls"
-      }
+      },
+      "lines_one": "{{count}} wiersz błędu",
+      "lines_other": "{{count}} wierszy błędów",
+      "showAll": "Pokaż wszystkie ({{count}})"
     },
     "flights": {
       "title": "Loty",

@@ -948,13 +948,8 @@
         "allClear": "X-Dispatch did not flag anything in this log.",
         "noMatches": "No entries match the current filter."
       },
-      "entriesHeader": "Log entries",
-      "entryCount": "Showing {{shown}} of {{total}} entries",
-      "showHeader": "Show pre-runtime header ({{count}} lines)",
-      "hideHeader": "Hide pre-runtime header",
       "filter": {
         "all": "All",
-        "errorsWarnings": "Errors + Warnings",
         "errors": "Errors",
         "warnings": "Warnings"
       },
@@ -972,7 +967,8 @@
         "noIssues": "No known trouble lines.",
         "context_one": "{{count}} line around the crash",
         "context_other": "{{count}} lines around the crash",
-        "times": "×{{count}}"
+        "times": "×{{count}}",
+        "unknown": "Not an X-Plane log"
       },
       "issues": {
         "plugin_manager_error": "Plugin manager error",
@@ -1006,7 +1002,10 @@
         "dataref_replaced": "Dataref replaced",
         "betterpushback_warn": "BetterPushback warning",
         "art_controls": "Art controls modified"
-      }
+      },
+      "lines_one": "{{count}} error line",
+      "lines_other": "{{count}} error lines",
+      "showAll": "Show all {{count}}"
     },
     "flights": {
       "title": "Flights",

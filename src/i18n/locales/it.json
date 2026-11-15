@@ -948,13 +948,8 @@
         "allClear": "Nessun problema rilevato in questo log.",
         "noMatches": "Nessuna voce corrisponde al filtro corrente."
       },
-      "entriesHeader": "Voci del log",
-      "entryCount": "{{shown}} voci visualizzate su {{total}}",
-      "showHeader": "Mostra intestazione prima dell'avvio ({{count}} righe)",
-      "hideHeader": "Nascondi intestazione prima dell'avvio",
       "filter": {
         "all": "Tutto",
-        "errorsWarnings": "Errori + Avvisi",
         "errors": "Errori",
         "warnings": "Avvisi"
       },
@@ -972,7 +967,8 @@
         "noIssues": "Nessuna riga di problemi noti.",
         "context_one": "{{count}} riga attorno al crash",
         "context_other": "{{count}} righe attorno al crash",
-        "times": "×{{count}}"
+        "times": "×{{count}}",
+        "unknown": "Non è un log di X-Plane"
       },
       "issues": {
         "plugin_manager_error": "Errore del gestore plugin",
@@ -1006,7 +1002,10 @@
         "dataref_replaced": "Dataref sostituito",
         "betterpushback_warn": "Avviso BetterPushback",
         "art_controls": "Art controls modificati"
-      }
+      },
+      "lines_one": "{{count}} riga di errore",
+      "lines_other": "{{count}} righe di errore",
+      "showAll": "Mostra tutte ({{count}})"
     },
     "flights": {
       "title": "Voli",

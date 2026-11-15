@@ -948,13 +948,8 @@
         "allClear": "Keine Auffälligkeiten in diesem Protokoll.",
         "noMatches": "Keine Einträge entsprechen dem aktuellen Filter."
       },
-      "entriesHeader": "Protokolleinträge",
-      "entryCount": "Zeige {{shown}} von {{total}} Einträgen",
-      "showHeader": "Header vor dem Start anzeigen ({{count}} Zeilen)",
-      "hideHeader": "Header vor dem Start ausblenden",
       "filter": {
         "all": "Alle",
-        "errorsWarnings": "Fehler + Warnungen",
         "errors": "Fehler",
         "warnings": "Warnungen"
       },
@@ -972,7 +967,8 @@
         "noIssues": "Keine bekannten Problemzeilen.",
         "context_one": "{{count}} Zeile um den Absturz",
         "context_other": "{{count}} Zeilen um den Absturz",
-        "times": "×{{count}}"
+        "times": "×{{count}}",
+        "unknown": "Kein X-Plane-Log"
       },
       "issues": {
         "plugin_manager_error": "Plugin-Manager-Fehler",
@@ -1006,7 +1002,10 @@
         "dataref_replaced": "Dataref ersetzt",
         "betterpushback_warn": "BetterPushback-Warnung",
         "art_controls": "Art Controls geändert"
-      }
+      },
+      "lines_one": "{{count}} Fehlerzeile",
+      "lines_other": "{{count}} Fehlerzeilen",
+      "showAll": "Alle {{count}} anzeigen"
     },
     "flights": {
       "title": "Flüge",
