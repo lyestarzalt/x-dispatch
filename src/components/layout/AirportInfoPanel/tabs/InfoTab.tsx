@@ -7,7 +7,7 @@ import {
   type AtcBadgeVariant,
   stationLabel,
 } from '@/lib/networkTraffic/atcRoles';
-import { atisRunways } from '@/lib/networkTraffic/atis';
+import { airportRunwayUse } from '@/lib/networkTraffic/atis';
 import { trafficCountsForAirport } from '@/lib/networkTraffic/stations';
 import { formatFrequency } from '@/lib/utils/format';
 import { runwayLengthFeet } from '@/lib/utils/geomath';
@@ -24,7 +24,7 @@ import type { AtcRole, NetworkStation } from '@/types/networkTraffic';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore - Vite handles this import
 import gatewayLogo from '../../../../../assets/gateway-logo.svg';
-import { type ActiveRunway } from './info/ActiveRunwayLine';
+import { type ActiveRunway, activeEndUse } from './info/ActiveRunwayLine';
 import { ConditionsCard } from './info/ConditionsCard';
 import { DetailsSection } from './info/DetailsSection';
 import { FREQ_VISIBLE_DEFAULT, FrequenciesSection } from './info/FrequenciesSection';
@@ -119,8 +119,6 @@ export default function InfoTab() {
   const rawMetar = vatsimMetarData?.raw ?? null;
   // Online network: the positions at this airport and the traffic filed to or from it.
   const stations = staffing?.stations;
-  const atisLines = stations?.find((s) => s.atis)?.atis?.lines;
-  const atisRunwayEnds = useMemo(() => (atisLines ? atisRunways(atisLines) : []), [atisLines]);
   const atisLetter = staffing?.atisCode ?? null;
   const atcRows = useMemo(() => (stations ? buildAtcRows(stations) : []), [stations]);
   const liveTraffic = useMemo(
@@ -134,6 +132,14 @@ export default function InfoTab() {
   const ilsList = navData?.ils;
   const gsList = navData?.gs;
   const airportFrequencies = airport?.frequencies;
+
+  // What the ATIS says is in use, kept to the ends this airport has. Read off
+  // every broadcast, since some airports run one for arrivals and one for departures.
+  const atisUse = useMemo(() => {
+    if (!stations || !runways) return null;
+    const here = new Set(runways.flatMap((r) => r.ends.map((end) => runwayEndKey(end.name))));
+    return airportRunwayUse(stations, (end) => here.has(runwayEndKey(end)));
+  }, [stations, runways]);
 
   // Runways sorted by length, descending
   const sortedRunways = useMemo(() => {
@@ -156,8 +162,16 @@ export default function InfoTab() {
   // Active runway resolution: ATIS is authoritative when available, wind
   // alignment is a heuristic fallback used only when no ATIS is published.
   const activeRunway = useMemo<ActiveRunway | null>(() => {
-    if (atisRunwayEnds.length > 0) {
-      return { source: 'atis', ends: atisRunwayEnds.map(runwayEndKey) };
+    if (atisUse) {
+      return {
+        source: 'atis',
+        ends: atisUse.all.map(runwayEndKey),
+        split: atisUse.split,
+        arrivals: atisUse.arrivals.map(runwayEndKey),
+        departures: atisUse.departures.map(runwayEndKey),
+        arrivalLetter: atisUse.arrivalLetter,
+        departureLetter: atisUse.departureLetter,
+      };
     }
     const wind = metar?.wind;
     if (wind && wind.degrees !== undefined && wind.speed > 0) {
@@ -173,7 +187,7 @@ export default function InfoTab() {
       }
     }
     return null;
-  }, [atisRunwayEnds, metar?.wind, sortedRunways]);
+  }, [atisUse, metar?.wind, sortedRunways]);
 
   // Frequencies sorted into flight-flow order. apt.dat sometimes lists the
   // same physical channel twice (legacy 25 kHz row + 8.33 kHz row), so we
@@ -210,10 +224,10 @@ export default function InfoTab() {
       ? overlyingAtc.filter((c) => c.role !== 'tracon' && c.role !== 'app')
       : overlyingAtc;
   }, [mergedFreqRows, overlyingAtc]);
-  const activeEndNames = useMemo(() => new Set(activeRunway?.ends ?? []), [activeRunway]);
+  const endUse = useMemo(() => activeEndUse(activeRunway), [activeRunway]);
   const listedRunways = useMemo(
-    () => activeRunwaysFirst(sortedRunways, activeEndNames),
-    [sortedRunways, activeEndNames]
+    () => activeRunwaysFirst(sortedRunways, new Set(endUse.keys())),
+    [sortedRunways, endUse]
   );
   const visibleMergedRows = showAllFreqs
     ? mergedFreqRows
@@ -268,7 +282,7 @@ export default function InfoTab() {
           runways={listedRunways}
           ilsByEnd={ilsByEnd}
           gsByEnd={gsByEnd}
-          activeEndNames={activeEndNames}
+          endUse={endUse}
         />
       )}
 

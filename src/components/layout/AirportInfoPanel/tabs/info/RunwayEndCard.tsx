@@ -8,6 +8,7 @@ import { metersToFeet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
 import type { Runway } from '@/types/apt';
 import type { Navaid } from '@/types/navigation';
+import type { EndUse } from './ActiveRunwayLine';
 import { IlsDetail } from './IlsDetail';
 import { isLocalizerOnly } from './listOrder';
 import { landingDistanceFeet } from './runwayDistances';
@@ -24,7 +25,7 @@ export function RunwayEndCard({
   surface,
   ils,
   gs,
-  active,
+  use,
 }: {
   runway: Runway;
   endIndex: 0 | 1;
@@ -32,7 +33,8 @@ export function RunwayEndCard({
   surface: string;
   ils?: Navaid;
   gs?: Navaid;
-  active: boolean;
+  /** How the end is in use, null when it is not. */
+  use: EndUse | null;
 }) {
   const { t } = useTranslation();
   const units = useUnits();
@@ -43,7 +45,7 @@ export function RunwayEndCard({
     <div
       className={cn(
         'rounded px-2.5 py-1.5',
-        active ? 'bg-cat-emerald/10 ring-cat-emerald/30 ring-1' : 'bg-muted/20'
+        use ? 'bg-cat-emerald/10 ring-cat-emerald/30 ring-1' : 'bg-muted/20'
       )}
     >
       <Collapsible>
@@ -53,7 +55,7 @@ export function RunwayEndCard({
             <span
               className={cn(
                 'inline-block w-9 shrink-0 font-mono text-sm font-semibold',
-                active ? 'text-cat-emerald' : 'text-foreground'
+                use ? 'text-cat-emerald' : 'text-foreground'
               )}
             >
               {end.name}
@@ -68,6 +70,23 @@ export function RunwayEndCard({
                   {isLocalizerOnly(ils) ? 'LOC' : 'ILS'}
                 </Badge>
               </CollapsibleTrigger>
+            )}
+            {/* Only when the ATIS splits them; amber stays the LDA warning's colour. */}
+            {(use === 'departure' || use === 'both') && (
+              <span
+                className="text-muted-foreground text-2xs font-mono"
+                title={t('airportInfo.conditions.departures')}
+              >
+                DEP
+              </span>
+            )}
+            {(use === 'arrival' || use === 'both') && (
+              <span
+                className="text-muted-foreground text-2xs font-mono"
+                title={t('airportInfo.conditions.arrivals')}
+              >
+                ARR
+              </span>
             )}
           </div>
           <div className="text-muted-foreground flex items-center gap-2 text-sm">

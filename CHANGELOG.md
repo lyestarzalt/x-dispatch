@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Departures and arrivals in Explore → Online.** Each staffed airport shows how many flights are filed out of it and into it.
 - **VATSIM and IVAO switches on the airport card.** Compare the two networks at an airport without opening Layers.
+- **Departure and arrival runways on the airport card.** When the ATIS gives different runways for takeoff and landing, the card lists them apart and tags each runway DEP or ARR.
 
 ### Changed
 

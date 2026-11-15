@@ -81,7 +81,11 @@ describe('atis text', () => {
     expect(atisLetterFromText(['ATIS INFO K'])).toBe('K');
     expect(atisLetterFromText(['Brasilia ATIS Information NOVEMBER recorded at 0804z'])).toBe('N');
     expect(atisLetterFromText(['NOTHING HERE'])).toBeNull();
-    expect(atisRunways(['RWY 27L IN USE', 'RUNWAY 09 AND RY 27R'])).toEqual(['27L', '09', '27R']);
+    expect(atisRunways(['RWY 27L IN USE', 'RUNWAY 09 IN USE AND RY 27R IN USE'])).toEqual([
+      '27L',
+      '09',
+      '27R',
+    ]);
   });
 });
 
