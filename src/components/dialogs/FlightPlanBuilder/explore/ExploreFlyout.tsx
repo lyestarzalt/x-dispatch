@@ -14,11 +14,10 @@ import { useUnits } from '@/hooks/useUnits';
 import {
   STAND_CODES,
   type StandCode,
-  WIDTH_CODE_WINGSPAN_M,
   smallestStandCodeFor,
   standFits,
+  standSpanFeet,
 } from '@/lib/airports/standIdentity';
-import { metersToFeet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
 import type { Airport } from '@/lib/xplaneServices/dataService';
 import { trackEvent } from '@/queries';
@@ -86,8 +85,7 @@ export function ExploreFlyout({
     () => (minCode === undefined ? airports : airports.filter(fits)),
     [airports, fits, minCode]
   );
-  const spanOf = (code: StandCode) =>
-    units.shortDistance(metersToFeet(WIDTH_CODE_WINGSPAN_M[code]));
+  const spanOf = (code: StandCode) => units.length(standSpanFeet(code));
 
   // The preview line belongs to this panel; leave the map clean when it goes.
   useEffect(() => () => setRoutePreview(null), [setRoutePreview]);

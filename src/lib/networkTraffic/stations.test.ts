@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Airport } from '@/lib/xplaneServices/dataService';
 import type { IvaoAtc } from '@/types/ivao';
+import type { NetworkPilot } from '@/types/networkTraffic';
 import type { VatsimATIS, VatsimController } from '@/types/vatsim';
 import { roleFromCallsign, stationLabel, topRole } from './atcRoles';
 import { atisLetterFromText, atisRunways } from './atis';
@@ -10,6 +11,7 @@ import {
   fromVatsimAtis,
   fromVatsimController,
   stationAirport,
+  trafficCountsByAirport,
 } from './stations';
 
 const airports = [
@@ -136,5 +138,21 @@ describe('buildAirportStaffing', () => {
     expect(staffing.EGLL?.top).toBe('ATIS');
     expect(staffing.EGLL?.roles).toEqual([]);
     expect(topRole(['TWR', 'GND'])).toBe('TWR');
+  });
+});
+
+describe('trafficCountsByAirport', () => {
+  it('counts filed departures and arrivals per airport', () => {
+    const pilot = (departure: string, arrival: string) =>
+      ({ flightPlan: { departure, arrival } }) as NetworkPilot;
+    const counts = trafficCountsByAirport([
+      pilot('EGLL', 'KJFK'),
+      pilot('EGLL', 'LFPG'),
+      pilot('KJFK', 'EGLL'),
+      { flightPlan: null } as NetworkPilot,
+    ]);
+    expect(counts.get('EGLL')).toEqual({ departures: 2, arrivals: 1 });
+    expect(counts.get('KJFK')).toEqual({ departures: 1, arrivals: 1 });
+    expect(counts.get('EDDF')).toBeUndefined();
   });
 });

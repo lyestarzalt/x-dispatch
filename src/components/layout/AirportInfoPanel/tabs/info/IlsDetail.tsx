@@ -3,6 +3,7 @@ import { useUnits } from '@/hooks/useUnits';
 import { type Degrees, type NauticalMiles } from '@/lib/utils/geomath';
 import type { Navaid } from '@/types/navigation';
 import { KvRow } from './KvRow';
+import { isLocalizerOnly } from './listOrder';
 
 export function IlsDetail({
   endName,
@@ -54,7 +55,7 @@ export function IlsDetail({
       <div className="pl-1">
         <KvRow label={t('airportInfo.ils.frequency')} value={freq} />
         <KvRow label={t('airportInfo.ils.localizer')} value={headingStr} />
-        <KvRow label={t('airportInfo.ils.glideslope')} value={gsStr} />
+        {!isLocalizerOnly(ils) && <KvRow label={t('airportInfo.ils.glideslope')} value={gsStr} />}
         <KvRow label={t('airportInfo.ils.range')} value={rangeStr} />
         <KvRow label={t('airportInfo.ils.ident')} value={ils.id} />
       </div>

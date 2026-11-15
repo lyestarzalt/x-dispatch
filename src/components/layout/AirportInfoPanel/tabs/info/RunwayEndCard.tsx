@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils/helpers';
 import type { Runway } from '@/types/apt';
 import type { Navaid } from '@/types/navigation';
 import { IlsDetail } from './IlsDetail';
+import { isLocalizerOnly } from './listOrder';
 import { landingDistanceFeet } from './runwayDistances';
 
 /**
@@ -64,7 +65,7 @@ export function RunwayEndCard({
                   className="group hover:bg-info/30 gap-1 px-1.5 py-0 font-mono uppercase"
                 >
                   <ChevronDown className="h-3 w-3 transition-transform duration-150 group-data-[state=open]:rotate-180" />
-                  ILS
+                  {isLocalizerOnly(ils) ? 'LOC' : 'ILS'}
                 </Badge>
               </CollapsibleTrigger>
             )}

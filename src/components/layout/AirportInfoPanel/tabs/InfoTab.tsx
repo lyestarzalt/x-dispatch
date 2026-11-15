@@ -30,6 +30,7 @@ import { DetailsSection } from './info/DetailsSection';
 import { FREQ_VISIBLE_DEFAULT, FrequenciesSection } from './info/FrequenciesSection';
 import { type MergedFreqRow } from './info/FrequencyRow';
 import { RunwaysSection } from './info/RunwaysSection';
+import { activeRunwaysFirst, liveRowsFirst } from './info/listOrder';
 import { runwayEndKey } from './info/runwayEndKey';
 
 // Frequencies in flight-flow order: preflight (recorded info) → taxi out
@@ -193,10 +194,11 @@ export default function InfoTab() {
   }, [airportFrequencies]);
 
   // Merge static apt.dat frequencies with the live rows. Each static row
-  // attaches the first matching controller; unmatched live rows
-  // (CTR, FSS, extra controllers on the same role) append at the end.
+  // attaches the first matching controller; unmatched live rows (CTR, FSS,
+  // extra controllers on the same role) follow. Staffed rows then lead the
+  // list, so none of them hides behind "show all".
   const mergedFreqRows = useMemo<MergedFreqRow[]>(
-    () => mergeFreqRows(frequencies, atcRows),
+    () => liveRowsFirst(mergeFreqRows(frequencies, atcRows)),
     [frequencies, atcRows]
   );
 
@@ -208,6 +210,11 @@ export default function InfoTab() {
       ? overlyingAtc.filter((c) => c.role !== 'tracon' && c.role !== 'app')
       : overlyingAtc;
   }, [mergedFreqRows, overlyingAtc]);
+  const activeEndNames = useMemo(() => new Set(activeRunway?.ends ?? []), [activeRunway]);
+  const listedRunways = useMemo(
+    () => activeRunwaysFirst(sortedRunways, activeEndNames),
+    [sortedRunways, activeEndNames]
+  );
   const visibleMergedRows = showAllFreqs
     ? mergedFreqRows
     : mergedFreqRows.slice(0, FREQ_VISIBLE_DEFAULT);
@@ -258,10 +265,10 @@ export default function InfoTab() {
 
       {sortedRunways.length > 0 && (
         <RunwaysSection
-          runways={sortedRunways}
+          runways={listedRunways}
           ilsByEnd={ilsByEnd}
           gsByEnd={gsByEnd}
-          activeEndNames={new Set(activeRunway?.ends ?? [])}
+          activeEndNames={activeEndNames}
         />
       )}
 

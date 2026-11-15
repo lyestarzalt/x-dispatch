@@ -38,9 +38,15 @@ export function RunwayRow({
   // without drawing attention to "Unknown" data.
   const surface = SURFACE_NAMES[runway.surface_type] ?? '—';
 
+  // The active end reads first within its pair.
+  const secondOnly =
+    activeEndNames.has(runwayEndKey(runway.ends[1].name)) &&
+    !activeEndNames.has(runwayEndKey(runway.ends[0].name));
+  const endOrder: readonly (0 | 1)[] = secondOnly ? [1, 0] : [0, 1];
+
   return (
     <li className="space-y-1">
-      {([0, 1] as const).map((endIndex) => {
+      {endOrder.map((endIndex) => {
         const key = runwayEndKey(runway.ends[endIndex].name);
         return (
           <RunwayEndCard
