@@ -33,6 +33,8 @@ export interface LogAnalysis {
   cleanShutdown: boolean;
   /** The sim wrote its crash line, or the log just stops. */
   crashed: boolean;
+  /** 1-based line of the crash marker, null when the log merely stops. */
+  crashLine: number | null;
   /** Consecutive error lines around the crash marker, or the last lines when it just stopped. */
   context: string[];
   issues: LogIssue[];
@@ -213,6 +215,7 @@ export function analyzeLog(text: string): LogAnalysis {
     driver: null,
     cleanShutdown: false,
     crashed: false,
+    crashLine: null,
     context: [],
     issues: [],
     lineCount: lines.length,
@@ -263,6 +266,7 @@ export function analyzeLog(text: string): LogAnalysis {
   analysis.issues = [...counts.values()];
   if (crashAt !== -1) {
     analysis.crashed = true;
+    analysis.crashLine = crashAt + 1;
     analysis.context = errorRunAround(lines, crashAt);
   } else if (analysis.isXPlaneLog && !analysis.cleanShutdown) {
     // No shutdown line: the sim stopped without saying so, or it is still running.

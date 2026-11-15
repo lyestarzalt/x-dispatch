@@ -1,11 +1,12 @@
 import { useDeferredValue, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ExternalLink, RefreshCcw, ScrollText, Search } from 'lucide-react';
+import { Activity, ExternalLink, RefreshCcw, ScrollText, Search } from 'lucide-react';
 import { DesktopOnly } from '@/components/remote/DesktopOnly';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
+import { type LogAnalysis, analyzeLog } from '@/lib/health/logAnalysis';
 import { cn } from '@/lib/utils/helpers';
 import { toastError } from '@/lib/utils/toastError';
 import { type LogEntry, type LogLevel, parseLog } from '@/lib/xplaneServices/log/parseLog';
@@ -119,6 +120,7 @@ export function LogsSection({ active }: LogsSectionProps) {
 
   const parsed = parseLog(result.data);
   const filtered = applyFilters(parsed.entries, filter, deferredSearch);
+  const analysis = analyzeLog(result.data);
 
   return (
     <div className="space-y-6">
@@ -169,6 +171,8 @@ export function LogsSection({ active }: LogsSectionProps) {
         </div>
       </div>
 
+      <SessionSummary analysis={analysis} onPick={(line) => setSearch(messageOf(line))} />
+
       {parsed.header.length > 0 && (
         <Collapsible open={showHeader} onOpenChange={setShowHeader}>
           <CollapsibleTrigger asChild>
@@ -201,6 +205,107 @@ export function LogsSection({ active }: LogsSectionProps) {
         )}
       </SettingsSectionBlock>
     </div>
+  );
+}
+
+/** The message part of a raw log line: after the timestamp and the level tag. */
+function messageOf(line: string): string {
+  const match = /^\d+:\d+:\d+\.\d+\s+[A-Z]\/[A-Z/]+:\s*(.*)$/.exec(line.trim());
+  return (match?.[1] ?? line).trim().slice(0, 80);
+}
+
+/** What the last session was: the build it ran, how it ended, and the known trouble lines. */
+function SessionSummary({
+  analysis,
+  onPick,
+}: {
+  analysis: LogAnalysis;
+  onPick: (line: string) => void;
+}) {
+  const { t } = useTranslation();
+  const [showContext, setShowContext] = useState(false);
+  if (!analysis.isXPlaneLog) return null;
+
+  const ending = analysis.cleanShutdown
+    ? { key: 'clean', className: 'bg-success/10 text-success' }
+    : analysis.crashLine !== null
+      ? { key: 'crashed', className: 'bg-destructive/10 text-destructive' }
+      : { key: 'stopped', className: 'bg-warning/10 text-warning' };
+  const facts = [
+    analysis.version && `${t('settings.logs.session.version')} ${analysis.version}`,
+    analysis.gpu,
+    analysis.driver && `${t('settings.logs.session.driver')} ${analysis.driver}`,
+  ].filter((fact): fact is string => !!fact);
+
+  return (
+    <SettingsSectionBlock title={t('settings.logs.session.title')} icon={Activity}>
+      <div className="space-y-3 rounded-lg border p-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge className={cn('shrink-0', ending.className)}>
+            {t(`settings.logs.session.${ending.key}`)}
+          </Badge>
+          {analysis.beta && (
+            <Badge variant="outline" className="shrink-0">
+              {t('settings.logs.session.beta')}
+            </Badge>
+          )}
+          <span
+            className="text-muted-foreground min-w-0 truncate font-mono text-xs"
+            title={facts.join(' · ')}
+          >
+            {facts.join(' · ')}
+          </span>
+        </div>
+        {analysis.issues.length === 0 ? (
+          <p className="text-muted-foreground text-xs">{t('settings.logs.session.noIssues')}</p>
+        ) : (
+          <div className="flex flex-wrap gap-1.5">
+            {analysis.issues.map((issue) => (
+              <button
+                key={issue.id}
+                type="button"
+                onClick={() => onPick(issue.line)}
+                title={issue.line}
+                className="min-w-0"
+              >
+                <Badge
+                  className={cn(
+                    'max-w-full gap-1 text-xs',
+                    issue.severity === 'error'
+                      ? 'bg-destructive/10 text-destructive'
+                      : issue.severity === 'warning'
+                        ? 'bg-warning/10 text-warning'
+                        : 'bg-info/10 text-info'
+                  )}
+                >
+                  <span className="truncate">{t(`settings.logs.issues.${issue.id}`)}</span>
+                  {issue.count > 1 && (
+                    <span className="tabular-nums">
+                      {t('settings.logs.session.times', { count: issue.count })}
+                    </span>
+                  )}
+                </Badge>
+              </button>
+            ))}
+          </div>
+        )}
+        {analysis.crashed && analysis.context.length > 0 && (
+          <Collapsible open={showContext} onOpenChange={setShowContext}>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm" className="-mx-2 justify-start px-2">
+                <ScrollText className="h-4 w-4" />
+                {t('settings.logs.session.context', { count: analysis.context.length })}
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <pre className="border-border bg-muted/10 text-muted-foreground mt-2 max-h-64 overflow-auto rounded-md border p-3 font-mono text-xs break-all whitespace-pre-wrap">
+                {analysis.context.join('\n')}
+              </pre>
+            </CollapsibleContent>
+          </Collapsible>
+        )}
+      </div>
+    </SettingsSectionBlock>
   );
 }
 
