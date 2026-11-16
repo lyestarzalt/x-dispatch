@@ -47,6 +47,12 @@ const config: ForgeConfig = {
           config: 'vite.preload.config.mts',
           target: 'preload',
         },
+        {
+          // RAR work runs on a worker thread, started from this file by path.
+          entry: 'src/lib/addonManager/installer/extraction/rarWorker.entry.ts',
+          config: 'vite.rarWorker.config.mts',
+          target: 'main',
+        },
       ],
       renderer: [
         {
