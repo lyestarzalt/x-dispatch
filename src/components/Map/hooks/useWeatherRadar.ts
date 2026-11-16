@@ -76,8 +76,20 @@ export function useWeatherRadar(mapRef: MapRef, enabled: boolean): WeatherRadarC
 
   // Fetch radar data from RainViewer API
   const fetchRadarData = useCallback(async () => {
+    // Unreachable or failing upstream is the user's network or RainViewer's,
+    // not a defect here: a warning, which stays out of Sentry.
+    let resp: Response;
     try {
-      const resp = await fetch('https://api.rainviewer.com/public/weather-maps.json');
+      resp = await fetch('https://api.rainviewer.com/public/weather-maps.json');
+    } catch (err) {
+      logger.weather.warn('RainViewer unreachable:', err);
+      return;
+    }
+    if (!resp.ok) {
+      logger.weather.warn(`RainViewer answered HTTP ${resp.status}`);
+      return;
+    }
+    try {
       const data: RainViewerResponse = await resp.json();
       const allFrames = [...data.radar.past, ...data.radar.nowcast];
       setHost(data.host);
