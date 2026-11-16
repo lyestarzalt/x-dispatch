@@ -3,22 +3,17 @@
  * synchronous generator, so listing or extracting a large archive on the main
  * thread freezes every IPC call and the renderer with it (Sentry X-DISPATCH-8Y).
  *
- * The worker is a self-contained script evaluated from a string: the main-process
- * bundle has no second entry point, and a string needs none. It loads the RAR
- * module from the path the main process resolved, which is outside the asar.
+ * The worker is `rarWorker.entry.ts`, built by Forge as `rarWorker.js` beside
+ * `main.js` and started from there by path. It loads the RAR module from the
+ * path resolved here, which is outside the asar.
  */
 import { createRequire } from 'module';
+import * as path from 'path';
 import { Worker } from 'worker_threads';
+import type { ExtractRequest, ListRequest, RarHeader, WorkerMessage } from './rarWorkerProtocol';
 import { unpackedBinaryPath } from './sevenZipExtractor';
 
-/** One entry of a RAR listing, as the worker reports it. */
-export interface RarHeader {
-  name: string;
-  directory: boolean;
-  unpSize: number;
-  packSize: number;
-  encrypted: boolean;
-}
+export type { RarHeader } from './rarWorkerProtocol';
 
 export interface RarListResult {
   headerEncrypted: boolean;
@@ -31,94 +26,20 @@ export interface RarWorkerFailure {
   message: string;
 }
 
-interface ListRequest {
-  mode: 'list';
-  modulePath: string;
-  archivePath: string;
-  password?: string;
-}
-
-interface ExtractRequest {
-  mode: 'extract';
-  modulePath: string;
-  archivePath: string;
-  password?: string;
-  targetDir: string;
-  /** Archive entry names to extract. */
-  wanted: string[];
-  /** Archive entry name (with `/` separators) to the relative path it is written as. */
-  targets: Record<string, string>;
-}
-
-type WorkerMessage =
-  | { type: 'list'; headerEncrypted: boolean; headers: RarHeader[] }
-  | { type: 'file'; name: string }
-  | { type: 'done' }
-  | { type: 'error'; reason?: string; message: string };
-
 /**
- * Plain JavaScript, evaluated as CommonJS inside the worker. It never imports
- * from the bundle: only Node built-ins and the RAR module by absolute path.
+ * The RAR module's entry file, outside the asar so the worker can read it and
+ * its wasm. The main bundle is CommonJS, where `import.meta.url` compiles to
+ * undefined; `__filename` is the one name that resolves in the bundle, in
+ * development and under the test runner alike.
  */
-const WORKER_SOURCE = `
-const { parentPort, workerData } = require('worker_threads');
-const post = (message) => parentPort.postMessage(message);
-const fail = (e) => post({
-  type: 'error',
-  reason: e && typeof e === 'object' && 'reason' in e ? String(e.reason) : undefined,
-  message: e && typeof e === 'object' && 'message' in e ? String(e.message) : String(e),
-});
-const normalize = (name) => String(name).replace(/\\\\/g, '/');
-(async () => {
-  try {
-    const { createExtractorFromFile } = require(workerData.modulePath);
-    if (workerData.mode === 'list') {
-      const extractor = await createExtractorFromFile({
-        filepath: workerData.archivePath,
-        password: workerData.password,
-      });
-      const list = extractor.getFileList();
-      const headers = [];
-      for (const header of list.fileHeaders) {
-        headers.push({
-          name: header.name,
-          directory: !!header.flags.directory,
-          unpSize: header.unpSize,
-          packSize: header.packSize,
-          encrypted: !!header.flags.encrypted,
-        });
-      }
-      post({ type: 'list', headerEncrypted: !!list.arcHeader.flags.headerEncrypted, headers });
-      return;
-    }
-    const targets = workerData.targets;
-    const extractor = await createExtractorFromFile({
-      filepath: workerData.archivePath,
-      targetPath: workerData.targetDir,
-      password: workerData.password,
-      filenameTransform: (name) => targets[normalize(name)] ?? name,
-    });
-    const list = extractor.getFileList();
-    if (list.arcHeader.flags.headerEncrypted && !workerData.password) {
-      post({ type: 'error', reason: 'ERAR_MISSING_PASSWORD', message: 'password required' });
-      return;
-    }
-    // The generator drives the extraction; it must be walked to the end.
-    const extracted = extractor.extract({ files: workerData.wanted });
-    for (const file of extracted.files) {
-      post({ type: 'file', name: file.fileHeader.name });
-    }
-    post({ type: 'done' });
-  } catch (e) {
-    fail(e);
-  }
-})();
-`;
-
-/** The RAR module's entry file, outside the asar so the worker can read it and its wasm. */
-function rarModulePath(): string {
-  const require = createRequire(import.meta.url);
+export function rarModulePath(): string {
+  const require = createRequire(__filename);
   return unpackedBinaryPath(require.resolve('node-unrar-js'));
+}
+
+/** The built worker file, next to the main bundle. */
+export function rarWorkerPath(): string {
+  return path.join(__dirname, 'rarWorker.js');
 }
 
 function runWorker(
@@ -126,8 +47,7 @@ function runWorker(
   onMessage: (message: WorkerMessage) => void
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    const worker = new Worker(WORKER_SOURCE, {
-      eval: true,
+    const worker = new Worker(rarWorkerPath(), {
       workerData: { ...request, modulePath: rarModulePath() },
     });
     let settled = false;

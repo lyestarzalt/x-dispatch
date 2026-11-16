@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Large RAR archives no longer freeze the app.** RAR reading runs on its own thread.
+- **RAR add-ons install again.** The first release candidate could not open any RAR archive.
 - **Overwriting an add-on whose folder replaced a file works.** A CSL folder linked from another drive keeps receiving its files.
 - **Localizer-only approaches show LOC, not ILS.** KSAN 27 and KSEE 27R have no glideslope.
 - **The gate filter shows each code's real wingspan.** Code A and code B both read 20 m.
