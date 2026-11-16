@@ -140,7 +140,11 @@ export default function InfoTab() {
         return;
       }
       const code = e instanceof GatewayActionError ? e.error.code : 'INSTALL_FAILED';
-      toastError('addon_manager', t(`airportInfo.gateway.errors.${code}`));
+      toastError(
+        'addon_manager',
+        { action: 'gateway_install', cause: code },
+        t(`airportInfo.gateway.errors.${code}`)
+      );
     }
   };
   const removeFromGateway = async () => {
@@ -150,7 +154,11 @@ export default function InfoTab() {
       toast.success(t('airportInfo.gateway.removed', { icao }));
     } catch (e) {
       const code = e instanceof GatewayActionError ? e.error.code : 'INSTALL_FAILED';
-      toastError('addon_manager', t(`airportInfo.gateway.errors.${code}`));
+      toastError(
+        'addon_manager',
+        { action: 'gateway_remove', cause: code },
+        t(`airportInfo.gateway.errors.${code}`)
+      );
     }
   };
   // Only what the Scenery tab already scanned this session: the panel never starts a scan.

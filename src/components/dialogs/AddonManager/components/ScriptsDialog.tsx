@@ -41,7 +41,7 @@ export function ScriptsDialog({ open, onClose }: ScriptsDialogProps) {
     try {
       await deleteMutation.mutateAsync(fileName);
     } catch (e) {
-      toastError('addon_manager', errorMessage(e));
+      toastError('addon_manager', { action: 'script_delete', cause: e }, errorMessage(e));
     }
   };
 

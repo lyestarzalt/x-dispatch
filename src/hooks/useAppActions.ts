@@ -128,26 +128,46 @@ export async function runAppAction(action: AppAction, ctx: ActionContext): Promi
       if (!accepted) return;
       const result = await window.flightPlanAPI.fetchRemote(action.url);
       if (result.error !== null) {
-        toastError('flight_plan', ctx.t('appActions.importFailed', { host }));
+        toastError(
+          'flight_plan',
+          { action: 'import_plan_link', cause: 'fetch_failed' },
+          ctx.t('appActions.importFailed', { host })
+        );
         return;
       }
       const loaded = importFmsFile(result.content, ctx.airports());
       trackEvent('flight_plan_file_loaded', { success: loaded });
       if (loaded) toast.success(ctx.t('appActions.importDone', { fileName: result.fileName }));
-      else toastError('flight_plan', ctx.t('appActions.importFailed', { host }));
+      else {
+        toastError(
+          'flight_plan',
+          { action: 'import_plan_link', cause: 'unreadable' },
+          ctx.t('appActions.importFailed', { host })
+        );
+      }
       window.appAPI.requestAttention();
       return;
     }
     case 'import-file': {
       const result = await window.flightPlanAPI.readFile(action.path);
       if (result.error !== null) {
-        toastError('flight_plan', ctx.t('appActions.importFileFailed'));
+        toastError(
+          'flight_plan',
+          { action: 'import_plan_file', cause: 'read_failed' },
+          ctx.t('appActions.importFileFailed')
+        );
         return;
       }
       const loaded = importFmsFile(result.content, ctx.airports());
       trackEvent('flight_plan_file_loaded', { success: loaded });
       if (loaded) toast.success(ctx.t('appActions.importDone', { fileName: result.fileName }));
-      else toastError('flight_plan', ctx.t('appActions.importFileFailed'));
+      else {
+        toastError(
+          'flight_plan',
+          { action: 'import_plan_file', cause: 'unreadable' },
+          ctx.t('appActions.importFileFailed')
+        );
+      }
       return;
     }
     case 'launch': {

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **The app log says why an error appeared.** Each error message is logged with what the app was doing and the cause, so a log sent on Discord shows it.
+- **Launches and flight changes are logged with X-Plane's answer.** When X-Plane refuses a flight, the log keeps its reason and the scenery pack the airport came from.
+
 ## [2.15.0] - 2026-11-16
 
 ### Added

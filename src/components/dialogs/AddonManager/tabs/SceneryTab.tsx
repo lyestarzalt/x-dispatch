@@ -268,7 +268,7 @@ export function SceneryTab() {
       try {
         await setEnabledAsync({ folderNames, enabled });
       } catch (e) {
-        toastError('addon_manager', errorMessage(e));
+        toastError('addon_manager', { action: 'scenery_toggle', cause: e }, errorMessage(e));
       }
     },
     [setEnabledAsync]
@@ -317,7 +317,7 @@ export function SceneryTab() {
       await saveOrderMutation.mutateAsync(folderNames);
       setHasUnsavedChanges(false);
     } catch (e) {
-      toastError('addon_manager', errorMessage(e));
+      toastError('addon_manager', { action: 'scenery_save_order', cause: e }, errorMessage(e));
     }
   };
 
@@ -331,7 +331,7 @@ export function SceneryTab() {
       await sortMutation.mutateAsync(overrides);
       setHasUnsavedChanges(false);
     } catch (e) {
-      toastError('addon_manager', errorMessage(e));
+      toastError('addon_manager', { action: 'scenery_auto_sort', cause: e }, errorMessage(e));
     }
   };
 
@@ -343,6 +343,7 @@ export function SceneryTab() {
     } catch (err) {
       toastError(
         'addon_manager',
+        { action: 'scenery_delete', cause: err },
         err instanceof Error ? err.message : t('addonManager.scenery.deleteFailed')
       );
     }
@@ -355,7 +356,7 @@ export function SceneryTab() {
       setShowBackups(false);
       setHasUnsavedChanges(false);
     } catch (e) {
-      toastError('addon_manager', errorMessage(e));
+      toastError('addon_manager', { action: 'scenery_restore', cause: e }, errorMessage(e));
     }
   };
 

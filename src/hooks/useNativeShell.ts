@@ -83,7 +83,12 @@ async function runMenuCommand(command: MenuCommand, queryClient: QueryClient): P
       const airports = queryClient.getQueryData(airportsListQuery.queryKey) ?? [];
       const loaded = importFmsFile(result.content, airports);
       trackEvent('flight_plan_file_loaded', { success: loaded });
-      if (!loaded) toastError('flight_plan', i18n.t('toolbar.loadPlanFailed'));
+      if (!loaded)
+        toastError(
+          'flight_plan',
+          { action: 'load_plan_file', cause: 'unreadable' },
+          i18n.t('toolbar.loadPlanFailed')
+        );
       return;
     }
     case 'importSimbrief':

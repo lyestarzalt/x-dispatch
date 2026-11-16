@@ -652,7 +652,12 @@ function FlightPlanBuilder({
     const ok = await autoRoute(joins);
     trackEvent('flight_plan_auto_routed', { success: ok });
     if (ok) markVisit({ route: 'auto' });
-    if (!ok) toastError('flight_plan', t('planBuilder.autoRouteFailed'));
+    if (!ok)
+      toastError(
+        'flight_plan',
+        { action: 'auto_route', cause: 'no_route' },
+        t('planBuilder.autoRouteFailed')
+      );
   };
 
   // The chosen track is whatever the route files. Picking a chip or a track on the map routes
@@ -674,7 +679,12 @@ function FlightPlanBuilder({
       );
     }
     const ok = await autoRoute(joins, track);
-    if (!ok) toastError('flight_plan', t('planBuilder.autoRouteFailed'));
+    if (!ok)
+      toastError(
+        'flight_plan',
+        { action: 'auto_route', cause: 'no_route' },
+        t('planBuilder.autoRouteFailed')
+      );
   };
   useEffect(() => {
     if (!trackRequest) return;
@@ -716,7 +726,11 @@ function FlightPlanBuilder({
         toast.success(t('planBuilder.saved', { path }));
       }
     } catch (err) {
-      toastError('flight_plan', t('planBuilder.saveFailed', { error: (err as Error).message }));
+      toastError(
+        'flight_plan',
+        { action: 'save_plan', cause: err },
+        t('planBuilder.saveFailed', { error: (err as Error).message })
+      );
     } finally {
       setSaving(false);
     }

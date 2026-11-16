@@ -83,6 +83,7 @@ export function CompanionAppsSection({ className }: SettingsSectionProps = {}) {
       const code = result.code as SpawnErrorCode | undefined;
       toastError(
         'companion_apps',
+        { action: 'launch_companion_app', cause: code ?? 'spawn_failed' },
         t('settings.companionApps.spawnError', {
           name: tool.name,
           error: t(errorKeyFor(code), {

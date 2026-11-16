@@ -560,7 +560,12 @@ function Toolbar({
     if (!result) return;
     const loaded = importFmsFile(result.content, airports);
     trackEvent('flight_plan_file_loaded', { success: loaded });
-    if (!loaded) toastError('flight_plan', t('toolbar.loadPlanFailed'));
+    if (!loaded)
+      toastError(
+        'flight_plan',
+        { action: 'load_plan_file', cause: 'unreadable' },
+        t('toolbar.loadPlanFailed')
+      );
   }, [airports, t]);
 
   const totalNavItems = navDataCounts.navaids + navDataCounts.ils + navDataCounts.airspaces;
