@@ -283,6 +283,32 @@ process.on('unhandledRejection', (reason) => {
 
 let isQuitting = false;
 
+/**
+ * Settles once the cached data has been checked against the files on disk. The
+ * check reads the Custom Scenery folder, which can take seconds, so it runs
+ * behind the loading screen instead of before the window opens; the loading
+ * status waits for it.
+ */
+let cacheChecked: Promise<void> = Promise.resolve();
+
+async function checkCache(manager: ReturnType<typeof getXPlaneDataManager>): Promise<void> {
+  try {
+    await manager.initFromCache();
+  } catch (err) {
+    // Quitting closes the database under the check; nothing is left to load.
+    if (isQuitting) return;
+    // The loading screen then finds nothing cached and loads from the files.
+    logger.main.error('Checking the data cache failed', err);
+    return;
+  }
+  const sources = manager.getDataSources();
+  if (sources?.global) {
+    logger.main.info(
+      `Nav Data: ${sources.global.source}${sources.global.cycle ? ` (AIRAC ${sources.global.cycle})` : ''}`
+    );
+  }
+}
+
 app.on('render-process-gone', (_event, webContents, details) => {
   if (details.reason === 'clean-exit') return;
   // Closing the app on Windows tears the renderer down as "killed"; not a crash.
@@ -1609,10 +1635,10 @@ function registerIpcHandlers() {
     }
     return success;
   });
-  handle('app:getLoadingStatus', () => ({
-    xplanePath: dataManager.getXPlanePath(),
-    status: dataManager.getStatus(),
-  }));
+  handle('app:getLoadingStatus', async () => {
+    await cacheChecked;
+    return { xplanePath: dataManager.getXPlanePath(), status: dataManager.getStatus() };
+  });
 
   handle('app:getXPlaneVersion', () => dataManager.getXPlaneVersion());
 
@@ -1696,6 +1722,7 @@ function registerIpcHandlers() {
   }
 
   handle('app:startLoading', async () => {
+    await cacheChecked;
     if (isLoading) {
       return { success: false, error: 'Loading already in progress' };
     }
@@ -3101,13 +3128,7 @@ async function bootstrap(): Promise<void> {
   if (isSetupComplete()) {
     const xplanePath = dataManager.getXPlanePath();
     logger.main.info(`X-Plane: ${xplanePath}`);
-    await dataManager.initFromCache();
-    const sources = dataManager.getDataSources();
-    if (sources?.global) {
-      logger.main.info(
-        `Nav Data: ${sources.global.source}${sources.global.cycle ? ` (AIRAC ${sources.global.cycle})` : ''}`
-      );
-    }
+    cacheChecked = checkCache(dataManager);
   } else {
     logger.main.info('X-Plane: Not configured (first run)');
   }
