@@ -11,13 +11,20 @@ import {
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogPanel, DialogTitle } from '@/components/ui/dialog';
 import { dialogTimeBucket } from '@/lib/analytics/buckets';
-import { launchChoices, launchErrorCode } from '@/lib/analytics/launchChoices';
+import {
+  type LaunchFailureProps,
+  NO_LAUNCH_FAILURE,
+  changeFlightFailureProps,
+  coldStartFailureProps,
+  launchChoices,
+} from '@/lib/analytics/launchChoices';
 import { writeFtgRoute } from '@/lib/taxiGraph/ftgExport';
 import { isValidAirStartSpeed } from '@/lib/utils/airStartSpeed';
 import { cn } from '@/lib/utils/helpers';
 import { toastError } from '@/lib/utils/toastError';
 import { uuid } from '@/lib/utils/uuid';
 import type { PortHolder } from '@/lib/xplaneServices/client/portHolder';
+import type { AirportSource } from '@/lib/xplaneServices/dataService/types';
 import type { LaunchErrorCode } from '@/lib/xplaneServices/launch';
 import {
   buildFlightInit,
@@ -123,10 +130,20 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
   const setLaunchError = useLaunchStore((s) => s.setLaunchError);
 
   // One visit to the dialog, reported as launch_abandoned when it closes without a flight.
-  const visitRef = useRef<{ openedAt: number; launched: boolean; failed: boolean } | null>(null);
+  const visitRef = useRef<{
+    openedAt: number;
+    launched: boolean;
+    failed: boolean;
+    attempts: number;
+  } | null>(null);
   useEffect(() => {
     if (open) {
-      visitRef.current = { openedAt: performance.now(), launched: false, failed: false };
+      visitRef.current = {
+        openedAt: performance.now(),
+        launched: false,
+        failed: false,
+        attempts: 0,
+      };
       return;
     }
     const visit = visitRef.current;
@@ -189,7 +206,56 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
       return;
     }
     setIsLaunching(true);
+    if (visitRef.current) visitRef.current.attempts += 1;
     setLaunchError(null);
+
+    // Counted once per try, whatever happens below.
+    let reported = false;
+    let companionAppsLaunched = 0;
+    // Every outcome goes through here; a failure cannot be reported without its reason.
+    const reportLaunch = (
+      mode: 'cold_start' | 'change_flight',
+      airportSource: AirportSource,
+      failure?: LaunchFailureProps,
+      detail: {
+        method?: 'steam_url' | 'direct';
+        customArgs?: boolean;
+        connectionRecovered?: boolean;
+      } = {}
+    ) => {
+      const success = !failure;
+      reported = true;
+      if (visitRef.current) {
+        if (success) visitRef.current.launched = true;
+        else visitRef.current.failed = true;
+      }
+      trackEvent('flight_launched', {
+        mode,
+        airport: startPosition.airport,
+        airport_source: airportSource,
+        attempt: Math.min(visitRef.current?.attempts ?? 1, 1000),
+        launch_method: detail.method ?? null,
+        custom_args: detail.customArgs ?? false,
+        connection_recovered: detail.connectionRecovered ?? false,
+        aircraft_type: selectedAircraft.icao || null,
+        helicopter: selectedAircraft.isHelicopter,
+        start_type: startPosition.type,
+        success,
+        ...(failure ?? NO_LAUNCH_FAILURE),
+        companion_apps_launched: companionAppsLaunched,
+        ...launchChoices({
+          weatherConfig,
+          tankPercentages,
+          payloadWeights,
+          useRealWorldTime,
+          coldAndDark,
+          livery: selectedLivery,
+          aircraftPath: selectedAircraft.path,
+          favoriteAircraft: useLaunchStore.getState().favorites.includes(selectedAircraft.path),
+          startPosition,
+        }),
+      });
+    };
 
     try {
       // Write taxi route for Follow the Greens plugin (fire and forget)
@@ -264,44 +330,14 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
         }
       }
 
+      companionAppsLaunched = autoLaunchTools.length - failures.length;
+
       for (const f of failures) {
         toastError(
           'companion_apps',
           t('settings.companionApps.spawnError', { name: f.name, error: f.error })
         );
       }
-
-      const reportLaunch = (
-        mode: 'cold_start' | 'change_flight',
-        success: boolean,
-        code?: LaunchErrorCode | 'CHANGE_FLIGHT_FAILED'
-      ) => {
-        if (visitRef.current) {
-          if (success) visitRef.current.launched = true;
-          else visitRef.current.failed = true;
-        }
-        trackEvent('flight_launched', {
-          mode,
-          airport: startPosition.airport,
-          aircraft_type: selectedAircraft.icao || null,
-          helicopter: selectedAircraft.isHelicopter,
-          start_type: startPosition.type,
-          success,
-          error_code: success ? null : launchErrorCode(code),
-          companion_apps_launched: autoLaunchTools.length - failures.length,
-          ...launchChoices({
-            weatherConfig,
-            tankPercentages,
-            payloadWeights,
-            useRealWorldTime,
-            coldAndDark,
-            livery: selectedLivery,
-            aircraftPath: selectedAircraft.path,
-            favoriteAircraft: useLaunchStore.getState().favorites.includes(selectedAircraft.path),
-            startPosition,
-          }),
-        });
-      };
 
       if (autoLaunchTools.length > 0) {
         const failedIds = new Set(failures.map((f) => f.id));
@@ -361,7 +397,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
           const result = await startFlightMutation.mutateAsync(flightConfig);
           if (!result.success) {
             window.appAPI.log.error('X-Plane refused the flight change', result.error);
-            reportLaunch('change_flight', false, 'CHANGE_FLIGHT_FAILED');
+            reportLaunch('change_flight', result.airportSource, changeFlightFailureProps(result));
             setLaunchError(
               result.code
                 ? t('launcher.changeFlightRejected', { message: result.error })
@@ -371,7 +407,9 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
             );
             return;
           }
-          reportLaunch('change_flight', true);
+          reportLaunch('change_flight', result.airportSource, undefined, {
+            connectionRecovered: Boolean(result.connectionDropped),
+          });
           useLaunchStore.getState().addLogbookEntry(logbookEntry);
           // NOTE: intentionally NOT clearing `startPosition` here —
           // the user wants to come back to the app and see their gate
@@ -385,8 +423,13 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
           }
         } catch (err) {
           const errorMessage = err instanceof Error ? err.message : 'Failed to change flight';
+          // The IPC call itself threw: main never got to report this one.
           window.appAPI.log.error('X-Plane flight change failed', err);
-          reportLaunch('change_flight', false, 'CHANGE_FLIGHT_FAILED');
+          reportLaunch(
+            'change_flight',
+            'unknown',
+            changeFlightFailureProps({ reason: 'exception' })
+          );
           setLaunchError(errorMessage);
         }
       };
@@ -394,7 +437,22 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
       // X-Plane not running → cold launch with the FlightInit payload
       const coldStart = async () => {
         const { customLaunchArgs, launchEnv } = useSettingsStore.getState().launcher;
-        const result = await window.launcherAPI.launch(flightConfig, customLaunchArgs, launchEnv);
+        const customArgs = customLaunchArgs.length > 0 || launchEnv.length > 0;
+        let result: Awaited<ReturnType<typeof window.launcherAPI.launch>>;
+        try {
+          result = await window.launcherAPI.launch(flightConfig, customLaunchArgs, launchEnv);
+        } catch (err) {
+          // The IPC call itself threw: main never got to report this one.
+          window.appAPI.log.error('X-Plane launch failed', err);
+          reportLaunch(
+            'cold_start',
+            'unknown',
+            { ...NO_LAUNCH_FAILURE, error_code: 'unknown', failure_reason: 'exception' },
+            { customArgs }
+          );
+          setLaunchError(err instanceof Error ? err.message : t('launcher.spawnErrorGeneric'));
+          return;
+        }
         if (!result.success && result.code === 'ALREADY_RUNNING') {
           // The process table has X-Plane but the last API probe, up to 5 s old,
           // did not. Probe again: if X-Plane finished starting in between, the
@@ -404,7 +462,12 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
             return;
           }
         }
-        reportLaunch('cold_start', result.success, result.code);
+        reportLaunch(
+          'cold_start',
+          result.airportSource,
+          result.success ? undefined : coldStartFailureProps(result),
+          { customArgs, ...(result.success ? { method: result.method } : {}) }
+        );
         if (result.success) {
           useLaunchStore.getState().addLogbookEntry(logbookEntry);
           // NOTE: see the matching note in the `isXPlaneRunning` branch —
@@ -426,6 +489,14 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
     } catch (err) {
       window.appAPI.log.error('X-Plane launch error', err);
       if (visitRef.current) visitRef.current.failed = true;
+      // Something threw before X-Plane was asked anything: still a failed launch.
+      if (!reported) {
+        reportLaunch(isXPlaneRunning ? 'change_flight' : 'cold_start', 'unknown', {
+          ...NO_LAUNCH_FAILURE,
+          error_code: 'unknown',
+          failure_reason: 'prepare_failed',
+        });
+      }
       setLaunchError((err as Error).message);
     } finally {
       setIsLaunching(false);

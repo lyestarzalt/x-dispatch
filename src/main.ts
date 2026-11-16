@@ -123,8 +123,10 @@ import {
   onVatsimSectorDataUpdated,
   refreshVatsimSectorData,
 } from './lib/vatsimSectors/service';
+import type { StartFlightFailure, StartFlightResult } from './lib/xplaneServices/client/restClient';
 import { getXPlaneDataManager, isSetupComplete } from './lib/xplaneServices/dataService';
 import { resyncCustomScenery } from './lib/xplaneServices/dataService/airports';
+import { getAirportScenery } from './lib/xplaneServices/dataService/airports/airportCache';
 import {
   addInstallation,
   getActiveInstallation,
@@ -141,7 +143,8 @@ import {
   setSendCrashReports,
 } from './lib/xplaneServices/dataService/config';
 import { loadRequiredStartupData } from './lib/xplaneServices/dataService/startupLoader';
-import type { LaunchResult } from './lib/xplaneServices/launch';
+import type { AirportSource } from './lib/xplaneServices/dataService/types';
+import type { LaunchFailure, LaunchResult } from './lib/xplaneServices/launch';
 import { parseLaunchEnv } from './lib/xplaneServices/launch/launchEnv';
 import { registerXPlaneLogIPC } from './lib/xplaneServices/log/ipc';
 import { ResolvedAirportProcedures } from './types/navigation';
@@ -364,6 +367,65 @@ let mainWindow: BrowserWindow | null = null;
 let isLoading = false;
 const sessionStartTime = Date.now();
 const analytics = initMainAnalytics();
+/** What a launch failure report says about the setup it happened on. */
+function launchEnvironment(
+  payload: import('./lib/xplaneServices/client/generated/xplaneApi').FlightInit | undefined
+): import('./lib/xplaneServices/launch/launchReport').LaunchEnvironment {
+  // Reporting must never be what breaks a launch: every lookup here may fail.
+  let version: ReturnType<typeof dataManager.getXPlaneVersion> = null;
+  try {
+    version = dataManager.getXPlaneVersion();
+  } catch (err) {
+    logger.launcher.warn('Could not read the X-Plane version for a launch report', err);
+  }
+  return {
+    xplaneVersion: version?.raw ?? null,
+    xplaneSteam: version?.isSteam ?? false,
+    appVersion: app.getVersion(),
+    platform: process.platform,
+    airport: getAirportScenery(
+      payload?.ramp_start?.airport_id ?? payload?.runway_start?.airport_id
+    ),
+  };
+}
+/** How long a failure report waits for the scenery pack list before going without it. */
+const XPLANE_PACKS_TIMEOUT_MS = 5_000;
+
+/**
+ * Adds X-Plane's view of the start airport to a failure report: which enabled
+ * pack in `scenery_packs.ini` it reads the airport from, and how many declare
+ * it. Reads only. Never rejects: the report goes out without it on any trouble.
+ */
+async function withXPlanePacks<
+  E extends import('./lib/xplaneServices/launch/launchReport').LaunchEnvironment,
+>(
+  environment: E,
+  payload: import('./lib/xplaneServices/client/generated/xplaneApi').FlightInit | undefined
+): Promise<E> {
+  try {
+    const icao = payload?.ramp_start?.airport_id ?? payload?.runway_start?.airport_id;
+    const xplanePath = dataManager.getXPlanePath();
+    if (!icao || !xplanePath) return environment;
+    const [{ SceneryManager }, { packForAirport }] = await Promise.all([
+      import('./lib/addonManager/scenery/SceneryManager'),
+      import('./lib/addonManager/scenery/conflicts'),
+    ]);
+    let timer: NodeJS.Timeout | undefined;
+    const scenery = await Promise.race([
+      new SceneryManager(xplanePath).analyze(),
+      new Promise<null>((resolve) => {
+        timer = setTimeout(() => resolve(null), XPLANE_PACKS_TIMEOUT_MS);
+      }),
+    ]).finally(() => clearTimeout(timer));
+    if (!scenery?.ok) return environment;
+    const packs = packForAirport(scenery.value, icao);
+    return { ...environment, xplanePacks: packs ?? { winner: null, count: 0 } };
+  } catch (err) {
+    logger.launcher.warn('Could not read the scenery packs for a launch report', err);
+    return environment;
+  }
+}
+
 let launcherModule: typeof import('./lib/xplaneServices/launch') | null = null;
 let xplaneModule: typeof import('./lib/xplaneServices/client') | null = null;
 /** Translated by the renderer; English until its first push. */
@@ -2406,24 +2468,55 @@ function registerIpcHandlers() {
 
   handle(
     'launcher:launch',
-    async (_, payload: unknown, extraArgs?: string[], env?: unknown): Promise<LaunchResult> => {
+    async (
+      _,
+      payload: unknown,
+      extraArgs?: string[],
+      env?: unknown
+    ): Promise<LaunchResult & { airportSource: AirportSource }> => {
+      const flightPayload =
+        payload as import('./lib/xplaneServices/client/generated/xplaneApi').FlightInit;
+      const { newLaunchAttemptId, reportLaunchFailure } =
+        await import('./lib/xplaneServices/launch/launchReport');
+      const attemptId = newLaunchAttemptId();
+      const environment = launchEnvironment(flightPayload);
+      const airportSource = environment.airport.source;
+      const failed = (failure: LaunchFailure) => {
+        const holder = failure.portHolder;
+        reportLaunchFailure(
+          analytics,
+          attemptId,
+          flightPayload,
+          {
+            mode: 'cold_start',
+            reason: failure.code.toLowerCase() as Lowercase<LaunchFailure['code']>,
+            message: failure.error,
+            ...(failure.code === 'ALREADY_RUNNING'
+              ? { portHolder: holder?.isXPlane ? 'xplane' : holder ? 'other' : 'none' }
+              : {}),
+          },
+          environment
+        );
+        return { ...failure, airportSource };
+      };
+
       const xplanePath = dataManager.getXPlanePath();
       if (!xplanePath) {
-        return {
+        return failed({
           success: false,
           error: 'X-Plane path not configured',
           code: 'PATH_NOT_CONFIGURED',
-        };
+        });
       }
 
-      const flightPayload =
-        payload as import('./lib/xplaneServices/client/generated/xplaneApi').FlightInit;
       const aircraftPath = flightPayload?.aircraft?.path || 'unknown';
       const airport =
         flightPayload?.ramp_start?.airport_id ||
         flightPayload?.runway_start?.airport_id ||
         'unknown';
-      logger.launcher.info(`[User] Launch attempt: ${aircraftPath} at ${airport}`);
+      logger.launcher.info(
+        `[User] Launch attempt ${attemptId}: ${aircraftPath} at ${airport} (cold start)`
+      );
       Sentry.setTag('aircraft', path.basename(aircraftPath, '.acf'));
       Sentry.addBreadcrumb({
         category: 'launch',
@@ -2438,21 +2531,18 @@ function registerIpcHandlers() {
           extraArgs,
           parseLaunchEnv(env)
         );
-        if (result.success) {
-          logger.launcher.info('[User] Launch successful');
-        } else {
-          logger.launcher.warn(`[User] Launch failed: ${result.code} — ${result.error}`);
-        }
         Sentry.addBreadcrumb({
           category: 'launch',
           message: result.success ? 'Launch succeeded' : `Launch failed: ${result.code}`,
           level: result.success ? 'info' : 'warning',
         });
-        return result;
+        if (!result.success) return failed(result);
+        logger.launcher.info(`[User] Launch attempt ${attemptId} successful`);
+        return { ...result, airportSource };
       } catch (error) {
         const message = errorMessage(error);
         logger.launcher.error(`[User] Launch exception: ${message}`, error);
-        return { success: false, error: message, code: 'SPAWN_FAILED' };
+        return failed({ success: false, error: message, code: 'SPAWN_FAILED' });
       }
     }
   );
@@ -2515,58 +2605,76 @@ function registerIpcHandlers() {
     }
   });
 
-  handle('xplaneService:startFlight', async (_, payload) => {
-    try {
+  handle(
+    'xplaneService:startFlight',
+    async (_, payload): Promise<StartFlightResult & { airportSource: AirportSource }> => {
       const flightPayload =
         payload as import('./lib/xplaneServices/client/generated/xplaneApi').FlightInit;
-      const aircraftName = path.basename(flightPayload?.aircraft?.path ?? 'unknown', '.acf');
-      Sentry.setTag('aircraft', aircraftName);
-      Sentry.addBreadcrumb({
-        category: 'launch',
-        message: `Change flight to ${aircraftName}`,
-        level: 'info',
-      });
-      const { getXPlaneService } = await getXPlaneModule();
-      const result = await getXPlaneService().startFlight(payload);
-      Sentry.addBreadcrumb({
-        category: 'launch',
-        message: result.success
-          ? 'Change flight accepted'
-          : `Change flight refused: ${result.code}`,
-        level: result.success ? 'info' : 'warning',
-      });
-      const version = dataManager.getXPlaneVersion();
-      const env = {
-        xplaneVersion: version?.raw ?? null,
-        xplaneSteam: version?.isSteam ?? false,
-        appVersion: app.getVersion(),
-        platform: process.platform,
+      const { newLaunchAttemptId, reportLaunchFailure } =
+        await import('./lib/xplaneServices/launch/launchReport');
+      const attemptId = newLaunchAttemptId();
+      const environment = launchEnvironment(flightPayload);
+      const airportSource = environment.airport.source;
+      const failed = (failure: StartFlightFailure, cause?: unknown) => {
+        const send = (env: typeof environment): void =>
+          reportLaunchFailure(
+            analytics,
+            attemptId,
+            flightPayload,
+            {
+              mode: 'change_flight',
+              reason: failure.reason,
+              message: failure.error,
+              xplaneCode: failure.code,
+              httpStatus: failure.httpStatus,
+              connectionDropped: failure.connectionDropped,
+              cause,
+            },
+            env
+          );
+        // X-Plane refused what the app offered: find out which pack X-Plane reads
+        // the airport from. The user gets the answer now; the report follows.
+        if (failure.reason === 'xplane_rejected') {
+          void withXPlanePacks(environment, flightPayload).then(send);
+        } else {
+          send(environment);
+        }
+        return { ...failure, airportSource };
       };
-      if (!result.success && result.code) {
-        const { reportFlightRejection } =
-          await import('./lib/xplaneServices/launch/flightRejection');
-        reportFlightRejection(
-          analytics,
-          flightPayload,
-          { code: result.code, message: result.error ?? '' },
-          env
-        );
+
+      try {
+        const aircraftName = path.basename(flightPayload?.aircraft?.path ?? 'unknown', '.acf');
+        logger.launcher.info(`[User] Launch attempt ${attemptId}: ${aircraftName} (change flight)`);
+        // The cold start logs its JSON in the launcher; this is the same line for a flight change.
+        logger.launcher.info(`Flight JSON: ${JSON.stringify(flightPayload)}`);
+        Sentry.setTag('aircraft', aircraftName);
+        Sentry.addBreadcrumb({
+          category: 'launch',
+          message: `Change flight to ${aircraftName}`,
+          level: 'info',
+        });
+        const { getXPlaneService } = await getXPlaneModule();
+        const result = await getXPlaneService().startFlight(flightPayload);
+        Sentry.addBreadcrumb({
+          category: 'launch',
+          message: result.success
+            ? 'Change flight accepted'
+            : `Change flight failed: ${result.reason}${result.code ? ` (${result.code})` : ''}`,
+          level: result.success ? 'info' : 'warning',
+        });
+        if (!result.success) return failed(result);
+        if (result.connectionDropped) {
+          // X-Plane stalls its web server while it loads an aircraft; it came back.
+          logger.launcher.warn(
+            `Launch attempt ${attemptId}: connection dropped, X-Plane came back (${result.connectionDropped})`
+          );
+        }
+        return { ...result, airportSource };
+      } catch (error) {
+        return failed({ success: false, reason: 'exception', error: errorMessage(error) }, error);
       }
-      if (result.connectionDropped) {
-        const { reportFlightConnectionDrop } =
-          await import('./lib/xplaneServices/launch/flightConnection');
-        reportFlightConnectionDrop(
-          flightPayload,
-          { reason: result.connectionDropped, recovered: result.success },
-          env
-        );
-      }
-      return result;
-    } catch (error) {
-      logger.main.error('Failed to start X-Plane flight', error);
-      return { success: false, error: (error as Error).message };
     }
-  });
+  );
 
   handle('xplaneService:getDataref', async (_, datarefName: string) => {
     if (!datarefName || typeof datarefName !== 'string') return null;

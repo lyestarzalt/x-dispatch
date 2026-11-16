@@ -1,12 +1,20 @@
-import type { LaunchErrorCode } from '@/lib/xplaneServices/launch';
+import type { StartFlightFailure } from '@/lib/xplaneServices/client/restClient';
+import type { LaunchErrorCode, LaunchFailure } from '@/lib/xplaneServices/launch';
 import type { StartPosition } from '@/types/position';
 import type {
   AnalyticsEventProps,
+  AnalyticsFlightRejection,
   AnalyticsLaunchError,
+  AnalyticsLaunchFailureReason,
   AnalyticsStartVariant,
   AnalyticsWeatherPreset,
 } from './events';
-import { ANALYTICS_LAUNCH_ERRORS, ANALYTICS_WEATHER_PRESETS } from './events';
+import {
+  ANALYTICS_FLIGHT_REJECTIONS,
+  ANALYTICS_LAUNCH_ERRORS,
+  ANALYTICS_LAUNCH_FAILURE_REASONS,
+  ANALYTICS_WEATHER_PRESETS,
+} from './events';
 
 /** Launch dialog defaults: every tank at 50%, every payload station empty. */
 const DEFAULT_TANK_PERCENT = 50;
@@ -90,4 +98,69 @@ export function launchErrorCode(
   return (ANALYTICS_LAUNCH_ERRORS as readonly string[]).includes(reported ?? '')
     ? (reported as AnalyticsLaunchError)
     : 'unknown';
+}
+
+/** The failure fields of `flight_launched`. All null on a successful launch. */
+export type LaunchFailureProps = Pick<
+  AnalyticsEventProps<'flight_launched'>,
+  'error_code' | 'failure_reason' | 'xplane_error_code' | 'http_status' | 'port_holder'
+>;
+
+export const NO_LAUNCH_FAILURE: LaunchFailureProps = {
+  error_code: null,
+  failure_reason: null,
+  xplane_error_code: null,
+  http_status: null,
+  port_holder: null,
+};
+
+function failureReason(reason: string | undefined): AnalyticsLaunchFailureReason {
+  return (ANALYTICS_LAUNCH_FAILURE_REASONS as readonly string[]).includes(reason ?? '')
+    ? (reason as AnalyticsLaunchFailureReason)
+    : 'unknown';
+}
+
+/** A cold start the launcher refused or could not spawn. */
+export function coldStartFailureProps(
+  failure: Pick<LaunchFailure, 'code' | 'portHolder'>
+): LaunchFailureProps {
+  const holder = failure.portHolder;
+  return {
+    ...NO_LAUNCH_FAILURE,
+    error_code: launchErrorCode(failure.code),
+    failure_reason: failureReason(failure.code?.toLowerCase()),
+    port_holder:
+      failure.code === 'ALREADY_RUNNING'
+        ? holder?.isXPlane
+          ? 'xplane'
+          : holder
+            ? 'other'
+            : 'none'
+        : null,
+  };
+}
+
+/**
+ * A flight change that failed. `error_code` stays `change_flight_failed` so
+ * older charts keep counting; `failure_reason` says which failure it was.
+ */
+export function changeFlightFailureProps(
+  failure: Pick<StartFlightFailure, 'reason' | 'code' | 'httpStatus'>
+): LaunchFailureProps {
+  const status = failure.httpStatus;
+  return {
+    ...NO_LAUNCH_FAILURE,
+    error_code: 'change_flight_failed',
+    failure_reason: failureReason(failure.reason),
+    xplane_error_code:
+      failure.reason !== 'xplane_rejected'
+        ? null
+        : (ANALYTICS_FLIGHT_REJECTIONS as readonly string[]).includes(failure.code ?? '')
+          ? (failure.code as AnalyticsFlightRejection)
+          : 'other',
+    http_status:
+      status !== undefined && Number.isInteger(status) && status >= 0 && status <= 1000
+        ? status
+        : null,
+  };
 }

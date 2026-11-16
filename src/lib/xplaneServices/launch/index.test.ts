@@ -131,8 +131,11 @@ describe('XPlaneLauncher.launch — spawn vs error resolution', () => {
   it('rejects invalid configurations before writing JSON or spawning', async () => {
     const fs = await import('fs');
     const result = await getLauncher(FAKE_PATH).launch({ aircraft: PAYLOAD.aircraft });
-    expect(result.code).toBe('INVALID_CONFIG');
-    expect(result.error).toContain('exactly one start location');
+    expect(result).toMatchObject({
+      success: false,
+      code: 'INVALID_CONFIG',
+      error: expect.stringContaining('exactly one start location'),
+    });
     expect(fs.writeFileSync).not.toHaveBeenCalled();
     expect(spawnMock).not.toHaveBeenCalled();
   });
@@ -150,7 +153,7 @@ describe('XPlaneLauncher.launch — spawn vs error resolution', () => {
     lastSpawned!.emit('spawn');
 
     const result = await launchPromise;
-    expect(result).toEqual({ success: true });
+    expect(result).toEqual({ success: true, method: 'direct' });
     expect(lastSpawned!.unref).toHaveBeenCalledTimes(1);
   });
 
@@ -190,8 +193,7 @@ describe('XPlaneLauncher.launch — spawn vs error resolution', () => {
     lastSpawned!.emit('error', err);
 
     const result = await launchPromise;
-    expect(result.success).toBe(false);
-    expect(result.code).toBe('EXE_NOT_FOUND');
+    expect(result).toMatchObject({ success: false, code: 'EXE_NOT_FOUND' });
   });
 
   it('preserves err.message in the error field when no code is provided', async () => {
@@ -204,11 +206,13 @@ describe('XPlaneLauncher.launch — spawn vs error resolution', () => {
     lastSpawned!.emit('error', new Error('mystery failure'));
 
     const result = await launchPromise;
-    expect(result.success).toBe(false);
-    expect(result.error).toBe('mystery failure');
     // No errno to go on, but the renderer still gets a code it can switch on —
     // it falls back to the raw message for SPAWN_FAILED.
-    expect(result.code).toBe('SPAWN_FAILED');
+    expect(result).toMatchObject({
+      success: false,
+      error: 'mystery failure',
+      code: 'SPAWN_FAILED',
+    });
   });
 
   it('settles exactly once even if "error" fires after "spawn"', async () => {
@@ -224,7 +228,7 @@ describe('XPlaneLauncher.launch — spawn vs error resolution', () => {
     lastSpawned!.emit('error', Object.assign(new Error('late'), { code: 'EACCES' }));
 
     const result = await launchPromise;
-    expect(result).toEqual({ success: true });
+    expect(result).toEqual({ success: true, method: 'direct' });
   });
 
   it('does NOT resolve until one of the events fires', async () => {

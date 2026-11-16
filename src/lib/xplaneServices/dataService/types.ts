@@ -7,6 +7,15 @@ import type { NavDataSources } from './cycleInfo';
 // Airport Types
 // ============================================================================
 
+/** Where the app's copy of an airport comes from: a Custom Scenery pack or X-Plane's own set. */
+export type AirportSource = 'custom' | 'default' | 'unknown';
+
+export interface AirportScenery {
+  source: AirportSource;
+  /** Folder name of the scenery pack, e.g. `KSEA Demo Area`; never a full path. */
+  pack: string | null;
+}
+
 export interface Airport {
   icao: string;
   iataCode?: string;

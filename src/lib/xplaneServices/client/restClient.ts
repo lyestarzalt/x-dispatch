@@ -35,18 +35,49 @@ interface ApiCapabilities {
   'x-plane': { version: string };
 }
 
-export interface StartFlightResult {
-  success: boolean;
-  error?: string;
+/**
+ * Why a flight change failed. Every failure carries one, so no path can fail
+ * without saying which it was:
+ *  - `invalid_payload`: our own validation refused the flight before sending it
+ *  - `connection_lost`: the request left and X-Plane never answered again
+ *  - `http_error`: X-Plane answered with an HTTP error and no error code
+ *  - `invalid_response`: X-Plane answered, but not with a flight result
+ *  - `xplane_rejected`: X-Plane refused the flight with its own `error_code`
+ *  - `exception`: something threw outside the request itself
+ */
+export const START_FLIGHT_FAILURE_REASONS = [
+  'invalid_payload',
+  'connection_lost',
+  'http_error',
+  'invalid_response',
+  'xplane_rejected',
+  'exception',
+] as const;
+export type StartFlightFailureReason = (typeof START_FLIGHT_FAILURE_REASONS)[number];
+
+export interface StartFlightFailure {
+  success: false;
+  reason: StartFlightFailureReason;
+  error: string;
   /** X-Plane's `error_code` when it refused the flight, e.g. `missing_ramp`. */
   code?: string;
-  /**
-   * The connection broke before X-Plane answered, and why. With `success` the
-   * request had been delivered and X-Plane answered again afterwards, so the
-   * change is taken as accepted; without it X-Plane stayed silent.
-   */
+  /** The HTTP status when X-Plane answered with an error. */
+  httpStatus?: number;
+  /** The connection broke before X-Plane answered, and why; X-Plane stayed silent. */
   connectionDropped?: string;
 }
+
+export type StartFlightResult =
+  | {
+      success: true;
+      /**
+       * The connection broke before X-Plane answered, and why. The request had
+       * been delivered and X-Plane answered again afterwards, so the change is
+       * taken as accepted.
+       */
+      connectionDropped?: string;
+    }
+  | StartFlightFailure;
 
 /**
  * What actually went wrong with a request, which `String(err)` hides: Node's
@@ -69,7 +100,12 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
  * X-Plane answers a refused flight with `{ error_code, error_message }`. Keep
  * both: the code groups reports, the message is what the user gets to read.
  */
-function rejectionFromBody(body: string, fallback: string): StartFlightResult {
+function rejectionFromBody(
+  body: string,
+  fallback: string,
+  httpStatus?: number
+): StartFlightFailure {
+  const status = httpStatus === undefined ? {} : { httpStatus };
   try {
     const parsed: unknown = JSON.parse(body);
     if (parsed && typeof parsed === 'object' && 'error_code' in parsed) {
@@ -80,15 +116,17 @@ function rejectionFromBody(body: string, fallback: string): StartFlightResult {
       if (typeof error_code === 'string') {
         return {
           success: false,
+          reason: 'xplane_rejected',
           code: error_code,
           error: typeof error_message === 'string' ? error_message : fallback,
+          ...status,
         };
       }
     }
   } catch {
     // Not JSON: an HTML error page or an empty body.
   }
-  return { success: false, error: body || fallback };
+  return { success: false, reason: 'http_error', error: body || fallback, ...status };
 }
 
 export class XPlaneRestClient {
@@ -160,7 +198,7 @@ export class XPlaneRestClient {
     try {
       payload = validateNewFlight(payload);
     } catch (err) {
-      return { success: false, error: errorMessage(err) };
+      return { success: false, reason: 'invalid_payload', error: errorMessage(err) };
     }
 
     const { requestTimeoutMs } = this.flightTiming;
@@ -189,7 +227,7 @@ export class XPlaneRestClient {
 
     try {
       if (!response.ok) {
-        return rejectionFromBody(await response.text(), `HTTP ${response.status}`);
+        return rejectionFromBody(await response.text(), `HTTP ${response.status}`, response.status);
       }
 
       // Flight endpoints return a result code, unlike dataref endpoints.
@@ -205,10 +243,12 @@ export class XPlaneRestClient {
       }
       return {
         success: false,
+        reason: 'invalid_response',
         error: 'X-Plane returned an invalid flight initialization response.',
       };
     } catch (err) {
-      return { success: false, error: describeFetchFailure(err) };
+      // The body could not be read or was not JSON.
+      return { success: false, reason: 'invalid_response', error: describeFetchFailure(err) };
     }
   }
 
@@ -222,6 +262,7 @@ export class XPlaneRestClient {
     } while (Date.now() < deadline);
     return {
       success: false,
+      reason: 'connection_lost',
       connectionDropped: reason,
       error: `Lost the connection to X-Plane while it loaded the flight (${reason}).`,
     };
