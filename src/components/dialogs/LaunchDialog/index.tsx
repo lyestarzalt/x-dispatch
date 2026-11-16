@@ -294,7 +294,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
         .getState()
         .tools.filter((tool) => tool.autoLaunch);
       let maxDelaySec = 0;
-      const failures: { id: string; name: string; error: string }[] = [];
+      const failures: { id: string; name: string; error: string; code?: string }[] = [];
 
       const errorKeyFor = (code: string | undefined): string => {
         switch (code) {
@@ -321,6 +321,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
           failures.push({
             id: tool.id,
             name: tool.name,
+            code: result.code,
             error: t(errorKeyFor(result.code), {
               defaultValue: result.error ?? t('settings.companionApps.unknownError'),
             }),
@@ -335,6 +336,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
       for (const f of failures) {
         toastError(
           'companion_apps',
+          { action: 'launch_companion_app', cause: f.code ?? 'spawn_failed' },
           t('settings.companionApps.spawnError', { name: f.name, error: f.error })
         );
       }

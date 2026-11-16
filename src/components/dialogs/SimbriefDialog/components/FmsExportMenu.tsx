@@ -83,6 +83,7 @@ export function FmsExportMenu({
     }
     toastError(
       'fms_export',
+      { action: 'export_fms', cause: 'download_failed' },
       t('simbrief.export.failure', { label: entry.label, reason: result.error })
     );
     return false;

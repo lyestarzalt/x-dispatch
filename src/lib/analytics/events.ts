@@ -204,6 +204,111 @@ export const ANALYTICS_ADDON_INSTALL_ERRORS = [
   'unknown',
 ] as const;
 
+/**
+ * What the app was doing when it showed an error. Required on every error
+ * shown, so "errors in flight plans" splits into loading, saving and routing.
+ */
+export const ANALYTICS_ERROR_ACTIONS = [
+  'export_taxi_route',
+  'tune_radio',
+  'copy_image',
+  'send_support_report',
+  'launch_companion_app',
+  'open_xplane_log',
+  'export_fms',
+  // Flight plans
+  'load_plan_file',
+  'import_plan_link',
+  'import_plan_file',
+  'auto_route',
+  'save_plan',
+  // Logbook
+  'save_logbook_entry',
+  'export_logbook',
+  'import_logbook',
+  // Add-ons
+  'gateway_install',
+  'gateway_remove',
+  'scenery_toggle',
+  'scenery_save_order',
+  'scenery_auto_sort',
+  'scenery_delete',
+  'scenery_restore',
+  'aircraft_delete',
+  'plugin_delete',
+  'livery_delete',
+  'script_delete',
+] as const;
+
+/**
+ * Why it failed, when the app knows: the code the failing operation already
+ * returns, lowercased. `other` means a cause was given that is not listed here;
+ * the property is null when the call site had none to give.
+ */
+export const ANALYTICS_ERROR_CODES = [
+  // Companion apps
+  'needs_admin',
+  'file_missing',
+  'file_not_executable',
+  'batch_not_supported',
+  'spawn_failed',
+  // Files and folders
+  'not_found',
+  'folder_not_found',
+  'aircraft_not_found',
+  'not_installed',
+  'eacces',
+  'eperm',
+  'enoent',
+  'enospc',
+  'exdev',
+  'disk_space',
+  'write_failed',
+  'delete_failed',
+  'backup_failed',
+  'toggle_failed',
+  'scan_failed',
+  'browse_failed',
+  'invalid_input',
+  'path_traversal',
+  'conflict',
+  // Scenery list
+  'ini_not_found',
+  'ini_parse_error',
+  'dsf_invalid',
+  'dsf_compressed',
+  'missing_libraries',
+  // Installing
+  'install_failed',
+  'download_failed',
+  'extraction_failed',
+  'verify_failed',
+  'verify_markers',
+  'bad_package',
+  'not_archive',
+  'nested_archive',
+  'unsupported_format',
+  'missing_volume',
+  'password_required',
+  'invalid_password',
+  'size_exceeded',
+  'suspicious_ratio',
+  'large_addon',
+  'flywithlua_missing',
+  'unknown_navdata_provider',
+  // Flight plans and files
+  'fetch_failed',
+  'read_failed',
+  'unreadable',
+  'no_route',
+  // X-Plane log
+  'no_log',
+  'no_path',
+  // Talking to X-Plane or a server
+  'request_failed',
+  'other',
+] as const;
+
 /** Where an error toast was shown; the message itself is never sent. */
 export const ANALYTICS_ERROR_AREAS = [
   'taxi_route',
@@ -334,6 +439,8 @@ export type AnalyticsStartupBucket = (typeof ANALYTICS_STARTUP_BUCKETS)[number];
 export type AnalyticsWidthBucket = (typeof ANALYTICS_WIDTH_BUCKETS)[number];
 export type AnalyticsScaleBucket = (typeof ANALYTICS_SCALE_BUCKETS)[number];
 export type AnalyticsErrorArea = (typeof ANALYTICS_ERROR_AREAS)[number];
+export type AnalyticsErrorAction = (typeof ANALYTICS_ERROR_ACTIONS)[number];
+export type AnalyticsErrorCode = (typeof ANALYTICS_ERROR_CODES)[number];
 export type AnalyticsExploreTab = (typeof ANALYTICS_EXPLORE_TABS)[number];
 export type AnalyticsFmsFormat = (typeof ANALYTICS_FMS_FORMATS)[number];
 export type AnalyticsPlanRoute = (typeof ANALYTICS_PLAN_ROUTES)[number];
@@ -521,7 +628,12 @@ const EVENT_SCHEMA = {
   shortcut_used: { shortcut: oneOf(ANALYTICS_SHORTCUTS) },
   /** An xdispatch:// link was followed: which action, and the source it declared. */
   deep_link_opened: { action: oneOf(APP_ACTION_KINDS), source: oneOf(ANALYTICS_DEEP_LINK_SOURCES) },
-  error_shown: { area: oneOf(ANALYTICS_ERROR_AREAS) },
+  error_shown: {
+    area: oneOf(ANALYTICS_ERROR_AREAS),
+    action: oneOf(ANALYTICS_ERROR_ACTIONS),
+    /** Null when the call site had no cause to give. */
+    code: optionalOneOf(ANALYTICS_ERROR_CODES),
+  },
   explore_tab_opened: { tab: oneOf(ANALYTICS_EXPLORE_TABS) },
   /** An airport, route or event picked in Explore; the tab only, never what was picked. */
   explore_item_selected: { tab: oneOf(ANALYTICS_EXPLORE_TABS) },

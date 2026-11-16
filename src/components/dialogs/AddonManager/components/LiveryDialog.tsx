@@ -71,7 +71,7 @@ export function LiveryDialog({ open, onClose, aircraftFolder, aircraftName }: Li
     try {
       await deleteMutation.mutateAsync({ aircraftFolder, liveryFolder });
     } catch (e) {
-      toastError('addon_manager', errorMessage(e));
+      toastError('addon_manager', { action: 'livery_delete', cause: e }, errorMessage(e));
     }
   };
 

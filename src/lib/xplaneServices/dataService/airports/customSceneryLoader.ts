@@ -8,9 +8,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import logger from '@/lib/utils/logger';
-import { resolveLnkSync } from '@/lib/utils/resolveLnk';
+import { resolveLnk } from '@/lib/utils/resolveLnk';
 import type { AirportProgressCallback, AptFileInfo, ParsedAirportEntry } from '../types';
-import { getFileMtime } from './airportCache';
+import { readFileMtime } from './airportCache';
 import { scanAptFile } from './airportScanner';
 
 export interface CustomSceneryLoadResult {
@@ -26,59 +26,27 @@ export interface CustomSceneryLoadResult {
 }
 
 /**
- * Find all Custom Scenery apt.dat files
+ * Find all Custom Scenery apt.dat files.
+ *
+ * Runs on every start before the cache check, over folders that can hold
+ * thousands of packs on a slow or network drive, so every filesystem call is
+ * async: the main process stays free while the stats queue on libuv's pool.
  */
-export function findCustomSceneryAptFiles(xplanePath: string): string[] {
+export async function findCustomSceneryAptFiles(xplanePath: string): Promise<string[]> {
   const customSceneryPath = path.join(xplanePath, 'Custom Scenery');
-  const aptFiles: string[] = [];
 
-  if (!fs.existsSync(customSceneryPath)) {
-    return aptFiles;
-  }
-
+  let entries: fs.Dirent[];
   try {
-    const entries = fs.readdirSync(customSceneryPath, { withFileTypes: true });
-    for (const entry of entries) {
-      try {
-        // Real directory or junction/symlink
-        const isDir =
-          entry.isDirectory() ||
-          (entry.isSymbolicLink() &&
-            fs.statSync(path.join(customSceneryPath, entry.name)).isDirectory());
-
-        if (isDir) {
-          const aptPath = path.join(customSceneryPath, entry.name, 'Earth nav data', 'apt.dat');
-          if (fs.existsSync(aptPath)) aptFiles.push(aptPath);
-          continue;
-        }
-
-        // Windows shell shortcut (.lnk): resolve target and look for apt.dat
-        // inside the linked directory.
-        if (entry.isFile() && entry.name.toLowerCase().endsWith('.lnk')) {
-          const lnkPath = path.join(customSceneryPath, entry.name);
-          const resolved = resolveLnkSync(lnkPath);
-          if (!resolved.ok) {
-            logger.data.warn(`Skipping shortcut "${entry.name}" (${resolved.reason})`);
-            continue;
-          }
-          try {
-            if (!fs.statSync(resolved.targetPath).isDirectory()) continue;
-          } catch {
-            continue;
-          }
-          const aptPath = path.join(resolved.targetPath, 'Earth nav data', 'apt.dat');
-          if (fs.existsSync(aptPath)) aptFiles.push(aptPath);
-        }
-      } catch {
-        // Skip this entry (broken symlink, unmounted drive, etc.) but continue scanning
-        logger.data.warn(
-          `Skipping Custom Scenery entry "${entry.name}" (unreadable or broken symlink)`
-        );
-      }
-    }
+    entries = await fs.promises.readdir(customSceneryPath, { withFileTypes: true });
   } catch (err) {
-    logger.data.warn('Error scanning Custom Scenery:', err);
+    if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
+      logger.data.warn('Error scanning Custom Scenery:', err);
+    }
+    return [];
   }
+
+  const found = await Promise.all(entries.map((entry) => aptFileOf(customSceneryPath, entry)));
+  const aptFiles = found.filter((aptPath): aptPath is string => aptPath !== null);
 
   // Dedup by canonical path. A .lnk shortcut whose target resolves to a
   // sibling directory (or another .lnk's target) would otherwise emit the
@@ -90,21 +58,63 @@ export function findCustomSceneryAptFiles(xplanePath: string): string[] {
   return [...new Set(aptFiles.map((p) => path.resolve(p)))];
 }
 
+/** The apt.dat a Custom Scenery entry leads to, or null when it has none. */
+async function aptFileOf(customSceneryPath: string, entry: fs.Dirent): Promise<string | null> {
+  const entryPath = path.join(customSceneryPath, entry.name);
+  try {
+    // Real directory or junction/symlink
+    const isDir =
+      entry.isDirectory() ||
+      (entry.isSymbolicLink() && (await fs.promises.stat(entryPath)).isDirectory());
+    if (isDir) return aptFileIn(entryPath);
+
+    // Windows shell shortcut (.lnk): resolve target and look for apt.dat
+    // inside the linked directory.
+    if (entry.isFile() && entry.name.toLowerCase().endsWith('.lnk')) {
+      const resolved = await resolveLnk(entryPath);
+      if (!resolved.ok) {
+        logger.data.warn(`Skipping shortcut "${entry.name}" (${resolved.reason})`);
+        return null;
+      }
+      try {
+        if (!(await fs.promises.stat(resolved.targetPath)).isDirectory()) return null;
+      } catch {
+        return null;
+      }
+      return aptFileIn(resolved.targetPath);
+    }
+    return null;
+  } catch {
+    // Skip this entry (broken symlink, unmounted drive, etc.) but continue scanning
+    logger.data.warn(
+      `Skipping Custom Scenery entry "${entry.name}" (unreadable or broken symlink)`
+    );
+    return null;
+  }
+}
+
+async function aptFileIn(packPath: string): Promise<string | null> {
+  const aptPath = path.join(packPath, 'Earth nav data', 'apt.dat');
+  try {
+    await fs.promises.access(aptPath);
+    return aptPath;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Get file info for all Custom Scenery apt.dat files
  */
-export function getCustomSceneryFileInfos(xplanePath: string): AptFileInfo[] {
-  const aptFiles = findCustomSceneryAptFiles(xplanePath);
-  const fileInfos: AptFileInfo[] = [];
-
-  for (const aptPath of aptFiles) {
-    const mtime = getFileMtime(aptPath);
-    if (mtime !== null) {
-      fileInfos.push({ path: aptPath, mtime });
-    }
-  }
-
-  return fileInfos;
+export async function getCustomSceneryFileInfos(xplanePath: string): Promise<AptFileInfo[]> {
+  const aptFiles = await findCustomSceneryAptFiles(xplanePath);
+  const infos = await Promise.all(
+    aptFiles.map(async (aptPath) => {
+      const mtime = await readFileMtime(aptPath);
+      return mtime === null ? null : { path: aptPath, mtime };
+    })
+  );
+  return infos.filter((info): info is AptFileInfo => info !== null);
 }
 
 /**
@@ -115,7 +125,7 @@ export async function loadCustomSceneryAirports(
   xplanePath: string,
   onProgress?: AirportProgressCallback
 ): Promise<CustomSceneryLoadResult> {
-  const aptFiles = findCustomSceneryAptFiles(xplanePath);
+  const aptFiles = await findCustomSceneryAptFiles(xplanePath);
 
   if (aptFiles.length === 0) {
     logger.data.debug('No Custom Scenery apt.dat files found');
@@ -149,7 +159,7 @@ export async function loadCustomSceneryAirports(
     const result = await scanAptFile(aptFile);
 
     // Track file info
-    const mtime = getFileMtime(aptFile);
+    const mtime = await readFileMtime(aptFile);
     if (mtime !== null) {
       fileInfos.push({ path: aptFile, mtime });
     }

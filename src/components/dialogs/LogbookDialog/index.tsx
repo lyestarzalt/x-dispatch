@@ -69,14 +69,16 @@ export default function LogbookDialog() {
           setEditing(null);
           setLogbookFlight(flight.id);
         },
-        onError: () => toastError('logbook', t('logbook.saveFailed')),
+        onError: () =>
+          toastError('logbook', { action: 'save_logbook_entry' }, t('logbook.saveFailed')),
       });
     } else if (editing) {
       updateFlight.mutate(
         { id: editing.id, input },
         {
           onSuccess: () => setEditing(null),
-          onError: () => toastError('logbook', t('logbook.saveFailed')),
+          onError: () =>
+            toastError('logbook', { action: 'save_logbook_entry' }, t('logbook.saveFailed')),
         }
       );
     }
@@ -87,7 +89,7 @@ export default function LogbookDialog() {
       onSuccess: (result) => {
         if (result) toast.success(t('logbook.exported', { count: result.count }));
       },
-      onError: () => toastError('logbook', t('logbook.exportFailed')),
+      onError: () => toastError('logbook', { action: 'export_logbook' }, t('logbook.exportFailed')),
     });
   };
 
@@ -104,7 +106,7 @@ export default function LogbookDialog() {
           );
         }
       },
-      onError: () => toastError('logbook', t('logbook.importFailed')),
+      onError: () => toastError('logbook', { action: 'import_logbook' }, t('logbook.importFailed')),
     });
   };
 

@@ -74,6 +74,11 @@ function pilot(departure: string, arrival: string) {
   return { flightPlan: { departure, arrival } };
 }
 
+// The error toast logs through the renderer logger, which needs a real renderer.
+vi.mock('@/lib/utils/loggerRenderer', () => ({
+  default: { renderer: { warn: vi.fn(), error: vi.fn(), info: vi.fn(), debug: vi.fn() } },
+}));
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => {

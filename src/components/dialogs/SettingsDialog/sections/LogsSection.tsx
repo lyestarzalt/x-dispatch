@@ -54,7 +54,14 @@ export function LogsSection({ active }: LogsSectionProps) {
           : r.reason === 'no-path'
             ? t('settings.logs.empty.noPath')
             : (r.message ?? t('settings.logs.openFailed'));
-      toastError('logs', msg);
+      toastError(
+        'logs',
+        {
+          action: 'open_xplane_log',
+          cause: r.reason === 'no-log' ? 'no_log' : r.reason === 'no-path' ? 'no_path' : 'other',
+        },
+        msg
+      );
     }
   };
 

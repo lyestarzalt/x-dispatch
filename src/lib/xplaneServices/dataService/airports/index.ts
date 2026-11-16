@@ -66,7 +66,7 @@ export async function syncAirportCache(
 ): Promise<AirportLoadResult> {
   onProgress?.({ phase: 'cache-check' });
 
-  const currentFiles = getCurrentAptFiles(xplanePath);
+  const currentFiles = await getCurrentAptFiles(xplanePath);
   const changes = detectAptFileChanges(currentFiles);
 
   if (!changes.needsReload) {
@@ -160,7 +160,7 @@ export function getAllAirports(procedureIcaos?: ReadonlySet<string>): Airport[] 
 /**
  * Get Custom Scenery apt.dat file paths
  */
-export function getCustomSceneryAptFiles(xplanePath: string): string[] {
+export function getCustomSceneryAptFiles(xplanePath: string): Promise<string[]> {
   return findCustomSceneryAptFiles(xplanePath);
 }
 
@@ -171,7 +171,7 @@ export function getCustomSceneryAptFiles(xplanePath: string): string[] {
 /**
  * Get all current apt.dat files with their modification times
  */
-function getCurrentAptFiles(xplanePath: string): AptFileInfo[] {
+async function getCurrentAptFiles(xplanePath: string): Promise<AptFileInfo[]> {
   const files: AptFileInfo[] = [];
 
   // Global apt.dat
@@ -181,7 +181,7 @@ function getCurrentAptFiles(xplanePath: string): AptFileInfo[] {
   }
 
   // Custom Scenery apt.dat files
-  const customInfos = getCustomSceneryFileInfos(xplanePath);
+  const customInfos = await getCustomSceneryFileInfos(xplanePath);
   files.push(...customInfos);
 
   return files;
@@ -207,10 +207,10 @@ function logCacheChanges(cacheCheck: ReturnType<typeof detectAptFileChanges>): v
 
 /**
  * Quick check: have any apt.dat files changed since last sync?
- * Synchronous — compares file mtimes on disk vs stored in apt_file_meta.
+ * Compares file mtimes on disk vs stored in apt_file_meta.
  */
-export function hasAptFileChanges(xplanePath: string): boolean {
-  const currentFiles = getCurrentAptFiles(xplanePath);
+export async function hasAptFileChanges(xplanePath: string): Promise<boolean> {
+  const currentFiles = await getCurrentAptFiles(xplanePath);
   return detectAptFileChanges(currentFiles).needsReload;
 }
 
@@ -240,7 +240,7 @@ export async function resyncCustomScenery(
   await insertCustomAirports(Array.from(customResult.airports.values()));
 
   // Update file metadata for custom scenery files only
-  const customFiles = getCustomSceneryFileInfos(xplanePath);
+  const customFiles = await getCustomSceneryFileInfos(xplanePath);
   const airportCounts = new Map<string, number>();
   for (const [filePath, fileCount] of customResult.airportCounts) {
     airportCounts.set(filePath, fileCount);

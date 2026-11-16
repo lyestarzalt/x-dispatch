@@ -86,7 +86,7 @@ function FlightDetailBody({
     if (!landing) return;
     const ok = await copyLandingCard(landing, landingCardLabels(t, landing));
     if (ok) toast.success(t('logbook.imageCopied'));
-    else toastError('logbook', t('logbook.imageCopyFailed'));
+    else toastError('logbook', { action: 'copy_image' }, t('logbook.imageCopyFailed'));
   };
 
   const stats: Array<{ label: string; value: string }> = [

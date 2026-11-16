@@ -83,7 +83,7 @@ export default function LandingReportCard({ onShowOnMap }: LandingReportCardProp
     if (!report) return;
     const ok = await copyLandingCard(report, landingCardLabels(t, report));
     if (ok) toast.success(t('logbook.imageCopied'));
-    else toastError('landing_report', t('logbook.imageCopyFailed'));
+    else toastError('landing_report', { action: 'copy_image' }, t('logbook.imageCopyFailed'));
   };
 
   return (

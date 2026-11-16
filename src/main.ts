@@ -14,7 +14,6 @@ import {
 } from 'electron';
 import windowStateKeeper from 'electron-window-state';
 import * as Sentry from '@sentry/electron/main';
-import { eventLoopBlockIntegration } from '@sentry/electron/native';
 import * as fs from 'fs';
 import { execFile } from 'node:child_process';
 import type { StatementSync } from 'node:sqlite';
@@ -150,9 +149,6 @@ import { registerXPlaneLogIPC } from './lib/xplaneServices/log/ipc';
 import { ResolvedAirportProcedures } from './types/navigation';
 import type { LoadingProgress, PlaneState } from './types/xplane';
 
-/** Main-process event loop blocks shorter than this are not reported. */
-const BLOCK_THRESHOLD_MS = 10_000;
-
 /** Named NAT track fixes are looked up within this radius of the nearest track coordinate. */
 const TRACK_FIX_SEARCH_NM = 1500;
 
@@ -234,14 +230,10 @@ if (shouldInitSentry && app.isPackaged) {
     // v11 infers the user IP by default; nothing here needs it and v10 never sent it.
     dataCollection: { userInfo: false },
     tracesSampleRate: 1.0,
-    integrations: [
-      Sentry.startupTracingIntegration(),
-      // A frozen main process throws nothing: 2.9.0 shipped a startup freeze only
-      // users noticed. The SDK's worker thread reports a block with the stack of
-      // the blocked thread, stops over sleep and screen lock, and files one event
-      // an hour. Below ten seconds it is X-Plane taking the CPU, not a freeze.
-      eventLoopBlockIntegration({ threshold: BLOCK_THRESHOLD_MS, maxEventsPerHour: 1 }),
-    ],
+    // No eventLoopBlockIntegration: its add-on (@sentry/node-native-stacktrace
+    // 0.5.2) reads the AsyncLocalStorage map from inside a V8 interrupt, which
+    // Electron 45's V8 forbids, and aborted the main process on 2.14 and 2.15.
+    integrations: [Sentry.startupTracingIntegration()],
     ignoreErrors: [TRANSIENT_NET_ERROR_PATTERN],
     beforeSend(event, hint) {
       // Disk-full failures describe the user's machine, not a defect here, and
@@ -262,7 +254,6 @@ if (shouldInitSentry && app.isPackaged) {
       return event;
     },
   });
-  logger.main.info(`Event loop block detection armed (${BLOCK_THRESHOLD_MS} ms)`);
   // Anonymous per-install ID, so an issue shows how many installs it hits and a
   // tester can quote the ID with a report. Renderer events set it in bootstrap.
   const crashReportId = getCrashReportId();
@@ -3110,7 +3101,7 @@ async function bootstrap(): Promise<void> {
   if (isSetupComplete()) {
     const xplanePath = dataManager.getXPlanePath();
     logger.main.info(`X-Plane: ${xplanePath}`);
-    dataManager.initFromCache();
+    await dataManager.initFromCache();
     const sources = dataManager.getDataSources();
     if (sources?.global) {
       logger.main.info(

@@ -57,8 +57,17 @@ describe('analytics buckets', () => {
       sanitizeEvent('deep_link_opened', { action: 'airport', source: 'website' })
     ).not.toBeNull();
     expect(sanitizeEvent('deep_link_opened', { action: 'install', source: 'none' })).toBeNull();
-    expect(sanitizeEvent('error_shown', { area: 'fms_export' })).not.toBeNull();
-    expect(sanitizeEvent('error_shown', { area: 'Could not save file' })).toBeNull();
+    expect(
+      sanitizeEvent('error_shown', { area: 'fms_export', action: 'export_fms', code: null })
+    ).not.toBeNull();
+    expect(
+      sanitizeEvent('error_shown', { area: 'Could not save file', action: 'export_fms' })
+    ).toBeNull();
+    // An error with no action is not accepted: every error says what was being done.
+    expect(sanitizeEvent('error_shown', { area: 'fms_export' })).toBeNull();
+    expect(
+      sanitizeEvent('error_shown', { area: 'fms_export', action: 'export_fms', code: 'C:\\x' })
+    ).toBeNull();
     expect(
       sanitizeEvent('launch_abandoned', {
         aircraft_selected: true,

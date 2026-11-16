@@ -72,7 +72,11 @@ export default function SupportSection({ className }: SettingsSectionProps) {
       setMessage('');
       setEmail('');
     } catch {
-      toastError('support_report', t('settings.support.sendError'));
+      toastError(
+        'support_report',
+        { action: 'send_support_report', cause: 'request_failed' },
+        t('settings.support.sendError')
+      );
     } finally {
       setIsSending(false);
     }

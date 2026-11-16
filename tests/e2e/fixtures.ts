@@ -16,6 +16,9 @@ import * as path from 'path';
 const REPO_ROOT = path.resolve(__dirname, '../..');
 const UNIT_FIXTURES_DIR = path.join(REPO_ROOT, 'tests/fixtures');
 
+/** The airport only the fixture's Custom Scenery pack has. */
+export const CUSTOM_SCENERY_AIRPORT = { icao: 'XDTF', name: 'X-Dispatch Test Field' };
+
 export interface E2EFixture {
   /** Path that will be set as xplanePath in config.json */
   xplaneRoot: string;
@@ -84,6 +87,26 @@ function buildFakeXPlaneInstall(root: string): void {
   const globalApt = path.join(root, 'Global Scenery', 'Global Airports', 'Earth nav data');
   fs.mkdirSync(globalApt, { recursive: true });
   fs.copyFileSync(path.join(UNIT_FIXTURES_DIR, 'apt-sample.dat'), path.join(globalApt, 'apt.dat'));
+
+  // One Custom Scenery pack with an airport Global Airports does not have, so
+  // the startup scan of Custom Scenery is part of every boot. Fictional field.
+  const packApt = path.join(root, 'Custom Scenery', 'XD Test Field', 'Earth nav data');
+  fs.mkdirSync(packApt, { recursive: true });
+  fs.writeFileSync(
+    path.join(packApt, 'apt.dat'),
+    [
+      'I',
+      '1200 Version',
+      '',
+      `1    1200 0 0 ${CUSTOM_SCENERY_AIRPORT.icao} ${CUSTOM_SCENERY_AIRPORT.name}`,
+      '1302 datum_lat 46.000000000',
+      '1302 datum_lon 7.010000000',
+      `1302 icao_code ${CUSTOM_SCENERY_AIRPORT.icao}`,
+      '100 30.00 1 0 0.00 0 2 0 09 46.0000000 7.0000000 0 0 2 0 0 0 27 46.0000000 7.0200000 0 0 2 0 0 0',
+      '99',
+      '',
+    ].join('\n')
+  );
 
   // Synthetic test aircraft. Not a copy of any real X-Plane aircraft —
   // hand-written placeholder values so the parser has something to surface.

@@ -20,7 +20,7 @@ import {
 } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
-import { type E2EFixture, setupTestEnvironment } from './fixtures';
+import { CUSTOM_SCENERY_AIRPORT, type E2EFixture, setupTestEnvironment } from './fixtures';
 
 const REPO_ROOT = path.resolve(__dirname, '../..');
 
@@ -103,6 +103,17 @@ test.describe('airports loaded from fixture apt.dat', () => {
 
     await expect(mainWindow.getByText(/EGLL/).first()).toBeVisible({ timeout: 5_000 });
     await expect(mainWindow.getByText(/Heathrow/i).first()).toBeVisible({ timeout: 5_000 });
+  });
+
+  test('search finds an airport that only a Custom Scenery pack has', async () => {
+    const search = mainWindow.getByPlaceholder('Search airports...');
+    await expect(search).toBeVisible({ timeout: 30_000 });
+
+    await search.fill(CUSTOM_SCENERY_AIRPORT.icao);
+
+    await expect(mainWindow.getByText(CUSTOM_SCENERY_AIRPORT.name).first()).toBeVisible({
+      timeout: 5_000,
+    });
   });
 
   test('search returns no results for an ICAO that is not in the fixture', async () => {

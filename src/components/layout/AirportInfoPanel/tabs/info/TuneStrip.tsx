@@ -49,9 +49,14 @@ export function TuneStrip({ freq, onTuned }: { freq: string; onTuned: () => void
       trackEvent('frequency_tuned', {});
       onTuned();
     } else {
-      toastError('radio_tune', t('airportInfo.tune.toast.failed', { radio }), {
-        description: result.error,
-      });
+      toastError(
+        'radio_tune',
+        { action: 'tune_radio', cause: 'request_failed' },
+        t('airportInfo.tune.toast.failed', { radio }),
+        {
+          description: result.error,
+        }
+      );
     }
   };
 

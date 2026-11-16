@@ -151,7 +151,7 @@ export class XPlaneDataManager {
    * Initialize from SQLite cache (call on app start when setup is complete)
    * All nav data is now queried directly from SQLite
    */
-  initFromCache(): void {
+  async initFromCache(): Promise<void> {
     const xplanePath = this.getXPlanePath();
 
     // Detect data sources (Navigraph vs X-Plane default)
@@ -168,7 +168,7 @@ export class XPlaneDataManager {
 
     // Only trust cached airport data if no apt.dat files changed on disk.
     // If stale, leave airports unloaded so LoadingScreen triggers a full rebuild.
-    const aptFilesChanged = xplanePath ? hasAptFileChanges(xplanePath) : false;
+    const aptFilesChanged = xplanePath ? await hasAptFileChanges(xplanePath) : false;
     let airportCount = 0;
     if (!aptFilesChanged) {
       const breakdown = getAirportBreakdown();

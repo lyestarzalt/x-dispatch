@@ -121,7 +121,7 @@ export function BrowserTab() {
     try {
       await aircraftDelete.mutateAsync(folderName);
     } catch (e) {
-      toastError('addon_manager', errorMessage(e));
+      toastError('addon_manager', { action: 'aircraft_delete', cause: e }, errorMessage(e));
     }
   };
 
@@ -132,7 +132,7 @@ export function BrowserTab() {
     try {
       await pluginDelete.mutateAsync(folderName);
     } catch (e) {
-      toastError('addon_manager', errorMessage(e));
+      toastError('addon_manager', { action: 'plugin_delete', cause: e }, errorMessage(e));
     }
   };
 

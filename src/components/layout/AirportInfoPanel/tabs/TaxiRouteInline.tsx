@@ -179,7 +179,11 @@ export default function TaxiRouteInline() {
       trackEvent('taxi_route_exported', {});
       toast.success(t('airportInfo.taxiRoute.exportSuccess'));
     } else {
-      toastError('taxi_route', result.error ?? t('common.error'));
+      toastError(
+        'taxi_route',
+        { action: 'export_taxi_route', cause: 'write_failed' },
+        result.error ?? t('common.error')
+      );
     }
   };
 

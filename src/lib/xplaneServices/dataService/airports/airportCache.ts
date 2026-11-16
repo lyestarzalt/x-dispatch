@@ -33,6 +33,16 @@ export function getFileMtime(filePath: string): number | null {
   }
 }
 
+/** {@link getFileMtime} without blocking the main process on the stat. */
+export async function readFileMtime(filePath: string): Promise<number | null> {
+  try {
+    const stat = await fs.promises.stat(filePath);
+    return Math.floor(stat.mtimeMs);
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Bump when the scanner starts storing something differently, so caches
  * written by an older build are rebuilt on the next start. The version is
