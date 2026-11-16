@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **The app log says why an error appeared.** Each error message is logged with what the app was doing and the cause, so a log sent on Discord shows it.
 - **Launches and flight changes are logged with X-Plane's answer.** When X-Plane refuses a flight, the log keeps its reason and the scenery pack the airport came from.
 
+### Fixed
+
+- **The app no longer closes on its own after a long pause.** A freeze check added in 2.14 could shut the app down instead of recording the freeze.
+- **Starting up with a large Custom Scenery folder no longer freezes the app.** The folder is read in the background.
+
 ## [2.15.0] - 2026-11-16
 
 ### Added
