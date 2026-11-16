@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **The app no longer closes on its own after a long pause.** A freeze check added in 2.14 could shut the app down instead of recording the freeze.
-- **Starting up with a large Custom Scenery folder no longer freezes the app.** The folder is read in the background.
+- **The window opens right away, even with a large Custom Scenery folder.** The scenery check runs behind the loading screen instead of before the window appears.
 
 ## [2.15.0] - 2026-11-16
 
