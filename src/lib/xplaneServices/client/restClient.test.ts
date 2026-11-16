@@ -10,8 +10,11 @@ describe('startFlight validation at REST boundary', () => {
     const result = await new XPlaneRestClient().startFlight({
       aircraft: { path: 'Aircraft/test.acf' },
     });
-    expect(result.success).toBe(false);
-    expect(result.error).toContain('exactly one start location');
+    expect(result).toMatchObject({
+      success: false,
+      reason: 'invalid_payload',
+      error: expect.stringContaining('exactly one start location'),
+    });
     expect(fetch).not.toHaveBeenCalled();
   });
 
@@ -31,29 +34,52 @@ describe('startFlight validation at REST boundary', () => {
     );
   });
 
-  it.each([{ error_code: 'missing_ramp' }, {}, null])(
-    'does not mistake HTTP success for flight success: %j',
-    async (body) => {
-      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => body }));
-      const result = await new XPlaneRestClient().startFlight({
-        aircraft: { path: 'Aircraft/test.acf' },
-        ramp_start: { airport_id: 'YRED', ramp: 'GA5' },
-      });
-      expect(result.success).toBe(false);
-      expect(result.error).toBeTruthy();
-    }
-  );
+  it.each([
+    [{ error_code: 'missing_ramp' }, 'xplane_rejected'],
+    [{}, 'invalid_response'],
+    [null, 'invalid_response'],
+  ])('does not mistake HTTP success for flight success: %j', async (body, reason) => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => body }));
+    const result = await new XPlaneRestClient().startFlight({
+      aircraft: { path: 'Aircraft/test.acf' },
+      ramp_start: { airport_id: 'YRED', ramp: 'GA5' },
+    });
+    expect(result).toMatchObject({ success: false, reason, error: expect.any(String) });
+    expect(result.success ? '' : result.error).toBeTruthy();
+  });
 
   it('surfaces a non-success HTTP response', async () => {
     vi.stubGlobal(
       'fetch',
-      vi.fn().mockResolvedValue({ ok: false, text: async () => 'Missing ramp' })
+      vi.fn().mockResolvedValue({ ok: false, status: 500, text: async () => 'Missing ramp' })
     );
     const result = await new XPlaneRestClient().startFlight({
       aircraft: { path: 'Aircraft/test.acf' },
       ramp_start: { airport_id: 'YRED', ramp: 'GA5' },
     });
-    expect(result).toEqual({ success: false, error: 'Missing ramp' });
+    expect(result).toEqual({
+      success: false,
+      reason: 'http_error',
+      httpStatus: 500,
+      error: 'Missing ramp',
+    });
+  });
+
+  it('names an unreadable body instead of passing it off as a network failure', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => {
+          throw new SyntaxError('Unexpected token < in JSON');
+        },
+      })
+    );
+    const result = await new XPlaneRestClient().startFlight({
+      aircraft: { path: 'Aircraft/test.acf' },
+      ramp_start: { airport_id: 'YRED', ramp: 'GA5' },
+    });
+    expect(result).toMatchObject({ success: false, reason: 'invalid_response' });
   });
 });
 
@@ -82,6 +108,8 @@ describe('startFlight rejection parsing', () => {
     );
     expect(await new XPlaneRestClient().startFlight(payload)).toEqual({
       success: false,
+      reason: 'xplane_rejected',
+      httpStatus: 400,
       code: 'missing_ramp',
       error: "Failed to parse ramp start, ramp 'GA5' is not recognized",
     });
@@ -97,6 +125,7 @@ describe('startFlight rejection parsing', () => {
     );
     expect(await new XPlaneRestClient().startFlight(payload)).toEqual({
       success: false,
+      reason: 'xplane_rejected',
       code: 'missing_aircraft',
       error: 'no such file',
     });
@@ -108,9 +137,12 @@ describe('startFlight rejection parsing', () => {
       vi.fn().mockResolvedValue({ ok: false, status: 502, text: async () => '<html>bad gateway' })
     );
     const result = await new XPlaneRestClient().startFlight(payload);
-    expect(result.success).toBe(false);
-    expect(result.code).toBeUndefined();
-    expect(result.error).toBe('<html>bad gateway');
+    expect(result).toEqual({
+      success: false,
+      reason: 'http_error',
+      httpStatus: 502,
+      error: '<html>bad gateway',
+    });
   });
 });
 
@@ -146,10 +178,12 @@ describe('startFlight when the connection breaks during the load', () => {
   it('fails with the real reason when X-Plane never comes back', async () => {
     const fetch = reset(false);
     const result = await new XPlaneRestClient(8086, timing).startFlight(payload);
-    expect(result.success).toBe(false);
-    expect(result.code).toBeUndefined();
-    expect(result.connectionDropped).toBe('ECONNRESET: socket hang up');
-    expect(result.error).toContain('ECONNRESET: socket hang up');
+    expect(result).toEqual({
+      success: false,
+      reason: 'connection_lost',
+      connectionDropped: 'ECONNRESET: socket hang up',
+      error: expect.stringContaining('ECONNRESET: socket hang up'),
+    });
     // Probed more than once across the recovery window.
     expect(fetch.mock.calls.filter(([url]) => !url.endsWith('/flight')).length).toBeGreaterThan(2);
   });

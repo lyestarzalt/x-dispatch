@@ -33,13 +33,25 @@ export type LaunchErrorCode =
   | 'ACCESS_BLOCKED'
   | 'SPAWN_FAILED';
 
-export interface LaunchResult {
-  success: boolean;
-  error?: string;
-  code?: LaunchErrorCode;
+export interface LaunchFailure {
+  success: false;
+  error: string;
+  code: LaunchErrorCode;
   /** With `ALREADY_RUNNING`: whoever holds the web API port now, when anyone does. */
   portHolder?: PortHolder;
 }
+
+/** A failed launch always says why: `code` is required, never guessed by the caller. */
+export type LaunchResult =
+  | {
+      success: true;
+      /**
+       * How X-Plane was started. Through Steam the app only asks Steam to start it
+       * and never learns whether it did, so that success is weaker than a spawn.
+       */
+      method: 'steam_url' | 'direct';
+    }
+  | LaunchFailure;
 
 /**
  * Decide what a spawn-time errno actually means.
@@ -223,7 +235,7 @@ class XPlaneLauncher {
           }
         });
 
-        return { success: true };
+        return { success: true, method: 'steam_url' };
       }
 
       // Direct launch for non-Steam or Windows/Linux
@@ -269,7 +281,7 @@ class XPlaneLauncher {
           // Process is running; detach so it outlives the app.
           xp.unref();
           logger.launcher.info(`Spawn completed, process unref'd`);
-          settle({ success: true });
+          settle({ success: true, method: 'direct' });
         });
 
         xp.once('error', (err: NodeJS.ErrnoException) => {

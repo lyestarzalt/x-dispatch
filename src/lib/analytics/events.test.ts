@@ -48,6 +48,11 @@ describe('sanitizeEvent', () => {
       aircraft_default: false,
       aircraft_favorite: true,
       start_variant: 'standard',
+      airport_source: 'custom',
+      attempt: 1,
+      launch_method: null,
+      custom_args: false,
+      connection_recovered: false,
       livery: 'HB-ZQG',
     };
     expect(sanitizeEvent('flight_launched', launch)?.properties).toEqual({
@@ -71,6 +76,15 @@ describe('sanitizeEvent', () => {
       aircraft_default: false,
       aircraft_favorite: true,
       start_variant: 'standard',
+      airport_source: 'custom',
+      attempt: 1,
+      launch_method: null,
+      custom_args: false,
+      connection_recovered: false,
+      failure_reason: null,
+      xplane_error_code: null,
+      http_status: null,
+      port_holder: null,
     });
     expect(
       sanitizeEvent('flight_launched', { ...launch, weather_mode: 'real', weather_preset: null })

@@ -10,6 +10,7 @@ import logger from '@/lib/utils/logger';
 import { yieldToEventLoop } from '@/lib/utils/yieldToEventLoop';
 import type {
   Airport,
+  AirportScenery,
   AirportSourceBreakdown,
   AptFileInfo,
   CacheCheckResult,
@@ -428,6 +429,43 @@ export function getAirportName(icao: string): string | null {
     .where(eq(airports.icao, code))
     .get();
   return global?.name || null;
+}
+
+/**
+ * The scenery pack folder an apt.dat belongs to: the folder that holds its
+ * `Earth nav data`. Works for either path separator, whatever machine wrote it.
+ */
+export function sceneryPackOf(sourceFile: string | null | undefined): string | null {
+  const parts = (sourceFile ?? '').split(/[\\/]+/).filter(Boolean);
+  return parts.length >= 3 ? (parts[parts.length - 3] ?? null) : null;
+}
+
+/**
+ * Whether the app reads an airport from Custom Scenery or from X-Plane's own
+ * airports, and from which pack. Custom wins, as it does on the map. Note the
+ * app takes the last pack holding the airport; X-Plane may load another.
+ */
+export function getAirportScenery(icao: string | null | undefined): AirportScenery {
+  if (!icao) return { source: 'unknown', pack: null };
+  try {
+    const db = getDb();
+    const code = icao.toUpperCase();
+    const custom = db
+      .select({ sourceFile: airportsCustom.sourceFile })
+      .from(airportsCustom)
+      .where(eq(airportsCustom.icao, code))
+      .get();
+    if (custom) return { source: 'custom', pack: sceneryPackOf(custom.sourceFile) };
+    const global = db
+      .select({ sourceFile: airports.sourceFile })
+      .from(airports)
+      .where(eq(airports.icao, code))
+      .get();
+    if (global) return { source: 'default', pack: sceneryPackOf(global.sourceFile) };
+  } catch (err) {
+    logger.data.warn(`Could not look up the scenery source of ${icao}`, err);
+  }
+  return { source: 'unknown', pack: null };
 }
 
 /**

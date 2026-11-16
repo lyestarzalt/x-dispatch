@@ -63,6 +63,8 @@ const {
   getStoredFileMeta,
   SCANNER_META_PATH,
   SCANNER_VERSION,
+  getAirportScenery,
+  sceneryPackOf,
 } = await import('./airportCache');
 const { aptFileMeta } = await import('@/lib/db/schema');
 
@@ -431,6 +433,50 @@ describe('custom scenery airports', () => {
 // ---------------------------------------------------------------------------
 // Cache invalidation tests
 // ---------------------------------------------------------------------------
+
+describe('airport scenery source', () => {
+  beforeEach(async () => {
+    await createTestDb();
+  });
+
+  afterEach(() => {
+    closeTestDb();
+  });
+
+  it('names the pack folder for either path separator, never the full path', () => {
+    expect(
+      sceneryPackOf('/Users/someone/X-Plane 12/Custom Scenery/TFFJ St Barth/Earth nav data/apt.dat')
+    ).toBe('TFFJ St Barth');
+    expect(
+      sceneryPackOf('E:\\X-Plane 12\\Custom Scenery\\KSEA Demo Area\\Earth nav data\\apt.dat')
+    ).toBe('KSEA Demo Area');
+    expect(sceneryPackOf(null)).toBeNull();
+    expect(sceneryPackOf('apt.dat')).toBeNull();
+  });
+
+  it('reports a custom scenery airport with its pack, over the default one', async () => {
+    await insertAirports([
+      makeEntry({
+        icao: 'TFFJ',
+        sourceFile: '/xp/Global Scenery/Global Airports/Earth nav data/apt.dat',
+      }),
+    ]);
+    expect(getAirportScenery('tffj')).toEqual({ source: 'default', pack: 'Global Airports' });
+
+    await insertCustomAirports([
+      makeEntry({
+        icao: 'TFFJ',
+        sourceFile: '/xp/Custom Scenery/TFFJ St Barth/Earth nav data/apt.dat',
+      }),
+    ]);
+    expect(getAirportScenery('TFFJ')).toEqual({ source: 'custom', pack: 'TFFJ St Barth' });
+  });
+
+  it('says unknown for an airport it does not have, or no airport at all', () => {
+    expect(getAirportScenery('ZZZZ')).toEqual({ source: 'unknown', pack: null });
+    expect(getAirportScenery(undefined)).toEqual({ source: 'unknown', pack: null });
+  });
+});
 
 describe('detectAptFileChanges cache invalidation', () => {
   beforeEach(async () => {

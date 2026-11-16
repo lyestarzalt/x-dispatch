@@ -312,7 +312,11 @@ declare global {
         payload: FlightInit,
         extraArgs?: string[],
         env?: import('@/lib/xplaneServices/launch/launchEnv').LaunchEnvVar[]
-      ) => Promise<import('@/lib/xplaneServices/launch').LaunchResult>;
+      ) => Promise<
+        import('@/lib/xplaneServices/launch').LaunchResult & {
+          airportSource: import('@/lib/xplaneServices/dataService/types').AirportSource;
+        }
+      >;
       getAircraftImage: (imagePath: string) => Promise<string | null>;
     };
     flightPlanAPI: {
@@ -362,13 +366,11 @@ declare global {
         api: { versions: string[] };
         'x-plane': { version: string };
       } | null>;
-      startFlight: (payload: unknown) => Promise<{
-        success: boolean;
-        error?: string;
-        code?: string;
-        /** The connection broke mid-request, and why; with `success`, X-Plane came back. */
-        connectionDropped?: string;
-      }>;
+      startFlight: (payload: unknown) => Promise<
+        import('@/lib/xplaneServices/client/restClient').StartFlightResult & {
+          airportSource: import('@/lib/xplaneServices/dataService/types').AirportSource;
+        }
+      >;
       getDataref: (name: string) => Promise<number | number[] | null>;
       setDataref: (
         name: string,

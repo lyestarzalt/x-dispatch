@@ -1,7 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { WEATHER_OPTIONS } from '@/components/dialogs/LaunchDialog/types';
-import { ANALYTICS_WEATHER_PRESETS, sanitizeEvent } from './events';
-import { type LaunchSetup, launchChoices, launchErrorCode } from './launchChoices';
+import { START_FLIGHT_FAILURE_REASONS } from '@/lib/xplaneServices/client/restClient';
+import {
+  ANALYTICS_LAUNCH_FAILURE_REASONS,
+  ANALYTICS_WEATHER_PRESETS,
+  sanitizeEvent,
+} from './events';
+import {
+  type LaunchSetup,
+  NO_LAUNCH_FAILURE,
+  changeFlightFailureProps,
+  coldStartFailureProps,
+  launchChoices,
+  launchErrorCode,
+} from './launchChoices';
 
 const defaults: LaunchSetup = {
   weatherConfig: { mode: 'real', preset: 'real', custom: { clouds: [], wind: [{}] } },
@@ -117,6 +129,11 @@ describe('launchChoices', () => {
       aircraft_type: 'C172',
       helicopter: false,
       start_type: 'custom',
+      airport_source: 'unknown',
+      attempt: 1,
+      launch_method: null,
+      custom_args: false,
+      connection_recovered: false,
       success: true,
       companion_apps_launched: 0,
       ...launchChoices({ ...defaults, startPosition: { type: 'custom', customStartMode: 'air' } }),
@@ -142,6 +159,11 @@ describe('launchErrorCode', () => {
       aircraft_type: 'A320',
       helicopter: false,
       start_type: 'ramp',
+      airport_source: 'default',
+      attempt: 1,
+      launch_method: null,
+      custom_args: false,
+      connection_recovered: false,
       success: false,
       companion_apps_launched: 0,
       ...launchChoices(defaults),
@@ -157,5 +179,110 @@ describe('launchErrorCode', () => {
     expect(
       sanitizeEvent('flight_launched', { ...launch, error_code: 'EACCES: denied' })
     ).toBeNull();
+  });
+});
+
+describe('launch failure properties', () => {
+  const launch = {
+    mode: 'change_flight',
+    airport: 'EGLL',
+    aircraft_type: 'A320',
+    helicopter: false,
+    start_type: 'ramp',
+    airport_source: 'custom',
+    attempt: 1,
+    launch_method: null,
+    custom_args: false,
+    connection_recovered: false,
+    success: false,
+    companion_apps_launched: 0,
+    ...launchChoices(defaults),
+  };
+  const sent = (failure: object) =>
+    sanitizeEvent('flight_launched', { ...launch, ...failure })?.properties;
+
+  it('sends nothing about a failure when the launch worked', () => {
+    expect(sent({ ...NO_LAUNCH_FAILURE, success: true })).toMatchObject({
+      error_code: null,
+      failure_reason: null,
+      xplane_error_code: null,
+      http_status: null,
+      port_holder: null,
+    });
+  });
+
+  it("keeps X-Plane's code with a refused flight change", () => {
+    const props = changeFlightFailureProps({ reason: 'xplane_rejected', code: 'missing_ramp' });
+    expect(props).toEqual({
+      error_code: 'change_flight_failed',
+      failure_reason: 'xplane_rejected',
+      xplane_error_code: 'missing_ramp',
+      http_status: null,
+      port_holder: null,
+    });
+    expect(sent(props)).toMatchObject({ xplane_error_code: 'missing_ramp' });
+  });
+
+  it('buckets an X-Plane code it does not know, and never sends the raw text', () => {
+    const props = changeFlightFailureProps({ reason: 'xplane_rejected', code: 'brand_new_code' });
+    expect(props.xplane_error_code).toBe('other');
+    expect(sent(props)).not.toBeNull();
+  });
+
+  it('keeps the HTTP status of an error answer', () => {
+    const props = changeFlightFailureProps({ reason: 'http_error', httpStatus: 502 });
+    expect(props).toMatchObject({ failure_reason: 'http_error', http_status: 502 });
+    expect(sent(props)).toMatchObject({ http_status: 502 });
+  });
+
+  it.each(['invalid_payload', 'connection_lost', 'invalid_response', 'exception'] as const)(
+    'tells %s apart from the other flight change failures',
+    (reason) => {
+      expect(sent(changeFlightFailureProps({ reason }))).toMatchObject({
+        error_code: 'change_flight_failed',
+        failure_reason: reason,
+      });
+    }
+  );
+
+  it('has an allowlisted reason for every way the flight change client can fail', () => {
+    // A reason added to the client but not to the allowlist would be sent as `unknown`.
+    for (const reason of START_FLIGHT_FAILURE_REASONS) {
+      expect(ANALYTICS_LAUNCH_FAILURE_REASONS).toContain(reason);
+      expect(changeFlightFailureProps({ reason }).failure_reason).toBe(reason);
+    }
+  });
+
+  it('accepts a launch that failed while it was being prepared', () => {
+    expect(
+      sent({ ...NO_LAUNCH_FAILURE, error_code: 'unknown', failure_reason: 'prepare_failed' })
+    ).toMatchObject({ failure_reason: 'prepare_failed' });
+  });
+
+  it('says who held the port when X-Plane was already running', () => {
+    const holder = (name: string, isXPlane: boolean) => ({ pid: 1, name, isXPlane });
+    expect(
+      coldStartFailureProps({ code: 'ALREADY_RUNNING', portHolder: holder('X-Plane', true) })
+    ).toMatchObject({ failure_reason: 'already_running', port_holder: 'xplane' });
+    expect(
+      coldStartFailureProps({ code: 'ALREADY_RUNNING', portHolder: holder('avp.exe', false) })
+        .port_holder
+    ).toBe('other');
+    expect(coldStartFailureProps({ code: 'ALREADY_RUNNING' }).port_holder).toBe('none');
+  });
+
+  it('maps every launcher code to an accepted reason, with no port holder', () => {
+    for (const code of [
+      'PATH_NOT_CONFIGURED',
+      'INVALID_CONFIG',
+      'EXE_NOT_FOUND',
+      'NEEDS_ADMIN',
+      'ACCESS_BLOCKED',
+      'SPAWN_FAILED',
+    ] as const) {
+      const props = coldStartFailureProps({ code });
+      expect(props).toMatchObject({ failure_reason: code.toLowerCase(), port_holder: null });
+      expect(sent({ ...props, mode: 'cold_start' })).not.toBeNull();
+    }
   });
 });

@@ -116,6 +116,33 @@ export const ANALYTICS_LAUNCH_ERRORS = [
   'change_flight_failed',
   'unknown',
 ] as const;
+/**
+ * Why a launch failed, one step finer than `ANALYTICS_LAUNCH_ERRORS`: the
+ * launcher's codes for a cold start, and what went wrong with a flight change
+ * (our validation, the connection, X-Plane's HTTP answer, or its refusal).
+ */
+export const ANALYTICS_LAUNCH_FAILURE_REASONS = [
+  'already_running',
+  'path_not_configured',
+  'invalid_config',
+  'exe_not_found',
+  'needs_admin',
+  'access_blocked',
+  'spawn_failed',
+  'invalid_payload',
+  'connection_lost',
+  'http_error',
+  'invalid_response',
+  'xplane_rejected',
+  'exception',
+  // The launch never got as far as X-Plane: preparing it threw.
+  'prepare_failed',
+  'unknown',
+] as const;
+/** Whether the start airport comes from a Custom Scenery pack or X-Plane's own airports. */
+export const ANALYTICS_AIRPORT_SOURCES = ['custom', 'default', 'unknown'] as const;
+/** Who held X-Plane's web API port when a cold start found X-Plane already running. */
+export const ANALYTICS_PORT_HOLDERS = ['xplane', 'other', 'none'] as const;
 /** X-Plane's own error codes for a refused flight, plus a bucket for new ones. */
 export const ANALYTICS_FLIGHT_REJECTIONS = [
   'json_invalid',
@@ -299,6 +326,9 @@ export type AnalyticsAddonSource = (typeof ANALYTICS_ADDON_SOURCES)[number];
 export type AnalyticsAddonDetectReason = (typeof ANALYTICS_ADDON_DETECT_REASONS)[number];
 export type AnalyticsAddonInstallError = (typeof ANALYTICS_ADDON_INSTALL_ERRORS)[number];
 export type AnalyticsLaunchError = (typeof ANALYTICS_LAUNCH_ERRORS)[number];
+export type AnalyticsLaunchFailureReason = (typeof ANALYTICS_LAUNCH_FAILURE_REASONS)[number];
+export type AnalyticsPortHolder = (typeof ANALYTICS_PORT_HOLDERS)[number];
+export type AnalyticsFlightRejection = (typeof ANALYTICS_FLIGHT_REJECTIONS)[number];
 export type AnalyticsDialogTimeBucket = (typeof ANALYTICS_DIALOG_TIME_BUCKETS)[number];
 export type AnalyticsStartupBucket = (typeof ANALYTICS_STARTUP_BUCKETS)[number];
 export type AnalyticsWidthBucket = (typeof ANALYTICS_WIDTH_BUCKETS)[number];
@@ -316,7 +346,7 @@ type Rule =
   | { kind: 'enum'; values: readonly string[]; optional?: boolean }
   | { kind: 'code'; optional?: boolean }
   | { kind: 'boolean' }
-  | { kind: 'count' };
+  | { kind: 'count'; optional?: boolean };
 
 // Generic over the literal values, so a wrong value at a call site fails typecheck
 // instead of being dropped at runtime.
@@ -335,6 +365,11 @@ const EVENT_SCHEMA = {
     error_code: oneOf(ANALYTICS_FLIGHT_REJECTIONS),
     airport: { kind: 'code', optional: true },
     start_type: oneOf(['runway', 'ramp', 'custom']),
+    airport_source: oneOf(ANALYTICS_AIRPORT_SOURCES),
+    /** How many scenery packs declare the airport; 0 when none or not looked up. */
+    airport_packs: { kind: 'count' },
+    /** Whether the app and X-Plane read the airport from the same pack. */
+    pack_match: oneOf(['same', 'different', 'unknown']),
   },
   flight_launched: {
     mode: oneOf(['cold_start', 'change_flight']),
@@ -343,9 +378,26 @@ const EVENT_SCHEMA = {
     helicopter: { kind: 'boolean' },
     start_type: oneOf(['runway', 'ramp', 'custom']),
     start_variant: oneOf(ANALYTICS_START_VARIANTS),
+    airport_source: oneOf(ANALYTICS_AIRPORT_SOURCES),
+    /** Which try this was since the Launch dialog opened: 1 for the first. */
+    attempt: { kind: 'count' },
+    /** Cold start only: asked Steam to start X-Plane, or started it directly. */
+    launch_method: optionalOneOf(['steam_url', 'direct']),
+    /** Cold start with the user's own launch arguments or environment variables. */
+    custom_args: { kind: 'boolean' },
+    /** The flight change went through although the connection dropped while X-Plane loaded. */
+    connection_recovered: { kind: 'boolean' },
     success: { kind: 'boolean' },
     /** Set only when the launch failed. */
     error_code: optionalOneOf(ANALYTICS_LAUNCH_ERRORS),
+    /** Set only when the launch failed: the precise reason behind `error_code`. */
+    failure_reason: optionalOneOf(ANALYTICS_LAUNCH_FAILURE_REASONS),
+    /** X-Plane's own code when it refused a flight change. */
+    xplane_error_code: optionalOneOf(ANALYTICS_FLIGHT_REJECTIONS),
+    /** The HTTP status when X-Plane answered a flight change with an error. */
+    http_status: { kind: 'count', optional: true },
+    /** With `already_running`: who held the web API port. */
+    port_holder: optionalOneOf(ANALYTICS_PORT_HOLDERS),
     companion_apps_launched: { kind: 'count' },
     // Setup choices: modes and "changed from default" flags only, never the values.
     weather_mode: oneOf(['real', 'preset', 'custom']),
@@ -524,11 +576,13 @@ type PropValue<R> = R extends { kind: 'enum'; values: readonly (infer V)[]; opti
     ? V
     : R extends { kind: 'boolean' }
       ? boolean
-      : R extends { kind: 'count' }
-        ? number
-        : R extends { optional: true }
-          ? string | null
-          : string;
+      : R extends { kind: 'count'; optional: true }
+        ? number | null
+        : R extends { kind: 'count' }
+          ? number
+          : R extends { optional: true }
+            ? string | null
+            : string;
 
 export type AnalyticsEventProps<E extends AnalyticsEventName> = {
   -readonly [K in keyof (typeof EVENT_SCHEMA)[E]]: PropValue<(typeof EVENT_SCHEMA)[E][K]>;
@@ -555,6 +609,9 @@ function checkValue(
     case 'boolean':
       return { ok: typeof value === 'boolean', value: value as boolean };
     case 'count':
+      if (rule.optional && (value === null || value === undefined)) {
+        return { ok: true, value: null };
+      }
       return {
         ok: Number.isInteger(value) && (value as number) >= 0 && (value as number) <= 1000,
         value: value as number,
