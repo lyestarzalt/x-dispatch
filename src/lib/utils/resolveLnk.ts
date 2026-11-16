@@ -16,9 +16,8 @@ export type ResolveLnkResult =
 /**
  * Read a `.lnk` file and return its target path.
  *
- * Sync because both consumers (SceneryManager and customSceneryLoader)
- * are already sync. Returning a structured result keeps the failure
- * modes explicit rather than throwing strings.
+ * Sync for SceneryManager, which is sync. Returning a structured result keeps
+ * the failure modes explicit rather than throwing strings.
  */
 export function resolveLnkSync(filePath: string): ResolveLnkResult {
   if (!filePath.toLowerCase().endsWith('.lnk')) {
@@ -32,6 +31,26 @@ export function resolveLnkSync(filePath: string): ResolveLnkResult {
     return { ok: false, reason: 'io-error', error: (err as Error).message };
   }
 
+  return targetOf(buffer);
+}
+
+/** {@link resolveLnkSync} without blocking the main process on the read. */
+export async function resolveLnk(filePath: string): Promise<ResolveLnkResult> {
+  if (!filePath.toLowerCase().endsWith('.lnk')) {
+    return { ok: false, reason: 'not-lnk' };
+  }
+
+  let buffer: Buffer;
+  try {
+    buffer = await fs.promises.readFile(filePath);
+  } catch (err) {
+    return { ok: false, reason: 'io-error', error: (err as Error).message };
+  }
+
+  return targetOf(buffer);
+}
+
+function targetOf(buffer: Buffer): ResolveLnkResult {
   let target: unknown;
   try {
     target = resolveBuffer(buffer);

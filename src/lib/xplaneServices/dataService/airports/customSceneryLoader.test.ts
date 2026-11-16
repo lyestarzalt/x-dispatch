@@ -27,7 +27,20 @@ vi.mock('@/lib/utils/logger', () => ({
   },
 }));
 
-const { findCustomSceneryAptFiles } = await import('./customSceneryLoader');
+// The real fs, with the blocking calls the scan must not make counted.
+const { SYNC_CALLS } = vi.hoisted(() => ({
+  SYNC_CALLS: ['readdirSync', 'statSync', 'existsSync', 'readFileSync'] as const,
+}));
+vi.mock('fs', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('fs')>();
+  const counted = Object.fromEntries(
+    SYNC_CALLS.map((name) => [name, vi.fn(actual[name] as (...args: unknown[]) => unknown)])
+  );
+  return { ...actual, ...counted, default: { ...actual, ...counted } };
+});
+
+const { findCustomSceneryAptFiles, getCustomSceneryFileInfos } =
+  await import('./customSceneryLoader');
 
 let TMP_ROOT: string;
 let xpRoot: string;
@@ -46,7 +59,7 @@ beforeEach(() => {
 afterEach(() => fs.rmSync(TMP_ROOT, { recursive: true, force: true }));
 
 describe('findCustomSceneryAptFiles', () => {
-  it('finds apt.dat reachable via a .lnk shortcut', () => {
+  it('finds apt.dat reachable via a .lnk shortcut', async () => {
     const target = path.join(externalDrive, 'Heathrow');
     fs.mkdirSync(target);
     fs.mkdirSync(path.join(target, 'Earth nav data'));
@@ -55,21 +68,21 @@ describe('findCustomSceneryAptFiles', () => {
 
     fs.writeFileSync(path.join(customScenery, 'Heathrow.lnk'), buildMinimalLnk(target, 'ascii'));
 
-    const found = findCustomSceneryAptFiles(xpRoot);
+    const found = await findCustomSceneryAptFiles(xpRoot);
     expect(found).toContain(aptPath);
   });
 
-  it('skips a .lnk pointing at a missing target without throwing', () => {
+  it('skips a .lnk pointing at a missing target without throwing', async () => {
     fs.writeFileSync(
       path.join(customScenery, 'Phantom.lnk'),
       buildMinimalLnk(path.join(externalDrive, 'never-existed'), 'ascii')
     );
 
-    expect(() => findCustomSceneryAptFiles(xpRoot)).not.toThrow();
-    expect(findCustomSceneryAptFiles(xpRoot)).toEqual([]);
+    await expect(findCustomSceneryAptFiles(xpRoot)).resolves.toBeDefined();
+    expect(await findCustomSceneryAptFiles(xpRoot)).toEqual([]);
   });
 
-  it('still finds apt.dat in real folders alongside .lnk shortcuts', () => {
+  it('still finds apt.dat in real folders alongside .lnk shortcuts', async () => {
     // Real folder
     const realPath = path.join(customScenery, 'RealField');
     fs.mkdirSync(path.join(realPath, 'Earth nav data'), { recursive: true });
@@ -86,11 +99,11 @@ describe('findCustomSceneryAptFiles', () => {
       buildMinimalLnk(linkedTarget, 'ascii')
     );
 
-    const found = findCustomSceneryAptFiles(xpRoot);
+    const found = await findCustomSceneryAptFiles(xpRoot);
     expect(found.sort()).toEqual([realAptPath, linkedAptPath].sort());
   });
 
-  it('still finds apt.dat through a POSIX symlink (junction regression)', () => {
+  it('still finds apt.dat through a POSIX symlink (junction regression)', async () => {
     if (process.platform === 'win32') return;
     const target = path.join(externalDrive, 'SymlinkTarget');
     fs.mkdirSync(path.join(target, 'Earth nav data'), { recursive: true });
@@ -101,7 +114,7 @@ describe('findCustomSceneryAptFiles', () => {
 
     // Function returns the path through the symlink, not the resolved target
     const expectedPath = path.join(linkPath, 'Earth nav data', 'apt.dat');
-    expect(findCustomSceneryAptFiles(xpRoot)).toContain(expectedPath);
+    expect(await findCustomSceneryAptFiles(xpRoot)).toContain(expectedPath);
   });
 
   // ── Regression for v1.8 .lnk dedup bug (reported on v1.8.0) ──────────
@@ -110,7 +123,7 @@ describe('findCustomSceneryAptFiles', () => {
   // the `apt_file_meta.path` PRIMARY KEY when the loader pipeline
   // persisted them. The walker now dedupes by canonical path.
 
-  it('dedupes when a .lnk inside Custom Scenery points at a sibling real directory', () => {
+  it('dedupes when a .lnk inside Custom Scenery points at a sibling real directory', async () => {
     // Real subdir: Custom Scenery/KLAX/Earth nav data/apt.dat
     const realDir = path.join(customScenery, 'KLAX');
     fs.mkdirSync(path.join(realDir, 'Earth nav data'), { recursive: true });
@@ -124,11 +137,11 @@ describe('findCustomSceneryAptFiles', () => {
       buildMinimalLnk(realDir, 'ascii')
     );
 
-    const found = findCustomSceneryAptFiles(xpRoot);
+    const found = await findCustomSceneryAptFiles(xpRoot);
     expect(found.filter((p) => p === path.resolve(aptPath))).toHaveLength(1);
   });
 
-  it('dedupes when two .lnk shortcuts resolve to the same external folder', () => {
+  it('dedupes when two .lnk shortcuts resolve to the same external folder', async () => {
     const target = path.join(externalDrive, 'SharedKLAX');
     fs.mkdirSync(path.join(target, 'Earth nav data'), { recursive: true });
     const aptPath = path.join(target, 'Earth nav data', 'apt.dat');
@@ -138,7 +151,26 @@ describe('findCustomSceneryAptFiles', () => {
     fs.writeFileSync(path.join(customScenery, 'A.lnk'), buildMinimalLnk(target, 'ascii'));
     fs.writeFileSync(path.join(customScenery, 'B.lnk'), buildMinimalLnk(target, 'ascii'));
 
-    const found = findCustomSceneryAptFiles(xpRoot);
+    const found = await findCustomSceneryAptFiles(xpRoot);
     expect(found.filter((p) => p === path.resolve(aptPath))).toHaveLength(1);
+  });
+
+  // It runs on every start, before the cache check. Synchronous calls held the
+  // main process past ten seconds on big or slow Custom Scenery folders.
+  it('scans without synchronous filesystem calls', async () => {
+    const realDir = path.join(customScenery, 'KSEA');
+    fs.mkdirSync(path.join(realDir, 'Earth nav data'), { recursive: true });
+    fs.writeFileSync(path.join(realDir, 'Earth nav data', 'apt.dat'), 'I\n1000 Version\n');
+    const target = path.join(externalDrive, 'KPDX');
+    fs.mkdirSync(path.join(target, 'Earth nav data'), { recursive: true });
+    fs.writeFileSync(path.join(target, 'Earth nav data', 'apt.dat'), 'I\n1000 Version\n');
+    fs.writeFileSync(path.join(customScenery, 'KPDX.lnk'), buildMinimalLnk(target, 'ascii'));
+
+    for (const name of SYNC_CALLS) vi.mocked(fs[name]).mockClear();
+
+    const infos = await getCustomSceneryFileInfos(xpRoot);
+
+    expect(infos).toHaveLength(2);
+    for (const name of SYNC_CALLS) expect(fs[name], name).not.toHaveBeenCalled();
   });
 });

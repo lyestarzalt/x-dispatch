@@ -3101,7 +3101,7 @@ async function bootstrap(): Promise<void> {
   if (isSetupComplete()) {
     const xplanePath = dataManager.getXPlanePath();
     logger.main.info(`X-Plane: ${xplanePath}`);
-    dataManager.initFromCache();
+    await dataManager.initFromCache();
     const sources = dataManager.getDataSources();
     if (sources?.global) {
       logger.main.info(
