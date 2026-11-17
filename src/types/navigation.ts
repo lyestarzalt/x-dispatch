@@ -365,6 +365,8 @@ export interface Procedure {
   approachType?: string;
   /** Approaches: ARINC 424 route qualifier 2 of the final approach ('P' marks an RNP AR). */
   approachQualifier2?: string;
+  /** Approaches: an ILS the FAA charts as ILS OR LOC, from the user's IN_CIFP.txt. */
+  orLocalizer?: boolean;
   waypoints: ProcedureWaypoint[];
 }
 

@@ -8,6 +8,7 @@ import * as fs from 'fs';
 import { airports, aptFileMeta, closeDb, getDb, isDbReady } from '@/lib/db';
 import { runwayEndsFromApt } from '@/lib/flightplan/builder/runways';
 import { parseCIFP } from '@/lib/parsers/nav/cifpParser';
+import { markIlsOrLoc } from '@/lib/parsers/nav/faaProcedureIndex';
 import { isIlsDme } from '@/lib/parsers/nav/navaidParser';
 import {
   ResolvedAirportProcedures,
@@ -55,6 +56,7 @@ import {
   loadWaypoints,
 } from './navdata';
 import { selectAtcForAirport } from './navdata/atcSelect';
+import { loadFaaProcedureIndex } from './navdata/faaProcedureIndexLoader';
 import {
   type NavDataType,
   checkNavCacheValidity,
@@ -662,6 +664,10 @@ export class XPlaneDataManager {
 
       // Enrich procedures with resolved coordinates
       const enriched = enrichProceduresWithCoordinates(procedures, resolver);
+
+      // US ILS approaches the FAA charts as ILS OR LOC, when the user placed its index.
+      const faaIndex = loadFaaProcedureIndex(xplanePath);
+      if (faaIndex) markIlsOrLoc(enriched.approaches, faaIndex, icao);
 
       // Log resolution stats for debugging
       let total = 0;

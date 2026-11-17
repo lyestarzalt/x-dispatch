@@ -72,3 +72,18 @@ describe('formatApproachName', () => {
     expect(formatApproachName('ZZ')).toBe('ZZ');
   });
 });
+
+describe('formatApproachName for ILS OR LOC', () => {
+  it('names an ILS charted with LOC minima as ILS OR LOC', () => {
+    expect(formatApproachName('I04R', 'I', null, true)).toBe('ILS OR LOC RWY 04R');
+    expect(formatApproachName('I13-Z', 'I', null, true)).toBe('ILS OR LOC Z RWY 13');
+  });
+
+  it('keeps the plain ILS name without the mark', () => {
+    expect(formatApproachName('I04R', 'I')).toBe('ILS RWY 04R');
+  });
+
+  it('ignores the mark on anything that is not an ILS', () => {
+    expect(formatApproachName('R04L', 'R', null, true)).toBe('RNAV (GPS) RWY 04L');
+  });
+});

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **ILS OR LOC approaches in the US.** With the FAA's IN_CIFP.txt in X-Plane's Custom Data folder, ILS approaches that also have LOC minima show as ILS OR LOC.
 - **The airport card opens on what is in use.** Runways and frequencies list the active runways and staffed positions first; the chevrons by each heading show all.
 
 ### Changed
