@@ -1157,6 +1157,7 @@
     "windAligned": "· ustawiona pod wiatr, odchylenie {{delta}}°",
     "atisLabel": "ATIS {{letter}}",
     "runwaysHeading": "Drogi startowe",
+    "activeRunwaysHeading": "Aktywne drogi startowe",
     "runwayCountTotal": "łącznie {{count}}",
     "runwayLengthFt": "{{length}}'",
     "runwayName": "Droga startowa {{name}}",
@@ -1288,6 +1289,7 @@
       "summary": "przez {{taxiways}}, {{distance}}"
     },
     "frequencies": "Częstotliwości",
+    "activeFrequenciesHeading": "Aktywne częstotliwości",
     "atcSurface": "SFC",
     "atcUnlimited": "UNL",
     "atcSectorFreqs_one": "{{count}} częstotliwość",

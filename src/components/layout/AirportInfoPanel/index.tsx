@@ -40,6 +40,7 @@ import { NamedPosition } from '@/types/geo';
 import InfoTab from './tabs/InfoTab';
 import RouteTab from './tabs/RouteTab';
 import StartTab from './tabs/StartTab';
+import { NetworkBar } from './tabs/info/NetworkBar';
 
 type TabId = 'info' | 'start' | 'proc';
 
@@ -364,6 +365,12 @@ function AirportInfoPanel({
                 </TabsTrigger>
               ))}
             </TabsList>
+
+            {activeTab === 'info' && (
+              <div className="border-border/30 border-b px-4 py-2">
+                <NetworkBar icao={icao} />
+              </div>
+            )}
 
             <ScrollArea className="flex-1">
               <div className="p-4">

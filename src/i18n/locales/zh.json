@@ -1157,6 +1157,7 @@
     "windAligned": "· 与风向对齐，偏差 {{delta}}°",
     "atisLabel": "ATIS {{letter}}",
     "runwaysHeading": "跑道",
+    "activeRunwaysHeading": "使用中的跑道",
     "runwayCountTotal": "共 {{count}} 条",
     "runwayLengthFt": "{{length}}'",
     "runwayName": "跑道 {{name}}",
@@ -1288,6 +1289,7 @@
       "summary": "经 {{taxiways}}，{{distance}}"
     },
     "frequencies": "频率",
+    "activeFrequenciesHeading": "在线频率",
     "atcSurface": "SFC",
     "atcUnlimited": "UNL",
     "atcSectorFreqs_one": "{{count}} 个频率",

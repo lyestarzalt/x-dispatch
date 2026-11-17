@@ -81,8 +81,10 @@ vi.mock('@/lib/utils/loggerRenderer', () => ({
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string) => {
+    t: (key: string, options?: { letter?: string }) => {
       switch (key) {
+        case 'airportInfo.atisLabel':
+          return `ATIS ${options?.letter}`;
         case 'settings.tabs.vatsim':
           return 'VATSIM';
         case 'common.online':
@@ -161,8 +163,28 @@ describe('InfoTab', () => {
     const html = renderToStaticMarkup(createElement(InfoTab));
 
     expect(html).not.toContain('No VATSIM activity');
-    expect(html).toContain('2');
-    expect(html).toContain('1');
+
+    networkState.network = null;
+    networkState.pilots = [];
+  });
+
+  // The switches sit in the bar above the scroll area, so scrolling the card keeps them.
+  it('leaves the network switches out of the scrolling tab', async () => {
+    const { default: InfoTab } = await import('./InfoTab');
+    const html = renderToStaticMarkup(createElement(InfoTab));
+    expect(html).not.toContain('toolbar.vatsim');
+  });
+
+  it('shows the network switches and the airport traffic in the bar', async () => {
+    networkState.network = 'vatsim';
+    networkState.pilots = [pilot('EGLL', 'LFPG'), pilot('EGLL', 'EHAM'), pilot('KJFK', 'EGLL')];
+
+    const { NetworkBar } = await import('./info/NetworkBar');
+    const html = renderToStaticMarkup(createElement(NetworkBar, { icao: 'EGLL' }));
+
+    expect(html).toContain('toolbar.vatsim');
+    expect(html).toContain('aria-label="2 airportInfo.conditions.departures"');
+    expect(html).toContain('aria-label="1 airportInfo.conditions.arrivals"');
 
     networkState.network = null;
     networkState.pilots = [];
@@ -216,6 +238,71 @@ describe('InfoTab', () => {
 
     selectedAirportData.runways = [];
     metarState.wind = undefined;
+  });
+
+  // IVAO has no ATIS positions: the tower carries the broadcast, and its row says so.
+  it('shows the ATIS letter on the frequency row of the position that broadcasts it', async () => {
+    mapState.atcStaffing = {
+      EGLL: {
+        icao: 'EGLL',
+        network: 'ivao',
+        roles: ['TWR'],
+        top: 'TWR',
+        atisCode: 'E',
+        stations: [
+          {
+            network: 'ivao',
+            callsign: 'EGLL_TWR',
+            name: '',
+            frequency: '118.500',
+            role: 'TWR',
+            atis: { code: 'E', lines: ['HEATHROW INFORMATION E'] },
+          },
+        ],
+      },
+    };
+
+    const { default: InfoTab } = await import('./InfoTab');
+    const html = renderToStaticMarkup(createElement(TooltipProvider, null, createElement(InfoTab)));
+
+    const row = html.slice(html.indexOf('EGLL_TWR') - 1500, html.indexOf('EGLL_TWR'));
+    expect(row).toContain('>TWR<');
+    expect(row).toContain('ATIS E');
+
+    mapState.atcStaffing = {};
+  });
+
+  // Only the active runway shows until the list is expanded (GitHub #381).
+  it('lists only the active runways when some are active', async () => {
+    selectedAirportData.runways = [runway('06', '24'), runway('09', '27'), runway('18', '36')];
+    metarState.wind = { degrees: 70, speed: 12 };
+
+    const { default: InfoTab } = await import('./InfoTab');
+    const html = renderToStaticMarkup(createElement(TooltipProvider, null, createElement(InfoTab)));
+
+    expect(html).toContain('airportInfo.activeRunwaysHeading');
+    expect(html).toMatch(/>06</);
+    // The active end alone, as in the mockup: not the other end of its runway.
+    expect(html).not.toMatch(/>24</);
+    expect(html).not.toMatch(/>27</);
+    expect(html).not.toMatch(/>36</);
+
+    selectedAirportData.runways = [];
+    metarState.wind = undefined;
+  });
+
+  it('lists every runway when none is active', async () => {
+    selectedAirportData.runways = [runway('09', '27'), runway('18', '36')];
+
+    const { default: InfoTab } = await import('./InfoTab');
+    const html = renderToStaticMarkup(createElement(TooltipProvider, null, createElement(InfoTab)));
+
+    expect(html).toContain('airportInfo.runwaysHeading');
+    expect(html).not.toContain('airportInfo.activeRunwaysHeading');
+    expect(html).toMatch(/>27</);
+    expect(html).toMatch(/>36</);
+
+    selectedAirportData.runways = [];
   });
 
   it('shows a landing distance only on the end whose threshold is displaced', async () => {

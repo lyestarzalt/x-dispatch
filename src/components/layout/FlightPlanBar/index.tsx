@@ -47,8 +47,9 @@ function FlightPlanBar({ onWaypointClick }: FlightPlanBarProps) {
   // Which ends of the tape are in view: drives the rail buttons and the edge fades.
   const [edges, setEdges] = useState<ScrollEdges>(NO_EDGES);
 
-  // Drag-to-scroll refs (using refs to avoid re-renders)
-  const isDraggingRef = useRef(false);
+  // Drag-to-scroll refs (using refs to avoid re-renders). The pointer that pressed on the
+  // tape, so a second touch or pen cannot take over the drag.
+  const dragPointerRef = useRef<number | null>(null);
   const hasDraggedRef = useRef(false); // True if mouse moved beyond threshold
   const dragStartX = useRef(0);
   const scrollStartX = useRef(0);
@@ -119,33 +120,15 @@ function FlightPlanBar({ onWaypointClick }: FlightPlanBarProps) {
     el.scrollBy({ left: e.deltaY });
   }, []);
 
-  // Drag-to-scroll handlers
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (!scrollRef.current) return;
-    isDraggingRef.current = true;
-    hasDraggedRef.current = false;
-    dragStartX.current = e.clientX;
-    scrollStartX.current = scrollRef.current.scrollLeft;
-    // Change cursor immediately
-    scrollRef.current.style.cursor = 'grabbing';
-  }, []);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isDraggingRef.current || !scrollRef.current) return;
-    const dx = e.clientX - dragStartX.current;
-
-    // Mark as dragged if moved beyond threshold
-    if (Math.abs(dx) > DRAG_THRESHOLD) {
-      hasDraggedRef.current = true;
-    }
-
-    scrollRef.current.scrollLeft = scrollStartX.current - dx;
-  }, []);
-
-  const handleMouseUp = useCallback(() => {
-    isDraggingRef.current = false;
-    if (scrollRef.current) {
-      scrollRef.current.style.cursor = 'grab';
+  // Drag-to-scroll. The tape is one row high, so once a drag starts the pointer is
+  // captured: the drag follows it off the tape until the button is released.
+  const endDrag = useCallback((e: React.PointerEvent) => {
+    if (dragPointerRef.current !== e.pointerId) return;
+    dragPointerRef.current = null;
+    const el = scrollRef.current;
+    if (el) {
+      if (el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId);
+      el.style.cursor = 'grab';
     }
     // Reset hasDragged after a short delay to allow click to be blocked
     setTimeout(() => {
@@ -153,15 +136,38 @@ function FlightPlanBar({ onWaypointClick }: FlightPlanBarProps) {
     }, 0);
   }, []);
 
-  const handleMouseLeave = useCallback(() => {
-    if (isDraggingRef.current) {
-      isDraggingRef.current = false;
-      hasDraggedRef.current = false;
-      if (scrollRef.current) {
-        scrollRef.current.style.cursor = 'grab';
-      }
-    }
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
+    if (e.button !== 0 || !scrollRef.current) return;
+    dragPointerRef.current = e.pointerId;
+    hasDraggedRef.current = false;
+    dragStartX.current = e.clientX;
+    scrollStartX.current = scrollRef.current.scrollLeft;
+    // Change cursor immediately
+    scrollRef.current.style.cursor = 'grabbing';
   }, []);
+
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent) => {
+      const el = scrollRef.current;
+      if (dragPointerRef.current !== e.pointerId || !el) return;
+      // Released somewhere the tape never heard about.
+      if ((e.buttons & 1) === 0) {
+        endDrag(e);
+        return;
+      }
+      const dx = e.clientX - dragStartX.current;
+
+      // Past the threshold it is a drag, not a click. Capturing only now leaves a plain
+      // click on a chip to the chip: a captured pointer would click the tape instead.
+      if (!hasDraggedRef.current && Math.abs(dx) > DRAG_THRESHOLD) {
+        hasDraggedRef.current = true;
+        el.setPointerCapture(e.pointerId);
+      }
+
+      el.scrollLeft = scrollStartX.current - dx;
+    },
+    [endDrag]
+  );
 
   if (!visible) return null;
 
@@ -217,10 +223,11 @@ function FlightPlanBar({ onWaypointClick }: FlightPlanBarProps) {
           className="scrollbar-hidden flex cursor-grab items-center gap-2 overflow-x-auto px-3 py-1.5 select-none"
           onScroll={updateEdges}
           onWheel={handleWheel}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseLeave}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={endDrag}
+          onPointerCancel={endDrag}
+          onLostPointerCapture={endDrag}
         >
           {chips.map((chip, index) => (
             <WaypointChip

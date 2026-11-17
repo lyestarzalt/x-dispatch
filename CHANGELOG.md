@@ -7,8 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **ILS OR LOC approaches in the US.** With the FAA's IN_CIFP.txt in X-Plane's Custom Data folder, ILS approaches that also have LOC minima show as ILS OR LOC.
+- **The airport card opens on what is in use.** Runways and frequencies list the active runways and staffed positions first; the chevrons by each heading show all.
+
 ### Changed
 
+- **The network switches stay in view.** On the airport card and in Explore's Online tab they sit above the list instead of scrolling away.
 - **The app log says why an error appeared.** Each error message is logged with what the app was doing and the cause, so a log sent on Discord shows it.
 - **Launches and flight changes are logged with X-Plane's answer.** When X-Plane refuses a flight, the log keeps its reason and the scenery pack the airport came from.
 
@@ -16,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **The app no longer closes on its own after a long pause.** A freeze check added in 2.14 could shut the app down instead of recording the freeze.
 - **The window opens right away, even with a large Custom Scenery folder.** The scenery check runs behind the loading screen instead of before the window appears.
+- **ATIS letters on the airport card match the broadcasts.** Each ATIS shows its own letter, and on IVAO the controller that carries the ATIS shows it.
+- **Dragging the flight plan strip no longer stops at its edge.** The drag lasts until the mouse button is released.
 
 ## [2.15.0] - 2026-11-16
 

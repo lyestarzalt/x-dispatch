@@ -40,6 +40,9 @@ export const XPLANE_PATHS = {
   // User data (pilot-created waypoints)
   userNav: 'Custom Data/user_nav.dat',
   userFix: 'Custom Data/user_fix.dat',
+
+  // The FAA's CIFP procedure index, placed here by US pilots who want ILS OR LOC names
+  faaProcedureIndex: 'Custom Data/IN_CIFP.txt',
 } as const;
 
 function resolveDataPath(xplanePath: string, relativePath: string, checkCustom = true): string {
@@ -85,6 +88,10 @@ export function getAirspaceDataPath(xplanePath: string): string {
 
 export function getAptDataPath(xplanePath: string): string {
   return path.join(xplanePath, XPLANE_PATHS.globalAirports);
+}
+
+export function getFaaProcedureIndexPath(xplanePath: string): string {
+  return path.join(xplanePath, XPLANE_PATHS.faaProcedureIndex);
 }
 
 export function getCifpPath(xplanePath: string, icao: string): string {

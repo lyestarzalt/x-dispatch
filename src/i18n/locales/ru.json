@@ -1157,6 +1157,7 @@
     "windAligned": "· с учётом ветра, отклонение {{delta}}°",
     "atisLabel": "ATIS {{letter}}",
     "runwaysHeading": "ВПП",
+    "activeRunwaysHeading": "Рабочие ВПП",
     "runwayCountTotal": "всего {{count}}",
     "runwayLengthFt": "{{length}}'",
     "runwayName": "ВПП {{name}}",
@@ -1288,6 +1289,7 @@
       "summary": "через {{taxiways}}, {{distance}}"
     },
     "frequencies": "Частоты",
+    "activeFrequenciesHeading": "Активные частоты",
     "atcSurface": "SFC",
     "atcUnlimited": "UNL",
     "atcSectorFreqs_one": "{{count}} частота",

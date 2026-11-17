@@ -27,11 +27,14 @@ export function RunwayRow({
   ilsByEnd,
   gsByEnd,
   endUse,
+  activeEndsOnly = false,
 }: {
   runway: Runway;
   ilsByEnd: Map<string, Navaid>;
   gsByEnd: Map<string, Navaid>;
   endUse: Map<string, EndUse>;
+  /** The compact list: only the ends in use, not the other end of their runway. */
+  activeEndsOnly?: boolean;
 }) {
   const units = useUnits();
   const lengthDisplay = units.length(runwayLengthFeet(runway.ends[0], runway.ends[1]));
@@ -42,7 +45,10 @@ export function RunwayRow({
   // The active end reads first within its pair.
   const secondOnly =
     endUse.has(runwayEndKey(runway.ends[1].name)) && !endUse.has(runwayEndKey(runway.ends[0].name));
-  const endOrder: readonly (0 | 1)[] = secondOnly ? [1, 0] : [0, 1];
+  const pairOrder: readonly (0 | 1)[] = secondOnly ? [1, 0] : [0, 1];
+  const endOrder = activeEndsOnly
+    ? pairOrder.filter((i) => endUse.has(runwayEndKey(runway.ends[i].name)))
+    : pairOrder;
 
   return (
     <li className="space-y-1">
