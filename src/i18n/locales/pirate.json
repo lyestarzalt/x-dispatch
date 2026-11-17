@@ -1157,6 +1157,7 @@
     "windAligned": "· wind-blown, {{delta}}° askew",
     "atisLabel": "ATIS {{letter}}",
     "runwaysHeading": "Landin' strips",
+    "activeRunwaysHeading": "Landin' strips in use",
     "runwayCountTotal": "{{count}} all told",
     "runwayLengthFt": "{{length}}'",
     "runwayName": "Strip {{name}}",
@@ -1288,6 +1289,7 @@
       "summary": "via {{taxiways}}, {{distance}}"
     },
     "frequencies": "Freqs",
+    "activeFrequenciesHeading": "Freqs a-crackle",
     "atcSurface": "SFC",
     "atcUnlimited": "UNL",
     "atcSectorFreqs_one": "{{count}} frequency",

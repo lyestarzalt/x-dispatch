@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PlaneLanding, PlaneTakeoff } from 'lucide-react';
-import { NetworkPicker } from '@/components/layout/NetworkPicker';
 import { Badge } from '@/components/ui/badge';
 import { useUnits } from '@/hooks/useUnits';
 import { greatCircleNm } from '@/lib/flightplan/builder/geometry';
@@ -49,31 +48,22 @@ export function OnlineTab({ airports, onPick }: OnlineTabProps) {
     );
   }, [staffing, byIcao, departure, traffic]);
 
-  const networkPicker = <NetworkPicker className="mb-2" />;
-
   if (network === null) {
     return (
-      <div>
-        {networkPicker}
-        <p className="text-muted-foreground py-6 text-center text-xs">
-          {t('explore.online.networkOff')}
-        </p>
-      </div>
+      <p className="text-muted-foreground py-6 text-center text-xs">
+        {t('explore.online.networkOff')}
+      </p>
     );
   }
 
   if (rows.length === 0) {
     return (
-      <div>
-        {networkPicker}
-        <p className="text-muted-foreground py-6 text-center text-xs">{t('explore.online.none')}</p>
-      </div>
+      <p className="text-muted-foreground py-6 text-center text-xs">{t('explore.online.none')}</p>
     );
   }
 
   return (
     <div className="space-y-0.5">
-      {networkPicker}
       {rows.slice(0, 60).map(({ airport, roles, distanceNm, counts }) => (
         <button
           key={airport.icao}

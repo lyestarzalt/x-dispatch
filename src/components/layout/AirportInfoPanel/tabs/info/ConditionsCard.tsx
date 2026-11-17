@@ -1,8 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { PlaneLanding, PlaneTakeoff } from 'lucide-react';
 import { Intensity } from 'metar-taf-parser';
 import type { IWeatherCondition } from 'metar-taf-parser';
-import { NetworkPicker } from '@/components/layout/NetworkPicker';
 import { formatAltimeter, formatCeiling, formatVisibility, formatWind } from '@/lib/utils/metar';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import { type ActiveRunway, ActiveRunwayLine } from './ActiveRunwayLine';
@@ -12,40 +10,15 @@ export function ConditionsCard({
   metar,
   activeRunway,
   atisLetter,
-  liveTraffic,
 }: {
   metar: ParsedMetar | null;
   activeRunway: ActiveRunway | null;
   atisLetter: string | null;
-  liveTraffic: { departures: number; arrivals: number } | null;
 }) {
   const { t } = useTranslation();
-  const showTraffic = liveTraffic && (liveTraffic.departures > 0 || liveTraffic.arrivals > 0);
   return (
     <section>
-      {/* Network switches here, so comparing VATSIM and IVAO at this airport needs no trip to Layers. */}
-      <div className="mb-1.5 flex items-center gap-3">
-        <NetworkPicker className="flex-1" />
-        {showTraffic && (
-          <span className="text-muted-foreground flex items-center gap-2 text-xs">
-            <span
-              className="text-cat-emerald flex items-center gap-1"
-              aria-label={`${liveTraffic.departures} ${t('airportInfo.conditions.departures')}`}
-            >
-              <PlaneTakeoff className="h-3 w-3" />
-              <span className="font-mono tabular-nums">{liveTraffic.departures}</span>
-            </span>
-            <span
-              className="text-cat-amber flex items-center gap-1"
-              aria-label={`${liveTraffic.arrivals} ${t('airportInfo.conditions.arrivals')}`}
-            >
-              <PlaneLanding className="h-3 w-3" />
-              <span className="font-mono tabular-nums">{liveTraffic.arrivals}</span>
-            </span>
-          </span>
-        )}
-      </div>
-      {!metar && !activeRunway && !liveTraffic && (
+      {!metar && !activeRunway && (
         <div className="bg-muted/10 text-muted-foreground rounded-lg p-3 text-center text-sm">
           {t('airportInfo.noWeather')}
         </div>

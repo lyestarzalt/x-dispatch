@@ -50,6 +50,14 @@ export function FrequencyRow({
             >
               {live?.badgeLabel ?? row.label}
             </Badge>
+            {live?.atisLetter && (
+              <Badge
+                variant="cat-emerald"
+                className="text-2xs shrink-0 px-1.5 py-0 font-mono font-semibold"
+              >
+                {t('airportInfo.atisLabel', { letter: live.atisLetter })}
+              </Badge>
+            )}
             {showName && !live && (
               <span className="text-muted-foreground/70 truncate text-xs">{row.staticName}</span>
             )}
@@ -113,5 +121,7 @@ export interface MergedFreqRow {
     controllerName: string;
     frequency: string;
     atisBody?: string;
+    /** The ATIS this position broadcasts when it is not an ATIS position itself (IVAO). */
+    atisLetter?: string;
   };
 }
