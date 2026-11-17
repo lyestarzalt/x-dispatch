@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.16.0] - 2026-11-17
+
 ### Added
 
 - **ILS OR LOC approaches in the US.** With the FAA's IN_CIFP.txt in X-Plane's Custom Data folder, ILS approaches that also have LOC minima show as ILS OR LOC.
@@ -506,7 +508,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Releases up to 2.2.0 are listed on the [website changelog](https://x-dispatch.app/changelog/).
 
-[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.15.0...HEAD
+[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.16.0...HEAD
+[2.16.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.15.0...v2.16.0
 [2.15.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.14.0...v2.15.0
 [2.14.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.13.0...v2.14.0
 [2.13.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.12.0...v2.13.0
