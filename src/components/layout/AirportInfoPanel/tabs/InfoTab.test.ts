@@ -225,12 +225,11 @@ describe('InfoTab', () => {
     metarState.wind = { degrees: 70, speed: 12 };
 
     const { default: InfoTab } = await import('./InfoTab');
-    const html = renderToStaticMarkup(createElement(InfoTab));
+    const html = renderToStaticMarkup(createElement(TooltipProvider, null, createElement(InfoTab)));
 
-    // One card per end: "06" in the active colour, "24" in the plain one.
+    // "06" in the active colour; the compact list leaves the idle "24" out.
     expect(html).toMatch(/<span class="[^"]*text-cat-emerald[^"]*">06<\/span>/);
-    expect(html).not.toMatch(/<span class="[^"]*text-cat-emerald[^"]*">24<\/span>/);
-    expect(html).toMatch(/<span class="[^"]*text-foreground[^"]*">24<\/span>/);
+    expect(html).not.toMatch(/>24<\/span>/);
     // The sentence above the list names the runway in the same colour.
     expect(html).toMatch(
       /airportInfo\.activeRunway<\/span><span class="[^"]*text-cat-emerald[^"]*">06</

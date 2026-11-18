@@ -244,6 +244,8 @@ export interface ProcedureOverlay {
   fixId: string;
   kind: 'holding' | 'procedureTurn';
   points: LatLon[];
+  /** Part of the missed approach, drawn like the rest of it. */
+  missed?: boolean;
 }
 
 /** Hold leg length in NM, LNM's order: published time first, else published distance, else default. */
@@ -251,6 +253,19 @@ function holdLegNm(wp: ResolvedProcedureWaypoint): number {
   if (wp.holdTimeMin !== null && wp.holdTimeMin > 0) return wp.holdTimeMin * HOLD_NM_PER_MINUTE;
   if (wp.distance !== null && wp.distance > 0) return wp.distance;
   return DEFAULT_HOLD_LEG_NM;
+}
+
+/**
+ * Halfway along a hold's inbound leg, where its course can be labelled without covering the hold
+ * fix's name. Null for anything that is not a hold with a resolved fix and a course.
+ */
+export function holdLabelPoint(wp: ResolvedProcedureWaypoint): LatLon | null {
+  if (!wp.pathTerminator || !LOOPS_AT_FIX.has(wp.pathTerminator)) return null;
+  if (wp.latitude === undefined || wp.longitude === undefined) return null;
+  const fix = { latitude: wp.latitude, longitude: wp.longitude };
+  const inboundTrue = trueCourse(wp.course, fix);
+  if (inboundTrue === null) return null;
+  return destinationPoint(fix, inboundTrue + 180, holdLegNm(wp) / 2);
 }
 
 /**
@@ -535,7 +550,12 @@ export function procedureGeometry(
       const courseTrue = trueCourse(wp.course, fix);
       if (courseTrue === null) continue;
       const shape = procedureTurnShape(fix, courseTrue, wp.turnDirection ?? 'L', wp.distance);
-      overlays.push({ fixId: wp.fixId, kind: 'procedureTurn', points: shape.points });
+      overlays.push({
+        fixId: wp.fixId,
+        kind: 'procedureTurn',
+        points: shape.points,
+        ...(currentIsMissed && { missed: true }),
+      });
       // LNM draws the leg line fix -> turn point and hands the next leg a position 1.5 NM
       // further out along the same 45-degree line.
       append([shape.turnPoint]);
@@ -552,7 +572,7 @@ export function procedureGeometry(
       arriveAtFix(fix, wp);
       const courseTrue = trueCourse(wp.course, fix);
       const overlay = buildOverlay(wp, fix, courseTrue);
-      if (overlay) overlays.push(overlay);
+      if (overlay) overlays.push(currentIsMissed ? { ...overlay, missed: true } : overlay);
       continue;
     }
 

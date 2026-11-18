@@ -33,17 +33,18 @@ export function liveRowsFirst(rows: MergedFreqRow[]): MergedFreqRow[] {
 }
 
 /**
- * The runways with an active end, for the compact list; null when that would show none or
- * all of them, which leaves nothing to compact.
+ * The runways with an active end, for the compact list, which shows only those ends; null when
+ * no end is active or every end is, which leaves nothing to compact. Every runway can be in
+ * use with its other end still idle (LFPG in west flow), and that still compacts.
  */
 export function compactRunways(
   runways: Runway[],
   activeEnds: ReadonlySet<string>
 ): Runway[] | null {
-  const active = runways.filter((runway) =>
-    runway.ends.some((end) => activeEnds.has(runwayEndKey(end.name)))
-  );
-  return active.length > 0 && active.length < runways.length ? active : null;
+  const isActive = (name: string) => activeEnds.has(runwayEndKey(name));
+  const active = runways.filter((runway) => runway.ends.some((end) => isActive(end.name)));
+  const everyEnd = runways.every((runway) => runway.ends.every((end) => isActive(end.name)));
+  return active.length > 0 && !everyEnd ? active : null;
 }
 
 /** The staffed frequencies, for the compact list; null when none or all of them are. */

@@ -90,8 +90,20 @@ describe('compactRunways', () => {
     expect(compactRunways(runways, new Set())).toBeNull();
   });
 
-  it('has nothing to compact when every runway is active', () => {
-    expect(compactRunways(runways, new Set(['25R', '25C', '36']))).toBeNull();
+  // LFPG in west flow: every runway has an active end, the 08s and 09s are not (GitHub #393).
+  it('compacts when every runway is in use but not every end', () => {
+    const lfpg = [
+      runway('08L', '26R'),
+      runway('08R', '26L'),
+      runway('09L', '27R'),
+      runway('09R', '27L'),
+    ];
+    const active = new Set(['26R', '26L', '27R', '27L']);
+    expect(names(compactRunways(lfpg, active)!)).toEqual(names(lfpg));
+  });
+
+  it('has nothing to compact when every end is active', () => {
+    expect(compactRunways([runway('09', '27')], new Set(['09', '27']))).toBeNull();
   });
 });
 

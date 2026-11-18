@@ -140,18 +140,19 @@ function AirportInfoPanel({
       data-map-profile-inset=""
       data-testid="airport-dock"
       className={cn(
-        'absolute top-[var(--map-panel-top,4rem)] right-4 bottom-4 z-20',
-        folded ? 'w-12' : 'w-80 max-w-[calc(100%-6rem)]'
+        'absolute top-[var(--map-panel-top,4rem)] right-4 z-20',
+        // Folded, the rail is as tall as its content, like the folded flight plan.
+        folded ? 'w-12' : 'bottom-4 w-80 max-w-[calc(100%-6rem)]'
       )}
     >
-      <div className="border-border/40 bg-card/95 relative flex h-full flex-col overflow-hidden rounded-lg border backdrop-blur-sm">
+      <div
+        className={cn(
+          'border-border/40 bg-card/95 relative flex flex-col overflow-hidden rounded-lg border backdrop-blur-sm',
+          !folded && 'h-full'
+        )}
+      >
         {/* Collapsed state */}
-        <div
-          className={cn(
-            'bg-card/95 absolute inset-0 z-20 flex flex-col items-center py-5 transition-opacity duration-200',
-            !folded && 'hidden'
-          )}
-        >
+        <div className={cn('flex flex-col items-center py-5', !folded && 'hidden')}>
           <Button
             variant="ghost"
             size="icon"

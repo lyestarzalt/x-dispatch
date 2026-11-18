@@ -677,6 +677,38 @@ describe('procedureGeometry overlays', () => {
     }
   });
 
+  // KMVY VOR RWY 06: the missed approach ends in a hold at CLAMY (GitHub #394).
+  it('marks a hold in the missed approach as missed, and one before it as not', () => {
+    const at = (latitude: number) => ({ latitude, longitude: -70.6 });
+    const legs = [
+      wp({ fixId: 'IAF', pathTerminator: 'IF', ...at(41.0) }),
+      wp({
+        fixId: 'IAF',
+        pathTerminator: 'HF',
+        course: 360,
+        turnDirection: 'R',
+        distance: 4,
+        ...at(41.0),
+      }),
+      wp({ fixId: 'MAP', pathTerminator: 'TF', ...at(41.2) }),
+      wp({ fixId: 'CLAMY', pathTerminator: 'TF', isMissedApproach: true, ...at(41.4) }),
+      wp({
+        fixId: 'CLAMY',
+        pathTerminator: 'HM',
+        course: 180,
+        turnDirection: 'R',
+        distance: 4,
+        isMissedApproach: true,
+        ...at(41.4),
+      }),
+    ];
+    const { overlays } = procedureGeometry(legs);
+    expect(overlays.map((o) => [o.fixId, o.missed ?? false])).toEqual([
+      ['IAF', false],
+      ['CLAMY', true],
+    ]);
+  });
+
   it('turns the short way between two close fixes instead of looping almost a full circle', () => {
     // DAAG I23 ZEM approach, real coordinates: CI23 -> FI23 is only ~2 NM, needing a ~40 degree
     // left turn. The left-turn circle at the default 2 NM radius has FI23 inside it (no tangent

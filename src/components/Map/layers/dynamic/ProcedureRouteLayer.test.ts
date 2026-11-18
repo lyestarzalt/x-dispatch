@@ -1,6 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { ResolvedProcedureWaypoint } from '@/types/navigation';
-import { createLegLabelGeoJSON, omitFlightPlanWaypoints } from './ProcedureRouteLayer';
+import {
+  addProcedureRouteLayer,
+  createLegLabelGeoJSON,
+  omitFlightPlanWaypoints,
+} from './ProcedureRouteLayer';
 
 const gilon = { fixId: 'GILON', latitude: 43.91, longitude: 5.42 };
 const luc = { fixId: 'LUC', latitude: 43.62, longitude: 6.12 };
@@ -91,5 +95,86 @@ describe('createLegLabelGeoJSON', () => {
     ];
     const { features } = createLegLabelGeoJSON(waypoints);
     expect(features).toHaveLength(1);
+  });
+
+  // KMVY VOR RWY 06: the CLAMY hold's course sat on CLAMY and hid its name (GitHub #394).
+  it('labels a hold halfway along its inbound leg, clear of the hold fix', () => {
+    const clamy = { fixId: 'CLAMY', latitude: 41.2, longitude: -70.6 };
+    const waypoints = [
+      wp({ ...clamy, isMissedApproach: true }),
+      wp({ ...clamy, pathTerminator: 'HM', course: 90, distance: 4, isMissedApproach: true }),
+    ];
+    const [hold] = createLegLabelGeoJSON(waypoints).features;
+    const [lon, lat] = (hold?.geometry as GeoJSON.Point).coordinates as [number, number];
+    // Inbound 090 (about 075 true here): the inbound leg lies west of the fix, 2 NM out.
+    expect(lon).toBeLessThan(clamy.longitude - 0.02);
+    expect(Math.abs(lat - clamy.latitude)).toBeLessThan(0.02);
+  });
+});
+
+/** A map that keeps its layers in stack order, honouring `beforeId` as MapLibre does. */
+function stackMap() {
+  const order: string[] = [];
+  const sources = new Set<string>();
+  return {
+    order,
+    map: {
+      getStyle: () => ({ layers: [] }),
+      getSource: (id: string) => (sources.has(id) ? { setData: vi.fn() } : undefined),
+      addSource: (id: string) => sources.add(id),
+      removeSource: (id: string) => sources.delete(id),
+      getLayer: (id: string) => (order.includes(id) ? { id } : undefined),
+      addLayer: (spec: { id: string }, beforeId?: string) => {
+        const at = beforeId ? order.indexOf(beforeId) : -1;
+        if (at === -1) order.push(spec.id);
+        else order.splice(at, 0, spec.id);
+      },
+      removeLayer: (id: string) => order.splice(order.indexOf(id), 1),
+      moveLayer: (id: string) => {
+        order.splice(order.indexOf(id), 1);
+        order.push(id);
+      },
+    },
+  };
+}
+
+describe('addProcedureRouteLayer', () => {
+  // MapLibre places the top symbol layer first, so the top one wins a collision. A course label
+  // on top hid the hold fix's name (GitHub #394); fix names must sit above the course labels.
+  it('stacks fix names above the leg course labels', () => {
+    const { map, order } = stackMap();
+    addProcedureRouteLayer(map as never, {
+      type: 'APPROACH',
+      name: 'S06',
+      waypoints: [
+        wp({ ...gilon, pathTerminator: 'IF' }),
+        wp({ ...luc, course: 120, distance: 34 }),
+      ],
+    });
+    expect(order.indexOf('procedure-waypoint-labels')).toBeGreaterThan(
+      order.indexOf('procedure-leg-labels')
+    );
+  });
+
+  // The preview leaves a fix the plan already labels to the plan's label, which sat under the
+  // preview's course labels and lost to them: CLAMY and RW06 vanished (GitHub #394).
+  it('raises the plan fix labels above the preview when the plan labels some of its fixes', () => {
+    const { map, order } = stackMap();
+    map.addLayer({ id: 'flightplan-labels' });
+    map.addLayer({ id: 'flightplan-altitude-labels' });
+    addProcedureRouteLayer(
+      map as never,
+      {
+        type: 'APPROACH',
+        name: 'S06',
+        waypoints: [
+          wp({ ...gilon, pathTerminator: 'IF' }),
+          wp({ ...luc, course: 120, distance: 34 }),
+        ],
+      },
+      undefined,
+      { planFixes: [{ id: 'LUC', latitude: luc.latitude, longitude: luc.longitude }] }
+    );
+    expect(order.slice(-2)).toEqual(['flightplan-labels', 'flightplan-altitude-labels']);
   });
 });
