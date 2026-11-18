@@ -64,6 +64,9 @@ export const FLIGHTPLAN_LAYER_IDS = [
   ALTERNATE_LABEL_ID,
 ];
 
+/** The plan's fix names and altitudes, which must stay above anything drawn over the plan. */
+export const FLIGHTPLAN_LABEL_LAYER_IDS = [LABELS_ID, ALTITUDE_LABELS_ID];
+
 // Professional aviation chart colors
 const COLORS = {
   routeLine: ROUTE_KIND_COLORS.enroute,
@@ -393,6 +396,24 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
     });
   }
 
+  // Holds and procedure turns at their fixes, in their procedure's colour; one in the missed
+  // approach is drawn with the missed line, dashed.
+  for (const proc of fmsData.procedurePaths ?? []) {
+    for (const overlay of proc.overlays ?? []) {
+      if (overlay.points.length < 2) continue;
+      routeFeatures.push({
+        type: 'Feature',
+        geometry: {
+          type: 'LineString',
+          coordinates: overlay.points.map((p) => [p.longitude, p.latitude]),
+        },
+        properties: overlay.missed
+          ? { kind: 'missed', missed: true, hold: true }
+          : { kind: proc.kind ?? 'enroute', via: proc.via, hold: true },
+      });
+    }
+  }
+
   const routeGeoJSON: GeoJSON.FeatureCollection = {
     type: 'FeatureCollection',
     features: routeFeatures,
@@ -415,7 +436,7 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
       name: wp.name ?? '',
       altitudeLabel: wp.constraintLabel ?? formatAltitude(wp.altitude),
       label: buildLabel(wp),
-      badge: waypointBadgeId(wp.via, fmsData.procedurePaths),
+      badge: waypointBadgeId(wp.via, fmsData.procedurePaths, wp),
       // Airports win collisions, then airway joins and navaids, then plain fixes.
       sortKey:
         wp.via === 'ADEP' || wp.via === 'ADES'

@@ -250,11 +250,31 @@ describe('waypointBadgeId', () => {
     expect(waypointBadgeId('UL620', paths)).toBe('route-badge-enroute');
     expect(waypointBadgeId('DRCT')).toBe('route-badge-enroute');
   });
+
+  // KMVY VOR RWY 06: the route flies direct to WERID, the approach's first fix (GitHub #395).
+  it('colours a procedure fix by its procedure when the leg into it is direct', () => {
+    const werid = { latitude: 41.25, longitude: -70.85 };
+    const approach = [
+      {
+        via: 'S06',
+        kind: 'approach' as const,
+        path: [werid, { latitude: 41.3, longitude: -70.7 }],
+      },
+    ];
+    expect(waypointBadgeId('DRCT', approach, werid)).toBe('route-badge-approach');
+    expect(waypointBadgeId('V16', approach, werid)).toBe('route-badge-approach');
+    expect(waypointBadgeId('DRCT', approach, { latitude: 41.0, longitude: -71.2 })).toBe(
+      'route-badge-enroute'
+    );
+  });
 });
 
 /** Just enough of a MapLibre map to see what the layer does to sources and layers. */
 function fakeMap() {
-  const sources = new Map<string, { setData: ReturnType<typeof vi.fn> }>();
+  const sources = new Map<
+    string,
+    { setData: ReturnType<typeof vi.fn>; data?: GeoJSON.FeatureCollection }
+  >();
   const layers = new Set<string>();
   const addLayer = vi.fn((spec: { id: string }) => layers.add(spec.id));
   const removeLayer = vi.fn((id: string) => layers.delete(id));
@@ -265,7 +285,8 @@ function fakeMap() {
     map: {
       getStyle: () => ({}),
       getSource: (id: string) => sources.get(id),
-      addSource: (id: string) => sources.set(id, { setData: vi.fn() }),
+      addSource: (id: string, spec?: { data?: GeoJSON.FeatureCollection }) =>
+        sources.set(id, { setData: vi.fn(), data: spec?.data }),
       removeSource: (id: string) => sources.delete(id),
       getLayer: (id: string) => (layers.has(id) ? { id } : undefined),
       addLayer,
@@ -297,6 +318,40 @@ describe('addFlightPlanLayer', () => {
     expect(removeLayer).not.toHaveBeenCalled();
     const route = sources.get('flightplan-route-source')!;
     expect(route.setData).toHaveBeenCalledTimes(1);
+  });
+
+  // Holds were never drawn on the plan map, only in the airport card preview (GitHub #394).
+  it('draws the procedure holds, a missed-approach hold with the missed line', () => {
+    const { map, sources } = fakeMap();
+    const route = plan(['EGLL', 'A', 'KJFK']);
+    const ring = [
+      { latitude: 50, longitude: -1 },
+      { latitude: 50.1, longitude: -1 },
+      { latitude: 50, longitude: -1 },
+    ];
+    route.procedurePaths = [
+      {
+        via: 'S06',
+        kind: 'approach',
+        path: [
+          { latitude: 50, longitude: -1 },
+          { latitude: 50, longitude: -2 },
+        ],
+        overlays: [
+          { fixId: 'IAF', kind: 'holding', points: ring },
+          { fixId: 'CLAMY', kind: 'holding', points: ring, missed: true },
+        ],
+      },
+    ];
+    addFlightPlanLayer(map as never, route);
+
+    const holds = sources
+      .get('flightplan-route-source')!
+      .data!.features.filter((f) => f.properties?.hold);
+    expect(holds.map((f) => [f.properties?.kind, f.properties?.missed ?? false])).toEqual([
+      ['approach', false],
+      ['missed', true],
+    ]);
   });
 
   it('takes the plan off the map when it has fewer than two waypoints', () => {

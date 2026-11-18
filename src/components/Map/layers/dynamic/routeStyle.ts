@@ -128,12 +128,29 @@ export function legChipImageId(kind: RouteLegKind): string {
 /** The badge for a plan waypoint: the airport, the procedure its `via` names, or plain enroute. */
 export function waypointBadgeId(
   via: string,
-  procedurePaths?: { via: string; kind?: 'sid' | 'star' | 'approach' }[]
+  procedurePaths?: {
+    via: string;
+    kind?: 'sid' | 'star' | 'approach';
+    path?: { latitude: number; longitude: number }[];
+  }[],
+  position?: { latitude: number; longitude: number }
 ): string {
   if (via === 'ADEP' || via === 'ADES') return labelBadgeImageId('airport');
   if (NAT_TRACK_RE.test(via)) return labelBadgeImageId('track');
-  const proc = procedurePaths?.find((p) => p.via === via);
+  // A fix keeps its procedure's colour even when the leg into it is not that procedure: the
+  // route flies direct to an approach's first fix, or joins a STAR on its last enroute fix.
+  const proc =
+    procedurePaths?.find((p) => p.via === via) ??
+    (position && procedurePaths?.find((p) => p.path?.some((point) => samePlace(point, position))));
   return labelBadgeImageId(proc?.kind ?? 'enroute');
+}
+
+/** Same fix: the drawn path repeats a fix's coordinates, give or take rounding. */
+function samePlace(
+  a: { latitude: number; longitude: number },
+  b: { latitude: number; longitude: number }
+): boolean {
+  return Math.abs(a.latitude - b.latitude) < 1e-4 && Math.abs(a.longitude - b.longitude) < 1e-4;
 }
 
 // The badge is drawn at 2x (64 x 40 px) with 6 px corners and stretched to fit its text. Only
