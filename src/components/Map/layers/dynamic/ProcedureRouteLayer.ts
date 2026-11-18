@@ -12,7 +12,7 @@
 import i18n from 'i18next';
 import * as maplibregl from 'maplibre-gl';
 import { buildUnitFormatters } from '@/hooks/useUnits';
-import { procedureGeometry } from '@/lib/flightplan/builder/legGeometry';
+import { holdLabelPoint, procedureGeometry } from '@/lib/flightplan/builder/legGeometry';
 import { magneticToTrue } from '@/lib/magvar';
 import { labelFont } from '@/lib/map/labelFonts';
 import type { Degrees, NauticalMiles } from '@/lib/utils/geomath';
@@ -20,6 +20,7 @@ import { useSettingsStore } from '@/stores/settingsStore';
 import type { AltitudeConstraint, ResolvedProcedureWaypoint } from '@/types/navigation';
 import { zoomScaledTextSize } from '../labelSize';
 import { safeAddGeoJSONSource } from '../types';
+import { FLIGHTPLAN_LABEL_LAYER_IDS } from './FlightPlanLayer';
 import {
   ROUTE_KIND_COLORS,
   ROUTE_LINE_OPACITY,
@@ -217,6 +218,7 @@ function createRouteGeoJSON(waypoints: RouteWaypoint[]): GeoJSON.FeatureCollecti
       properties: {
         type: overlay.kind === 'holding' ? 'holding' : 'procedure_turn',
         fixId: overlay.fixId,
+        ...(overlay.missed && { missed: true }),
       },
     });
   }
@@ -295,11 +297,15 @@ export function createLegLabelGeoJSON(waypoints: RouteWaypoint[]): GeoJSON.Featu
         parts.push(units.course(courseTrue, wp.latitude, wp.longitude));
       }
       if (parts.length > 0) {
+        // A hold starts and ends at its fix, so its midpoint is the fix itself.
+        const hold = holdLabelPoint(wp);
         features.push({
           type: 'Feature',
           geometry: {
             type: 'Point',
-            coordinates: [(prev.longitude! + wp.longitude) / 2, (prev.latitude! + wp.latitude) / 2],
+            coordinates: hold
+              ? [hold.longitude, hold.latitude]
+              : [(prev.longitude! + wp.longitude) / 2, (prev.latitude! + wp.latitude) / 2],
           },
           properties: { label: parts.join(' / ') },
         });
@@ -469,22 +475,35 @@ export function addProcedureRouteLayer(
 
   // Distance/course labels at each leg's midpoint, muted so they read as reference, not a
   // competing label - matches how reference charting tools annotate each segment directly.
-  map.addLayer({
-    id: LEG_LABEL_LAYER_ID,
-    type: 'symbol',
-    source: LEG_LABEL_SOURCE_ID,
-    layout: {
-      'text-field': ['get', 'label'],
-      'text-font': labelFont(map, 'regular'),
-      'text-size': zoomScaledTextSize(9),
-      'text-allow-overlap': false,
+  // Stacked under the fix names: MapLibre places the top layer first, so a fix name wins a
+  // collision and a course label at a hold never hides the hold fix (GitHub #394).
+  map.addLayer(
+    {
+      id: LEG_LABEL_LAYER_ID,
+      type: 'symbol',
+      source: LEG_LABEL_SOURCE_ID,
+      layout: {
+        'text-field': ['get', 'label'],
+        'text-font': labelFont(map, 'regular'),
+        'text-size': zoomScaledTextSize(9),
+        'text-allow-overlap': false,
+      },
+      paint: {
+        'text-color': COLORS.waypoint,
+        'text-halo-color': '#000000',
+        'text-halo-width': 1.5,
+      },
     },
-    paint: {
-      'text-color': COLORS.waypoint,
-      'text-halo-color': '#000000',
-      'text-halo-width': 1.5,
-    },
-  });
+    LABEL_LAYER_ID
+  );
+
+  // The fixes left out above are named by the plan's labels, which sit under this layer and
+  // would lose every collision to it.
+  if (planFixes.length > 0) {
+    for (const id of FLIGHTPLAN_LABEL_LAYER_IDS) {
+      if (map.getLayer(id)) map.moveLayer(id);
+    }
+  }
 }
 
 export function removeProcedureRouteLayer(map: maplibregl.Map): void {

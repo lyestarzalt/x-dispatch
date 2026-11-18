@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Click an airport code in the flight plan header to open it.** The map moves there and draws the airport.
+
+### Changed
+
+- **The folded airport card is only as tall as its content.** It matches the folded flight plan.
+
+### Fixed
+
+- **The compact runway list hides every idle runway end.** It now also works when every runway is in use, as at LFPG in west flow.
+- **Procedure fixes keep their procedure's colour.** The first fix of an approach flown direct no longer shows as an enroute fix.
+- **Holds show on the flight plan map.** A hold in the missed approach is drawn with the missed approach.
+- **Fix names stay visible in the procedure preview.** Course labels no longer hide them, and a hold's course sits on its inbound leg.
+
 ## [2.16.0] - 2026-11-17
 
 ### Added

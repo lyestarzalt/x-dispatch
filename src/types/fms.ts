@@ -133,6 +133,13 @@ export interface EnrichedFlightPlan {
     missedPath?: { latitude: number; longitude: number }[];
     /** Which procedure the path belongs to. An approach ends on the runway: no line to the airport. */
     kind?: 'sid' | 'star' | 'approach';
+    /** Holds and procedure turns, drawn as their own shapes at their fix. */
+    overlays?: {
+      fixId: string;
+      kind: 'holding' | 'procedureTurn';
+      points: { latitude: number; longitude: number }[];
+      missed?: boolean;
+    }[];
   }[];
 
   // Resolution summary
