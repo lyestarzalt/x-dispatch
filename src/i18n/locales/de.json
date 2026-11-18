@@ -1157,6 +1157,7 @@
     "windAligned": "· am Wind ausgerichtet, {{delta}}° Abweichung",
     "atisLabel": "ATIS {{letter}}",
     "runwaysHeading": "Pisten",
+    "activeRunwaysHeading": "Aktive Pisten",
     "runwayCountTotal": "{{count}} insgesamt",
     "runwayLengthFt": "{{length}}'",
     "runwayName": "Piste {{name}}",
@@ -1288,6 +1289,7 @@
       "summary": "über {{taxiways}}, {{distance}}"
     },
     "frequencies": "Frequenzen",
+    "activeFrequenciesHeading": "Aktive Frequenzen",
     "atcSurface": "GND",
     "atcUnlimited": "UNL",
     "atcSectorFreqs_one": "{{count}} Frequenz",

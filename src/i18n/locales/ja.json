@@ -1157,6 +1157,7 @@
     "windAligned": "· 風向と一致、ずれ {{delta}}°",
     "atisLabel": "ATIS {{letter}}",
     "runwaysHeading": "滑走路",
+    "activeRunwaysHeading": "使用中の滑走路",
     "runwayCountTotal": "計 {{count}}",
     "runwayLengthFt": "{{length}}'",
     "runwayName": "滑走路 {{name}}",
@@ -1288,6 +1289,7 @@
       "summary": "{{taxiways}} 経由、{{distance}}"
     },
     "frequencies": "周波数",
+    "activeFrequenciesHeading": "運用中の周波数",
     "atcSurface": "SFC",
     "atcUnlimited": "UNL",
     "atcSectorFreqs_one": "{{count}} 周波数",

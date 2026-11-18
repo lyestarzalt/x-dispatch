@@ -59,17 +59,24 @@ const CIRCLING_FORM = /^([A-Z]{3})([A-Z0-9]?)$/;
  *
  * `routeQualifier2` is the record's ARINC 424 route qualifier 2: an RNAV approach whose qualifier
  * is `P` is an RNP AR procedure, charted as RNAV (RNP), while `J`/`W`/`U` stay RNAV (GPS).
+ *
+ * `orLocalizer` marks an ILS the FAA charts as ILS OR LOC (see `faaProcedureIndex`); it has no
+ * effect on any other type.
  */
 export function formatApproachName(
   identifier: string,
   routeType?: string | null,
-  routeQualifier2?: string | null
+  routeQualifier2?: string | null,
+  orLocalizer = false
 ): string {
   const id = identifier.trim().toUpperCase();
   const typeFromRecord = routeType ? TYPE_NAMES[routeType.trim().toUpperCase()] : undefined;
   const rnpAr = routeQualifier2?.trim().toUpperCase() === 'P';
-  const withQualifier = (type: string | undefined) =>
-    rnpAr && type === 'RNAV (GPS)' ? 'RNAV (RNP)' : type;
+  const withQualifier = (type: string | undefined) => {
+    if (rnpAr && type === 'RNAV (GPS)') return 'RNAV (RNP)';
+    if (orLocalizer && type === 'ILS') return 'ILS OR LOC';
+    return type;
+  };
 
   const runway = RUNWAY_FORM.exec(id);
   if (runway) {

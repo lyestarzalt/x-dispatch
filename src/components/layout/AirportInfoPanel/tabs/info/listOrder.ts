@@ -31,3 +31,23 @@ export function liveRowsFirst(rows: MergedFreqRow[]): MergedFreqRow[] {
   live.sort((a, b) => liveRank(a) - liveRank(b));
   return [...live, ...rows.filter((row) => !row.live)];
 }
+
+/**
+ * The runways with an active end, for the compact list; null when that would show none or
+ * all of them, which leaves nothing to compact.
+ */
+export function compactRunways(
+  runways: Runway[],
+  activeEnds: ReadonlySet<string>
+): Runway[] | null {
+  const active = runways.filter((runway) =>
+    runway.ends.some((end) => activeEnds.has(runwayEndKey(end.name)))
+  );
+  return active.length > 0 && active.length < runways.length ? active : null;
+}
+
+/** The staffed frequencies, for the compact list; null when none or all of them are. */
+export function compactFreqRows(rows: MergedFreqRow[]): MergedFreqRow[] | null {
+  const live = rows.filter((row) => row.live);
+  return live.length > 0 && live.length < rows.length ? live : null;
+}

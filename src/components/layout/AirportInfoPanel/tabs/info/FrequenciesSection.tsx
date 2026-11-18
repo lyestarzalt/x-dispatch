@@ -4,6 +4,7 @@ import { ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { ATCController } from '@/types/navigation';
 import { AtcFacilityRow } from './AtcFacilityRow';
+import { CompactToggle } from './CompactToggle';
 import { FrequencyRow, type MergedFreqRow } from './FrequencyRow';
 
 export const FREQ_VISIBLE_DEFAULT = 5;
@@ -16,6 +17,8 @@ export function FrequenciesSection({
   vatsimEnabled,
   onlineCount,
   facilities = [],
+  compact,
+  onToggleCompact,
 }: {
   visible: MergedFreqRow[];
   totalCount: number;
@@ -25,10 +28,14 @@ export function FrequenciesSection({
   onlineCount: number;
   /** Area-control facilities over the airport, listed after its own rows. */
   facilities?: ATCController[];
+  /** Staffed rows only; null when the list cannot be compacted (nobody or everybody online). */
+  compact: boolean | null;
+  onToggleCompact: () => void;
 }) {
   const { t } = useTranslation();
   const hidden = totalCount - visible.length;
-  const collapsible = totalCount > FREQ_VISIBLE_DEFAULT;
+  // The first rows and "Show all" only when there is no staffed list to switch to.
+  const collapsible = compact === null && totalCount > FREQ_VISIBLE_DEFAULT;
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const toggleExpand = (id: string) => {
     setExpandedIds((prev) => {
@@ -41,10 +48,15 @@ export function FrequenciesSection({
 
   return (
     <section>
-      <div className="mb-1.5 flex items-baseline justify-between gap-3">
-        <h4 className="xp-section-heading mb-0 border-b-0">{t('airportInfo.frequencies')}</h4>
+      <div className="mb-1.5 flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-1">
+          <h4 className="xp-section-heading mb-0 truncate border-b-0">
+            {compact ? t('airportInfo.activeFrequenciesHeading') : t('airportInfo.frequencies')}
+          </h4>
+          {compact !== null && <CompactToggle compact={compact} onToggle={onToggleCompact} />}
+        </div>
         {vatsimEnabled && onlineCount > 0 && (
-          <span className="text-muted-foreground flex items-center gap-1.5 text-xs">
+          <span className="text-muted-foreground flex shrink-0 items-center gap-1.5 text-xs">
             <span className="bg-cat-emerald h-1.5 w-1.5 animate-pulse rounded-full" />
             <span>
               <span className="text-foreground font-mono tabular-nums">{onlineCount}</span>{' '}
@@ -62,17 +74,19 @@ export function FrequenciesSection({
             onToggle={() => toggleExpand(row.id)}
           />
         ))}
-        {facilities.map((c) => {
-          const id = `atc-${c.facilityId}-${c.role}-${c.name}`;
-          return (
-            <AtcFacilityRow
-              key={id}
-              controller={c}
-              expanded={expandedIds.has(id)}
-              onToggle={() => toggleExpand(id)}
-            />
-          );
-        })}
+        {/* The area controllers come from the airport data, not the network: the full list only. */}
+        {compact !== true &&
+          facilities.map((c) => {
+            const id = `atc-${c.facilityId}-${c.role}-${c.name}`;
+            return (
+              <AtcFacilityRow
+                key={id}
+                controller={c}
+                expanded={expandedIds.has(id)}
+                onToggle={() => toggleExpand(id)}
+              />
+            );
+          })}
       </ul>
       {collapsible && (
         <Button

@@ -33,7 +33,12 @@ function ProcedureName({
   withCode?: boolean;
 }) {
   if (type !== 'APP') return <span className="font-mono text-sm">{proc.name}</span>;
-  const name = formatApproachName(proc.name, proc.approachType, proc.approachQualifier2);
+  const name = formatApproachName(
+    proc.name,
+    proc.approachType,
+    proc.approachQualifier2,
+    proc.orLocalizer
+  );
   if (name === proc.name) return <span className="font-mono text-sm">{proc.name}</span>;
   return (
     <span className="flex min-w-0 items-baseline gap-2">

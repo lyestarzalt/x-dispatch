@@ -20,7 +20,6 @@ import {
   stationLabel,
 } from '@/lib/networkTraffic/atcRoles';
 import { airportRunwayUse } from '@/lib/networkTraffic/atis';
-import { trafficCountsForAirport } from '@/lib/networkTraffic/stations';
 import { formatFrequency } from '@/lib/utils/format';
 import { runwayLengthFeet } from '@/lib/utils/geomath';
 import { toastError } from '@/lib/utils/toastError';
@@ -49,7 +48,12 @@ import { DetailsSection } from './info/DetailsSection';
 import { FREQ_VISIBLE_DEFAULT, FrequenciesSection } from './info/FrequenciesSection';
 import { type MergedFreqRow } from './info/FrequencyRow';
 import { RunwaysSection } from './info/RunwaysSection';
-import { activeRunwaysFirst, liveRowsFirst } from './info/listOrder';
+import {
+  activeRunwaysFirst,
+  compactFreqRows,
+  compactRunways,
+  liveRowsFirst,
+} from './info/listOrder';
 import { runwayEndKey } from './info/runwayEndKey';
 
 // Frequencies in flight-flow order: preflight (recorded info) → taxi out
@@ -105,11 +109,14 @@ export default function InfoTab() {
   const airport = useAppStore((s) => s.selectedAirportData);
   const icao = useAppStore((s) => s.selectedICAO);
   const isCustom = useAppStore((s) => s.selectedAirportIsCustom);
-  const { network, pilots } = useNetworkTraffic();
+  const { network } = useNetworkTraffic();
   const networkOn = network !== null;
   const staffing = useMapStore((s) => (icao ? s.atcStaffing[icao.toUpperCase()] : undefined));
 
   const [showAllFreqs, setShowAllFreqs] = useState(false);
+  // Runways and frequencies open on what is in use; the chevrons in each heading show all.
+  const [compactRunwayList, setCompactRunwayList] = useState(true);
+  const [compactFreqList, setCompactFreqList] = useState(true);
   const [showDetails, setShowDetails] = useState(false);
 
   const { data: vatsimMetarData } = useVatsimMetarQuery(icao);
@@ -188,10 +195,6 @@ export default function InfoTab() {
   const stations = staffing?.stations;
   const atisLetter = staffing?.atisCode ?? null;
   const atcRows = useMemo(() => (stations ? buildAtcRows(stations) : []), [stations]);
-  const liveTraffic = useMemo(
-    () => (networkOn && icao ? trafficCountsForAirport(pilots, icao) : null),
-    [networkOn, pilots, icao]
-  );
 
   // Hoist optional-chained values so the useMemo deps are plain identifiers —
   // the React Compiler's static analysis can't preserve `[obj?.prop]` form.
@@ -296,9 +299,23 @@ export default function InfoTab() {
     () => activeRunwaysFirst(sortedRunways, new Set(endUse.keys())),
     [sortedRunways, endUse]
   );
-  const visibleMergedRows = showAllFreqs
-    ? mergedFreqRows
-    : mergedFreqRows.slice(0, FREQ_VISIBLE_DEFAULT);
+  const activeRunwayList = useMemo(
+    () => compactRunways(listedRunways, new Set(endUse.keys())),
+    [listedRunways, endUse]
+  );
+  const runwaysCompact = activeRunwayList ? compactRunwayList : null;
+  const shownRunways = runwaysCompact && activeRunwayList ? activeRunwayList : listedRunways;
+
+  const staffedFreqRows = useMemo(() => compactFreqRows(mergedFreqRows), [mergedFreqRows]);
+  const freqsCompact = staffedFreqRows ? compactFreqList : null;
+  const visibleMergedRows =
+    freqsCompact === null
+      ? showAllFreqs
+        ? mergedFreqRows
+        : mergedFreqRows.slice(0, FREQ_VISIBLE_DEFAULT)
+      : freqsCompact && staffedFreqRows
+        ? staffedFreqRows
+        : mergedFreqRows;
 
   if (!airport) return null;
 
@@ -408,16 +425,14 @@ export default function InfoTab() {
         </p>
       )}
 
-      <ConditionsCard
-        metar={metar}
-        activeRunway={activeRunway}
-        atisLetter={atisLetter}
-        liveTraffic={liveTraffic}
-      />
+      <ConditionsCard metar={metar} activeRunway={activeRunway} atisLetter={atisLetter} />
 
       {sortedRunways.length > 0 && (
         <RunwaysSection
-          runways={listedRunways}
+          runways={shownRunways}
+          totalCount={sortedRunways.length}
+          compact={runwaysCompact}
+          onToggleCompact={() => setCompactRunwayList((v) => !v)}
           ilsByEnd={ilsByEnd}
           gsByEnd={gsByEnd}
           endUse={endUse}
@@ -433,6 +448,8 @@ export default function InfoTab() {
           vatsimEnabled={networkOn}
           onlineCount={atcRows.length}
           facilities={facilityRows}
+          compact={freqsCompact}
+          onToggleCompact={() => setCompactFreqList((v) => !v)}
         />
       )}
 
@@ -471,6 +488,8 @@ interface AtcRow {
   frequency: string;
   summary: string;
   detail?: string;
+  /** Letter of the ATIS a non-ATIS position carries, as IVAO controllers do. */
+  atisLetter?: string;
 }
 
 function buildAtcRows(stations: NetworkStation[]): AtcRow[] {
@@ -483,6 +502,7 @@ function buildAtcRows(stations: NetworkStation[]): AtcRow[] {
     frequency: s.frequency,
     summary: s.name,
     detail: s.atis?.lines.length ? s.atis.lines.join(' | ') : undefined,
+    atisLetter: s.role !== 'ATIS' ? (s.atis?.code ?? undefined) : undefined,
   }));
 }
 
@@ -534,6 +554,7 @@ function mergeFreqRows(staticFreqs: Frequency[], liveRows: AtcRow[]): MergedFreq
             controllerName: match.summary,
             frequency: match.frequency,
             atisBody: match.detail,
+            atisLetter: match.atisLetter,
           }
         : undefined,
     });
@@ -552,6 +573,7 @@ function mergeFreqRows(staticFreqs: Frequency[], liveRows: AtcRow[]): MergedFreq
         controllerName: r.summary,
         frequency: r.frequency,
         atisBody: r.detail,
+        atisLetter: r.atisLetter,
       },
     });
   }
