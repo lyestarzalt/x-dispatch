@@ -41,7 +41,7 @@ import {
   cursorOnGrip,
   gripRectToScreen,
   parseFlightStripWindowOptions,
-  parseGripRect,
+  parseGripRects,
 } from './lib/flightStrip/windowOptions';
 import { NAT_TRACK_RE } from './lib/flightplan/builder/routeTokens';
 import { registerSharedPlanIpc } from './lib/flightplan/sharedPlanIpc';
@@ -761,8 +761,8 @@ let flightStripGuidance: GuidanceRoutes = NO_GUIDANCE_ROUTES;
  * the first click on the lock pass through whenever Windows did not forward one.
  */
 let flightStripCaptureWatch: ReturnType<typeof setInterval> | null = null;
-/** The lock grip in the strip window's content area, as the strip last reported it. */
-let flightStripGrip: FlightStripGripRect | null = null;
+/** The button areas in the strip window's content area, as the strip last reported them. */
+let flightStripGrip: FlightStripGripRect[] = [];
 const FLIGHT_STRIP_CAPTURE_POLL_MS = 50;
 
 function setFlightStripCapture(capture: boolean): void {
@@ -912,7 +912,7 @@ function openFlightStripWindow(): void {
   win.on('closed', () => {
     if (flightStripWindow === win) {
       flightStripWindow = null;
-      flightStripGrip = null;
+      flightStripGrip = [];
       syncFlightStripCaptureWatch();
       flightStripSimPresence?.dispose();
       flightStripSimPresence = null;
@@ -1426,8 +1426,8 @@ function registerIpcHandlers() {
   });
   on('app:setFlightStripGrip', (event, grip: unknown) => {
     if (!isFlightStripWindowOpen() || event.sender !== flightStripWindow!.webContents) return;
-    const parsed = parseGripRect(grip);
-    flightStripGrip = parsed && gripRectToScreen(parsed, event.sender.getZoomFactor());
+    const zoom = event.sender.getZoomFactor();
+    flightStripGrip = parseGripRects(grip).map((rect) => gripRectToScreen(rect, zoom));
   });
   on('app:setFlightStripContentSize', (event, size: unknown) => {
     if (!isFlightStripWindowOpen() || event.sender !== flightStripWindow!.webContents) return;

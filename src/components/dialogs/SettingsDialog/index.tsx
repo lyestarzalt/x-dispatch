@@ -124,8 +124,11 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="h-[85vh] max-w-4xl gap-0 overflow-hidden p-0">
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="flex h-full">
+      {/* The one row is capped at the dialog's height: an auto row grows with the tab list
+          once a larger font or zoom makes it taller than the dialog, and then nothing inside
+          scrolls (GitHub #355). */}
+      <DialogContent className="h-[85vh] max-w-4xl grid-rows-[minmax(0,1fr)] gap-0 overflow-hidden p-0">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="flex h-full min-h-0">
           {/* Sidebar Navigation */}
           <div className="bg-muted/30 flex w-56 shrink-0 flex-col border-r max-sm:w-40">
             <div className="shrink-0 p-4">

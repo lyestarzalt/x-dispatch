@@ -14,12 +14,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **The folded airport card is only as tall as its content.** It matches the folded flight plan.
+- **The flight strip window has its buttons at both ends.** Close, lock and the taxi map stay in reach whichever side of the screen the strip is stowed on.
+- **Swap departure and arrival from the compact flight plan card.**
 
 ### Fixed
 
 - **The compact runway list hides every idle runway end.** It now also works when every runway is in use, as at LFPG in west flow.
 - **Procedure fixes keep their procedure's colour.** The first fix of an approach flown direct no longer shows as an enroute fix.
 - **Holds show on the flight plan map.** A hold in the missed approach is drawn with the missed approach.
+- **A procedure's transitions are no longer listed as if doubled.** A STAR or SID into several runways names the runway on each row, and the tabs count procedures.
+- **Settings scroll to the bottom at larger font sizes and zoom.**
 - **Fix names stay visible in the procedure preview.** Course labels no longer hide them, and a hold's course sits on its inbound leg.
 
 ## [2.16.0] - 2026-11-17

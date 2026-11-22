@@ -40,6 +40,8 @@ interface FlightStripProps {
   detached?: boolean;
   /** Buttons at the right end of the detached strip, where the map strip has its own. */
   actions?: ReactNode;
+  /** The same buttons at the left end of the detached strip. */
+  leadingActions?: ReactNode;
   /** Shown at the bottom of the strip's card, under the taxi guidance. */
   footer?: ReactNode;
 }
@@ -193,6 +195,7 @@ export default function FlightStrip({
   onCenterPlane,
   detached = false,
   actions,
+  leadingActions,
   footer,
 }: FlightStripProps) {
   const planeState = usePlaneStore((s) => s.state);
@@ -451,8 +454,17 @@ export default function FlightStrip({
             style={{ zoom: scale }}
           >
             <div className="flex items-center">
+              {detached && leadingActions && (
+                <div className="self-start py-0.5 pl-0.5">{leadingActions}</div>
+              )}
+
               {/* Status indicator */}
-              <div className="flex items-center gap-1.5 px-3 py-2">
+              <div
+                className={cn(
+                  'flex items-center gap-1.5 py-2 pr-3',
+                  detached && leadingActions ? 'pl-1.5' : 'pl-3'
+                )}
+              >
                 <div className="bg-success h-2 w-2 animate-pulse rounded-full" />
                 <Plane className="text-primary h-3.5 w-3.5" />
                 {fields.aircraft && (planeState?.icaoType || planeState?.tailNumber) && (

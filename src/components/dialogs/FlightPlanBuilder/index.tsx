@@ -144,7 +144,7 @@ function FlightPlanBuilder({
   const panel = usePlanBuilderStore((s) => s.panel);
   const setPanel = usePlanBuilderStore((s) => s.setPanel);
   const folded = panel === 'rail' || foldForSpace;
-  // Compact: a read-out of the plan for flying, sized to its content, nothing to edit.
+  // Compact: a read-out of the plan for flying, sized to its content. Only the swap stays.
   const compact = panel === 'half';
   const reset = usePlanBuilderStore((s) => s.reset);
   const restoreDraft = usePlanBuilderStore((s) => s.restoreDraft);
@@ -883,7 +883,7 @@ function FlightPlanBuilder({
                 size="icon-sm"
                 className="text-muted-foreground hover:text-foreground shrink-0"
                 onClick={swapEndpoints}
-                disabled={compact || (!departure && !arrival)}
+                disabled={!departure && !arrival}
                 tooltip={t('planBuilder.swap')}
               >
                 <ArrowLeftRight className="h-4 w-4" />

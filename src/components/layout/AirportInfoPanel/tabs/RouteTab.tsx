@@ -11,13 +11,9 @@ import { cn } from '@/lib/utils/helpers';
 import { trackEvent, useAirportProcedures } from '@/queries';
 import { useAppStore } from '@/stores/appStore';
 import type { ResolvedProcedure as Procedure } from '@/types/navigation';
+import { groupProcedures, variantSpread } from './route/procedureGroups';
 
 type ProcedureType = 'SID' | 'STAR' | 'APP';
-
-interface GroupedProcedure {
-  name: string;
-  variants: Procedure[];
-}
 
 /**
  * The approach identifier spelled out; SIDs and STARs as they are. The raw code sits beside
@@ -46,20 +42,6 @@ function ProcedureName({
       {withCode && <span className="text-muted-foreground/50 text-2xs font-mono">{proc.name}</span>}
     </span>
   );
-}
-
-function groupProcedures(procedures: Procedure[]): GroupedProcedure[] {
-  const groups = new Map<string, Procedure[]>();
-
-  for (const proc of procedures) {
-    const existing = groups.get(proc.name) || [];
-    groups.set(proc.name, [...existing, proc]);
-  }
-
-  return Array.from(groups.entries()).map(([name, variants]) => ({
-    name,
-    variants,
-  }));
 }
 
 export default function RouteTab() {
@@ -92,10 +74,11 @@ export default function RouteTab() {
     };
   }, [procedures, filterRunway]);
 
+  // Procedures, not their runway and transition pairings.
   const counts = {
-    SID: lists.SID.length,
-    STAR: lists.STAR.length,
-    APP: lists.APP.length,
+    SID: groupProcedures(lists.SID).length,
+    STAR: groupProcedures(lists.STAR).length,
+    APP: groupProcedures(lists.APP).length,
   };
 
   const grouped = useMemo(() => groupProcedures(lists[activeType]), [lists, activeType]);
@@ -227,17 +210,19 @@ export default function RouteTab() {
             // - Approaches: transitions
             // - STARs: transitions (enroute entry points) or runways
             // - SIDs: runways or transitions (enroute exit points)
-            const hasTransitions = group.variants.some((v) => v.transition);
-            const hasRunways = group.variants.some((v) => v.runway);
+            // A procedure with both is one variant per pairing: count its transitions, and name
+            // the runway on each row when there is more than one.
+            const spread = variantSpread(group.variants);
+            const showRunway = spread.transitions > 0 && spread.runways > 1;
 
             let variantLabel: string;
-            if (hasTransitions && !hasRunways) {
+            if (spread.transitions > 0) {
               variantLabel = t('airportInfo.routeTab.transitionCount', {
-                count: group.variants.length,
+                count: spread.transitions,
               });
-            } else if (hasRunways && !hasTransitions) {
+            } else if (spread.runways > 0) {
               variantLabel = t('airportInfo.routeTab.runwayVariantCount', {
-                count: group.variants.length,
+                count: spread.runways,
               });
             } else {
               variantLabel = t('airportInfo.routeTab.variantCount', {
@@ -304,7 +289,14 @@ export default function RouteTab() {
                           )}
                         >
                           <span className="text-sm">{displayLabel}</span>
-                          {isSelected && <Check className="h-3.5 w-3.5" />}
+                          <span className="flex shrink-0 items-center gap-2">
+                            {showRunway && proc.runway && (
+                              <span className="text-muted-foreground/50 text-xs">
+                                {t('simbriefDialog.header.runway', { rwy: proc.runway })}
+                              </span>
+                            )}
+                            {isSelected && <Check className="h-3.5 w-3.5" />}
+                          </span>
                         </Button>
                       );
                     })}
