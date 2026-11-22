@@ -36,6 +36,13 @@ describe('addonFailureLevel', () => {
 });
 
 describe('reportAddonFailure', () => {
+  it('logs a dropped file that is not an archive without filing it', () => {
+    reportAddonFailure({ action: 'installer.analyze', code: 'NOT_ARCHIVE' }, env);
+
+    expect(log.warn).toHaveBeenCalledWith('Add-on installer.analyze failed: NOT_ARCHIVE');
+    expect(sentry.captureMessage).not.toHaveBeenCalled();
+  });
+
   it('files one issue per action and code, tagged with what the add-on was', () => {
     const failure: AddonFailure = {
       action: 'installer.install',

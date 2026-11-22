@@ -233,7 +233,12 @@ if (shouldInitSentry && app.isPackaged) {
     // No eventLoopBlockIntegration: its add-on (@sentry/node-native-stacktrace
     // 0.5.2) reads the AsyncLocalStorage map from inside a V8 interrupt, which
     // Electron 45's V8 forbids, and aborted the main process on 2.14 and 2.15.
-    integrations: [Sentry.startupTracingIntegration()],
+    // The child-process-gone handler below files those events with a fingerprint;
+    // the SDK's own message would file each one a second time (X-DISPATCH-9K).
+    integrations: [
+      Sentry.startupTracingIntegration(),
+      Sentry.childProcessIntegration({ events: false }),
+    ],
     ignoreErrors: [TRANSIENT_NET_ERROR_PATTERN],
     beforeSend(event, hint) {
       // Disk-full failures describe the user's machine, not a defect here, and
@@ -325,6 +330,14 @@ app.on('render-process-gone', (_event, webContents, details) => {
   } catch {
     // Ignore inaccessible webContents metadata; the crash reason is enough.
   }
+  // "killed" outside a quit is the OS or the user ending the renderer (exit code
+  // 15 on macOS, Sentry X-DISPATCH-4E). Reopen the window, file nothing.
+  if (details.reason === 'killed') {
+    logger.main.warn(`Renderer process killed, exitCode=${details.exitCode}`);
+    recoverCrashedWindow(webContents);
+    return;
+  }
+
   // The URL carries the user's install path, so letting it reach the grouping
   // algorithm would shard one crash across every machine that hits it. Group on
   // the reason alone and keep the URL as message detail.
@@ -1773,7 +1786,10 @@ function registerIpcHandlers() {
     } catch (error) {
       // A corrupt cache fails here on every launch (Sentry X-DISPATCH-6Q); rebuild it instead.
       if (recoverFromCorruption(error)) throw error;
-      logger.data.error('Data loading failed', error);
+      // Quitting closes the database under a load still running ("database is
+      // not open", Sentry X-DISPATCH-6P); that is not a failed load.
+      if (isQuitting) logger.data.warn('Data loading stopped by quit', error);
+      else logger.data.error('Data loading failed', error);
       const hint = getFileErrorHintKey(error);
       sendLoadingProgress({
         step: 'error',

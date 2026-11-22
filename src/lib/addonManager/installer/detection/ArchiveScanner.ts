@@ -19,8 +19,23 @@ import { listDirectoryEntries } from './folderScanner';
 export { detectArchiveFormat, isArchiveFileName as isArchiveFile } from './archiveFormat';
 
 /** Extended node-7z data with encryption info (not in official types) */
-interface SevenZipListData extends SevenZipData {
+interface SevenZipListData extends Partial<SevenZipData> {
   encrypted?: string;
+}
+
+/**
+ * One row of a 7-Zip listing as an archive entry. 7-Zip also emits rows with no
+ * path, which are not files of the archive (Sentry X-DISPATCH-9E, -9F).
+ */
+export function sevenZipListEntry(data: SevenZipListData): ArchiveEntry | null {
+  if (!data.file) return null;
+  return {
+    path: data.file,
+    isDirectory: data.attributes?.startsWith('D') ?? false,
+    uncompressedSize: data.size ?? 0,
+    compressedSize: data.sizeCompressed ?? 0,
+    encrypted: data.encrypted === '+',
+  };
 }
 
 export interface ArchiveSourceRef {
@@ -125,13 +140,8 @@ async function listSevenZipEntries(
       const stderr = collectSevenZipStderr(listStream);
 
       listStream.on('data', (data: SevenZipListData) => {
-        entries.push({
-          path: data.file,
-          isDirectory: data.attributes?.startsWith('D') ?? false,
-          uncompressedSize: data.size ?? 0,
-          compressedSize: data.sizeCompressed ?? 0,
-          encrypted: data.encrypted === '+',
-        });
+        const entry = sevenZipListEntry(data);
+        if (entry) entries.push(entry);
       });
 
       listStream.on('end', () => {
