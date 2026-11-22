@@ -12,6 +12,7 @@
     "isolatedModules": true,
     "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "sourceMap": true,
     "outDir": "dist",
     "moduleResolution": "bundler",

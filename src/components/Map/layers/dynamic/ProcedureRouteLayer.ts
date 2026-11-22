@@ -250,10 +250,7 @@ export function createRouteGeoJSON(
   return { type: 'FeatureCollection', features };
 }
 
-function createWaypointGeoJSON(
-  waypoints: RouteWaypoint[],
-  routeType: RouteData['type']
-): GeoJSON.FeatureCollection {
+function createWaypointGeoJSON(waypoints: RouteWaypoint[]): GeoJSON.FeatureCollection {
   // Include waypoints with coordinates, but track resolution status
   const waypointsWithCoords = waypoints.filter(
     (wp) => wp.latitude !== undefined && wp.longitude !== undefined
@@ -381,8 +378,7 @@ export function addProcedureRouteLayer(
     route.type === 'SID' ? route.departureEnd : undefined
   );
   const waypointGeoJSON = createWaypointGeoJSON(
-    omitFlightPlanWaypoints(resolvedWaypoints, planFixes),
-    route.type
+    omitFlightPlanWaypoints(resolvedWaypoints, planFixes)
   );
   const legLabelGeoJSON = createLegLabelGeoJSON(resolvedWaypoints);
 

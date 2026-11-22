@@ -114,7 +114,7 @@ export class AirportParser {
     return true;
   }
 
-  private parseRunwayEnd(tokens: string[], lineNum: number): RunwayEnd | null {
+  private parseRunwayEnd(tokens: string[]): RunwayEnd | null {
     if (tokens.length < 9) {
       this.skipped++;
       return null;
@@ -150,11 +150,7 @@ export class AirportParser {
     };
   }
 
-  private parseStartupLocation(
-    tokens: string[],
-    raw: string,
-    lineNum: number
-  ): StartupLocation | null {
+  private parseStartupLocation(tokens: string[], raw: string): StartupLocation | null {
     if (tokens.length < 6) {
       this.skipped++;
       return null;
@@ -185,11 +181,7 @@ export class AirportParser {
     };
   }
 
-  private parseStartupLocationLegacy(
-    tokens: string[],
-    raw: string,
-    lineNum: number
-  ): StartupLocation | null {
+  private parseStartupLocationLegacy(tokens: string[], raw: string): StartupLocation | null {
     if (tokens.length < 4) {
       this.skipped++;
       return null;
@@ -220,7 +212,7 @@ export class AirportParser {
     };
   }
 
-  private parseWindsock(tokens: string[], lineNum: number): Windsock | null {
+  private parseWindsock(tokens: string[]): Windsock | null {
     if (tokens.length < 4) {
       this.skipped++;
       return null;
@@ -244,7 +236,7 @@ export class AirportParser {
     };
   }
 
-  private parseSign(tokens: string[], lineNum: number): Sign | null {
+  private parseSign(tokens: string[]): Sign | null {
     if (tokens.length < 7) {
       this.skipped++;
       return null;
@@ -568,8 +560,8 @@ export class AirportParser {
             shoulder_surface_type = shoulderToken % 100;
           }
 
-          const end1 = this.parseRunwayEnd(tokens.slice(8, 17), lineNum);
-          const end2 = this.parseRunwayEnd(tokens.slice(17, 26), lineNum);
+          const end1 = this.parseRunwayEnd(tokens.slice(8, 17));
+          const end2 = this.parseRunwayEnd(tokens.slice(17, 26));
           if (!end1 || !end2) {
             this.skipped++;
             break;
@@ -659,21 +651,13 @@ export class AirportParser {
         }
 
         case RowCode.START_LOCATION_LEGACY: {
-          const startupLocation = this.parseStartupLocationLegacy(
-            tokens,
-            this.rawLines[i] ?? line,
-            lineNum
-          );
+          const startupLocation = this.parseStartupLocationLegacy(tokens, this.rawLines[i] ?? line);
           if (startupLocation) airport.startupLocations.push(startupLocation);
           break;
         }
 
         case RowCode.START_LOCATION_NEW: {
-          const startupLocation = this.parseStartupLocation(
-            tokens,
-            this.rawLines[i] ?? line,
-            lineNum
-          );
+          const startupLocation = this.parseStartupLocation(tokens, this.rawLines[i] ?? line);
           if (startupLocation) airport.startupLocations.push(startupLocation);
           break;
         }
@@ -693,13 +677,13 @@ export class AirportParser {
         }
 
         case RowCode.WINDSOCK: {
-          const windsock = this.parseWindsock(tokens, lineNum);
+          const windsock = this.parseWindsock(tokens);
           if (windsock) airport.windsocks.push(windsock);
           break;
         }
 
         case RowCode.TAXI_SIGN: {
-          const sign = this.parseSign(tokens, lineNum);
+          const sign = this.parseSign(tokens);
           if (sign) airport.signs.push(sign);
           break;
         }
