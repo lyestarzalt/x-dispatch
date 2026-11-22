@@ -18,9 +18,16 @@ if (isDev) {
   log.transports.console.level = 'warn';
 }
 
-const logFile = log.transports.file.getFile();
-// An update starts the app for its hooks; clearing then would lose the last session's log.
-if (logFile && !isInstallerHookRun(process.argv)) {
+/**
+ * Starts the log file afresh for this session. Called once by the copy that
+ * owns the session, never at import: a second launch and an update's hook run
+ * both load this module, and clearing there lost the log of the session that
+ * was running or had just ended.
+ */
+export function startSessionLog(argv: readonly string[]): void {
+  if (isInstallerHookRun(argv)) return;
+  const logFile = log.transports.file.getFile();
+  if (!logFile) return;
   try {
     fs.writeFileSync(logFile.path, '');
   } catch {

@@ -105,7 +105,7 @@ import {
   updateFailureReason,
 } from './lib/updater/updateAnalytics';
 import { createUpdateStatusStore, parseReleaseVersion } from './lib/updater/updateStatus';
-import logger, { getLogPath } from './lib/utils/logger';
+import logger, { getLogPath, startSessionLog } from './lib/utils/logger';
 import { logStartupEnvironment } from './lib/utils/startupLog';
 import {
   isInvalidCoords,
@@ -152,6 +152,23 @@ import type { LoadingProgress, PlaneState } from './types/xplane';
 /** Named NAT track fixes are looked up within this radius of the nearest track coordinate. */
 const TRACK_FIX_SEARCH_NM = 1500;
 
+// E2E test isolation: Playwright sets this env var to redirect userData (config.json,
+// xplane-data.db, settings.json, logs) into a per-test temp dir. Must run BEFORE any
+// app.getPath('userData') call below and before the instance lock, which is keyed on
+// it. Production users never set this — it's read-only from the parent process.
+if (process.env.E2E_USER_DATA_DIR) {
+  app.setPath('userData', process.env.E2E_USER_DATA_DIR);
+}
+
+// One copy per user. A second launch hands its link or file to the running copy
+// (the 'second-instance' handler below) and quits. `app.quit()` does not stop
+// this script, so nothing that belongs to a session may run in that copy: it
+// cleared the running session's log, and its startup bound the tablet port the
+// first copy held ("EADDRINUSE 0.0.0.0:8480" in the logs, Windows only).
+const isPrimaryInstance = app.requestSingleInstanceLock();
+if (isPrimaryInstance) startSessionLog(process.argv);
+else app.quit();
+
 // Velopack runs the app for its install, update and uninstall hooks and ends those runs
 // itself; it also applies an update downloaded in the previous session before boot.
 if (app.isPackaged) {
@@ -191,14 +208,6 @@ for (const u of cliResult.unknownWithSuggestions) {
   logger.main.warn(
     `Unknown flag: ${u.flag}${u.suggestion ? `. Did you mean ${u.suggestion}?` : ''}`
   );
-}
-
-// E2E test isolation: Playwright sets this env var to redirect userData (config.json,
-// xplane-data.db, settings.json, logs) into a per-test temp dir. Must run BEFORE any
-// app.getPath('userData') call below. Production users never set this — it's read-only
-// from the parent process.
-if (process.env.E2E_USER_DATA_DIR) {
-  app.setPath('userData', process.env.E2E_USER_DATA_DIR);
 }
 
 // TODO: Memory optimization - consider lazy nav data loading, limit MapLibre tile cache
@@ -3011,11 +3020,7 @@ function registerWindowsFileAssociations(): void {
   }
 }
 
-// Prevent multiple instances — focus existing window if second instance launches
-if (!app.requestSingleInstanceLock()) {
-  app.quit();
-}
-
+// A second launch quit above; this copy shows its window and takes what it was given.
 app.on('second-instance', (_event, commandLine) => {
   showOrCreateMainWindow();
   // Windows/Linux: the link or file the second instance was launched with
@@ -3059,7 +3064,7 @@ function reportDisplay(win: BrowserWindow): void {
   });
 }
 
-if (!squirrelHookRun) app.whenReady().then(bootstrap);
+if (!squirrelHookRun && isPrimaryInstance) app.whenReady().then(bootstrap);
 
 async function bootstrap(): Promise<void> {
   // Environment snapshot for production support
