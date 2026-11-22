@@ -39,7 +39,7 @@ vi.mock('fs', async (importOriginal) => {
   return { ...actual, ...counted, default: { ...actual, ...counted } };
 });
 
-const { findCustomSceneryAptFiles, getCustomSceneryFileInfos } =
+const { findCustomSceneryAptFiles, getCustomSceneryFileInfos, skippedSummary } =
   await import('./customSceneryLoader');
 
 let TMP_ROOT: string;
@@ -172,5 +172,23 @@ describe('findCustomSceneryAptFiles', () => {
 
     expect(infos).toHaveLength(2);
     for (const name of SYNC_CALLS) expect(fs[name], name).not.toHaveBeenCalled();
+  });
+});
+
+describe('skippedSummary', () => {
+  it('counts skipped entries by cause in one line', () => {
+    expect(
+      skippedSummary([
+        { name: 'XPME_Europe.lnk', why: 'shortcut parse-error: bad header' },
+        { name: 'XPME_Asia.lnk', why: 'shortcut parse-error: bad header' },
+        { name: 'Orbx_A_LOWI', why: 'unreadable or broken link' },
+      ])
+    ).toBe(
+      'Custom Scenery: 3 entries skipped (2 shortcut parse-error: bad header, 1 unreadable or broken link)'
+    );
+  });
+
+  it('says nothing when every entry was read', () => {
+    expect(skippedSummary([])).toBeNull();
   });
 });

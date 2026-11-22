@@ -12,11 +12,13 @@
 import i18n from 'i18next';
 import * as maplibregl from 'maplibre-gl';
 import { buildUnitFormatters } from '@/hooks/useUnits';
+import { destinationPoint } from '@/lib/flightplan/builder/geometry';
 import { holdLabelPoint, procedureGeometry } from '@/lib/flightplan/builder/legGeometry';
 import { magneticToTrue } from '@/lib/magvar';
 import { labelFont } from '@/lib/map/labelFonts';
 import type { Degrees, NauticalMiles } from '@/lib/utils/geomath';
 import { useSettingsStore } from '@/stores/settingsStore';
+import type { RunwayEnd } from '@/types/fms';
 import type { AltitudeConstraint, ResolvedProcedureWaypoint } from '@/types/navigation';
 import { zoomScaledTextSize } from '../labelSize';
 import { safeAddGeoJSONSource } from '../types';
@@ -41,6 +43,11 @@ export interface RouteData {
   waypoints: RouteWaypoint[];
   /** Transition altitude for the airport */
   transitionAlt?: number;
+  /**
+   * SIDs: the runway end the departure leaves from. Heading and altitude legs before the first
+   * fix have no position of their own and can only be drawn from the runway.
+   */
+  departureEnd?: RunwayEnd;
 }
 
 /** A fix the loaded flight plan already draws (symbol + label) on the map. */
@@ -178,9 +185,26 @@ function formatSpeedConstraint(speed: number | null | undefined): string {
  * line uses (`procedureGeometry`) - real RF/AF arcs, real DME/intercept crossings for fixless
  * legs (previously silently dropped here), and holding/procedure-turn overlays.
  */
-function createRouteGeoJSON(waypoints: RouteWaypoint[]): GeoJSON.FeatureCollection {
+export function createRouteGeoJSON(
+  waypoints: RouteWaypoint[],
+  departureEnd?: RunwayEnd
+): GeoJSON.FeatureCollection {
   const features: GeoJSON.Feature[] = [];
-  const { path, missedPath, overlays } = procedureGeometry(waypoints);
+  // A departure starts at the far end of its runway, as on the flight plan line.
+  const farEnd = departureEnd
+    ? destinationPoint(departureEnd, departureEnd.headingDeg, departureEnd.lengthNm)
+    : null;
+  const geometry = procedureGeometry(
+    waypoints,
+    farEnd && departureEnd
+      ? {
+          start: { position: farEnd, trackDeg: departureEnd.headingDeg },
+          runwayElevationFt: departureEnd.elevationFt,
+        }
+      : undefined
+  );
+  const { missedPath, overlays } = geometry;
+  const path = farEnd && geometry.path.length > 0 ? [farEnd, ...geometry.path] : geometry.path;
 
   if (path.length < 2 && missedPath.length < 2) {
     return { type: 'FeatureCollection', features: [] };
@@ -226,10 +250,7 @@ function createRouteGeoJSON(waypoints: RouteWaypoint[]): GeoJSON.FeatureCollecti
   return { type: 'FeatureCollection', features };
 }
 
-function createWaypointGeoJSON(
-  waypoints: RouteWaypoint[],
-  routeType: RouteData['type']
-): GeoJSON.FeatureCollection {
+function createWaypointGeoJSON(waypoints: RouteWaypoint[]): GeoJSON.FeatureCollection {
   // Include waypoints with coordinates, but track resolution status
   const waypointsWithCoords = waypoints.filter(
     (wp) => wp.latitude !== undefined && wp.longitude !== undefined
@@ -352,10 +373,12 @@ export function addProcedureRouteLayer(
   });
 
   const lineColor = ROUTE_KIND_COLORS[procedureKind(route.type)];
-  const routeGeoJSON = createRouteGeoJSON(resolvedWaypoints);
+  const routeGeoJSON = createRouteGeoJSON(
+    resolvedWaypoints,
+    route.type === 'SID' ? route.departureEnd : undefined
+  );
   const waypointGeoJSON = createWaypointGeoJSON(
-    omitFlightPlanWaypoints(resolvedWaypoints, planFixes),
-    route.type
+    omitFlightPlanWaypoints(resolvedWaypoints, planFixes)
   );
   const legLabelGeoJSON = createLegLabelGeoJSON(resolvedWaypoints);
 

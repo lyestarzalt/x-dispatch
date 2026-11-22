@@ -1392,6 +1392,7 @@
     "crosswind": "VT"
   },
   "procedures": {
+    "obstacle": "OBSTACLE",
     "noData": "Aucune procédure disponible",
     "noTypeData": "Aucune {{type}} disponible",
     "tabs": {

@@ -137,6 +137,11 @@ function FlightPlanBuilder({
   onActivate,
 }: FlightPlanBuilderProps) {
   const { t } = useTranslation();
+  // An obstacle departure says so in the picker; the chosen value stays the raw identifier.
+  const sidLabel = useCallback(
+    (p: ResolvedProcedure) => (p.obstacle ? `${p.name} (${t('procedures.obstacle')})` : p.name),
+    [t]
+  );
   const units = useUnits();
   const isOpen = usePlanBuilderStore((s) => s.isOpen);
   useTrackFeatureOpened('flight_plan_builder', isOpen);
@@ -144,7 +149,7 @@ function FlightPlanBuilder({
   const panel = usePlanBuilderStore((s) => s.panel);
   const setPanel = usePlanBuilderStore((s) => s.setPanel);
   const folded = panel === 'rail' || foldForSpace;
-  // Compact: a read-out of the plan for flying, sized to its content, nothing to edit.
+  // Compact: a read-out of the plan for flying, sized to its content. Only the swap stays.
   const compact = panel === 'half';
   const reset = usePlanBuilderStore((s) => s.reset);
   const restoreDraft = usePlanBuilderStore((s) => s.restoreDraft);
@@ -883,7 +888,7 @@ function FlightPlanBuilder({
                 size="icon-sm"
                 className="text-muted-foreground hover:text-foreground shrink-0"
                 onClick={swapEndpoints}
-                disabled={compact || (!departure && !arrival)}
+                disabled={!departure && !arrival}
                 tooltip={t('planBuilder.swap')}
               >
                 <ArrowLeftRight className="h-4 w-4" />
@@ -1026,6 +1031,7 @@ function FlightPlanBuilder({
                       <Field label={t('planBuilder.sid')}>
                         <ProcedureSelect
                           procedures={sids}
+                          labelFor={sidLabel}
                           runway={departure.runway}
                           value={departure.sid}
                           placeholder={t('planBuilder.noProcedure')}

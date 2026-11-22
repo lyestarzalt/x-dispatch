@@ -48,6 +48,9 @@ const USER_SIDE_CODES = new Set([
   'INI_NOT_FOUND',
 ]);
 
+/** A file that is not an archive was dropped: it says nothing about the app, so it is only logged. */
+const LOG_ONLY_CODES = new Set(['NOT_ARCHIVE']);
+
 const PERMISSION_PATTERN = /\b(EPERM|EACCES)\b/;
 
 export function addonFailureLevel(code: string, protectedFolder: boolean): 'warning' | 'error' {
@@ -99,6 +102,7 @@ export function reportAddonFailure(failure: AddonFailure, env: AddonFailureEnvir
   // the fingerprint. An error here would file a second, stack-grouped event.
   const line = reason ? `${message}: ${reason}` : message;
   logger.addon.warn(line);
+  if (LOG_ONLY_CODES.has(failure.code)) return;
 
   Sentry.withScope((scope) => {
     scope.setFingerprint(['addon-failure', failure.action, failure.code]);

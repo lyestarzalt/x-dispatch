@@ -71,22 +71,27 @@ function useReportStripShape(contentRef: React.RefObject<HTMLDivElement | null>)
 }
 
 /**
- * Tells main where the strip's buttons are whenever they move or resize (window resize,
- * Interface Zoom, the strip's scale), so main can watch the cursor over them. The rect
- * goes in CSS pixels; main knows the zoom factor that turns them into screen pixels.
- * (`outerWidth / innerWidth` is not that factor: on Windows `outerWidth` is physical
- * pixels plus the invisible resize borders.)
+ * Tells main where the strip's buttons are (one set at each end) whenever they move or
+ * resize (window resize, Interface Zoom, the strip's scale), so main can watch the cursor
+ * over them. The rects go in CSS pixels; main knows the zoom factor that turns them into
+ * screen pixels. (`outerWidth / innerWidth` is not that factor: on Windows `outerWidth` is
+ * physical pixels plus the invisible resize borders.)
  */
-function useReportGrip(gripRef: React.RefObject<HTMLDivElement | null>, scale: number) {
+function useReportGrips(gripRefs: React.RefObject<HTMLDivElement | null>[], scale: number) {
+  const [leading, trailing] = gripRefs;
   useEffect(() => {
-    const grip = gripRef.current;
-    if (!grip) return;
+    const grips = [leading?.current, trailing?.current].filter((el) => el != null);
+    if (grips.length === 0) return;
     const report = () => {
-      const { x, y, width, height } = grip.getBoundingClientRect();
-      window.appAPI.setFlightStripGrip({ x, y, width, height });
+      window.appAPI.setFlightStripGrip(
+        grips.map((grip) => {
+          const { x, y, width, height } = grip.getBoundingClientRect();
+          return { x, y, width, height };
+        })
+      );
     };
     const observer = new ResizeObserver(report);
-    observer.observe(grip);
+    for (const grip of grips) observer.observe(grip);
     observer.observe(document.documentElement);
     window.addEventListener('resize', report);
     report();
@@ -94,7 +99,76 @@ function useReportGrip(gripRef: React.RefObject<HTMLDivElement | null>, scale: n
       observer.disconnect();
       window.removeEventListener('resize', report);
     };
-  }, [gripRef, scale]);
+  }, [leading, trailing, scale]);
+}
+
+/**
+ * The strip window's buttons: close, lock and the taxi map. The strip carries them at both
+ * ends, so they stay in reach whichever side of the screen it is stowed on (GitHub #401).
+ */
+function StripControls({
+  gripRef,
+  quiet = false,
+  locked,
+  taxiMap,
+  onToggleTaxiMap,
+}: {
+  gripRef: React.RefObject<HTMLDivElement | null>;
+  /** The second set: faint until the pointer is on it, so the strip does not show six buttons. */
+  quiet?: boolean;
+  locked: boolean;
+  taxiMap: boolean;
+  onToggleTaxiMap: () => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <div
+      ref={gripRef}
+      className={cn(
+        'flex flex-col',
+        quiet && 'opacity-30 transition-opacity focus-within:opacity-100 hover:opacity-100'
+      )}
+      style={noDragStyle}
+    >
+      <Button
+        variant="ghost"
+        size="icon-xs"
+        className="text-muted-foreground h-5 w-5"
+        onClick={() => window.close()}
+        aria-label={t('common.close')}
+        tooltip={t('common.close')}
+      >
+        <X className="h-3 w-3" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-xs"
+        className={cn('h-5 w-5', locked ? 'text-primary' : 'text-muted-foreground')}
+        // A locked window can miss the first click, so pilots double-click; the
+        // second click of a double-click would lock it again.
+        onClick={(event) => {
+          if (event.detail > 1) return;
+          window.appAPI.toggleFlightStripLock();
+        }}
+        aria-pressed={locked}
+        aria-label={locked ? t('flightStrip.unlock') : t('flightStrip.lock')}
+        tooltip={locked ? t('flightStrip.unlock') : t('flightStrip.lock')}
+      >
+        {locked ? <Lock className="h-3 w-3" /> : <LockOpen className="h-3 w-3" />}
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-xs"
+        className={cn('h-5 w-5', taxiMap ? 'text-primary' : 'text-muted-foreground')}
+        onClick={onToggleTaxiMap}
+        aria-pressed={taxiMap}
+        aria-label={t('flightStrip.taxiMap')}
+        tooltip={t('flightStrip.taxiMap')}
+      >
+        <MapIcon className="h-3 w-3" />
+      </Button>
+    </div>
+  );
 }
 
 /**
@@ -111,7 +185,8 @@ export function FlightStripWindow() {
   const { locked } = useFlightStripWindowOptions();
   const frameRef = useRef<HTMLDivElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
-  const gripRef = useRef<HTMLDivElement>(null);
+  const leadingGripRef = useRef<HTMLDivElement>(null);
+  const trailingGripRef = useRef<HTMLDivElement>(null);
   // EXPERIMENT (exp/taxi-mini-map): the taxi map panel under the strip.
   const [taxiMap, setTaxiMap] = useState(false);
   // Closed at takeoff, so it never springs open over the view at touchdown: the
@@ -133,7 +208,7 @@ export function FlightStripWindow() {
   };
   const scale = useFitScale(frameRef, stripRef);
   useReportStripShape(stripRef);
-  useReportGrip(gripRef, scale);
+  useReportGrips([leadingGripRef, trailingGripRef], scale);
 
   return (
     // The padding stays outside the drag region so the window edges keep resizing.
@@ -151,46 +226,22 @@ export function FlightStripWindow() {
           <FlightStrip
             detached
             onCenterPlane={() => {}}
+            leadingActions={
+              <StripControls
+                quiet
+                gripRef={leadingGripRef}
+                locked={locked}
+                taxiMap={taxiMap}
+                onToggleTaxiMap={toggleTaxiMap}
+              />
+            }
             actions={
-              <div ref={gripRef} className="flex flex-col" style={noDragStyle}>
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  className="text-muted-foreground h-5 w-5"
-                  onClick={() => window.close()}
-                  aria-label={t('common.close')}
-                  tooltip={t('common.close')}
-                >
-                  <X className="h-3 w-3" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  className={cn('h-5 w-5', locked ? 'text-primary' : 'text-muted-foreground')}
-                  // A locked window can miss the first click, so pilots double-click; the
-                  // second click of a double-click would lock it again.
-                  onClick={(event) => {
-                    if (event.detail > 1) return;
-                    window.appAPI.toggleFlightStripLock();
-                  }}
-                  aria-pressed={locked}
-                  aria-label={locked ? t('flightStrip.unlock') : t('flightStrip.lock')}
-                  tooltip={locked ? t('flightStrip.unlock') : t('flightStrip.lock')}
-                >
-                  {locked ? <Lock className="h-3 w-3" /> : <LockOpen className="h-3 w-3" />}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  className={cn('h-5 w-5', taxiMap ? 'text-primary' : 'text-muted-foreground')}
-                  onClick={toggleTaxiMap}
-                  aria-pressed={taxiMap}
-                  aria-label={t('flightStrip.taxiMap')}
-                  tooltip={t('flightStrip.taxiMap')}
-                >
-                  <MapIcon className="h-3 w-3" />
-                </Button>
-              </div>
+              <StripControls
+                gripRef={trailingGripRef}
+                locked={locked}
+                taxiMap={taxiMap}
+                onToggleTaxiMap={toggleTaxiMap}
+              />
             }
             footer={
               taxiMap && (

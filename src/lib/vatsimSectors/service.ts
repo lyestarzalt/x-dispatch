@@ -97,7 +97,8 @@ export async function refreshVatsimSectorData(): Promise<VatsimSectorQueryResult
   if (!refreshPromise) {
     refreshPromise = refreshInternal()
       .catch((error) => {
-        logger.main.error('VATSIM sector refresh failed', error);
+        // A network failure: the cached sectors stay in use.
+        logger.main.warn('VATSIM sector refresh failed', error);
 
         const dataset = loadDataset();
         const builtAt = new Date().toISOString();

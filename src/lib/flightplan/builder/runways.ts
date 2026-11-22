@@ -74,6 +74,34 @@ function readEnd(
   return { name, lat, lon };
 }
 
+/**
+ * The same runway ends from an airport the renderer already parsed, for drawing a departure
+ * from its runway without another trip to the main process.
+ */
+export function runwayEndsFromAirport(airport: {
+  elevation?: number;
+  runways: { ends: { name: string; latitude: number; longitude: number }[] }[];
+}): RunwayEnd[] {
+  const out: RunwayEnd[] = [];
+  for (const runway of airport.runways) {
+    const [one, two] = runway.ends;
+    if (!one || !two) continue;
+    const a = { latitude: one.latitude, longitude: one.longitude };
+    const b = { latitude: two.latitude, longitude: two.longitude };
+    const lengthNm = greatCircleNm(a, b);
+    const elevationFt = airport.elevation;
+    const nameOne = normalizeRunwayName(one.name);
+    const nameTwo = normalizeRunwayName(two.name);
+    if (nameOne) {
+      out.push({ name: nameOne, ...a, headingDeg: bearingDeg(a, b), lengthNm, elevationFt });
+    }
+    if (nameTwo) {
+      out.push({ name: nameTwo, ...b, headingDeg: bearingDeg(b, a), lengthNm, elevationFt });
+    }
+  }
+  return out;
+}
+
 export function runwayEndsFromApt(aptText: string): RunwayEnd[] {
   const ends = new Map<string, RunwayEnd>();
   let elevationFt: number | undefined;

@@ -1392,6 +1392,7 @@
     "crosswind": "Бок."
   },
   "procedures": {
+    "obstacle": "OBSTACLE",
     "noData": "Нет доступных процедур",
     "noTypeData": "Нет доступных {{type}}",
     "tabs": {

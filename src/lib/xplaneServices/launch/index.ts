@@ -300,7 +300,10 @@ class XPlaneLauncher {
               isSteam: isSteamInstallation(this.xplanePath),
               ...describeExecutable(executable),
             });
-            logger.launcher.error(`Spawn error: ${err.message}`, err);
+            // Needing administrator rights is the user's Windows setup, and the
+            // launch dialog already says so (Sentry X-DISPATCH-T).
+            if (code === 'NEEDS_ADMIN') logger.launcher.warn(`Spawn error: ${err.message}`);
+            else logger.launcher.error(`Spawn error: ${err.message}`, err);
           });
 
           settle({ success: false, error: err.message, code });

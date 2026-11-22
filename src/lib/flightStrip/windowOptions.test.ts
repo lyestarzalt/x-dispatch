@@ -8,6 +8,7 @@ import {
   ignoresMouse,
   parseFlightStripWindowOptions,
   parseGripRect,
+  parseGripRects,
 } from './windowOptions';
 
 function fakeWindow() {
@@ -121,6 +122,25 @@ describe('parseGripRect', () => {
   });
 });
 
+// The strip has its buttons at both ends (GitHub #401), so it reports two areas.
+describe('parseGripRects', () => {
+  const left = { x: 4, y: 4, width: 20, height: 60 };
+  const right = { x: 1400, y: 4, width: 20, height: 60 };
+
+  it('keeps every valid rect and drops the rest', () => {
+    expect(parseGripRects([left, { x: -1, y: 0, width: 5, height: 5 }, right])).toEqual([
+      left,
+      right,
+    ]);
+  });
+
+  it('takes nothing from anything that is not a short list', () => {
+    expect(parseGripRects(null)).toEqual([]);
+    expect(parseGripRects(left)).toEqual([]);
+    expect(parseGripRects(Array.from({ length: 50 }, () => left))).toHaveLength(4);
+  });
+});
+
 describe('gripRectToScreen', () => {
   it('scales CSS pixels by the zoom factor', () => {
     expect(gripRectToScreen({ x: 1440, y: 57, width: 43, height: 43 }, 1.25)).toEqual({
@@ -157,5 +177,20 @@ describe('cursorOnGrip', () => {
 
   it('is off the grip before the strip has reported one', () => {
     expect(cursorOnGrip({ x: 1060, y: 54 }, content, null)).toBe(false);
+  });
+});
+
+describe('cursorOnGrip with buttons at both ends', () => {
+  const content = { x: 1000, y: 50 };
+  const grips = [
+    { x: 4, y: 4, width: 20, height: 60 },
+    { x: 400, y: 4, width: 20, height: 60 },
+  ];
+
+  it('is on the grip over either area and off it between them', () => {
+    expect(cursorOnGrip({ x: 1010, y: 60 }, content, grips)).toBe(true);
+    expect(cursorOnGrip({ x: 1410, y: 60 }, content, grips)).toBe(true);
+    expect(cursorOnGrip({ x: 1200, y: 60 }, content, grips)).toBe(false);
+    expect(cursorOnGrip({ x: 1010, y: 60 }, content, [])).toBe(false);
   });
 });

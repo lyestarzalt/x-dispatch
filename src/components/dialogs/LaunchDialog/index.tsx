@@ -547,7 +547,6 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
               startPosition={startPosition}
               isXPlaneRunning={isXPlaneRunning}
               onLaunch={handleLaunch}
-              aircraftList={aircraftList}
             />
           </SectionErrorBoundary>
         </div>

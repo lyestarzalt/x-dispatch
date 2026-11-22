@@ -26,7 +26,7 @@ export interface FlightRequestTiming {
 
 const DEFAULT_FLIGHT_TIMING: FlightRequestTiming = {
   requestTimeoutMs: 15_000,
-  recoveryWindowMs: 20_000,
+  recoveryWindowMs: 30_000,
   recoveryProbeMs: 1_000,
 };
 

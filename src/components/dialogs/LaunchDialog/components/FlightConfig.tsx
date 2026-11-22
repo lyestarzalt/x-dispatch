@@ -15,7 +15,6 @@ import { type NauticalMiles, metersToFeet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
 import { useAppStore } from '@/stores/appStore';
 import { useLaunchStore } from '@/stores/launchStore';
-import type { Aircraft } from '@/types/aircraft';
 import type { StartPosition } from '../types';
 import { getWeatherSummary } from '../weatherTypes';
 import { ConditionsCard } from './ConditionsCard';
@@ -31,7 +30,6 @@ interface FlightConfigProps {
   startPosition: StartPosition | null;
   isXPlaneRunning: boolean;
   onLaunch: () => void;
-  aircraftList: Aircraft[];
 }
 
 function getTimezoneOffset(timezone: string): string {
@@ -49,12 +47,7 @@ function getTimezoneOffset(timezone: string): string {
   }
 }
 
-export function FlightConfig({
-  startPosition,
-  isXPlaneRunning,
-  onLaunch,
-  aircraftList,
-}: FlightConfigProps) {
+export function FlightConfig({ startPosition, isXPlaneRunning, onLaunch }: FlightConfigProps) {
   const { t } = useTranslation();
   const units = useUnits();
   const isAirStart = startPosition?.type === 'custom' && startPosition.customStartMode === 'air';

@@ -171,7 +171,8 @@ export class SceneryManager {
             const lnkPath = path.join(this.customSceneryPath, dirEntry.name);
             const resolved = resolveLnkSync(lnkPath);
             if (!resolved.ok) {
-              logger.addon.warn(
+              // Per shortcut at info; customSceneryLoader files the one summary line.
+              logger.addon.info(
                 `scenery: unresolved shortcut ${dirEntry.name} (${resolved.reason})`
               );
               continue;

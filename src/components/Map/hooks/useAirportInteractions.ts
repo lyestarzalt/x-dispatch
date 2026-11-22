@@ -138,10 +138,14 @@ export function useAirportInteractions({
     const handleGateMouseLeave = () => {
       map.getCanvas().style.cursor = '';
       if (hoveredGateId.current !== null) {
-        map.setFeatureState(
-          { source: 'airport-gates', id: hoveredGateId.current },
-          { hover: false }
-        );
+        // The leave can arrive while the style is being replaced, and feature
+        // state went with the old style (Sentry X-DISPATCH-9M).
+        if (map.style) {
+          map.setFeatureState(
+            { source: 'airport-gates', id: hoveredGateId.current },
+            { hover: false }
+          );
+        }
         hoveredGateId.current = null;
       }
       onStandHoverRef.current?.(null);

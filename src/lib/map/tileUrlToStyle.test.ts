@@ -163,6 +163,12 @@ describe('attributionForUrl', () => {
 });
 
 describe('validateMapStyleUrl', () => {
+  // A user saved this one: every tile then went to "stadiamaps.com15".
+  it('rejects a tile placeholder glued to the host name', () => {
+    expect(validateMapStyleUrl('https://stadiamaps.com{z}/{x}/{y}.png')).toBe('invalid-url');
+    expect(validateMapStyleUrl('https://{s}.tile.example.org/{z}/{x}/{y}.png')).toBe('invalid-url');
+  });
+
   it('accepts a vector style URL', () => {
     expect(
       validateMapStyleUrl('https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json')

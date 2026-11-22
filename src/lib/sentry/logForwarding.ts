@@ -6,6 +6,7 @@
  * Warnings and errors are rare enough per launch to send as structured logs;
  * info and debug stay on disk, where the log tail attached to issues has them.
  */
+import { scrubUserPaths } from './scrubPaths';
 
 export interface ForwardedLog {
   level: 'warn' | 'error';
@@ -15,6 +16,14 @@ export interface ForwardedLog {
 
 const SCOPE_PREFIX = /^\[([A-Za-z]+)\]\s*/;
 
+/**
+ * Renderer console warnings the basemap style and Chromium raise on every
+ * launch: missing sprite images, shield filters on null, canvas readback
+ * advice. Nothing of ours, and they were a third of all forwarded lines.
+ */
+const BASEMAP_CONSOLE_NOISE =
+  /^\[Renderer Console\] (?:Image ".*" could not be loaded|layers\[.*\]\.filter\[\d+\]: Expected value|Canvas2D: Multiple readback)/;
+
 /** The Sentry log for an electron-log line, or null for levels that stay local. */
 export function sentryLogFor(level: string, data: unknown[]): ForwardedLog | null {
   if (level !== 'warn' && level !== 'error') return null;
@@ -22,9 +31,14 @@ export function sentryLogFor(level: string, data: unknown[]): ForwardedLog | nul
   const text = typeof first === 'string' ? first : String(first);
   const scope = SCOPE_PREFIX.exec(text)?.[1]?.toLowerCase() ?? 'default';
   const attributes: Record<string, string> = { scope };
-  const error = rest.find((a): a is Error => a instanceof Error);
-  if (error) attributes.error = error.message;
-  return { level, message: text.replace(SCOPE_PREFIX, ''), attributes };
+  // An Error, or the detail string a renderer line carries over IPC ("MapLibre
+  // error", "X-Plane launch failed"): without it the line says nothing.
+  const error = rest.find((a): a is Error | string => a instanceof Error || typeof a === 'string');
+  const detail = typeof error === 'string' ? error : error?.message;
+  // Console lines quote the app's file URL and file errors the full path; both
+  // name the Windows or macOS account.
+  if (detail) attributes.error = scrubUserPaths(detail).slice(0, MAX_FORWARDED_LENGTH);
+  return { level, message: scrubUserPaths(text.replace(SCOPE_PREFIX, '')), attributes };
 }
 
 export const MAX_FORWARDED_PER_SESSION = 50;
@@ -43,6 +57,7 @@ export function createLogForwarder(): (level: string, data: unknown[]) => Forwar
   return (level, data) => {
     const entry = sentryLogFor(level, data);
     if (!entry) return null;
+    if (BASEMAP_CONSOLE_NOISE.test(entry.message)) return null;
     const message = entry.message.slice(0, MAX_FORWARDED_LENGTH);
     if (seen.has(message)) return null;
     if (sent >= MAX_FORWARDED_PER_SESSION) {

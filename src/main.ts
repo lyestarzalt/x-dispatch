@@ -41,7 +41,7 @@ import {
   cursorOnGrip,
   gripRectToScreen,
   parseFlightStripWindowOptions,
-  parseGripRect,
+  parseGripRects,
 } from './lib/flightStrip/windowOptions';
 import { NAT_TRACK_RE } from './lib/flightplan/builder/routeTokens';
 import { registerSharedPlanIpc } from './lib/flightplan/sharedPlanIpc';
@@ -105,7 +105,7 @@ import {
   updateFailureReason,
 } from './lib/updater/updateAnalytics';
 import { createUpdateStatusStore, parseReleaseVersion } from './lib/updater/updateStatus';
-import logger, { getLogPath } from './lib/utils/logger';
+import logger, { getLogPath, startSessionLog } from './lib/utils/logger';
 import { logStartupEnvironment } from './lib/utils/startupLog';
 import {
   isInvalidCoords,
@@ -152,6 +152,23 @@ import type { LoadingProgress, PlaneState } from './types/xplane';
 /** Named NAT track fixes are looked up within this radius of the nearest track coordinate. */
 const TRACK_FIX_SEARCH_NM = 1500;
 
+// E2E test isolation: Playwright sets this env var to redirect userData (config.json,
+// xplane-data.db, settings.json, logs) into a per-test temp dir. Must run BEFORE any
+// app.getPath('userData') call below and before the instance lock, which is keyed on
+// it. Production users never set this — it's read-only from the parent process.
+if (process.env.E2E_USER_DATA_DIR) {
+  app.setPath('userData', process.env.E2E_USER_DATA_DIR);
+}
+
+// One copy per user. A second launch hands its link or file to the running copy
+// (the 'second-instance' handler below) and quits. `app.quit()` does not stop
+// this script, so nothing that belongs to a session may run in that copy: it
+// cleared the running session's log, and its startup bound the tablet port the
+// first copy held ("EADDRINUSE 0.0.0.0:8480" in the logs, Windows only).
+const isPrimaryInstance = app.requestSingleInstanceLock();
+if (isPrimaryInstance) startSessionLog(process.argv);
+else app.quit();
+
 // Velopack runs the app for its install, update and uninstall hooks and ends those runs
 // itself; it also applies an update downloaded in the previous session before boot.
 if (app.isPackaged) {
@@ -193,14 +210,6 @@ for (const u of cliResult.unknownWithSuggestions) {
   );
 }
 
-// E2E test isolation: Playwright sets this env var to redirect userData (config.json,
-// xplane-data.db, settings.json, logs) into a per-test temp dir. Must run BEFORE any
-// app.getPath('userData') call below. Production users never set this — it's read-only
-// from the parent process.
-if (process.env.E2E_USER_DATA_DIR) {
-  app.setPath('userData', process.env.E2E_USER_DATA_DIR);
-}
-
 // TODO: Memory optimization - consider lazy nav data loading, limit MapLibre tile cache
 
 // This reads config.json directly since getSendCrashReports() uses app.getPath which works before ready
@@ -233,7 +242,12 @@ if (shouldInitSentry && app.isPackaged) {
     // No eventLoopBlockIntegration: its add-on (@sentry/node-native-stacktrace
     // 0.5.2) reads the AsyncLocalStorage map from inside a V8 interrupt, which
     // Electron 45's V8 forbids, and aborted the main process on 2.14 and 2.15.
-    integrations: [Sentry.startupTracingIntegration()],
+    // The child-process-gone handler below files those events with a fingerprint;
+    // the SDK's own message would file each one a second time (X-DISPATCH-9K).
+    integrations: [
+      Sentry.startupTracingIntegration(),
+      Sentry.childProcessIntegration({ events: false }),
+    ],
     ignoreErrors: [TRANSIENT_NET_ERROR_PATTERN],
     beforeSend(event, hint) {
       // Disk-full failures describe the user's machine, not a defect here, and
@@ -325,6 +339,14 @@ app.on('render-process-gone', (_event, webContents, details) => {
   } catch {
     // Ignore inaccessible webContents metadata; the crash reason is enough.
   }
+  // "killed" outside a quit is the OS or the user ending the renderer (exit code
+  // 15 on macOS, Sentry X-DISPATCH-4E). Reopen the window, file nothing.
+  if (details.reason === 'killed') {
+    logger.main.warn(`Renderer process killed, exitCode=${details.exitCode}`);
+    recoverCrashedWindow(webContents);
+    return;
+  }
+
   // The URL carries the user's install path, so letting it reach the grouping
   // algorithm would shard one crash across every machine that hits it. Group on
   // the reason alone and keep the URL as message detail.
@@ -761,8 +783,8 @@ let flightStripGuidance: GuidanceRoutes = NO_GUIDANCE_ROUTES;
  * the first click on the lock pass through whenever Windows did not forward one.
  */
 let flightStripCaptureWatch: ReturnType<typeof setInterval> | null = null;
-/** The lock grip in the strip window's content area, as the strip last reported it. */
-let flightStripGrip: FlightStripGripRect | null = null;
+/** The button areas in the strip window's content area, as the strip last reported them. */
+let flightStripGrip: FlightStripGripRect[] = [];
 const FLIGHT_STRIP_CAPTURE_POLL_MS = 50;
 
 function setFlightStripCapture(capture: boolean): void {
@@ -912,7 +934,7 @@ function openFlightStripWindow(): void {
   win.on('closed', () => {
     if (flightStripWindow === win) {
       flightStripWindow = null;
-      flightStripGrip = null;
+      flightStripGrip = [];
       syncFlightStripCaptureWatch();
       flightStripSimPresence?.dispose();
       flightStripSimPresence = null;
@@ -1426,8 +1448,8 @@ function registerIpcHandlers() {
   });
   on('app:setFlightStripGrip', (event, grip: unknown) => {
     if (!isFlightStripWindowOpen() || event.sender !== flightStripWindow!.webContents) return;
-    const parsed = parseGripRect(grip);
-    flightStripGrip = parsed && gripRectToScreen(parsed, event.sender.getZoomFactor());
+    const zoom = event.sender.getZoomFactor();
+    flightStripGrip = parseGripRects(grip).map((rect) => gripRectToScreen(rect, zoom));
   });
   on('app:setFlightStripContentSize', (event, size: unknown) => {
     if (!isFlightStripWindowOpen() || event.sender !== flightStripWindow!.webContents) return;
@@ -1773,7 +1795,10 @@ function registerIpcHandlers() {
     } catch (error) {
       // A corrupt cache fails here on every launch (Sentry X-DISPATCH-6Q); rebuild it instead.
       if (recoverFromCorruption(error)) throw error;
-      logger.data.error('Data loading failed', error);
+      // Quitting closes the database under a load still running ("database is
+      // not open", Sentry X-DISPATCH-6P); that is not a failed load.
+      if (isQuitting) logger.data.warn('Data loading stopped by quit', error);
+      else logger.data.error('Data loading failed', error);
       const hint = getFileErrorHintKey(error);
       sendLoadingProgress({
         step: 'error',
@@ -2956,7 +2981,8 @@ function refreshRecentsMenus(): void {
   } else if (process.platform === 'win32' && app.isPackaged) {
     const categories = buildJumpListCategories(shown, labels, process.execPath);
     const result = app.setJumpList(categories.length > 0 ? categories : null);
-    if (result !== 'ok') logger.main.warn(`Jump list not set: ${result}`);
+    // Windows refuses the list when the user turned recent items off; nothing to act on.
+    if (result !== 'ok') logger.main.info(`Jump list not set: ${result}`);
   }
 }
 
@@ -2994,11 +3020,7 @@ function registerWindowsFileAssociations(): void {
   }
 }
 
-// Prevent multiple instances — focus existing window if second instance launches
-if (!app.requestSingleInstanceLock()) {
-  app.quit();
-}
-
+// A second launch quit above; this copy shows its window and takes what it was given.
 app.on('second-instance', (_event, commandLine) => {
   showOrCreateMainWindow();
   // Windows/Linux: the link or file the second instance was launched with
@@ -3042,7 +3064,7 @@ function reportDisplay(win: BrowserWindow): void {
   });
 }
 
-if (!squirrelHookRun) app.whenReady().then(bootstrap);
+if (!squirrelHookRun && isPrimaryInstance) app.whenReady().then(bootstrap);
 
 async function bootstrap(): Promise<void> {
   // Environment snapshot for production support
