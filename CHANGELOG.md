@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.17.0] - 2026-11-22
+
 ### Added
 
 - **Click an airport code in the flight plan header to open it.** The map moves there and draws the airport.
@@ -531,7 +533,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Releases up to 2.2.0 are listed on the [website changelog](https://x-dispatch.app/changelog/).
 
-[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.16.0...HEAD
+[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.17.0...HEAD
+[2.17.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.16.0...v2.17.0
 [2.16.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.15.0...v2.16.0
 [2.15.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.14.0...v2.15.0
 [2.14.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.13.0...v2.14.0
