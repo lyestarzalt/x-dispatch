@@ -4,7 +4,7 @@
  * per release and platform without a user report.
  */
 import { describe, expect, it } from 'vitest';
-import { sentryLogFor } from './logForwarding';
+import { createLogForwarder, sentryLogFor } from './logForwarding';
 
 describe('sentryLogFor', () => {
   it('forwards warnings and errors with the logger scope as an attribute', () => {
@@ -19,6 +19,27 @@ describe('sentryLogFor', () => {
       level: 'error',
       message: 'Custom scenery resync failed',
       attributes: { scope: 'main', error: 'EACCES' },
+    });
+  });
+
+  it('keeps the detail string of a renderer line', () => {
+    expect(
+      sentryLogFor('error', ['[Renderer] MapLibre error [source: raster]', 'Failed to fetch'])
+        ?.attributes.error
+    ).toBe('Failed to fetch');
+  });
+
+  it('hides the account name in the message and the error', () => {
+    expect(
+      sentryLogFor('warn', [
+        '[Renderer Console] slow (file:///C:/Users/rolan/AppData/Local/XDispatch/app.asar/a.js:5)',
+        new Error("EPERM: open '/Users/ron/x.db'"),
+      ])
+    ).toEqual({
+      level: 'warn',
+      message:
+        '[Renderer Console] slow (file:///C:/Users/<user>/AppData/Local/XDispatch/app.asar/a.js:5)',
+      attributes: { scope: 'default', error: "EPERM: open '/Users/<user>/x.db'" },
     });
   });
 
@@ -65,5 +86,19 @@ describe('createLogForwarder', () => {
     const next = createLogForwarder();
     const entry = next('warn', ['[Data] ' + 'x'.repeat(5_000)]);
     expect(entry?.message.length).toBe(MAX_FORWARDED_LENGTH);
+  });
+});
+
+describe('basemap console warnings', () => {
+  it('stay in the local log: the map style raises them, not our code', () => {
+    const forward = createLogForwarder();
+    for (const line of [
+      '[Renderer Console] Image "circle-11" could not be loaded. Please make sure you have added the image before it is needed with map.addImage()',
+      '[Renderer Console] layers[road_shield_us].filter[1]: Expected value to be of type number, but found null instead. Falling back to false.',
+      '[Renderer Console] Canvas2D: Multiple readback operations using getImageData are faster with the willReadFrequently attribute set to true.',
+    ]) {
+      expect(forward('warn', [line])).toBeNull();
+    }
+    expect(forward('warn', ['[Renderer Console] something of ours'])).not.toBeNull();
   });
 });

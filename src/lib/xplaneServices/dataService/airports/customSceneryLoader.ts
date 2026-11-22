@@ -45,8 +45,13 @@ export async function findCustomSceneryAptFiles(xplanePath: string): Promise<str
     return [];
   }
 
-  const found = await Promise.all(entries.map((entry) => aptFileOf(customSceneryPath, entry)));
+  const skipped: SkippedEntry[] = [];
+  const found = await Promise.all(
+    entries.map((entry) => aptFileOf(customSceneryPath, entry, skipped))
+  );
   const aptFiles = found.filter((aptPath): aptPath is string => aptPath !== null);
+  const summary = skippedSummary(skipped);
+  if (summary) logger.data.warn(summary);
 
   // Dedup by canonical path. A .lnk shortcut whose target resolves to a
   // sibling directory (or another .lnk's target) would otherwise emit the
@@ -58,8 +63,31 @@ export async function findCustomSceneryAptFiles(xplanePath: string): Promise<str
   return [...new Set(aptFiles.map((p) => path.resolve(p)))];
 }
 
+interface SkippedEntry {
+  name: string;
+  /** `parse-error: <the parser's text>` for a shortcut, `unreadable` for a folder or link. */
+  why: string;
+}
+
+/**
+ * One line for every entry a scan could not follow. A pack per line filled the
+ * log on installs with dozens of shortcuts, on every launch; the names stay in
+ * the local log at info.
+ */
+export function skippedSummary(skipped: SkippedEntry[]): string | null {
+  if (skipped.length === 0) return null;
+  const counts = new Map<string, number>();
+  for (const { why } of skipped) counts.set(why, (counts.get(why) ?? 0) + 1);
+  const parts = [...counts].map(([why, count]) => `${count} ${why}`);
+  return `Custom Scenery: ${skipped.length} entries skipped (${parts.join(', ')})`;
+}
+
 /** The apt.dat a Custom Scenery entry leads to, or null when it has none. */
-async function aptFileOf(customSceneryPath: string, entry: fs.Dirent): Promise<string | null> {
+async function aptFileOf(
+  customSceneryPath: string,
+  entry: fs.Dirent,
+  skipped: SkippedEntry[]
+): Promise<string | null> {
   const entryPath = path.join(customSceneryPath, entry.name);
   try {
     // Real directory or junction/symlink
@@ -73,7 +101,11 @@ async function aptFileOf(customSceneryPath: string, entry: fs.Dirent): Promise<s
     if (entry.isFile() && entry.name.toLowerCase().endsWith('.lnk')) {
       const resolved = await resolveLnk(entryPath);
       if (!resolved.ok) {
-        logger.data.warn(`Skipping shortcut "${entry.name}" (${resolved.reason})`);
+        const why = resolved.error
+          ? `shortcut ${resolved.reason}: ${resolved.error}`
+          : `shortcut ${resolved.reason}`;
+        logger.data.info(`Skipping shortcut "${entry.name}" (${why})`);
+        skipped.push({ name: entry.name, why });
         return null;
       }
       try {
@@ -86,9 +118,10 @@ async function aptFileOf(customSceneryPath: string, entry: fs.Dirent): Promise<s
     return null;
   } catch {
     // Skip this entry (broken symlink, unmounted drive, etc.) but continue scanning
-    logger.data.warn(
+    logger.data.info(
       `Skipping Custom Scenery entry "${entry.name}" (unreadable or broken symlink)`
     );
+    skipped.push({ name: entry.name, why: 'unreadable or broken link' });
     return null;
   }
 }

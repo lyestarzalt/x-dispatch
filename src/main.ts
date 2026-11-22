@@ -2972,7 +2972,8 @@ function refreshRecentsMenus(): void {
   } else if (process.platform === 'win32' && app.isPackaged) {
     const categories = buildJumpListCategories(shown, labels, process.execPath);
     const result = app.setJumpList(categories.length > 0 ? categories : null);
-    if (result !== 'ok') logger.main.warn(`Jump list not set: ${result}`);
+    // Windows refuses the list when the user turned recent items off; nothing to act on.
+    if (result !== 'ok') logger.main.info(`Jump list not set: ${result}`);
   }
 }
 
