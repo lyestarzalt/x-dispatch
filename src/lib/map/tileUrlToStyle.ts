@@ -59,6 +59,10 @@ export function validateMapStyleUrl(url: string): MapStyleUrlError | null {
     return 'invalid-url';
   }
 
+  // A placeholder in the host ("example.com{z}/{x}/{y}.png", or a "{s}" subdomain
+  // MapLibre does not fill in) sends every tile to a host that does not exist.
+  if (/[{}]/.test(parsed.hostname)) return 'invalid-url';
+
   const isHttps = parsed.protocol === 'https:';
   const isLocalhostHttp =
     parsed.protocol === 'http:' &&
