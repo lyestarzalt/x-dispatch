@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { normalizeRunwayName, runwayEndsFromAirport } from '@/lib/flightplan/builder/runways';
 import { useAppStore } from '@/stores/appStore';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import { type PlanFix, addProcedureRouteLayer, removeProcedureRouteLayer } from '../layers';
@@ -18,6 +19,7 @@ interface UseProcedureRouteSyncOptions {
 export function useProcedureRouteSync({ mapRef }: UseProcedureRouteSyncOptions): void {
   const selectedProcedure = useAppStore((s) => s.selectedProcedure);
   const fmsData = useFlightPlanStore((s) => s.fmsData);
+  const airport = useAppStore((s) => s.selectedAirportData);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -39,6 +41,13 @@ export function useProcedureRouteSync({ mapRef }: UseProcedureRouteSyncOptions):
           longitude: wp.longitude,
         })) ?? [];
 
+      // A SID's heading legs off the runway can only be drawn from that runway.
+      const runway = normalizeRunwayName(selectedProcedure.runway ?? undefined);
+      const departureEnd =
+        selectedProcedure.type === 'SID' && runway && airport
+          ? runwayEndsFromAirport(airport).find((end) => end.name === runway)
+          : undefined;
+
       try {
         addProcedureRouteLayer(
           map,
@@ -46,6 +55,7 @@ export function useProcedureRouteSync({ mapRef }: UseProcedureRouteSyncOptions):
             type: selectedProcedure.type,
             name: selectedProcedure.name,
             waypoints: selectedProcedure.waypoints,
+            departureEnd,
           },
           undefined,
           { planFixes }
@@ -64,5 +74,5 @@ export function useProcedureRouteSync({ mapRef }: UseProcedureRouteSyncOptions):
       cancel();
       removeProcedureRouteLayer(map);
     };
-  }, [mapRef, selectedProcedure, fmsData]);
+  }, [mapRef, selectedProcedure, fmsData, airport]);
 }

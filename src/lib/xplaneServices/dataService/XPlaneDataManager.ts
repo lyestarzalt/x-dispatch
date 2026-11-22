@@ -8,6 +8,7 @@ import * as fs from 'fs';
 import { airports, aptFileMeta, closeDb, getDb, isDbReady } from '@/lib/db';
 import { runwayEndsFromApt } from '@/lib/flightplan/builder/runways';
 import { parseCIFP } from '@/lib/parsers/nav/cifpParser';
+import { markObstacleDepartures } from '@/lib/parsers/nav/faaChartIndex';
 import { markIlsOrLoc } from '@/lib/parsers/nav/faaProcedureIndex';
 import { isIlsDme } from '@/lib/parsers/nav/navaidParser';
 import {
@@ -56,6 +57,7 @@ import {
   loadWaypoints,
 } from './navdata';
 import { selectAtcForAirport } from './navdata/atcSelect';
+import { loadFaaObstacleDepartures } from './navdata/faaChartIndexLoader';
 import { loadFaaProcedureIndex } from './navdata/faaProcedureIndexLoader';
 import {
   type NavDataType,
@@ -668,6 +670,10 @@ export class XPlaneDataManager {
       // US ILS approaches the FAA charts as ILS OR LOC, when the user placed its index.
       const faaIndex = loadFaaProcedureIndex(xplanePath);
       if (faaIndex) markIlsOrLoc(enriched.approaches, faaIndex, icao);
+
+      // US departures the FAA charts as obstacle departures, when the user placed its chart index.
+      const obstacleDepartures = loadFaaObstacleDepartures(xplanePath);
+      if (obstacleDepartures) markObstacleDepartures(enriched.sids, obstacleDepartures, icao);
 
       // Log resolution stats for debugging
       let total = 0;

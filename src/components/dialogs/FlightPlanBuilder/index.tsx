@@ -137,6 +137,11 @@ function FlightPlanBuilder({
   onActivate,
 }: FlightPlanBuilderProps) {
   const { t } = useTranslation();
+  // An obstacle departure says so in the picker; the chosen value stays the raw identifier.
+  const sidLabel = useCallback(
+    (p: ResolvedProcedure) => (p.obstacle ? `${p.name} (${t('procedures.obstacle')})` : p.name),
+    [t]
+  );
   const units = useUnits();
   const isOpen = usePlanBuilderStore((s) => s.isOpen);
   useTrackFeatureOpened('flight_plan_builder', isOpen);
@@ -1026,6 +1031,7 @@ function FlightPlanBuilder({
                       <Field label={t('planBuilder.sid')}>
                         <ProcedureSelect
                           procedures={sids}
+                          labelFor={sidLabel}
                           runway={departure.runway}
                           value={departure.sid}
                           placeholder={t('planBuilder.noProcedure')}

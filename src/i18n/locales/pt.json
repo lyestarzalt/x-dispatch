@@ -1392,6 +1392,7 @@
     "crosswind": "XW"
   },
   "procedures": {
+    "obstacle": "OBSTACLE",
     "noData": "Sem procedimentos disponíveis",
     "noTypeData": "Sem {{type}}s disponíveis",
     "tabs": {

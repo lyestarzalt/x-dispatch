@@ -28,7 +28,18 @@ function ProcedureName({
   type: ProcedureType;
   withCode?: boolean;
 }) {
-  if (type !== 'APP') return <span className="font-mono text-sm">{proc.name}</span>;
+  const { t } = useTranslation();
+  if (type !== 'APP') {
+    if (!proc.obstacle) return <span className="font-mono text-sm">{proc.name}</span>;
+    return (
+      <span className="flex min-w-0 items-baseline gap-2">
+        <span className="font-mono text-sm">{proc.name}</span>
+        <span className="text-muted-foreground/50 text-2xs truncate">
+          {t('procedures.obstacle')}
+        </span>
+      </span>
+    );
+  }
   const name = formatApproachName(
     proc.name,
     proc.approachType,

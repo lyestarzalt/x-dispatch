@@ -3,6 +3,7 @@ import type { ResolvedProcedureWaypoint } from '@/types/navigation';
 import {
   addProcedureRouteLayer,
   createLegLabelGeoJSON,
+  createRouteGeoJSON,
   omitFlightPlanWaypoints,
 } from './ProcedureRouteLayer';
 
@@ -61,6 +62,43 @@ describe('omitFlightPlanWaypoints', () => {
   it('keeps unresolved procedure waypoints so they still render in red', () => {
     const plan = [{ id: 'NOWHR', latitude: 43.91, longitude: 5.42 }];
     expect(omitFlightPlanWaypoints([unresolved], plan)).toEqual([unresolved]);
+  });
+});
+
+// KGJT MONMT3 off runway 11: climb on 116, turn to 240, then direct JNC. Only JNC is a fix, so
+// without the runway there is one point and no line; the preview drew nothing.
+describe('createRouteGeoJSON for a departure that starts on headings', () => {
+  const legs = [
+    wp({
+      pathTerminator: 'VA',
+      course: 116,
+      altitude: { descriptor: '+', altitude1: 6600, altitude2: null, isFlightLevel: false },
+      resolved: false,
+    }),
+    wp({ pathTerminator: 'VM', course: 240, turnDirection: 'R', resolved: false }),
+    wp({ fixId: 'JNC', pathTerminator: 'DF', latitude: 39.0596, longitude: -108.7926 }),
+  ];
+  const runway11 = {
+    name: '11',
+    latitude: 39.1296,
+    longitude: -108.5443,
+    headingDeg: 127,
+    lengthNm: 1.7,
+    elevationFt: 4861,
+  };
+
+  it('draws the route from the far end of the runway', () => {
+    const { features } = createRouteGeoJSON(legs, runway11);
+    const line = features[0]?.geometry as GeoJSON.LineString;
+    expect(line.coordinates.length).toBeGreaterThan(2);
+    // Starts down the runway from the threshold, south-east of it.
+    const [lon, lat] = line.coordinates[0] as [number, number];
+    expect(lon).toBeGreaterThan(runway11.longitude);
+    expect(lat).toBeLessThan(runway11.latitude);
+  });
+
+  it('has nothing to draw without the runway', () => {
+    expect(createRouteGeoJSON(legs).features).toHaveLength(0);
   });
 });
 

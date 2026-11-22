@@ -1392,6 +1392,7 @@
     "crosswind": "侧风"
   },
   "procedures": {
+    "obstacle": "OBSTACLE",
     "noData": "无可用程序",
     "noTypeData": "无可用 {{type}}",
     "tabs": {

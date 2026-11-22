@@ -367,6 +367,8 @@ export interface Procedure {
   approachQualifier2?: string;
   /** Approaches: an ILS the FAA charts as ILS OR LOC, from the user's IN_CIFP.txt. */
   orLocalizer?: boolean;
+  /** SIDs: one the FAA charts as an obstacle departure, from the user's d-tpp_Metafile.xml. */
+  obstacle?: boolean;
   waypoints: ProcedureWaypoint[];
 }
 
