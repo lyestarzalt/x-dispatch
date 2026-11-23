@@ -5,75 +5,28 @@
  * - Holding patterns (racetrack shapes)
  * - Procedure turns (45/180 pattern)
  */
+import { normalize360 } from '@/lib/utils/math';
+import { METERS_PER_NM } from '@/lib/utils/units/constants';
 import type { LonLat } from '@/types/geo';
+import { EARTH_RADIUS_M, destinationRad, initialBearing, toDegrees, toRadians } from './sphere';
 
-export type TurnDirection = 'L' | 'R';
-
-const EARTH_RADIUS_M = 6371000;
-const METERS_PER_NM = 1852;
-
-/**
- * Convert degrees to radians
- */
-function toRadians(degrees: number): number {
-  return (degrees * Math.PI) / 180;
-}
-
-/**
- * Convert radians to degrees
- */
-function toDegrees(radians: number): number {
-  return (radians * 180) / Math.PI;
-}
-
-/**
- * Calculate bearing from point A to point B
- * @returns Bearing in degrees (0-360)
- */
-function bearing(fromLat: number, fromLon: number, toLat: number, toLon: number): number {
-  const φ1 = toRadians(fromLat);
-  const φ2 = toRadians(toLat);
-  const Δλ = toRadians(toLon - fromLon);
-
-  const y = Math.sin(Δλ) * Math.cos(φ2);
-  const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
-
-  return (toDegrees(Math.atan2(y, x)) + 360) % 360;
-}
-
-/**
- * Calculate destination point given start, distance, and bearing
- * @param lat Start latitude
- * @param lon Start longitude
- * @param distanceMeters Distance in meters
- * @param bearingDegrees Bearing in degrees
- * @returns [lon, lat] as LonLat
- */
+/** Start, distance in metres and bearing in degrees to the point reached, as `[lon, lat]`. */
 function destinationPoint(
   lat: number,
   lon: number,
   distanceMeters: number,
   bearingDegrees: number
 ): LonLat {
-  const φ1 = toRadians(lat);
-  const λ1 = toRadians(lon);
-  const θ = toRadians(bearingDegrees);
-  const δ = distanceMeters / EARTH_RADIUS_M;
-
-  const φ2 = Math.asin(Math.sin(φ1) * Math.cos(δ) + Math.cos(φ1) * Math.sin(δ) * Math.cos(θ));
-  const λ2 =
-    λ1 +
-    Math.atan2(Math.sin(θ) * Math.sin(δ) * Math.cos(φ1), Math.cos(δ) - Math.sin(φ1) * Math.sin(φ2));
-
+  const [φ2, λ2] = destinationRad(
+    toRadians(lat),
+    toRadians(lon),
+    toRadians(bearingDegrees),
+    distanceMeters / EARTH_RADIUS_M
+  );
   return [toDegrees(λ2), toDegrees(φ2)];
 }
 
-/**
- * Normalize angle to 0-360 range
- */
-function normalizeAngle(angle: number): number {
-  return ((angle % 360) + 360) % 360;
-}
+export type TurnDirection = 'L' | 'R';
 
 /**
  * Calculate angular sweep for arc based on turn direction
@@ -83,8 +36,8 @@ function calculateSweep(
   endAngle: number,
   turnDirection: TurnDirection
 ): number {
-  const start = normalizeAngle(startAngle);
-  const end = normalizeAngle(endAngle);
+  const start = normalize360(startAngle);
+  const end = normalize360(endAngle);
 
   if (turnDirection === 'R') {
     // Right turn: clockwise sweep (increasing angles)
@@ -131,8 +84,8 @@ export function interpolateRFArc(
   const [centerLon, centerLat] = center;
 
   // Calculate angles from center to start and end points
-  const startAngle = bearing(centerLat, centerLon, startLat, startLon);
-  const endAngle = bearing(centerLat, centerLon, endLat, endLon);
+  const startAngle = initialBearing(centerLat, centerLon, startLat, startLon);
+  const endAngle = initialBearing(centerLat, centerLon, endLat, endLon);
 
   // Calculate sweep angle based on turn direction
   const sweepDegrees = calculateSweep(startAngle, endAngle, turnDirection);
@@ -145,10 +98,10 @@ export function interpolateRFArc(
 
     if (turnDirection === 'R') {
       // Right turn: increase angle
-      currentAngle = normalizeAngle(startAngle + sweepDegrees * fraction);
+      currentAngle = normalize360(startAngle + sweepDegrees * fraction);
     } else {
       // Left turn: decrease angle
-      currentAngle = normalizeAngle(startAngle - sweepDegrees * fraction);
+      currentAngle = normalize360(startAngle - sweepDegrees * fraction);
     }
 
     const point = destinationPoint(centerLat, centerLon, radiusMeters, currentAngle);
@@ -185,7 +138,7 @@ export function createHoldingPattern(
   const [fixLon, fixLat] = holdFix;
 
   // Outbound course is reciprocal of inbound
-  const outboundCourse = normalizeAngle(inboundCourse + 180);
+  const outboundCourse = normalize360(inboundCourse + 180);
 
   // Calculate offset direction for the turns based on turn direction
   const offsetAngle = turnDirection === 'R' ? inboundCourse + 90 : inboundCourse - 90;
@@ -215,7 +168,7 @@ export function createHoldingPattern(
   for (let i = 1; i <= turnPoints; i++) {
     const fraction = i / turnPoints;
     const turnAngle = turnDirection === 'R' ? 180 * fraction : -180 * fraction;
-    const currentAngle = normalizeAngle(offsetAngle + 180 + turnAngle);
+    const currentAngle = normalize360(offsetAngle + 180 + turnAngle);
     const point = destinationPoint(turn1Center[1], turn1Center[0], turnRadiusMeters, currentAngle);
     points.push(point);
   }
@@ -229,7 +182,7 @@ export function createHoldingPattern(
   for (let i = 1; i <= turnPoints; i++) {
     const fraction = i / turnPoints;
     const turnAngle = turnDirection === 'R' ? 180 * fraction : -180 * fraction;
-    const currentAngle = normalizeAngle(offsetAngle + turnAngle);
+    const currentAngle = normalize360(offsetAngle + turnAngle);
     const point = destinationPoint(turn2Center[1], turn2Center[0], turnRadiusMeters, currentAngle);
     points.push(point);
   }
@@ -284,11 +237,11 @@ export function createProcedureTurn(
   points.push(leg45End);
 
   // Calculate 180-degree turn (intercept inbound course)
-  const inboundCourse = normalizeAngle(outboundCourse + 180);
+  const inboundCourse = normalize360(outboundCourse + 180);
   const interceptCourse =
     turnDirection === 'L'
-      ? normalizeAngle(turn45Angle + 180) // 180-degree turn back
-      : normalizeAngle(turn45Angle + 180);
+      ? normalize360(turn45Angle + 180) // 180-degree turn back
+      : normalize360(turn45Angle + 180);
 
   // Point 4: After 180-degree turn, heading toward fix
   const afterTurn = destinationPoint(leg45End[1], leg45End[0], legDistanceMeters, interceptCourse);

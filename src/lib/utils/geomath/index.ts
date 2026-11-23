@@ -1,5 +1,6 @@
 import { FEET_PER_METER, METERS_PER_NM } from '@/lib/utils/units/constants';
 import type { Coordinates } from '@/types/geo';
+import { EARTH_RADIUS_M, destinationRad, initialBearing, toDegrees, toRadians } from './sphere';
 
 // Re-export arc utilities
 export {
@@ -22,8 +23,6 @@ export type Meters = Brand<number, 'meters'>;
 export type Feet = Brand<number, 'feet'>;
 export type NauticalMiles = Brand<number, 'nauticalMiles'>;
 type LatLon = Brand<[number, number], 'latlon'>;
-
-const EARTH_RADIUS_M = 6371000;
 
 export function metersToFeet(meters: number): Feet {
   return (meters * FEET_PER_METER) as Feet;
@@ -64,15 +63,7 @@ export function distanceNm(lat1: number, lon1: number, lat2: number, lon2: numbe
 }
 
 export function calculateBearing(lat1: number, lon1: number, lat2: number, lon2: number): Degrees {
-  const φ1 = (lat1 * Math.PI) / 180;
-  const φ2 = (lat2 * Math.PI) / 180;
-  const Δλ = ((lon2 - lon1) * Math.PI) / 180;
-
-  const y = Math.sin(Δλ) * Math.cos(φ2);
-  const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
-
-  const bearing = (Math.atan2(y, x) * 180) / Math.PI;
-  return ((bearing + 360) % 360) as Degrees;
+  return initialBearing(lat1, lon1, lat2, lon2) as Degrees;
 }
 
 function calculateDestination(
@@ -81,17 +72,13 @@ function calculateDestination(
   distanceMeters: number,
   bearingDegrees: number
 ): LatLon {
-  const φ1 = (lat * Math.PI) / 180;
-  const λ1 = (lon * Math.PI) / 180;
-  const θ = (bearingDegrees * Math.PI) / 180;
-  const δ = distanceMeters / EARTH_RADIUS_M;
-
-  const φ2 = Math.asin(Math.sin(φ1) * Math.cos(δ) + Math.cos(φ1) * Math.sin(δ) * Math.cos(θ));
-  const λ2 =
-    λ1 +
-    Math.atan2(Math.sin(θ) * Math.sin(δ) * Math.cos(φ1), Math.cos(δ) - Math.sin(φ1) * Math.sin(φ2));
-
-  return [(φ2 * 180) / Math.PI, (λ2 * 180) / Math.PI] as LatLon;
+  const [φ2, λ2] = destinationRad(
+    toRadians(lat),
+    toRadians(lon),
+    toRadians(bearingDegrees),
+    distanceMeters / EARTH_RADIUS_M
+  );
+  return [toDegrees(φ2), toDegrees(λ2)] as LatLon;
 }
 
 export function destinationPoint(

@@ -20,7 +20,8 @@ function unwrapLongitudes(ring: readonly [number, number][]): [number, number][]
   return out;
 }
 
-function rayCast(x: number, y: number, ring: readonly [number, number][]): boolean {
+/** Ray-casting test of a point against one ring as given, with no antimeridian handling. */
+export function pointInRing(x: number, y: number, ring: readonly [number, number][]): boolean {
   let inside = false;
   for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
     const [xi, yi] = ring[i]!;
@@ -46,6 +47,8 @@ export function isPointInPolygon(
   const [x, y] = point;
   const unwrapped = unwrapLongitudes(ring);
   return (
-    rayCast(x, y, unwrapped) || rayCast(x + 360, y, unwrapped) || rayCast(x - 360, y, unwrapped)
+    pointInRing(x, y, unwrapped) ||
+    pointInRing(x + 360, y, unwrapped) ||
+    pointInRing(x - 360, y, unwrapped)
   );
 }

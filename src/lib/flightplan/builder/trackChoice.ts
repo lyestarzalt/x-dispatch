@@ -3,7 +3,7 @@
  * and whether a pair of airports crosses the track system at all.
  */
 import { hasParity } from './cruiseAdjust';
-import type { LatLon } from './geometry';
+import { type LatLon, lonDeltaDeg } from './geometry';
 import { NAT_TRACK_RE, tokenizeRoute } from './routeTokens';
 import type { NatFeed, NatMessageInfo, OceanicTrackInfo } from './types';
 
@@ -23,11 +23,6 @@ const NAT_MIN_LAT = 20;
 
 export type NatDirection = 'eastbound' | 'westbound';
 
-/** Degrees east from one longitude to another, the short way round: -180 to 180. */
-function shortArcDeg(fromLon: number, toLon: number): number {
-  return ((toLon - fromLon + 540) % 360) - 180;
-}
-
 /**
  * Which way the flight crosses the North Atlantic, or null when it does not. A crossing is a
  * flight whose short way round passes the mid-ocean meridian: San Francisco to Hong Kong has
@@ -36,8 +31,8 @@ function shortArcDeg(fromLon: number, toLon: number): number {
  */
 export function natCrossing(departure: LatLon, arrival: LatLon): NatDirection | null {
   if (departure.latitude < NAT_MIN_LAT || arrival.latitude < NAT_MIN_LAT) return null;
-  const arc = shortArcDeg(departure.longitude, arrival.longitude);
-  const toMeridian = shortArcDeg(departure.longitude, NAT_MERIDIAN);
+  const arc = lonDeltaDeg(departure.longitude, arrival.longitude);
+  const toMeridian = lonDeltaDeg(departure.longitude, NAT_MERIDIAN);
   if (arc === 0 || toMeridian === 0) return null;
   const passes = arc > 0 ? toMeridian > 0 && toMeridian < arc : toMeridian < 0 && toMeridian > arc;
   if (!passes) return null;

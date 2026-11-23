@@ -16,6 +16,8 @@
  * give nothing or only a long detour, a second pass allows direct legs between
  * airway fixes, the way FRA routes are filed.
  */
+import { pointInRing } from '@/lib/utils/geomath/polygon';
+import { EARTH_RADIUS_NM } from '@/lib/utils/geomath/sphere';
 import {
   getAirspacesInBounds,
   getAllAirwaysFromDb,
@@ -80,7 +82,6 @@ const TRACK_PREFERENCE = 0.9;
 const NAR_PREFERENCE = 0.8;
 /** Fixes inside a run of direct legs are dropped while the track stays within this corridor. */
 const STRAIGHT_CORRIDOR_NM = 8;
-const EARTH_RADIUS_NM = 3440.065;
 /** ARINC 424 lat/lon reporting points, "5250N" is 52N 050W and "50E60" 50N 160E. */
 const REPORTING_POINT_RE = /^\d{4}[NSEW]$|^\d{2}[NSEW]\d{2}$/;
 /**
@@ -251,16 +252,6 @@ function avoidAreasAtLevel(spaces: Airspace[], cruiseFt: number): AvoidArea[] {
     out.push({ ring: a.coordinates, minLat, maxLat, minLon, maxLon, penalty });
   }
   return out;
-}
-
-function pointInRing(lon: number, lat: number, ring: [number, number][]): boolean {
-  let inside = false;
-  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-    const [xi, yi] = ring[i]!;
-    const [xj, yj] = ring[j]!;
-    if (yi > lat !== yj > lat && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) inside = !inside;
-  }
-  return inside;
 }
 
 function segmentsCross(

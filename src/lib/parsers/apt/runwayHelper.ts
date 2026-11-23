@@ -1,9 +1,8 @@
 import { calculateBearing } from '@/lib/utils/geomath';
+import { EARTH_RADIUS_M, destinationRad, toDegrees, toRadians } from '@/lib/utils/geomath/sphere';
 import type { Runway, WaterRunway } from '@/types/apt';
 import { ShoulderSurfaceType } from '@/types/apt';
 import type { LonLat } from '@/types/geo';
-
-const EARTH_RADIUS = 6371e3; // meters
 
 /** Width of a transverse threshold bar, the same stripe width as the threshold marking. */
 export const THRESHOLD_BAR_WIDTH_M = 1.8;
@@ -44,23 +43,13 @@ function calculateVertex(
   distance: number,
   bearing: number
 ): [number, number] {
-  const latRad = (lat * Math.PI) / 180;
-  const lonRad = (lon * Math.PI) / 180;
-  const bearingRad = (bearing * Math.PI) / 180;
-  const dRad = distance / EARTH_RADIUS;
-
-  const latNewRad = Math.asin(
-    Math.sin(latRad) * Math.cos(dRad) + Math.cos(latRad) * Math.sin(dRad) * Math.cos(bearingRad)
+  const [latNewRad, lonNewRad] = destinationRad(
+    toRadians(lat),
+    toRadians(lon),
+    toRadians(bearing),
+    distance / EARTH_RADIUS_M
   );
-
-  const lonNewRad =
-    lonRad +
-    Math.atan2(
-      Math.sin(bearingRad) * Math.sin(dRad) * Math.cos(latRad),
-      Math.cos(dRad) - Math.sin(latRad) * Math.sin(latNewRad)
-    );
-
-  return [(latNewRad * 180) / Math.PI, (lonNewRad * 180) / Math.PI];
+  return [toDegrees(latNewRad), toDegrees(lonNewRad)];
 }
 /** The runway strip, cut perpendicular to the true line between the ends. */
 export function getRunwayPolygon(runway: Runway): [number, number][] {

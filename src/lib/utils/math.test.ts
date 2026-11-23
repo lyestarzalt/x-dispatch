@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { clamp, lerpHeading, normalize360, signedAngleDelta, smoothstep } from './math';
+import {
+  clamp,
+  lerpHeading,
+  normalize180,
+  normalize360,
+  signedAngleDelta,
+  smoothstep,
+} from './math';
 
 describe('clamp', () => {
   it('returns the value when it is inside the range', () => {
@@ -18,6 +25,16 @@ describe('normalize360', () => {
     expect(normalize360(370)).toBe(10);
     expect(normalize360(360)).toBe(0);
     expect(normalize360(-725)).toBe(355);
+  });
+});
+
+describe('normalize180', () => {
+  it('wraps into -180 to 180, with 180 itself mapping to -180', () => {
+    expect(normalize180(190)).toBe(-170);
+    expect(normalize180(-190)).toBe(170);
+    expect(normalize180(180)).toBe(-180);
+    expect(normalize180(540)).toBe(-180);
+    expect(normalize180(0)).toBe(0);
   });
 });
 

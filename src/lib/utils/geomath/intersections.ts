@@ -3,16 +3,10 @@
  * (course to intercept), and CD/VD/FD/FC (course/track to a DME distance) all terminate at the
  * crossing of two courses, or of a course and a DME ring, rather than at a published fix.
  */
+import { clamp } from '@/lib/utils/math';
 import type { Coordinates } from '@/types/geo';
 import type { Degrees, NauticalMiles } from './index';
-
-function toRad(deg: number): number {
-  return (deg * Math.PI) / 180;
-}
-
-function toDeg(rad: number): number {
-  return (rad * 180) / Math.PI;
-}
+import { toDegrees, toRadians } from './sphere';
 
 /**
  * Intersection of two great-circle courses, each defined by a start point and a bearing.
@@ -31,12 +25,12 @@ export function intersectRadials(
   from2: Coordinates,
   bearing2: Degrees
 ): Coordinates | null {
-  const φ1 = toRad(from1.latitude);
-  const λ1 = toRad(from1.longitude);
-  const φ2 = toRad(from2.latitude);
-  const λ2 = toRad(from2.longitude);
-  const θ13 = toRad(bearing1);
-  const θ23 = toRad(bearing2);
+  const φ1 = toRadians(from1.latitude);
+  const λ1 = toRadians(from1.longitude);
+  const φ2 = toRadians(from2.latitude);
+  const λ2 = toRadians(from2.longitude);
+  const θ13 = toRadians(bearing1);
+  const θ23 = toRadians(bearing2);
 
   const Δφ = φ2 - φ1;
   const Δλ = λ2 - λ1;
@@ -48,11 +42,11 @@ export function intersectRadials(
     );
   if (Math.abs(δ12) < 1e-12) return null;
 
-  const clamp = (x: number) => Math.min(1, Math.max(-1, x));
-  const cosθa = clamp(
+  const unit = (x: number) => clamp(x, -1, 1);
+  const cosθa = unit(
     (Math.sin(φ2) - Math.sin(φ1) * Math.cos(δ12)) / (Math.sin(δ12) * Math.cos(φ1))
   );
-  const cosθb = clamp(
+  const cosθb = unit(
     (Math.sin(φ1) - Math.sin(φ2) * Math.cos(δ12)) / (Math.sin(δ12) * Math.cos(φ2))
   );
   const θa = Math.acos(cosθa);
@@ -77,14 +71,14 @@ export function intersectRadials(
   if (sinα1 * sinα2 < 0) return null; // courses diverge, no forward crossing
 
   const α3 = Math.acos(
-    clamp(-Math.cos(α1) * Math.cos(α2) + Math.sin(α1) * Math.sin(α2) * Math.cos(δ12))
+    unit(-Math.cos(α1) * Math.cos(α2) + Math.sin(α1) * Math.sin(α2) * Math.cos(δ12))
   );
   const δ13 = Math.atan2(
     Math.sin(δ12) * Math.sin(α1) * Math.sin(α2),
     Math.cos(α2) + Math.cos(α1) * Math.cos(α3)
   );
   const φ3 = Math.asin(
-    clamp(Math.sin(φ1) * Math.cos(δ13) + Math.cos(φ1) * Math.sin(δ13) * Math.cos(θ13))
+    unit(Math.sin(φ1) * Math.cos(δ13) + Math.cos(φ1) * Math.sin(δ13) * Math.cos(θ13))
   );
   const Δλ13 = Math.atan2(
     Math.sin(θ13) * Math.sin(δ13) * Math.cos(φ1),
@@ -92,7 +86,7 @@ export function intersectRadials(
   );
   const λ3 = λ1 + Δλ13;
 
-  return { latitude: toDeg(φ3), longitude: toDeg(λ3) };
+  return { latitude: toDegrees(φ3), longitude: toDegrees(λ3) };
 }
 
 /** Wraps an angle in radians to (-π, π]. */
@@ -104,7 +98,7 @@ function normalizeSigned(rad: number): number {
 
 /** Local tangent-plane offset of `point` from `origin`, in nautical miles (east, north). */
 function localOffsetNm(origin: Coordinates, point: Coordinates): [number, number] {
-  const originLatRad = toRad(origin.latitude);
+  const originLatRad = toRadians(origin.latitude);
   const east = (point.longitude - origin.longitude) * 60 * Math.cos(originLatRad);
   const north = (point.latitude - origin.latitude) * 60;
   return [east, north];
@@ -112,7 +106,7 @@ function localOffsetNm(origin: Coordinates, point: Coordinates): [number, number
 
 /** Inverse of {@link localOffsetNm}: a point `east`/`north` NM from `origin`. */
 function fromLocalOffsetNm(origin: Coordinates, east: number, north: number): Coordinates {
-  const originLatRad = toRad(origin.latitude);
+  const originLatRad = toRadians(origin.latitude);
   return {
     latitude: origin.latitude + north / 60,
     longitude: origin.longitude + east / (60 * Math.cos(originLatRad)),
@@ -134,7 +128,7 @@ export function lineCircleIntersection(
   radiusNm: NauticalMiles
 ): Coordinates | null {
   const [x0, y0] = localOffsetNm(circleCenter, lineStart);
-  const θ = toRad(lineBearing);
+  const θ = toRadians(lineBearing);
   const dx = Math.sin(θ);
   const dy = Math.cos(θ);
 
@@ -163,7 +157,7 @@ export function crossTrackStatus(
   lineBearing: Degrees
 ): { alongTrackNm: number; crossTrackNm: number } {
   const [x, y] = localOffsetNm(lineStart, point);
-  const θ = toRad(lineBearing);
+  const θ = toRadians(lineBearing);
   return {
     alongTrackNm: x * Math.sin(θ) + y * Math.cos(θ),
     crossTrackNm: x * Math.cos(θ) - y * Math.sin(θ),

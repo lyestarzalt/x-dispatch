@@ -1,7 +1,12 @@
+import {
+  EARTH_RADIUS_NM,
+  destinationRad,
+  initialBearing,
+  toDegrees,
+  toRadians,
+} from '@/lib/utils/geomath/sphere';
 import type { RangeRingCategory } from '@/types/layers';
 import { RANGE_RING_SPEEDS } from '@/types/layers';
-
-const EARTH_RADIUS_NM = 3440.065;
 
 export interface LatLon {
   latitude: number;
@@ -19,27 +24,20 @@ export function greatCircleNm(a: LatLon, b: LatLon): number {
 
 /** Initial true bearing from a to b, 0 to 360. */
 export function bearingDeg(a: LatLon, b: LatLon): number {
-  const φ1 = (a.latitude * Math.PI) / 180;
-  const φ2 = (b.latitude * Math.PI) / 180;
-  const Δλ = ((b.longitude - a.longitude) * Math.PI) / 180;
-  const y = Math.sin(Δλ) * Math.cos(φ2);
-  const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
-  return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+  return initialBearing(a.latitude, a.longitude, b.latitude, b.longitude);
 }
 
 /** Point reached from p after travelling the distance along a true bearing. */
 export function destinationPoint(p: LatLon, bearing: number, distanceNm: number): LatLon {
-  const δ = distanceNm / EARTH_RADIUS_NM;
-  const θ = (bearing * Math.PI) / 180;
-  const φ1 = (p.latitude * Math.PI) / 180;
-  const λ1 = (p.longitude * Math.PI) / 180;
-  const φ2 = Math.asin(Math.sin(φ1) * Math.cos(δ) + Math.cos(φ1) * Math.sin(δ) * Math.cos(θ));
-  const λ2 =
-    λ1 +
-    Math.atan2(Math.sin(θ) * Math.sin(δ) * Math.cos(φ1), Math.cos(δ) - Math.sin(φ1) * Math.sin(φ2));
+  const [φ2, λ2] = destinationRad(
+    toRadians(p.latitude),
+    toRadians(p.longitude),
+    toRadians(bearing),
+    distanceNm / EARTH_RADIUS_NM
+  );
   return {
-    latitude: (φ2 * 180) / Math.PI,
-    longitude: (((λ2 * 180) / Math.PI + 540) % 360) - 180,
+    latitude: toDegrees(φ2),
+    longitude: ((toDegrees(λ2) + 540) % 360) - 180,
   };
 }
 

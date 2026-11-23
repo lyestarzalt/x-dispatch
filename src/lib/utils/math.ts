@@ -8,12 +8,17 @@ export function normalize360(deg: number): number {
   return ((deg % 360) + 360) % 360;
 }
 
+/** An angle in degrees brought into `[-180, 180)`. */
+export function normalize180(deg: number): number {
+  return (((deg % 360) + 540) % 360) - 180;
+}
+
 /**
  * The shortest signed turn from `fromDeg` to `toDeg`, in `[-180, 180)`.
  * Works for headings and for longitudes (the short way across the antimeridian).
  */
 export function signedAngleDelta(fromDeg: number, toDeg: number): number {
-  return ((((toDeg - fromDeg) % 360) + 540) % 360) - 180;
+  return normalize180(toDeg - fromDeg);
 }
 
 /** A heading `t` of the way from `a` to `b`, turning the short way; result in `[0, 360)`. */

@@ -19,6 +19,7 @@ import {
   lineCircleIntersection,
 } from '@/lib/utils/geomath';
 import type { Degrees, NauticalMiles } from '@/lib/utils/geomath';
+import { normalize180, normalize360 } from '@/lib/utils/math';
 import type { RunwayEnd } from '@/types/fms';
 import type {
   PathTerminator,
@@ -46,9 +47,6 @@ const HOLD_NM_PER_MINUTE = 3.5;
 const DEFAULT_HOLD_LEG_NM = 3.5;
 /** LNM's procedure-turn symbol: a 3 NM straight segment, 180-degree turn of half that diameter. */
 const PT_SEGMENT_NM = 3;
-
-const norm180 = (deg: number): number => (((deg % 360) + 540) % 360) - 180;
-const norm360 = (deg: number): number => ((deg % 360) + 360) % 360;
 
 /** Legs that end at their fix with no special termination math of their own. */
 const PLAIN_FLY_TO = new Set<PathTerminator>(['IF', 'TF', 'CF', 'DF']);
@@ -141,13 +139,13 @@ function publishedTurnHint(
   const turn = wp.turnDirection;
   if ((turn !== 'L' && turn !== 'R') || !TURN_HINT_LEGS.has(wp.pathTerminator)) return [];
   const outboundDeg = bearingDeg(from, end);
-  const diff = Math.abs(norm180(outboundDeg - inboundDeg));
+  const diff = Math.abs(normalize180(outboundDeg - inboundDeg));
   if (diff < 1) return [];
   const extensionNm = diff > 179 ? 1 : 0.5;
   if (greatCircleNm(from, end) < extensionNm * 2) return [];
   // The hint ends on the bisector of the inbound continuation and the outbound line, on the
   // side the published turn names (LNM: reversed last line + half the angle between, +180 for R).
-  const ccw = norm360(outboundDeg - inboundDeg);
+  const ccw = normalize360(outboundDeg - inboundDeg);
   const hintDeg = turn === 'R' ? inboundDeg + ccw / 2 : inboundDeg + 180 + ccw / 2;
   const hintEnd = destinationPoint(from, hintDeg, extensionNm);
   const c1 = destinationPoint(from, inboundDeg, extensionNm / 2);
@@ -489,7 +487,7 @@ export function procedureGeometry(
           const lastLegCourse = Number.isNaN(state.trackDeg)
             ? bearingDeg(state.position, destinationPoint(extended, courseTrue, legNm / 2))
             : state.trackDeg;
-          const courseDiff = Math.abs(norm180(courseTrue - lastLegCourse));
+          const courseDiff = Math.abs(normalize180(courseTrue - lastLegCourse));
           if (courseDiff < REVERSAL_DEG) {
             const candidates = [-45, 45]
               .map((cut) =>
@@ -497,7 +495,7 @@ export function procedureGeometry(
                   extended,
                   courseTrue as Degrees,
                   state!.position,
-                  norm360(courseTrue + cut) as Degrees
+                  normalize360(courseTrue + cut) as Degrees
                 )
               )
               .filter((c): c is LatLon => c !== null)
@@ -653,7 +651,7 @@ export function procedureGeometry(
           from,
           heading as Degrees,
           navaid,
-          norm360(radialTrue) as Degrees
+          normalize360(radialTrue) as Degrees
         );
         if (crossing) {
           const distFromNavaid = greatCircleNm(navaid, crossing);
@@ -687,8 +685,8 @@ export function procedureGeometry(
       const nextRayDeg =
         next && nextCourseTrue !== null
           ? ARRIVAL_ANCHORED.has(next.pathTerminator)
-            ? norm360(nextCourseTrue + 180)
-            : norm360(nextCourseTrue)
+            ? normalize360(nextCourseTrue + 180)
+            : normalize360(nextCourseTrue)
           : null;
 
       let target: LatLon | null = null;
