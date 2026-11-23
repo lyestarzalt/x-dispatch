@@ -97,6 +97,8 @@ const TURN_HINT_LEGS = new Set<PathTerminator>([
 const ARRIVAL_ANCHORED = new Set<PathTerminator>(['IF', 'TF', 'CF', 'DF', 'RF', 'AF']);
 /** Departure-anchored: the leg's own fix is its *near* end (flown away from) for a bounded length. */
 const DEPARTURE_ANCHORED = new Set<PathTerminator>(['FM', 'VM']);
+/** Legs flown outbound from their fix on a course: the ARINC 424 "fix to ..." family. */
+const FLOWN_FROM_FIX = new Set<PathTerminator>(['FA', 'FC', 'FD', 'FM']);
 
 interface PathState {
   position: LatLon;
@@ -348,6 +350,9 @@ export function procedureGeometry(
   const overlays: ProcedureOverlay[] = [];
   let state: PathState | null = options.start ?? null;
   let currentIsMissed = false;
+  // Where the aircraft is, and where it was before the last leg that moved it.
+  let here: LatLon | null = state?.position ?? null;
+  let before: LatLon | null = null;
 
   const append = (points: LatLon[]) => {
     const target = currentIsMissed ? missedOut : out;
@@ -421,6 +426,10 @@ export function procedureGeometry(
     if (wp.fixType === 'C' || wp.fixType === 'A') continue;
     currentIsMissed = wp.isMissedApproach;
     const term = wp.pathTerminator;
+    if (state && (!here || greatCircleNm(here, state.position) > 0.001)) {
+      before = here;
+      here = state.position;
+    }
 
     // Real constant-radius arcs, falling back to a plain turn onto the fix when the center or
     // DME station couldn't be resolved.
@@ -713,6 +722,40 @@ export function procedureGeometry(
       } else if (nextAnchor) {
         // No crossing found - atools falls back to a straight line to where the next leg starts.
         target = nextAnchor;
+        // Unless the leg just flown already crossed that course: a climb's length is not
+        // published, and one drawn a little too long ends just past the course it was to turn
+        // onto, so no crossing lies ahead, and the next leg's start can be far behind (KDVT DVT3
+        // off 07R: the PXR 336 radial, PXR 15 NM south). The intercept is then that crossing. Only for a course flown outbound from its fix; anything else, and a
+        // course never crossed, keeps the line to the next leg's start.
+        if (
+          next &&
+          before &&
+          nextRayDeg !== null &&
+          nextCourseTrue !== null &&
+          FLOWN_FROM_FIX.has(next.pathTerminator)
+        ) {
+          const now = crossTrackStatus(from, nextAnchor, nextRayDeg as Degrees);
+          const then = crossTrackStatus(before, nextAnchor, nextRayDeg as Degrees);
+          const crossed = now.crossTrackNm * then.crossTrackNm < 0;
+          // The crossing itself: where the leg just flown met the course. The leg is cut back
+          // to it, so the next leg lies on its published course and not beside it.
+          const crossing = crossed
+            ? intersectRadials(
+                before,
+                bearingDeg(before, from) as Degrees,
+                nextAnchor,
+                nextRayDeg as Degrees
+              )
+            : null;
+          if (crossing && now.alongTrackNm > 0) {
+            const drawn = currentIsMissed ? missedOut : out;
+            const last = drawn[drawn.length - 1];
+            if (last && greatCircleNm(last, from) < 0.001) drawn[drawn.length - 1] = crossing;
+            state = { position: crossing, trackDeg: state.trackDeg };
+            target = crossing;
+            resultTrackDeg = nextCourseTrue;
+          }
+        }
       }
 
       if (!target) target = destinationPoint(from, heading, FALLBACK_LEG_NM);

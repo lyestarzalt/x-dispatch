@@ -901,3 +901,81 @@ describe('builtProcedurePaths', () => {
     expect(greatCircleNm(RW21, hints[0]!.path[0]!)).toBeCloseTo(1.35, 1);
   });
 });
+
+// KDVT DVT3 (GitHub #406): climb on 074, turn to 006 to intercept the PXR 336 radial, follow it
+// to 4000 ft, then left turn direct PXR. Off 07R the climb ends a few hundred metres past the
+// radial, so no crossing lies ahead; the line jumped 15 NM south to PXR instead of going north.
+describe('an intercept leg that starts just past the course it is to intercept', () => {
+  const pxr = { latitude: 33.433, longitude: -111.97 };
+  const at = (altitude1: number) => ({
+    descriptor: '+' as const,
+    altitude1,
+    altitude2: null,
+    isFlightLevel: false,
+  });
+  const dvt3 = [
+    wp({ fixId: '', pathTerminator: 'VA', course: 74, altitude: at(2200), resolved: false }),
+    wp({ fixId: '', pathTerminator: 'VI', course: 6, resolved: false }),
+    wp({ fixId: 'PXR', pathTerminator: 'FA', course: 336, altitude: at(4000), ...pxr }),
+    wp({ fixId: 'PXR', pathTerminator: 'DF', turnDirection: 'L', ...pxr }),
+  ];
+  const farEnd = (latitude: number, longitude: number) => ({
+    start: { position: { latitude, longitude }, trackDeg: 86 },
+    runwayElevationFt: 1478,
+  });
+
+  it.each([
+    ['07R', farEnd(33.6883977, -112.0693853)],
+    ['07L', farEnd(33.6900163, -112.0746962)],
+  ])(
+    'off runway %s, goes north along the radial before turning back to the station',
+    (_, options) => {
+      const { path } = procedureGeometry(dvt3, options);
+      const firstSouth = path.findIndex((p) => p.latitude < 33.6);
+      const northmost = path.reduce(
+        (best, p, i) => (p.latitude > path[best]!.latitude ? i : best),
+        0
+      );
+      expect(path[northmost]!.latitude).toBeGreaterThan(33.71);
+      expect(firstSouth).toBeGreaterThan(northmost);
+      // One left turn onto the radial, as a pilot flies it: no hairpin, and no cut to the right
+      // on the way north.
+      for (let i = 2; i <= northmost; i++) {
+        if (greatCircleNm(path[i - 2]!, path[i - 1]!) < 0.01) continue;
+        if (greatCircleNm(path[i - 1]!, path[i]!) < 0.01) continue;
+        const turn = norm180(
+          bearingDeg(path[i - 1]!, path[i]!) - bearingDeg(path[i - 2]!, path[i - 1]!)
+        );
+        expect(turn).toBeLessThan(5);
+        expect(turn).toBeGreaterThan(-120);
+      }
+      // The northbound leg lies on the PXR 336 radial itself, not beside it: a straight stretch
+      // of more than a mile with both ends on the radial.
+      const radialTrue = magneticToTrue(336 as Degrees, pxr.latitude, pxr.longitude);
+      const onRadial = (p: { latitude: number; longitude: number }) =>
+        Math.abs(crossTrackStatus(p, pxr, radialTrue as Degrees).crossTrackNm) < 0.02;
+      const alongRadial = path.some(
+        (p, i) =>
+          i > 0 && onRadial(p) && onRadial(path[i - 1]!) && greatCircleNm(path[i - 1]!, p) > 1
+      );
+      expect(alongRadial).toBe(true);
+    }
+  );
+
+  // The same miss onto a course flown into its fix keeps the reference behaviour: straight to
+  // the fix, which is ahead of the aircraft.
+  it('still goes straight to the fix when the course to intercept is flown into it', () => {
+    const fix = { latitude: 33.9, longitude: -112.0 };
+    const legs = [
+      wp({ fixId: 'START', pathTerminator: 'IF', latitude: 33.5, longitude: -112.2 }),
+      // Heading away from the inbound course, so the two never cross ahead.
+      wp({ fixId: '', pathTerminator: 'VI', course: 250, resolved: false }),
+      wp({ fixId: 'FIX', pathTerminator: 'CF', course: 360, ...fix }),
+    ];
+    const { path } = procedureGeometry(legs);
+    const last = path[path.length - 1]!;
+    expect(greatCircleNm(last, fix)).toBeLessThan(0.05);
+    // Nothing is drawn on the far side of the fix or back along its inbound course.
+    expect(Math.max(...path.map((p) => p.latitude))).toBeLessThan(fix.latitude + 0.01);
+  });
+});

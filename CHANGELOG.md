@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **A departure that turns to intercept a radial is drawn the right way.** KDVT's DVT3 off runway 07R ran straight to the VOR instead of north along the radial first.
+
 ## [2.17.0] - 2026-11-22
 
 ### Added
