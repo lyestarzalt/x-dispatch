@@ -5,6 +5,7 @@ import { broadcast, handle } from '@/lib/remote/handlerRegistry';
 import logger from '@/lib/utils/logger';
 import { METERS_PER_DEG_LAT } from '@/lib/utils/units/constants';
 import type { AircraftHint, FlightAirport, FlightRecorderEvent } from '@/types/flightRecorder';
+import type { Meters } from '@/types/units';
 import { FlightRecorder } from './FlightRecorder';
 import { applyFlightEdit, fillAirportNames, newManualFlight } from './flightEdit';
 import { FlightStore } from './flightStore';
@@ -77,7 +78,7 @@ export function registerFlightRecorderIPC(deps: FlightRecorderIpcDeps): FlightRe
     logger.tracker.info(`Marked ${recovered.length} interrupted flight(s) as aborted`);
   }
 
-  const airportsWithin = (lat: number, lon: number, radiusM: number) => {
+  const airportsWithin = (lat: number, lon: number, radiusM: Meters) => {
     const dLat = radiusM * DEG_PER_M_LAT;
     const dLon = dLat / Math.max(0.2, Math.cos((lat * Math.PI) / 180));
     return deps
@@ -89,12 +90,12 @@ export function registerFlightRecorderIPC(deps: FlightRecorderIpcDeps): FlightRe
       .sort((a, b) => a.d2 - b.d2);
   };
 
-  const nearestAirport = (lat: number, lon: number, radiusM: number): FlightAirport | null => {
+  const nearestAirport = (lat: number, lon: number, radiusM: Meters): FlightAirport | null => {
     const [first] = airportsWithin(lat, lon, radiusM);
     return first ? { icao: first.icao, name: first.name } : null;
   };
 
-  const airportsNear = (lat: number, lon: number, radiusM: number): AirportRunways[] => {
+  const airportsNear = (lat: number, lon: number, radiusM: Meters): AirportRunways[] => {
     const result: AirportRunways[] = [];
     for (const airport of airportsWithin(lat, lon, radiusM).slice(0, 5)) {
       const raw = deps.getAirportData(airport.icao);

@@ -13,13 +13,13 @@ export { formatWeight };
  * The full figure with a thousands separator, "50,450 lbs" or "22,884 kg", for dispatch
  * numbers where "50k lbs" or "22.9t" would hide the digits a pilot types into the FMS.
  */
-export function formatWeightExact(lbs: number, unit: WeightUnit): string {
+export function formatWeightExact(lbs: Pounds, unit: WeightUnit): string {
   const value = Math.round(convertWeight(lbs, unit));
   return `${value.toLocaleString()} ${unit === 'kg' ? 'kg' : 'lbs'}`;
 }
 
 /** Canonical lbs -> the given display unit. */
-export function convertWeight(lbs: number, unit: WeightUnit): number {
+export function convertWeight(lbs: Pounds, unit: WeightUnit): number {
   return unit === 'kg' ? lbsToKg(lbs) : lbs;
 }
 

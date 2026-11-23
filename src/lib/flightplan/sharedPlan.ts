@@ -9,6 +9,7 @@ import type { FlightPlanEndpoint, FlightPlanWaypoint } from '@/stores/flightPlan
 import type { EnrichedFlightPlan } from '@/types/fms';
 import type { RangeRingCategory } from '@/types/layers';
 import type { SimBriefOFP } from '@/types/simbrief';
+import type { Feet } from '@/types/units';
 
 /** What the map draws: a SimBrief OFP, a .fms file or the planner's hand-off. */
 export interface MapPlanSnapshot {
@@ -29,7 +30,7 @@ export interface DraftSnapshot {
   alternate: PlanEndpoint | null;
   aircraftClass: RangeRingCategory | null;
   routeText: string;
-  cruiseAltitudeFt: number | null;
+  cruiseAltitudeFt: Feet | null;
 }
 
 export interface SharedPlanDoc {

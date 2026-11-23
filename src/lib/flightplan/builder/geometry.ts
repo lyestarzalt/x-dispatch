@@ -29,7 +29,7 @@ export function bearingDeg(a: LatLon, b: LatLon): Degrees {
 }
 
 /** Point reached from p after travelling the distance along a true bearing. */
-export function destinationPoint(p: LatLon, bearing: number, distanceNm: number): LatLon {
+export function destinationPoint(p: LatLon, bearing: Degrees, distanceNm: NauticalMiles): LatLon {
   const [φ2, λ2] = destinationRad(
     toRadians(p.latitude),
     toRadians(p.longitude),
@@ -53,7 +53,7 @@ export function pathDistanceNm(points: LatLon[]): NauticalMiles {
 /** Cruise leg only; climb and descent are folded into a flat allowance per class. */
 const TERMINAL_MINUTES: Record<RangeRingCategory, number> = { jet: 20, turboprop: 15, prop: 8 };
 
-export function estimateMinutes(distanceNm: number, category: RangeRingCategory): Minutes {
+export function estimateMinutes(distanceNm: NauticalMiles, category: RangeRingCategory): Minutes {
   if (distanceNm <= 0) return 0 as Minutes;
   return Math.round(
     (distanceNm / RANGE_RING_SPEEDS[category]) * 60 + TERMINAL_MINUTES[category]
@@ -61,7 +61,7 @@ export function estimateMinutes(distanceNm: number, category: RangeRingCategory)
 }
 
 /** The leg length a block time allows: the inverse of estimateMinutes. */
-export function minutesToNm(minutes: number, category: RangeRingCategory): NauticalMiles {
+export function minutesToNm(minutes: Minutes, category: RangeRingCategory): NauticalMiles {
   return Math.max(
     0,
     ((minutes - TERMINAL_MINUTES[category]) / 60) * RANGE_RING_SPEEDS[category]
@@ -74,7 +74,7 @@ const RESERVE_MINUTES = 45;
 const CONTINGENCY = 0.05;
 
 /** Trip fuel plus five percent contingency and a 45 minute reserve, rounded to 10 kg. */
-export function estimateFuelKg(distanceNm: number, category: RangeRingCategory): Kilograms {
+export function estimateFuelKg(distanceNm: NauticalMiles, category: RangeRingCategory): Kilograms {
   if (distanceNm <= 0) return 0 as Kilograms;
   const perMinute = BURN_KG_PER_HOUR[category] / 60;
   const trip = estimateMinutes(distanceNm, category) * perMinute;
@@ -87,7 +87,7 @@ export function estimateFuelKg(distanceNm: number, category: RangeRingCategory):
  * to a thousand and nudged onto the hemispheric level for eastbound tracks.
  */
 export function suggestCruiseAltitudeFt(
-  distanceNm: number,
+  distanceNm: NauticalMiles,
   category: RangeRingCategory,
   eastbound: boolean
 ): Feet {
@@ -167,7 +167,7 @@ const MIN_TURN_DEG = 3;
  * actually fly. Works in a local flat frame around each corner, which is
  * accurate for turn radii of a few miles.
  */
-export function smoothRoutePath(points: LatLon[], radiusNm: number): LatLon[] {
+export function smoothRoutePath(points: LatLon[], radiusNm: NauticalMiles): LatLon[] {
   if (points.length < 3 || radiusNm <= 0) return points;
   const out: LatLon[] = [points[0] as LatLon];
 

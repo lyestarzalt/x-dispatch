@@ -11,6 +11,7 @@ import {
 } from '@/lib/xplaneServices/dataService/navdata/navCache';
 import type { FMSFlightPlan, FMSWaypoint, FMSWaypointType } from '@/types/fms';
 import type { AirwaySegment } from '@/types/navigation';
+import type { Feet } from '@/types/units';
 import { narrowBand, pairBand, segmentAllowsDirection, segmentsForPair } from './airwayRules';
 import { type LatLon, pathDistanceNm } from './geometry';
 import { getOceanicTracks, isTrackName, trackSegments } from './oceanicTracks';
@@ -112,7 +113,7 @@ function checkAirway(
   token: RouteToken,
   name: string,
   path: string[],
-  cruiseFt: number | null
+  cruiseFt: Feet | null
 ): LevelBand {
   let band: LevelBand = { minFt: null, maxFt: null };
   if (isTrackName(name)) return band;

@@ -1,3 +1,5 @@
+import type { Degrees, Feet, Knots } from '@/types/units';
+
 /**
  * One shape for a pilot on either online network. VATSIM and IVAO publish different JSON;
  * the map, the pilot card and the planner hand-off only ever see this.
@@ -12,7 +14,7 @@ export interface NetworkFlightPlan {
   arrival: string | null;
   alternate: string | null;
   /** Filed cruise in feet, parsed from "FL350", "F350", "A050" or "35000". */
-  cruiseAltitudeFt: number | null;
+  cruiseAltitudeFt: Feet | null;
   route: string;
 }
 
@@ -24,9 +26,9 @@ export interface NetworkPilot {
   name: string;
   latitude: number;
   longitude: number;
-  altitudeFt: number;
-  groundspeedKts: number;
-  headingDeg: number;
+  altitudeFt: Feet;
+  groundspeedKts: Knots;
+  headingDeg: Degrees;
   transponder: string | null;
   /** IVAO reports it; VATSIM does not, so it is inferred from the ground speed. */
   onGround: boolean;

@@ -10,6 +10,7 @@ import type {
   LiveRecorderState,
   TrackPointTuple,
 } from '@/types/flightRecorder';
+import type { Meters } from '@/types/units';
 import type { FlightStore } from './flightStore';
 import { FrameAssembler, type SimFrame } from './frames';
 import { LandingDetector } from './landingDetector';
@@ -26,8 +27,8 @@ const DISCONNECT_GRACE_MS = 60_000;
 export interface FlightRecorderDeps {
   store: FlightStore;
   emit: (event: FlightRecorderEvent) => void;
-  nearestAirport: (lat: number, lon: number, radiusM: number) => FlightAirport | null;
-  airportsNear: (lat: number, lon: number, radiusM: number) => AirportRunways[];
+  nearestAirport: (lat: number, lon: number, radiusM: Meters) => FlightAirport | null;
+  airportsNear: (lat: number, lon: number, radiusM: Meters) => AirportRunways[];
   /** Resolves the loaded aircraft over the REST API; null when unavailable. */
   readAircraft?: () => Promise<AircraftHint | null>;
   now?: () => number;

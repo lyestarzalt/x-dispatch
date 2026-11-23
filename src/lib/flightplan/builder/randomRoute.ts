@@ -6,13 +6,14 @@
 import type { WeatherCategory } from '@/lib/weatherScan/parseMetarFeed';
 import type { Airport } from '@/lib/xplaneServices/dataService';
 import type { RangeRingCategory } from '@/types/layers';
+import type { NauticalMiles } from '@/types/units';
 import { estimateMinutes, greatCircleNm } from './geometry';
 
 export type RouteScope = 'any' | 'domestic' | 'international';
 
 export interface RandomRouteCriteria {
-  minNm: number;
-  maxNm: number;
+  minNm: NauticalMiles;
+  maxNm: NauticalMiles;
   category: RangeRingCategory;
   scope: RouteScope;
   customOnly: boolean;
@@ -29,7 +30,7 @@ export interface RandomRouteContext {
 
 export interface RandomRoute {
   airport: Airport;
-  distanceNm: number;
+  distanceNm: NauticalMiles;
   minutes: number;
   weather: WeatherCategory[];
   staffed: boolean;

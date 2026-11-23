@@ -5,7 +5,7 @@ import type { Translate } from './types';
 
 export type CourseMode = 'magnetic' | 'true' | 'both';
 
-function pad3(deg: number): string {
+function pad3(deg: Degrees): string {
   return Math.round(deg).toString().padStart(3, '0');
 }
 
@@ -21,7 +21,7 @@ function pad3(deg: number): string {
 export function formatCourseWithVariation(
   trueDeg: Degrees,
   mode: CourseMode,
-  variationDeg: number,
+  variationDeg: Degrees,
   t: Translate
 ): string {
   const magnetic = normalize360(trueDeg - variationDeg);

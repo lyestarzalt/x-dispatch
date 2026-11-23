@@ -20,6 +20,7 @@ import type { StatementSync } from 'node:sqlite';
 import path from 'path';
 import { HttpSource, type UpdateInfo, UpdateManager, VelopackApp } from 'velopack';
 import { errorMessage } from '@/lib/utils/errors';
+import type { NauticalMiles } from '@/types/units';
 import { CONTENT_SECURITY_POLICY } from './config/csp';
 import { PROJECT_WEBSITE } from './config/links';
 import { registerAddonManagerIPC } from './lib/addonManager/ipc';
@@ -2079,49 +2080,49 @@ function registerIpcHandlers() {
 
   handle('nav:getStatus', () => dataManager.getStatus());
 
-  handle('nav:getVORsInRadius', (_, lat: number, lon: number, radiusNm: number) => {
+  handle('nav:getVORsInRadius', (_, lat: number, lon: number, radiusNm: NauticalMiles) => {
     const c = validateCoordinates(lat, lon, radiusNm);
     if (isInvalidCoords(c)) throw new Error(c.error);
     return dataManager.getVORsInRadius(c.lat, c.lon, c.radius);
   });
 
-  handle('nav:getNDBsInRadius', (_, lat: number, lon: number, radiusNm: number) => {
+  handle('nav:getNDBsInRadius', (_, lat: number, lon: number, radiusNm: NauticalMiles) => {
     const c = validateCoordinates(lat, lon, radiusNm);
     if (isInvalidCoords(c)) throw new Error(c.error);
     return dataManager.getNDBsInRadius(c.lat, c.lon, c.radius);
   });
 
-  handle('nav:getDMEsInRadius', (_, lat: number, lon: number, radiusNm: number) => {
+  handle('nav:getDMEsInRadius', (_, lat: number, lon: number, radiusNm: NauticalMiles) => {
     const c = validateCoordinates(lat, lon, radiusNm);
     if (isInvalidCoords(c)) throw new Error(c.error);
     return dataManager.getDMEsInRadius(c.lat, c.lon, c.radius);
   });
 
-  handle('nav:getILSInRadius', (_, lat: number, lon: number, radiusNm: number) => {
+  handle('nav:getILSInRadius', (_, lat: number, lon: number, radiusNm: NauticalMiles) => {
     const c = validateCoordinates(lat, lon, radiusNm);
     if (isInvalidCoords(c)) throw new Error(c.error);
     return dataManager.getILSInRadius(c.lat, c.lon, c.radius);
   });
 
-  handle('nav:getGlideSlopesInRadius', (_, lat: number, lon: number, radiusNm: number) => {
+  handle('nav:getGlideSlopesInRadius', (_, lat: number, lon: number, radiusNm: NauticalMiles) => {
     const c = validateCoordinates(lat, lon, radiusNm);
     if (isInvalidCoords(c)) throw new Error(c.error);
     return dataManager.getGlideSlopesInRadius(c.lat, c.lon, c.radius);
   });
 
-  handle('nav:getMarkersInRadius', (_, lat: number, lon: number, radiusNm: number) => {
+  handle('nav:getMarkersInRadius', (_, lat: number, lon: number, radiusNm: NauticalMiles) => {
     const c = validateCoordinates(lat, lon, radiusNm);
     if (isInvalidCoords(c)) throw new Error(c.error);
     return dataManager.getMarkersInRadius(c.lat, c.lon, c.radius);
   });
 
-  handle('nav:getILSComponentsInRadius', (_, lat: number, lon: number, radiusNm: number) => {
+  handle('nav:getILSComponentsInRadius', (_, lat: number, lon: number, radiusNm: NauticalMiles) => {
     const c = validateCoordinates(lat, lon, radiusNm);
     if (isInvalidCoords(c)) throw new Error(c.error);
     return dataManager.getILSComponentsInRadius(c.lat, c.lon, c.radius);
   });
 
-  handle('nav:getApproachAidsInRadius', (_, lat: number, lon: number, radiusNm: number) => {
+  handle('nav:getApproachAidsInRadius', (_, lat: number, lon: number, radiusNm: NauticalMiles) => {
     const c = validateCoordinates(lat, lon, radiusNm);
     if (isInvalidCoords(c)) throw new Error(c.error);
     return dataManager.getApproachAidsInRadius(c.lat, c.lon, c.radius);
@@ -2138,13 +2139,13 @@ function registerIpcHandlers() {
     return dataManager.getApproachNavaidsByRunway(airportIcao.toUpperCase(), runway.toUpperCase());
   });
 
-  handle('nav:getWaypointsInRadius', (_, lat: number, lon: number, radiusNm: number) => {
+  handle('nav:getWaypointsInRadius', (_, lat: number, lon: number, radiusNm: NauticalMiles) => {
     const c = validateCoordinates(lat, lon, radiusNm);
     if (isInvalidCoords(c)) throw new Error(c.error);
     return dataManager.getWaypointsInRadius(c.lat, c.lon, c.radius);
   });
 
-  handle('nav:getAirspacesNearPoint', (_, lat: number, lon: number, radiusNm: number) => {
+  handle('nav:getAirspacesNearPoint', (_, lat: number, lon: number, radiusNm: NauticalMiles) => {
     const c = validateCoordinates(lat, lon, radiusNm);
     if (isInvalidCoords(c)) throw new Error(c.error);
     return dataManager.getAirspacesNearPoint(c.lat, c.lon, c.radius);

@@ -11,6 +11,7 @@ import {
 } from '@/types/layers';
 import type { RangeRingCategory } from '@/types/layers';
 import type { AirportStaffing, NetworkId } from '@/types/networkTraffic';
+import type { Degrees, Feet, Meters } from '@/types/units';
 
 export interface FeatureDebugInfo {
   type: 'line' | 'sign' | 'gate' | 'runway' | 'taxiway' | 'unknown';
@@ -28,7 +29,7 @@ export interface MapContextPoint {
   x: number;
   y: number;
   /** Terrain elevation in metres at the point, null when terrain is off. */
-  elevationM: number | null;
+  elevationM: Meters | null;
   /** Navaid, plan waypoint or airport under the cursor; the point is moved onto it. */
   snap: MeasureSnap | null;
   /** The right-click landed on the measurement line. */
@@ -47,7 +48,7 @@ export interface NavInfoSelection {
   /** Planned altitude or constraint of a flight plan waypoint. */
   altitudeLabel?: string;
   /** Station elevation of a navaid, feet MSL. */
-  elevationFt?: number;
+  elevationFt?: Feet;
   /** Runway served by a localizer. */
   runway?: string;
   /** Published localizer course, degrees true. */
@@ -69,7 +70,7 @@ export interface CursorElevation {
    */
   supported: boolean;
   /** Last queried elevation in metres, or null if the cursor is off-canvas. */
-  valueM: number | null;
+  valueM: Meters | null;
 }
 
 export type SurfaceTypeFilter = 'paved' | 'unpaved' | 'water' | 'other';
@@ -142,8 +143,8 @@ interface MapState {
   profileHover: {
     latitude: number;
     longitude: number;
-    altitudeFt: number | null;
-    headingDeg: number;
+    altitudeFt: Feet | null;
+    headingDeg: Degrees;
   } | null;
   terrainShadingEnabled: boolean;
   terrain3dEnabled: boolean;
@@ -193,8 +194,8 @@ interface MapState {
     hover: {
       latitude: number;
       longitude: number;
-      altitudeFt: number | null;
-      headingDeg: number;
+      altitudeFt: Feet | null;
+      headingDeg: Degrees;
     } | null
   ) => void;
   setTerrainShadingEnabled: (enabled: boolean) => void;
@@ -261,8 +262,8 @@ export const useMapStore = create<MapState>()(
       profileHover: null as {
         latitude: number;
         longitude: number;
-        altitudeFt: number | null;
-        headingDeg: number;
+        altitudeFt: Feet | null;
+        headingDeg: Degrees;
       } | null,
       terrainShadingEnabled: true,
       terrain3dEnabled: true,

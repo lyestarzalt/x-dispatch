@@ -1,3 +1,5 @@
+import type { Degrees, Feet, FeetPerMinute, Knots } from '@/types/units';
+
 /** One aircraft from X-Plane's TCAS target table: AI, multiplayer or plugin-injected. */
 export interface TrafficTarget {
   /** TCAS slot 1..63; slot 0 is the user aircraft and never appears here. */
@@ -8,10 +10,10 @@ export interface TrafficTarget {
   icaoType: string;
   latitude: number;
   longitude: number;
-  altitudeFt: number;
-  headingDeg: number;
-  groundspeedKt: number;
-  verticalSpeedFpm: number;
+  altitudeFt: Feet;
+  headingDeg: Degrees;
+  groundspeedKt: Knots;
+  verticalSpeedFpm: FeetPerMinute;
 }
 
 export interface TrafficSnapshot {

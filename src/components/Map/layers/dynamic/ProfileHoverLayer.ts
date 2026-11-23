@@ -3,6 +3,7 @@
  * profile, turned along the route. One source, one symbol layer, updated with setData.
  */
 import type * as maplibregl from 'maplibre-gl';
+import type { Degrees } from '@/types/units';
 import { safeAddGeoJSONSource } from '../types';
 import { FALLBACK_ID, ensureFallbackIcon } from './aircraftIcons';
 
@@ -38,7 +39,7 @@ function addLayerIfReady(map: maplibregl.Map): void {
 /** Place the marker at `position`, or hide it with null. */
 export function setProfileHoverMarker(
   map: maplibregl.Map,
-  position: { latitude: number; longitude: number; headingDeg: number } | null
+  position: { latitude: number; longitude: number; headingDeg: Degrees } | null
 ): void {
   if (!map.getStyle()) return;
   safeAddGeoJSONSource(map, SOURCE_ID, EMPTY);

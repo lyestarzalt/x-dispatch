@@ -11,6 +11,7 @@ import { Dialog, DialogPanel, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils/helpers';
 import { useTrackFeatureOpened } from '@/queries';
 import { useLaunchStore } from '@/stores/launchStore';
+import type { Feet } from '@/types/units';
 import { AltitudeDiagram, type SelectedLayer } from './AltitudeDiagram';
 import { AtmosphericPanel } from './weather/AtmosphericPanel';
 import { CloudLayerProperties } from './weather/CloudLayerProperties';
@@ -22,7 +23,7 @@ import { WindLayerProperties } from './weather/WindLayerProperties';
 interface WeatherDialogProps {
   open: boolean;
   onClose: () => void;
-  airportElevationFt?: number;
+  airportElevationFt?: Feet;
 }
 
 // ─── Main Dialog ────────────────────────────────────────────────────────────

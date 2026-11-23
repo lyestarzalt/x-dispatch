@@ -29,7 +29,7 @@ interface VerticalProfileChartProps {
   tocDistance: number | null;
   todDistance: number | null;
   /** Route minimum safe altitude, feet, drawn as a red line. */
-  safeAltitudeFt?: number | null;
+  safeAltitudeFt?: Feet | null;
   className?: string;
   /** Hide the legend row (for tight spaces). */
   compact?: boolean;

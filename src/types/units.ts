@@ -1,17 +1,21 @@
 /**
- * Unit-carrying number types. A `NauticalMiles` is a plain number at runtime; the brand
- * exists only for the compiler and the reader, so a signature says what it returns and a
- * value in one unit cannot be handed to a parameter that asks for another.
+ * Unit-carrying number types. A `NauticalMiles` is a plain number at runtime; the label
+ * exists only for the compiler and the reader, so a field or signature says what it holds.
  *
- * A branded value is still a `number`: it can be passed anywhere a number is wanted and
- * used in arithmetic. Arithmetic gives back a plain `number`, because the compiler cannot
- * know the unit of a product or a sum; cast the result (`as Feet`) where the unit is known.
- * Return types are branded everywhere; parameters are branded only where mixing units up
- * is a real risk, so callers holding raw numbers are not forced to cast.
+ * The label is optional, which sets what the compiler checks:
+ * - a plain number or a literal is accepted anywhere a unit is asked for (`altitudeFt: 3000`),
+ *   so parsed data, sim values and test fixtures need no cast;
+ * - a value that already carries one unit is rejected where another is asked for: passing
+ *   `Meters` to a `Feet` parameter is a compile error.
+ *
+ * Arithmetic gives back a plain `number`, because the compiler cannot know the unit of a sum
+ * or a product, so a conversion (`m * FEET_PER_METER`) flows into a `Feet` without a cast.
+ * The check therefore gets stronger as more fields and parameters are typed: label every
+ * quantity where it is declared.
  */
 declare const unit: unique symbol;
 
-type Brand<Base, Label extends string> = Base & { readonly [unit]: Label };
+type Brand<Base, Label extends string> = Base & { readonly [unit]?: Label };
 
 /** An angle in degrees: a heading, bearing, course, latitude or longitude. */
 export type Degrees = Brand<number, 'degrees'>;

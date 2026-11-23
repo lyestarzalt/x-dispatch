@@ -21,15 +21,15 @@ export type { Degrees, Feet, Meters, NauticalMiles, Radians };
 /** `[lat, lon]`, the order `calculateDestination` works in before it is flipped for GeoJSON. */
 type LatLon = [number, number];
 
-export function metersToFeet(meters: number): Feet {
+export function metersToFeet(meters: Meters): Feet {
   return (meters * FEET_PER_METER) as Feet;
 }
 
-export function nauticalMilesToMeters(nm: number): Meters {
+export function nauticalMilesToMeters(nm: NauticalMiles): Meters {
   return (nm * METERS_PER_NM) as Meters;
 }
 
-export function metersToNauticalMiles(meters: number): NauticalMiles {
+export function metersToNauticalMiles(meters: Meters): NauticalMiles {
   return (meters / METERS_PER_NM) as NauticalMiles;
 }
 
@@ -66,8 +66,8 @@ export function calculateBearing(lat1: number, lon1: number, lat2: number, lon2:
 function calculateDestination(
   lat: number,
   lon: number,
-  distanceMeters: number,
-  bearingDegrees: number
+  distanceMeters: Meters,
+  bearingDegrees: Degrees
 ): LatLon {
   const [φ2, λ2] = destinationRad(
     toRadians(lat),
@@ -81,8 +81,8 @@ function calculateDestination(
 export function destinationPoint(
   lat: number,
   lon: number,
-  distanceMeters: number,
-  bearingDegrees: number
+  distanceMeters: Meters,
+  bearingDegrees: Degrees
 ): [number, number] {
   const [destLat, destLon] = calculateDestination(lat, lon, distanceMeters, bearingDegrees);
   return [destLon, destLat];

@@ -19,7 +19,7 @@ export function normalize180(deg: number): Degrees {
  * The shortest signed turn from `fromDeg` to `toDeg`, in `[-180, 180)`.
  * Works for headings and for longitudes (the short way across the antimeridian).
  */
-export function signedAngleDelta(fromDeg: number, toDeg: number): Degrees {
+export function signedAngleDelta(fromDeg: Degrees, toDeg: number): Degrees {
   return normalize180(toDeg - fromDeg);
 }
 

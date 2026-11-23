@@ -1,3 +1,5 @@
+import type { Feet, Knots, Meters } from '@/types/units';
+
 /**
  * Parser for the bulk VATSIM METAR feed (metar.vatsim.net/metar.php?id=all).
  *
@@ -27,14 +29,14 @@ export interface MetarObservation {
   raw: string;
   categories: WeatherCategory[];
   /** Horizontal visibility in metres, null when the report omits it */
-  visibilityMetres: number | null;
+  visibilityMetres: Meters | null;
   visibilityLabel: string | null;
   /** Base of the lowest broken/overcast layer in feet, null when none reported */
-  ceilingFeet: number | null;
+  ceilingFeet: Feet | null;
   /** Present-weather groups that triggered a category */
   phenomena: string[];
   windLabel: string | null;
-  gustKt: number | null;
+  gustKt: Knots | null;
 }
 
 const STATION = /^[A-Z][A-Z0-9]{3}$/;
@@ -205,7 +207,7 @@ export function parseMetarLine(line: string, now: Date = new Date()): MetarObser
   );
 
   let windLabel: string | null = null;
-  let gustKt: number | null = null;
+  let gustKt: Knots | null = null;
   let speedKt = 0;
   for (const token of body) {
     const wind = WIND.exec(token);

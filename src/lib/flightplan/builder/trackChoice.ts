@@ -81,7 +81,7 @@ const FL_TO_FT = 100;
  * nearest level offered at all. With no levels published the suggestion stands.
  */
 export function cruiseOnTracks(
-  suggestedFt: number,
+  suggestedFt: Feet,
   tracks: OceanicTrackInfo[],
   eastbound: boolean
 ): Feet {
@@ -98,7 +98,7 @@ export function cruiseOnTracks(
 }
 
 /** Whether the track publishes the cruise level; no cruise or no level list counts as a fit. */
-export function cruiseFitsTrack(track: OceanicTrackInfo, cruiseFt: number | null): boolean {
+export function cruiseFitsTrack(track: OceanicTrackInfo, cruiseFt: Feet | null): boolean {
   if (cruiseFt === null || track.levels.length === 0) return true;
   return track.levels.includes(Math.round(cruiseFt / 100));
 }

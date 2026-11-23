@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { PlaneLanding, PlaneTakeoff } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import type { Degrees } from '@/types/units';
 
 type BroadcastUse = 'arrival' | 'departure';
 const ARRIVAL: BroadcastUse = 'arrival';
@@ -111,9 +112,9 @@ export type ActiveRunway =
   | {
       source: 'wind';
       ends: string[];
-      windDeg: number;
+      windDeg: Degrees;
       windSpeed: number;
-      deltaDeg: number;
+      deltaDeg: Degrees;
     };
 
 /** Each active end with its use, for the runway list's colours. */

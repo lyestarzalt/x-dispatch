@@ -1,3 +1,4 @@
+import type { Degrees, Feet, NauticalMiles } from '@/types/units';
 import type { AltitudeConstraint } from './navigation';
 
 /**
@@ -11,7 +12,7 @@ export interface FMSWaypoint {
   type: FMSWaypointType;
   id: string;
   via: string; // ADEP, ADES, DRCT, or airway name
-  altitude: number;
+  altitude: Feet;
   latitude: number;
   longitude: number;
   /** Display only, never written to the file: the published constraint, "6000A", "FL100", "3000A/5000B". */
@@ -25,10 +26,10 @@ export interface RunwayEnd {
   name: string;
   latitude: number;
   longitude: number;
-  headingDeg: number;
-  lengthNm: number;
+  headingDeg: Degrees;
+  lengthNm: NauticalMiles;
   /** Airport elevation from the apt.dat header, for climb-gradient math off the runway. */
-  elevationFt?: number;
+  elevationFt?: Feet;
 }
 
 export interface FMSFlightPlan {
@@ -65,7 +66,7 @@ export interface FlightPlanChip {
   type: FlightPlanChipType;
   id: string;
   via?: string;
-  altitude?: number;
+  altitude?: Feet;
   latitude?: number;
   longitude?: number;
   waypointIndex?: number; // Index in waypoints array for navigation
@@ -125,7 +126,7 @@ export interface EnrichedFlightPlan {
   /** Published direction of the first turn after take-off, from the SID. */
   firstTurn?: 'L' | 'R';
   /** Straight climb after the runway end before that turn, from the SID's course legs. */
-  initialClimbNm?: number;
+  initialClimbNm?: NauticalMiles;
   /** Leg-by-leg geometry per chosen procedure, drawn in place of its fixes. */
   procedurePaths?: {
     via: string;

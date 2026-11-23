@@ -3,6 +3,7 @@ import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 import logger from '@/lib/utils/logger';
+import type { Seconds } from '@/types/units';
 import { validateXPlanePath } from './paths';
 import type { XPlaneVersionInfo } from './versionDetector';
 
@@ -34,7 +35,7 @@ interface XPlaneConfig {
   analyticsInstallId?: string;
   /** Session that ended at the last quit, sent as `session_ended` on the next launch */
   analyticsPendingSession?: {
-    durationSeconds: number;
+    durationSeconds: Seconds;
     endedAt: string;
     appVersion: string;
     tabletClientsPeak?: number;

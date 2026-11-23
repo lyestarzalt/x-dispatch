@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { uuid } from '@/lib/utils/uuid';
+import type { Seconds } from '@/types/units';
 
 export interface CompanionApp {
   id: string;
@@ -9,7 +10,7 @@ export interface CompanionApp {
   args?: string;
   cwd?: string;
   autoLaunch: boolean;
-  delayBeforeXPlaneSec: number;
+  delayBeforeXPlaneSec: Seconds;
 }
 
 interface CompanionAppsState {

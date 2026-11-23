@@ -1,9 +1,11 @@
+import type { Seconds } from '@/types/units';
+
 export interface SuggestedCompanionApp {
   id: string;
   name: string;
   description: string;
   args: string;
-  delayBeforeXPlaneSec: number;
+  delayBeforeXPlaneSec: Seconds;
   pathHints: {
     win32: string;
     darwin: string;

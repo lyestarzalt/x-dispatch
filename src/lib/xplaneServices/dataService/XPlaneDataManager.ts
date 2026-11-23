@@ -28,6 +28,7 @@ import type {
   NavaidType,
   Waypoint,
 } from '@/types/navigation';
+import type { NauticalMiles } from '@/types/units';
 import {
   getAirportBreakdown,
   getAirportCount,
@@ -706,7 +707,12 @@ export class XPlaneDataManager {
   /**
    * Get navaids within radius (uses SQLite bounds query)
    */
-  getNavaidsInRadius(lat: number, lon: number, radiusNm: number, types?: NavaidType[]): Navaid[] {
+  getNavaidsInRadius(
+    lat: number,
+    lon: number,
+    radiusNm: NauticalMiles,
+    types?: NavaidType[]
+  ): Navaid[] {
     const { minLat, maxLat, minLon, maxLon } = boundsAroundPoint(lat, lon, radiusNm);
 
     // Query SQLite with bounds
@@ -719,21 +725,21 @@ export class XPlaneDataManager {
   /**
    * Get VORs within radius
    */
-  getVORsInRadius(lat: number, lon: number, radiusNm: number): Navaid[] {
+  getVORsInRadius(lat: number, lon: number, radiusNm: NauticalMiles): Navaid[] {
     return this.getNavaidsInRadius(lat, lon, radiusNm, ['VOR', 'VORTAC', 'VOR-DME']);
   }
 
   /**
    * Get NDBs within radius
    */
-  getNDBsInRadius(lat: number, lon: number, radiusNm: number): Navaid[] {
+  getNDBsInRadius(lat: number, lon: number, radiusNm: NauticalMiles): Navaid[] {
     return this.getNavaidsInRadius(lat, lon, radiusNm, ['NDB']);
   }
 
   /**
    * Get DMEs within radius
    */
-  getDMEsInRadius(lat: number, lon: number, radiusNm: number): Navaid[] {
+  getDMEsInRadius(lat: number, lon: number, radiusNm: NauticalMiles): Navaid[] {
     // ILS DMEs sit on the LOC antenna and belong to the ILS symbol, not here.
     return this.getNavaidsInRadius(lat, lon, radiusNm, ['DME', 'TACAN']).filter(
       (n) => !isIlsDme(n)
@@ -743,7 +749,7 @@ export class XPlaneDataManager {
   /**
    * Get ILS/LOC within radius
    */
-  getILSInRadius(lat: number, lon: number, radiusNm: number): Navaid[] {
+  getILSInRadius(lat: number, lon: number, radiusNm: NauticalMiles): Navaid[] {
     // TODO: 3D glide slope visualization disabled — needs proper planning before re-enabling.
     // Add 'GS' to the array below to feed GS navaids into ILSLayer's fill-extrusion ramp.
     return this.getNavaidsInRadius(lat, lon, radiusNm, ['ILS', 'LOC']);
@@ -752,28 +758,28 @@ export class XPlaneDataManager {
   /**
    * Get glideslopes within radius
    */
-  getGlideSlopesInRadius(lat: number, lon: number, radiusNm: number): Navaid[] {
+  getGlideSlopesInRadius(lat: number, lon: number, radiusNm: NauticalMiles): Navaid[] {
     return this.getNavaidsInRadius(lat, lon, radiusNm, ['GS']);
   }
 
   /**
    * Get markers within radius
    */
-  getMarkersInRadius(lat: number, lon: number, radiusNm: number): Navaid[] {
+  getMarkersInRadius(lat: number, lon: number, radiusNm: NauticalMiles): Navaid[] {
     return this.getNavaidsInRadius(lat, lon, radiusNm, ['OM', 'MM', 'IM']);
   }
 
   /**
    * Get all ILS components within radius
    */
-  getILSComponentsInRadius(lat: number, lon: number, radiusNm: number): Navaid[] {
+  getILSComponentsInRadius(lat: number, lon: number, radiusNm: NauticalMiles): Navaid[] {
     return this.getNavaidsInRadius(lat, lon, radiusNm, ['ILS', 'LOC', 'GS', 'OM', 'MM', 'IM']);
   }
 
   /**
    * Get approach aids within radius
    */
-  getApproachAidsInRadius(lat: number, lon: number, radiusNm: number): Navaid[] {
+  getApproachAidsInRadius(lat: number, lon: number, radiusNm: NauticalMiles): Navaid[] {
     return this.getNavaidsInRadius(lat, lon, radiusNm, ['FPAP', 'GLS', 'LTP', 'FTP']);
   }
 
@@ -794,7 +800,7 @@ export class XPlaneDataManager {
   /**
    * Get waypoints within radius (uses SQLite bounds query)
    */
-  getWaypointsInRadius(lat: number, lon: number, radiusNm: number): Waypoint[] {
+  getWaypointsInRadius(lat: number, lon: number, radiusNm: NauticalMiles): Waypoint[] {
     const { minLat, maxLat, minLon, maxLon } = boundsAroundPoint(lat, lon, radiusNm);
 
     // Query SQLite with bounds

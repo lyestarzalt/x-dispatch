@@ -1,6 +1,6 @@
 import { KNOTS_PER_MPS } from '@/lib/utils/units/constants';
 import { type FlareGrade, type LandingReport, landingRating } from '@/types/flightRecorder';
-import type { FeetPerMinute } from '@/types/units';
+import type { FeetPerMinute, Meters } from '@/types/units';
 import type { SimFrame } from './frames';
 
 /**
@@ -29,7 +29,7 @@ type DetectorState = 'standby' | 'armed' | 'contact' | 'rollout';
 
 interface WindowSample {
   t: number;
-  aglM: number;
+  aglM: Meters;
 }
 
 export function flareGrade(pitchRateDegSec: number): FlareGrade {

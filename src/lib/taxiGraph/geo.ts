@@ -26,7 +26,7 @@ export function bearingDeg(a: LatLon, b: LatLon): Degrees {
 }
 
 /** Absolute heading change from `inDeg` to `outDeg`, in [0, 180]. */
-export function turnDeg(inDeg: number, outDeg: number): Degrees {
+export function turnDeg(inDeg: Degrees, outDeg: Degrees): Degrees {
   const d = Math.abs(outDeg - inDeg) % 360;
   return (d > 180 ? 360 - d : d) as Degrees;
 }

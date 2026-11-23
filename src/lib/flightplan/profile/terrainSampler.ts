@@ -8,6 +8,7 @@ import type { LatLon } from '@/lib/flightplan/builder/geometry';
 import { bearingDeg, destinationPoint, greatCircleNm } from '@/lib/flightplan/builder/geometry';
 import { withTimeout } from '@/lib/utils/async';
 import { FEET_PER_METER } from '@/lib/utils/units/constants';
+import type { Feet, NauticalMiles } from '@/types/units';
 
 export interface DemTileLike {
   width: number;
@@ -19,8 +20,8 @@ export interface DemTileLike {
 export type TileFetcher = (z: number, x: number, y: number) => Promise<DemTileLike>;
 
 export interface TerrainSample extends LatLon {
-  distanceNm: number;
-  elevationFt: number;
+  distanceNm: NauticalMiles;
+  elevationFt: Feet;
 }
 
 export interface TerrainResult {
@@ -32,9 +33,9 @@ export interface TerrainResult {
 
 export interface SampleOptions {
   zoom?: number;
-  stepNm?: number;
+  stepNm?: NauticalMiles;
   /** Half-width of the corridor searched for the per-leg maximum, NM. 0 disables it. */
-  corridorNm?: number;
+  corridorNm?: NauticalMiles;
   maxSamples?: number;
   /** A tile slower than this counts as missing (sea level) rather than holding everything up. */
   tileTimeoutMs?: number;
@@ -71,9 +72,13 @@ function elevationAt(tile: DemTileLike, px: number, py: number): number {
 }
 
 /** Positions at `stepNm` along the leg, start included, end included. */
-function pointsAlong(a: LatLon, b: LatLon, stepNm: number): { pos: LatLon; alongNm: number }[] {
+function pointsAlong(
+  a: LatLon,
+  b: LatLon,
+  stepNm: NauticalMiles
+): { pos: LatLon; alongNm: NauticalMiles }[] {
   const legNm = greatCircleNm(a, b);
-  const out: { pos: LatLon; alongNm: number }[] = [{ pos: a, alongNm: 0 }];
+  const out: { pos: LatLon; alongNm: NauticalMiles }[] = [{ pos: a, alongNm: 0 }];
   if (legNm < 1e-6) return out;
   const brg = bearingDeg(a, b);
   for (let d = stepNm; d < legNm; d += stepNm)
@@ -98,7 +103,7 @@ export async function sampleTerrain(
   // Plan every sample first so each tile is fetched exactly once, then sample synchronously.
   interface Planned {
     pos: LatLon;
-    distanceNm: number;
+    distanceNm: NauticalMiles;
     leg: number;
     onTrack: boolean;
     tileX: number;

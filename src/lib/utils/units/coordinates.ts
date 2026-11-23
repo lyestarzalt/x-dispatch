@@ -1,10 +1,11 @@
+import type { Degrees } from '@/types/units';
 import type { CoordinateFormat, Translate } from './types';
 
 function hemisphere(value: number, positive: string, negative: string, t: Translate): string {
   return t(value >= 0 ? positive : negative);
 }
 
-function decimalMinutesParts(absValue: number): { deg: number; min: number; sec: number } {
+function decimalMinutesParts(absValue: number): { deg: Degrees; min: number; sec: number } {
   const deg = Math.floor(absValue);
   const minutesFloat = (absValue - deg) * 60;
   const min = Math.floor(minutesFloat);

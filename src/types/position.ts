@@ -1,3 +1,4 @@
+import type { Degrees, Feet, Meters, MetersPerSecond, NauticalMiles } from '@/types/units';
 import type { Coordinates } from './geo';
 
 /**
@@ -9,17 +10,17 @@ export interface StartPosition extends Coordinates {
   name: string;
   airport: string;
   /** Heading in degrees (0-360) */
-  heading: number;
+  heading: Degrees;
   /** Index in airport's startupLocations/runways/helipads array - used for map selection state */
   index: number;
   /** Airport elevation in feet MSL (from apt.dat) */
-  elevationFt?: number;
+  elevationFt?: Feet;
   /** X-Plane index - for ramps: position in alphabetically sorted list; for runways/helipads: "row_end" format */
   xplaneIndex?: number | string;
   /** True if this is a helipad (uses type 'runway' but needs separate UI tracking) */
   isHelipad?: boolean;
   /** Final approach distance in nautical miles (runway start only, mutually exclusive with towType) */
-  approachDistanceNm?: number;
+  approachDistanceNm?: NauticalMiles;
   /** Tow type for glider launch (runway start only, mutually exclusive with approachDistanceNm) */
   towType?: 'tug' | 'winch';
 
@@ -27,15 +28,15 @@ export interface StartPosition extends Coordinates {
   /** Custom start sub-mode: ground (default), air, carrier, or frigate */
   customStartMode?: 'ground' | 'air' | 'carrier' | 'frigate';
   /** Air start: altitude MSL in meters */
-  airAltitudeM?: number;
+  airAltitudeM?: Meters;
   /** Legacy speed preset, retained for saved positions; an explicit speed is now required. */
   airSpeedEnum?: 'short_field_approach' | 'normal_approach' | 'cruise';
   /** Air start: speed in m/s (mutually exclusive with airSpeedEnum) */
-  airSpeedMs?: number;
+  airSpeedMs?: MetersPerSecond;
   /** Display/input unit only; airSpeedMs always stores metres per second. */
   airSpeedUnit?: 'kt' | 'ms';
   /** Boat start: deck position (mutually exclusive with boatApproachNm) */
   boatPosition?: 'catapult_1' | 'catapult_2' | 'catapult_3' | 'catapult_4' | 'deck';
   /** Boat start: final approach distance in nm (mutually exclusive with boatPosition) */
-  boatApproachNm?: number;
+  boatApproachNm?: NauticalMiles;
 }

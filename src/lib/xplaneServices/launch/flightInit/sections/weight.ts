@@ -1,10 +1,11 @@
 import { LBS_TO_KG } from '@/lib/utils/units/constants';
 import type { FlightInit } from '@/lib/xplaneServices/client/generated/xplaneApi';
 import type { Aircraft } from '@/types/aircraft';
+import type { Kilograms, Pounds } from '@/types/units';
 
 export function buildWeightSection(
-  fuelTanksKg: number[],
-  payloadKg: number[]
+  fuelTanksKg: Kilograms[],
+  payloadKg: Kilograms[]
 ): Pick<FlightInit, 'weight'> {
   return {
     weight: {
@@ -41,7 +42,7 @@ export function calculateFuelTankWeightsKg(
  * Convert per-station payload weights from lbs to kg, padded to 9 slots
  * to match XP's `weight.payload_weight_in_kilograms` array shape.
  */
-export function calculatePayloadWeightsKg(payloadWeightsLbs: number[]): number[] {
+export function calculatePayloadWeightsKg(payloadWeightsLbs: Pounds[]): number[] {
   const out = new Array(9).fill(0);
   for (let i = 0; i < payloadWeightsLbs.length; i++) {
     out[i] = (payloadWeightsLbs[i] ?? 0) * LBS_TO_KG;

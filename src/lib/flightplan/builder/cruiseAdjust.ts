@@ -79,7 +79,7 @@ export function hasParity(feet: number, eastbound: boolean): boolean {
  * for the rule at all, the band wins and the clamped value is returned as is.
  */
 export function adjustCruiseAltitudeFt(
-  currentFt: number | null,
+  currentFt: Feet | null,
   band: LevelBand,
   eastbound: boolean
 ): Feet {
@@ -95,7 +95,7 @@ export function adjustCruiseAltitudeFt(
 
 /** Why the current cruise is not where Adjust would put it, or null when it already is. */
 export function cruiseProblem(
-  currentFt: number | null,
+  currentFt: Feet | null,
   band: LevelBand,
   eastbound: boolean
 ): CruiseProblem | null {
@@ -106,7 +106,7 @@ export function cruiseProblem(
 }
 
 /** Whether the band has a floor above its ceiling: two airways that never share a level. */
-export function isConflict(band: LevelBand): band is { minFt: number; maxFt: number } {
+export function isConflict(band: LevelBand): band is { minFt: Feet; maxFt: Feet } {
   return band.minFt !== null && band.maxFt !== null && band.minFt > band.maxFt;
 }
 
@@ -114,7 +114,7 @@ export function isConflict(band: LevelBand): band is { minFt: number; maxFt: num
  * A suggested cruise moved inside what the route allows, on the right parity. A conflicting
  * band cannot be fitted, so the suggestion stands and the banner explains the route instead.
  */
-export function fitCruiseToBand(suggestedFt: number, band: LevelBand, eastbound: boolean): Feet {
+export function fitCruiseToBand(suggestedFt: Feet, band: LevelBand, eastbound: boolean): Feet {
   return (
     isConflict(band) ? suggestedFt : adjustCruiseAltitudeFt(suggestedFt, band, eastbound)
   ) as Feet;
@@ -130,16 +130,16 @@ export type CruiseIssue =
   | {
       kind: 'conflict';
       low: string | null;
-      ceilingFt: number;
+      ceilingFt: Feet;
       high: string | null;
-      floorFt: number;
+      floorFt: Feet;
     }
-  | { kind: 'belowFloor'; airway: string | null; floorFt: number }
-  | { kind: 'aboveCeiling'; airway: string | null; ceilingFt: number }
+  | { kind: 'belowFloor'; airway: string | null; floorFt: Feet }
+  | { kind: 'aboveCeiling'; airway: string | null; ceilingFt: Feet }
   | { kind: 'parity'; eastbound: boolean };
 
 export function describeCruiseIssue(
-  currentFt: number | null,
+  currentFt: Feet | null,
   band: LevelBand,
   setters: { floor?: string; ceiling?: string },
   eastbound: boolean

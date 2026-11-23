@@ -3,6 +3,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cruiseFitsTrack } from '@/lib/flightplan/builder/trackChoice';
 import type { OceanicTrackInfo } from '@/lib/flightplan/builder/types';
 import { cn } from '@/lib/utils/helpers';
+import type { Feet } from '@/types/units';
 
 const AUTO = 'auto';
 
@@ -22,7 +23,7 @@ export function TrackChips({
 }: {
   tracks: OceanicTrackInfo[];
   selected: string | null;
-  cruiseAltitudeFt: number | null;
+  cruiseAltitudeFt: Feet | null;
   disabled?: boolean;
   withAuto: boolean;
   onPick: (track: string | null) => void;

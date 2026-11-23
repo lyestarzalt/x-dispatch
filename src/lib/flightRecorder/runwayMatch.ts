@@ -1,6 +1,7 @@
 import { calculateBearing, haversineDistance } from '@/lib/utils/geomath';
 import { signedAngleDelta } from '@/lib/utils/math';
 import type { LandingRunway } from '@/types/flightRecorder';
+import type { Degrees, Meters } from '@/types/units';
 
 export interface RunwayEndGeometry {
   name: string;
@@ -9,7 +10,7 @@ export interface RunwayEndGeometry {
 }
 
 export interface RunwayGeometry {
-  widthM: number;
+  widthM: Meters;
   ends: [RunwayEndGeometry, RunwayEndGeometry];
 }
 
@@ -22,7 +23,7 @@ export interface AirportRunways {
 export interface TouchdownPoint {
   lat: number;
   lon: number;
-  headingDeg: number;
+  headingDeg: Degrees;
 }
 
 const MAX_HEADING_DIFF_DEG = 40;

@@ -26,6 +26,7 @@ import type {
   ResolvedProcedure,
   ResolvedProcedureWaypoint,
 } from '@/types/navigation';
+import type { Feet } from '@/types/units';
 import { type LatLon, bearingDeg, destinationPoint, greatCircleNm } from './geometry';
 
 /** Planning climb gradient for altitude-terminated legs (LNM's figure; ours was 300, half real). */
@@ -100,7 +101,7 @@ const FLOWN_FROM_FIX = new Set<PathTerminator>(['FA', 'FC', 'FD', 'FM']);
 
 interface PathState {
   position: LatLon;
-  trackDeg: number;
+  trackDeg: Degrees;
 }
 
 /** Cubic bezier sampled in a flat frame around `p0` (fine at the sub-NM scale it's used for). */
@@ -132,7 +133,7 @@ function cubicBezier(p0: LatLon, c1: LatLon, c2: LatLon, p3: LatLon, steps: numb
  */
 function publishedTurnHint(
   from: LatLon,
-  inboundDeg: number,
+  inboundDeg: Degrees,
   end: LatLon,
   wp: ResolvedProcedureWaypoint
 ): LatLon[] {
@@ -154,7 +155,7 @@ function publishedTurnHint(
 }
 
 /** A published magnetic course, converted to true at the given position. Null passes through. */
-function trueCourse(courseDeg: number | null, at: LatLon): number | null {
+function trueCourse(courseDeg: Degrees | null, at: LatLon): number | null {
   if (courseDeg === null) return null;
   return magneticToTrue(courseDeg as Degrees, at.latitude, at.longitude);
 }
@@ -167,7 +168,7 @@ function trueCourse(courseDeg: number | null, at: LatLon): number | null {
 function altitudeLegNm(
   wp: ResolvedProcedureWaypoint,
   firstDepartureLeg: boolean,
-  runwayElevationFt: number | undefined
+  runwayElevationFt: Feet | undefined
 ): number {
   const alt = wp.altitude?.altitude1;
   if (!firstDepartureLeg || alt === null || alt === undefined) return FLAT_LEG_NM;
@@ -218,7 +219,7 @@ function arcAroundCenter(
  */
 function gapJoin(
   from: LatLon,
-  fromTrackDeg: number,
+  fromTrackDeg: Degrees,
   legStart: LatLon,
   legEnd: LatLon,
   wp: ResolvedProcedureWaypoint
@@ -278,7 +279,7 @@ function procedureTurnShape(
   fix: LatLon,
   outboundTrue: number,
   turn: 'L' | 'R',
-  distanceNm: number | null
+  distanceNm: NauticalMiles | null
 ): { points: LatLon[]; turnPoint: LatLon; course45: number } {
   const side = turn === 'L' ? -1 : 1;
   const course45 = outboundTrue + side * 45;
@@ -324,7 +325,7 @@ export interface ProcedurePathOptions {
   /** Where the drawing starts: the runway end for a SID. */
   start?: PathState;
   /** Runway elevation, so a SID's first climb leg is measured from the runway (LNM: altDiff / 600). */
-  runwayElevationFt?: number;
+  runwayElevationFt?: Feet;
 }
 
 export interface ProcedurePathResult {
@@ -379,7 +380,7 @@ export function procedureGeometry(
   const runTo = (
     end: LatLon,
     wp: ResolvedProcedureWaypoint,
-    trackAfterDeg?: number,
+    trackAfterDeg?: Degrees,
     legStart?: LatLon
   ) => {
     if (!state) {
@@ -404,7 +405,7 @@ export function procedureGeometry(
   const arriveAtFix = (fix: LatLon, wp: ResolvedProcedureWaypoint) => runTo(fix, wp);
 
   /** Fly a heading from the current state for a length (LNM: `lastPos.endpoint(course, dist)`). */
-  const flyHeading = (heading: number, lengthNm: number, wp: ResolvedProcedureWaypoint) => {
+  const flyHeading = (heading: number, lengthNm: NauticalMiles, wp: ResolvedProcedureWaypoint) => {
     if (!state) return;
     runTo(destinationPoint(state.position, heading, lengthNm), wp, heading);
   };
@@ -414,7 +415,11 @@ export function procedureGeometry(
    * The target is always computed from the leg's *start* position - LNM intersects from the
    * previous leg's end point - and then drawn as a straight line from there.
    */
-  const arriveAtTarget = (target: LatLon, trackAfterDeg: number, wp: ResolvedProcedureWaypoint) => {
+  const arriveAtTarget = (
+    target: LatLon,
+    trackAfterDeg: Degrees,
+    wp: ResolvedProcedureWaypoint
+  ) => {
     if (!state) return;
     runTo(target, wp, trackAfterDeg);
   };

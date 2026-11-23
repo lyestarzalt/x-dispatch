@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { CloudQuantity, DistanceUnit, IMetar, parseMetar } from 'metar-taf-parser';
+import type { Feet } from '@/types/units';
 
 export type FlightCategory = 'VFR' | 'MVFR' | 'IFR' | 'LIFR';
 
@@ -18,7 +19,7 @@ export interface ParsedMetarData {
  */
 function calculateFlightCategory(metar: IMetar): FlightCategory {
   // Find ceiling (lowest BKN, OVC, or vertical visibility)
-  let ceilingFt: number | null = null;
+  let ceilingFt: Feet | null = null;
   for (const cloud of metar.clouds) {
     if (
       (cloud.quantity === CloudQuantity.BKN || cloud.quantity === CloudQuantity.OVC) &&

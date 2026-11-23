@@ -53,7 +53,7 @@ function courseLine(a: number, b: number, suffix: string, opts: MeasureLabelOpti
   return opts.flipped ? `${second} \\ ${first}` : `${first} \\ ${second}`;
 }
 
-function shortDistance(nm: number, unit: 'ft' | 'm', t: Translate): string {
+function shortDistance(nm: NauticalMiles, unit: 'ft' | 'm', t: Translate): string {
   const value = Math.round(unit === 'ft' ? nm * FEET_PER_NM : nm * METERS_PER_NM);
   return `${value.toLocaleString()} ${t(unit === 'ft' ? 'units.ft' : 'units.m')}`;
 }

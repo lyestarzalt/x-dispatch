@@ -1,12 +1,14 @@
+import type { Degrees, Feet, Knots } from '@/types/units';
+
 export interface IvaoPilotLastTrack {
   latitude: number;
   longitude: number;
-  altitude: number;
+  altitude: Feet;
   altitudeDifference: number;
   arrivalDistance: number | null;
   departureDistance: number | null;
-  groundSpeed: number;
-  heading: number;
+  groundSpeed: Knots;
+  heading: Degrees;
   onGround: boolean;
   state: string;
   time: number;
@@ -61,7 +63,7 @@ export interface IvaoAtc {
   lastTrack: {
     latitude: number;
     longitude: number;
-    altitude: number;
+    altitude: Feet;
     timestamp: string;
     transponder: number;
   };

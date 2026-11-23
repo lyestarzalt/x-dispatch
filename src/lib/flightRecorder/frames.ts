@@ -1,3 +1,5 @@
+import type { Degrees, FeetPerMinute, Kilograms, Meters, MetersPerSecond } from '@/types/units';
+
 /**
  * One simulator frame as seen over the Web API. Values arrive as separate
  * dataref messages; the recorder snapshots them whenever the flight-time
@@ -10,22 +12,22 @@ export interface SimFrame {
   wallT: number;
   lat: number;
   lon: number;
-  altM: number;
-  aglM: number;
-  groundspeedMs: number;
-  headingDeg: number;
+  altM: Meters;
+  aglM: Meters;
+  groundspeedMs: MetersPerSecond;
+  headingDeg: Degrees;
   /** `sim/flightmodel/position/vh_ind_fpm`, X-Plane's true vertical speed. */
-  vsFpm: number;
+  vsFpm: FeetPerMinute;
   gNormal: number;
   onGroundAny: boolean;
   onGroundAll: boolean;
   /** Body pitch rate, degrees per second. */
   pitchRateDegSec: number;
-  pitchDeg: number;
-  rollDeg: number;
+  pitchDeg: Degrees;
+  rollDeg: Degrees;
   paused: boolean;
   replay: boolean;
-  fuelKg: number | null;
+  fuelKg: Kilograms | null;
 }
 
 export const RECORDER_DATAREFS = {

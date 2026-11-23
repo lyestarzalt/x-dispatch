@@ -39,6 +39,7 @@ import type { Frequency, Runway, RunwayEnd } from '@/types/apt';
 import { FrequencyType } from '@/types/apt';
 import type { Navaid } from '@/types/navigation';
 import type { AtcRole, NetworkStation } from '@/types/networkTraffic';
+import type { Degrees } from '@/types/units';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore - Vite handles this import
 import gatewayLogo from '../../../../../assets/gateway-logo.svg';
@@ -475,7 +476,7 @@ function freqOrderRank(type: FrequencyType): number {
 
 interface PreferredEnd {
   endName: string;
-  deltaDeg: number;
+  deltaDeg: Degrees;
 }
 
 /** One live position as the frequency list shows it. */
@@ -586,7 +587,7 @@ function mergeFreqRows(staticFreqs: Frequency[], liveRows: AtcRow[]): MergedFreq
  * the wind direction (head-wind landing). Reads the heading from the runway
  * end name (e.g. "13L" → 130°). Returns null if no runways exist.
  */
-function findPreferredRunwayEnd(runways: Runway[], windDeg: number): PreferredEnd | null {
+function findPreferredRunwayEnd(runways: Runway[], windDeg: Degrees): PreferredEnd | null {
   let best: PreferredEnd | null = null;
   for (const rwy of runways) {
     for (const end of rwy.ends) {

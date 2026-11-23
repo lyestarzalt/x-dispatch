@@ -3,6 +3,7 @@
  * Consolidated types for all navigation data: navaids, waypoints, airways,
  * airspace, procedures (SID/STAR/Approach), holdings, and ATC.
  */
+import type { Degrees, Feet, Knots, Minutes, NauticalMiles } from '@/types/units';
 import type { Coordinates, LonLatPath } from './geo';
 
 // ============================================================================
@@ -97,18 +98,18 @@ export interface Navaid extends Coordinates {
   type: NavaidType;
   id: string;
   name: string;
-  elevation: number;
+  elevation: Feet;
   frequency: number; // In Hz * 100 (e.g., 11550 = 115.50 MHz)
-  range: number; // In nautical miles
-  magneticVariation: number;
+  range: NauticalMiles; // In nautical miles
+  magneticVariation: Degrees;
   region: string; // ICAO region code (e.g., "DA" for Algeria)
   country: string;
   // ILS/LOC/GS specific
-  bearing?: number;
+  bearing?: Degrees;
   associatedAirport?: string;
   associatedRunway?: string;
-  glidepathAngle?: number;
-  course?: number;
+  glidepathAngle?: Degrees;
+  course?: Degrees;
   // FPAP/LTP specific
   lengthOffset?: number;
   thresholdCrossingHeight?: number;
@@ -284,8 +285,8 @@ export type SpeedDescriptor =
  */
 export interface AltitudeConstraint {
   descriptor: AltitudeDescriptor;
-  altitude1: number | null; // Primary altitude, always feet
-  altitude2: number | null; // Secondary altitude (for 'B' between constraint), always feet
+  altitude1: Feet | null; // Primary altitude, always feet
+  altitude2: Feet | null; // Secondary altitude (for 'B' between constraint), always feet
   /** The source encoded a flight level ("FL060"), shown as FL60 on charts. */
   isFlightLevel?: boolean;
 }
@@ -298,10 +299,10 @@ export interface ProcedureWaypoint {
   fixRegion: string;
   fixType: FixTypeCode;
   pathTerminator: PathTerminator;
-  course: number | null; // Magnetic course in degrees
-  distance: number | null; // Distance in nautical miles (never the hold/route time encoding)
+  course: Degrees | null; // Magnetic course in degrees
+  distance: NauticalMiles | null; // Distance in nautical miles (never the hold/route time encoding)
   altitude: AltitudeConstraint | null;
-  speed: number | null; // Speed constraint in knots (ARINC 424 SPEED_LIMIT, not TRANS_ALT)
+  speed: Knots | null; // Speed constraint in knots (ARINC 424 SPEED_LIMIT, not TRANS_ALT)
   speedDescriptor: SpeedDescriptor | null;
   turnDirection: TurnDirection | null;
   /** Recommended navaid for the leg (AF arc station, CF/CI/CR/PI reference) - ident + region. */
@@ -329,7 +330,7 @@ export interface ProcedureWaypoint {
   /** Required Navigation Performance, NM, when the leg publishes one. */
   rnp: number | null;
   /** Hold/route leg time, minutes (ARINC 424 "T"-prefixed RTE_DIST_HOLD_DIST_TIME encoding). */
-  holdTimeMin: number | null;
+  holdTimeMin: Minutes | null;
   /**
    * This leg is part of the missed approach. Not a route-type distinction - the file flags only
    * the Missed Approach Point itself (DESC_CODE's 3rd character, 'M'); every later leg in the
@@ -413,13 +414,13 @@ export interface HoldingPattern {
   fixRegion: string;
   airport: string;
   fixType: FixTypeNumber;
-  inboundCourse: number; // Magnetic course
-  legTime: number; // Minutes
-  legDistance: number; // Nautical miles (0 if time-based)
+  inboundCourse: Degrees; // Magnetic course
+  legTime: Minutes; // Minutes
+  legDistance: NauticalMiles; // Nautical miles (0 if time-based)
   turnDirection: TurnDirection;
-  minAlt: number; // Minimum altitude in feet
-  maxAlt: number; // Maximum altitude in feet
-  speedKts: number; // Maximum speed in knots
+  minAlt: Feet; // Minimum altitude in feet
+  maxAlt: Feet; // Maximum altitude in feet
+  speedKts: Knots; // Maximum speed in knots
 }
 
 // ============================================================================
@@ -446,8 +447,8 @@ export interface ATCController {
 }
 
 export interface ATCAirspace {
-  minAlt: number; // ft
-  maxAlt: number; // ft
+  minAlt: Feet; // ft
+  maxAlt: Feet; // ft
   polygon: LonLatPath;
 }
 
@@ -466,11 +467,11 @@ export type AirportClass = 'C' | 'P'; // C = civil, P = ?
 export interface AirportMetadata extends Coordinates {
   icao: string;
   region: string;
-  elevation: number;
+  elevation: Feet;
   airportClass: AirportClass;
-  longestRunway: number; // In feet
+  longestRunway: Feet; // In feet
   ifrCapable: boolean;
-  transitionAlt: number; // Transition altitude in feet
+  transitionAlt: Feet; // Transition altitude in feet
   transitionLevel: string; // e.g., "FL180"
 }
 

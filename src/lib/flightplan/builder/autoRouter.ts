@@ -25,7 +25,7 @@ import {
   getWaypointsInBounds,
 } from '@/lib/xplaneServices/dataService/navdata/navCache';
 import type { Airspace, AirwaySegment } from '@/types/navigation';
-import type { Feet, NauticalMiles } from '@/types/units';
+import type { Degrees, Feet, NauticalMiles } from '@/types/units';
 import { bandAllows } from './airwayRules';
 import { type LatLon, bearingDeg, greatCircleNm, greatCirclePoints } from './geometry';
 import { type OceanicTrack, getOceanicTracks, tracksForAutoRouting } from './oceanicTracks';
@@ -122,7 +122,7 @@ export interface AutoRouteInput {
   /** Candidate joins when no procedure is fixed yet; the router picks the pair that routes best. */
   exits?: RouteJoin[];
   entries?: RouteJoin[];
-  cruiseAltitudeFt: number | null;
+  cruiseAltitudeFt: Feet | null;
   /** A NAT track the route must use, by designator ("NATA"); the other tracks are left out. */
   track?: string;
   /** Receives one line per pass, for the main log. */
@@ -232,7 +232,7 @@ interface AvoidArea {
   penalty: number;
 }
 
-function avoidAreasAtLevel(spaces: Airspace[], cruiseFt: number): AvoidArea[] {
+function avoidAreasAtLevel(spaces: Airspace[], cruiseFt: Feet): AvoidArea[] {
   const out: AvoidArea[] = [];
   for (const a of spaces) {
     const penalty = AIRSPACE_PENALTY[a.class];
@@ -328,7 +328,7 @@ interface BuildOptions {
  * Longitude spans to query, padded. A leg whose endpoints are more than 180° apart is
  * shorter across the antimeridian, so it is covered by two spans that meet at ±180.
  */
-export function longitudeRanges(lons: number[], padDeg: number): [number, number][] {
+export function longitudeRanges(lons: number[], padDeg: Degrees): [number, number][] {
   const min = Math.min(...lons);
   const max = Math.max(...lons);
   if (max - min <= 180) return [[min - padDeg, max + padDeg]];
@@ -700,7 +700,7 @@ function connectEndpoints(graph: Graph, input: AutoRouteInput): Map<string, Rout
 
 interface SearchResult {
   chain: { key: string; arrivedBy: string | null }[];
-  distanceNm: number;
+  distanceNm: NauticalMiles;
 }
 
 /**

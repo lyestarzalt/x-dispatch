@@ -4,6 +4,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { type NatDirection, messagesForDirection } from '@/lib/flightplan/builder/trackChoice';
 import type { NatFeed, NatMessageInfo, RouteIssue } from '@/lib/flightplan/builder/types';
+import type { Feet } from '@/types/units';
 import { MessageCaption } from './MessageCaption';
 import { Caption } from './TrackCaption';
 import { TrackChips } from './TrackChips';
@@ -14,7 +15,7 @@ interface TrackPickerProps {
   direction: NatDirection;
   /** Designator filed in the route ("NATA"), or null when the router chose freely. */
   selected: string | null;
-  cruiseAltitudeFt: number | null;
+  cruiseAltitudeFt: Feet | null;
   /** Resolver warnings on the route, shown beside the track warnings. */
   issues: RouteIssue[];
   disabled?: boolean;

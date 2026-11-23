@@ -22,6 +22,7 @@ import type {
   Waypoint,
 } from '@/types/navigation';
 import { FixTypeNumber } from '@/types/navigation';
+import type { NauticalMiles } from '@/types/units';
 
 // ============================================================================
 // Types
@@ -368,7 +369,7 @@ export function getNavaidNearestById(
   navaidId: string,
   lat: number,
   lon: number,
-  maxDistNm: number
+  maxDistNm: NauticalMiles
 ): { id: string; latitude: number; longitude: number; type: string; region: string } | null {
   const db = getDb();
 
@@ -413,7 +414,7 @@ export function getNavaidNearestById(
  */
 function searchBox(
   lat: number,
-  maxDistNm: number
+  maxDistNm: NauticalMiles
 ): { minLat: number; maxLat: number; lonBuffer: number } {
   const degBuffer = maxDistNm / 60;
   const lonBuffer = Math.min(180, degBuffer / Math.max(1e-6, Math.cos((lat * Math.PI) / 180)));
@@ -429,7 +430,7 @@ function nearestWithin<T extends { lat: number; lon: number }>(
   rows: T[],
   lat: number,
   lon: number,
-  maxDistNm: number
+  maxDistNm: NauticalMiles
 ): T | null {
   let nearest = rows[0];
   let nearestDist = Infinity;
@@ -484,7 +485,7 @@ export function getNavaidEnrichedById(
   navaidId: string,
   lat: number,
   lon: number,
-  maxDistNm: number
+  maxDistNm: NauticalMiles
 ): {
   id: string;
   name: string;
@@ -841,7 +842,7 @@ export function getWaypointNearestById(
   waypointId: string,
   lat: number,
   lon: number,
-  maxDistNm: number
+  maxDistNm: NauticalMiles
 ): { id: string; latitude: number; longitude: number; region: string } | null {
   const db = getDb();
 
@@ -1144,7 +1145,7 @@ export function getAirspacesInBounds(
 export function getAirspacesNearPoint(
   lat: number,
   lon: number,
-  radiusNm: number = 50,
+  radiusNm: NauticalMiles = 50,
   limit: number = 1000
 ): Airspace[] {
   const { minLat, maxLat, minLon, maxLon } = boundsAroundPoint(lat, lon, radiusNm);
@@ -1195,7 +1196,7 @@ export interface SqlResolverOptions {
   airportLat?: number;
   airportLon?: number;
   /** Maximum distance in nm for fallback matching (default: 500nm) */
-  maxFallbackDistanceNm?: number;
+  maxFallbackDistanceNm?: NauticalMiles;
   /** Runway ends for resolving runway waypoints (RW09, RW27L, etc.) */
   runwayEnds?: RunwayEndData[];
 }

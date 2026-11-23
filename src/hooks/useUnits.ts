@@ -24,6 +24,7 @@ import {
   formatWeightExact,
 } from '@/lib/utils/units';
 import { useSettingsStore } from '@/stores/settingsStore';
+import type { Pounds } from '@/types/units';
 
 type UnitPreferences = ReturnType<typeof useSettingsStore.getState>['map']['units'];
 
@@ -43,15 +44,15 @@ export function buildUnitFormatters(units: UnitPreferences, t: Translate) {
     shortDistance: (ft: Feet) => formatShortDistance(ft, units.length, t),
     speed: (kts: Knots) => formatSpeed(kts, units.speed, t),
     verticalSpeed: (fpm: FeetPerMinute) => formatVerticalSpeed(fpm, units.verticalSpeed, t),
-    weight: (lbs: number) => formatWeight(lbs, units.weight),
+    weight: (lbs: Pounds) => formatWeight(lbs, units.weight),
     // Full digits for dispatch figures (fuel, takeoff weight), where "50k lbs" is not enough.
-    weightExact: (lbs: number) => formatWeightExact(lbs, units.weight),
+    weightExact: (lbs: Pounds) => formatWeightExact(lbs, units.weight),
     coordinates: (lat: number, lon: number) => formatCoordinates(lat, lon, units.coordinates, t),
     course: (trueDeg: Degrees, lat: number, lon: number, date?: Date) =>
       formatCourse(trueDeg, units.course, lat, lon, t, date),
     // For sources with their own published variation (e.g. an ILS record) —
     // more accurate than a WMM lookup, and skips it entirely.
-    courseWithVariation: (trueDeg: Degrees, variationDeg: number) =>
+    courseWithVariation: (trueDeg: Degrees, variationDeg: Degrees) =>
       formatCourseWithVariation(trueDeg, units.course, variationDeg, t),
     // Raw converted numbers, for charts/axes that need a value, not a string.
     distanceF: (nm: NauticalMiles) => convertDistance(nm, units.distance),
@@ -59,7 +60,7 @@ export function buildUnitFormatters(units: UnitPreferences, t: Translate) {
     lengthF: (ft: Feet) => convertLength(ft, units.length),
     speedF: (kts: Knots) => convertSpeed(kts, units.speed),
     verticalSpeedF: (fpm: FeetPerMinute) => convertVerticalSpeed(fpm, units.verticalSpeed),
-    weightF: (lbs: number) => convertWeight(lbs, units.weight),
+    weightF: (lbs: Pounds) => convertWeight(lbs, units.weight),
   };
 }
 

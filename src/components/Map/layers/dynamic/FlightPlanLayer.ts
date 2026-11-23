@@ -221,7 +221,7 @@ export function createLegLabelGeoJSON(
   interface Leg {
     a: LatLon;
     b: LatLon;
-    distanceNm: number;
+    distanceNm: NauticalMiles;
     airway: string;
     label: string;
     showAirway: boolean;

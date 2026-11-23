@@ -5,6 +5,7 @@
  */
 import { clamp } from '@/lib/utils/math';
 import type { Coordinates } from '@/types/geo';
+import type { Radians } from '@/types/units';
 import type { Degrees, NauticalMiles } from './index';
 import { toDegrees, toRadians } from './sphere';
 
@@ -90,7 +91,7 @@ export function intersectRadials(
 }
 
 /** Wraps an angle in radians to (-π, π]. */
-function normalizeSigned(rad: number): number {
+function normalizeSigned(rad: Radians): number {
   const twoPi = 2 * Math.PI;
   const wrapped = ((rad + Math.PI) % twoPi) + twoPi;
   return (wrapped % twoPi) - Math.PI;
@@ -155,7 +156,7 @@ export function crossTrackStatus(
   point: Coordinates,
   lineStart: Coordinates,
   lineBearing: Degrees
-): { alongTrackNm: number; crossTrackNm: number } {
+): { alongTrackNm: NauticalMiles; crossTrackNm: NauticalMiles } {
   const [x, y] = localOffsetNm(lineStart, point);
   const θ = toRadians(lineBearing);
   return {

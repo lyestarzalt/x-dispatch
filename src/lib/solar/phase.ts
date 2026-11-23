@@ -40,7 +40,7 @@ const MIN_MS = 60_000;
 const RAD = Math.PI / 180;
 const DEG = 180 / Math.PI;
 
-export function phaseForAltitude(altitudeDeg: number): LightPhase {
+export function phaseForAltitude(altitudeDeg: Degrees): LightPhase {
   if (altitudeDeg > 0) return 'day';
   if (altitudeDeg > TWILIGHT_ALTITUDE.civil) return 'civil';
   if (altitudeDeg > TWILIGHT_ALTITUDE.nautical) return 'nautical';

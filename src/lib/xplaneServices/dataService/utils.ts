@@ -4,6 +4,7 @@
  */
 import * as fs from 'fs';
 import * as readline from 'readline';
+import type { NauticalMiles } from '@/types/units';
 
 /**
  * Fast async file reader for large files
@@ -40,7 +41,7 @@ export function isInBoundingBox(
   lon: number,
   centerLat: number,
   centerLon: number,
-  radiusNm: number
+  radiusNm: NauticalMiles
 ): boolean {
   const degPerNm = 1 / 60;
   const latRange = radiusNm * degPerNm;

@@ -81,7 +81,7 @@ export function bearingOf(a: Vec, b: Vec): Degrees {
 }
 
 /** Signed change of heading from `inDeg` to `outDeg`, in (-180, 180]. Positive turns right. */
-export function signedTurn(inDeg: number, outDeg: number): Degrees {
+export function signedTurn(inDeg: Degrees, outDeg: Degrees): Degrees {
   let d = (outDeg - inDeg) % 360;
   if (d <= -180) d += 360;
   if (d > 180) d -= 360;

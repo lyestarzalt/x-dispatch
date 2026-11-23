@@ -1,4 +1,5 @@
 import type { EnrichedFlightPlan, FMSFlightPlan, RunwayEnd } from '@/types/fms';
+import type { Feet, NauticalMiles } from '@/types/units';
 
 /** A published procedure picked by name plus its enroute transition, if any. */
 export interface ProcedureChoice {
@@ -30,7 +31,7 @@ export interface PlanDraft {
   alternate?: PlanEndpoint | null;
   /** Free text route, airways and fixes, as filed: "SUGOL UL620 KEKIX T180 OSN". */
   routeText: string;
-  cruiseAltitudeFt: number | null;
+  cruiseAltitudeFt: Feet | null;
 }
 
 export type RouteTokenKind = 'fix' | 'navaid' | 'airport' | 'airway' | 'latlon' | 'direct';
@@ -57,8 +58,8 @@ export type RouteIssue =
 
 /** Feet; null means no limit on that side. */
 export interface LevelBand {
-  minFt: number | null;
-  maxFt: number | null;
+  minFt: Feet | null;
+  maxFt: Feet | null;
 }
 
 export interface RouteToken {
@@ -75,7 +76,7 @@ export interface RouteToken {
 export interface RouteResolution {
   plan: FMSFlightPlan;
   tokens: RouteToken[];
-  distanceNm: number;
+  distanceNm: NauticalMiles;
   /** What every airway walked allows together: the highest floor and the lowest ceiling. */
   levels: LevelBand;
   /** The airway behind each edge of `levels`, so a conflict can name them. */
@@ -113,7 +114,7 @@ export interface AutoRouteRequest extends PlanDraft {
 export interface AutoRouteResult {
   /** Route in filing form, ready for the route field: "ARNEM UL620 OSN T180 KEKIX". */
   routeText: string;
-  distanceNm: number;
+  distanceNm: NauticalMiles;
   /** Procedures the router joined through, when it was given candidates. */
   sid?: ProcedureChoice;
   star?: ProcedureChoice;

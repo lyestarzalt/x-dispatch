@@ -8,14 +8,15 @@
 import { normalize360 } from '@/lib/utils/math';
 import { METERS_PER_NM } from '@/lib/utils/units/constants';
 import type { LonLat } from '@/types/geo';
+import type { Degrees, Meters, NauticalMiles } from '@/types/units';
 import { EARTH_RADIUS_M, destinationRad, initialBearing, toDegrees, toRadians } from './sphere';
 
 /** Start, distance in metres and bearing in degrees to the point reached, as `[lon, lat]`. */
 function destinationPoint(
   lat: number,
   lon: number,
-  distanceMeters: number,
-  bearingDegrees: number
+  distanceMeters: Meters,
+  bearingDegrees: Degrees
 ): LonLat {
   const [φ2, λ2] = destinationRad(
     toRadians(lat),
@@ -32,8 +33,8 @@ export type TurnDirection = 'L' | 'R';
  * Calculate angular sweep for arc based on turn direction
  */
 function calculateSweep(
-  startAngle: number,
-  endAngle: number,
+  startAngle: Degrees,
+  endAngle: Degrees,
   turnDirection: TurnDirection
 ): number {
   const start = normalize360(startAngle);
@@ -70,8 +71,8 @@ function calculateSweep(
 export function interpolateRFArc(
   start: LonLat,
   end: LonLat,
-  centerBearing: number,
-  radiusNm: number,
+  centerBearing: Degrees,
+  radiusNm: NauticalMiles,
   turnDirection: TurnDirection,
   numPoints = 32
 ): LonLat[] {
@@ -128,7 +129,7 @@ export function interpolateRFArc(
  */
 export function createHoldingPattern(
   holdFix: LonLat,
-  inboundCourse: number,
+  inboundCourse: Degrees,
   legDistanceNm = 1.0,
   turnDirection: TurnDirection = 'R',
   turnRadiusNm = 0.5
@@ -211,7 +212,7 @@ export function createHoldingPattern(
  */
 export function createProcedureTurn(
   fixPoint: LonLat,
-  outboundCourse: number,
+  outboundCourse: Degrees,
   turnDirection: TurnDirection = 'L',
   outboundDistanceNm = 2.0,
   legDistanceNm = 1.0

@@ -1,5 +1,5 @@
 import { smoothstep } from '@/lib/utils/math';
-import type { Degrees } from '@/types/units';
+import type { Degrees, Seconds } from '@/types/units';
 
 /**
  * Sun geometry shared by the sky lighting and the city-light layers.
@@ -134,6 +134,6 @@ export function nightFactor(sunAltitude: number): number {
  * enough: the sun's declination for a given day barely changes between
  * years.
  */
-export function simTimeToEpochMs(dayOfYear: number, zuluSeconds: number, year: number): number {
+export function simTimeToEpochMs(dayOfYear: number, zuluSeconds: Seconds, year: number): number {
   return Date.UTC(year, 0, 1) + dayOfYear * DAY_MS + zuluSeconds * 1000;
 }
