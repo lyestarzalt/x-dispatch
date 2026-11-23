@@ -2,7 +2,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PlanEndpoint } from '@/lib/flightplan/builder/types';
 import type { EnrichedFlightPlan } from '@/types/fms';
 import { useFlightPlanStore } from './flightPlanStore';
-import { migratePlanBuilderState, routerOwnsRoute, usePlanBuilderStore } from './planBuilderStore';
+import {
+  MAX_PREVIOUS_PLANS,
+  migratePlanBuilderState,
+  routerOwnsRoute,
+  usePlanBuilderStore,
+  withPreviousPlan,
+} from './planBuilderStore';
 
 // electron-log's renderer transport waits for the main process, which a node test never has.
 vi.mock('@/lib/utils/loggerRenderer', () => {
@@ -341,5 +347,94 @@ describe('planBuilderStore — persisted filter', () => {
     usePlanBuilderStore.getState().setExploreMinStand('D');
     expect(usePlanBuilderStore.getState().exploreMinStand).toBe('D');
     usePlanBuilderStore.getState().setExploreMinStand('any');
+  });
+});
+
+// A plan cleared from the strip or replaced in the planner used to be gone for good
+// (GitHub #407). The last ten are kept, whole, so any of them can be brought back.
+describe('previous plans', () => {
+  const draft = (routeText: string, over: Record<string, unknown> = {}) => ({
+    departure: LFMC as PlanEndpoint,
+    arrival: LFLN as PlanEndpoint,
+    alternate: null,
+    routeText,
+    cruiseAltitudeFt: 9000,
+    aircraftClass: null,
+    ...over,
+  });
+
+  it('puts the newest plan first and keeps what the pilot typed', () => {
+    const list = withPreviousPlan(withPreviousPlan([], draft('MTL'), 1), draft('MTL DCT ROMAM'), 2);
+    expect(list.map((p) => [p.routeText, p.savedAt])).toEqual([
+      ['MTL DCT ROMAM', 2],
+      ['MTL', 1],
+    ]);
+  });
+
+  it('keeps one copy of the same plan, moved to the top', () => {
+    let list = withPreviousPlan([], draft('MTL'), 1);
+    list = withPreviousPlan(list, draft('ROMAM'), 2);
+    list = withPreviousPlan(list, draft('MTL'), 3);
+    expect(list.map((p) => [p.routeText, p.savedAt])).toEqual([
+      ['MTL', 3],
+      ['ROMAM', 2],
+    ]);
+  });
+
+  it('tells two plans apart by runway and procedure, not only by route', () => {
+    const viaSid = draft('MTL', { departure: { ...LFMC, runway: '13', sid: { name: 'MTL5K' } } });
+    expect(withPreviousPlan(withPreviousPlan([], draft('MTL'), 1), viaSid, 2)).toHaveLength(2);
+  });
+
+  it('drops the oldest past the limit, and ignores a plan missing an airport', () => {
+    let list = withPreviousPlan([], draft('X', { arrival: null }), 0);
+    expect(list).toEqual([]);
+    for (let i = 0; i < MAX_PREVIOUS_PLANS + 3; i++)
+      list = withPreviousPlan(list, draft(`R${i}`), i);
+    expect(list).toHaveLength(MAX_PREVIOUS_PLANS);
+    expect(list[0]?.routeText).toBe(`R${MAX_PREVIOUS_PLANS + 2}`);
+  });
+
+  it('remembers the plan that New plan, a swap or another airport replaces', () => {
+    usePlanBuilderStore.setState({ ...draft('MTL'), previousPlans: [] });
+    usePlanBuilderStore.getState().reset();
+    expect(usePlanBuilderStore.getState().previousPlans.map((p) => p.routeText)).toEqual(['MTL']);
+
+    usePlanBuilderStore.setState({ ...draft('ROMAM') });
+    usePlanBuilderStore.getState().swapEndpoints();
+    usePlanBuilderStore.setState({ routeText: 'BACK' });
+    usePlanBuilderStore.getState().setArrival({ ...LFMC, icao: 'LFML' } as PlanEndpoint);
+    expect(usePlanBuilderStore.getState().previousPlans.map((p) => p.routeText)).toEqual([
+      'BACK',
+      'ROMAM',
+      'MTL',
+    ]);
+  });
+
+  it('brings one back whole, and keeps the plan it replaces', () => {
+    usePlanBuilderStore.setState({ ...draft('NOW'), previousPlans: [] });
+    usePlanBuilderStore.setState({
+      previousPlans: withPreviousPlan([], draft('BEFORE', { cruiseAltitudeFt: 12000 }), 5),
+    });
+    usePlanBuilderStore.getState().restorePreviousPlan(5);
+    const state = usePlanBuilderStore.getState();
+    expect([state.routeText, state.cruiseAltitudeFt, state.isOpen]).toEqual([
+      'BEFORE',
+      12000,
+      true,
+    ]);
+    expect(state.previousPlans.map((p) => p.routeText)).toEqual(['NOW']);
+  });
+
+  it('removes one from the list', () => {
+    usePlanBuilderStore.setState({ previousPlans: withPreviousPlan([], draft('MTL'), 7) });
+    usePlanBuilderStore.getState().removePreviousPlan(7);
+    expect(usePlanBuilderStore.getState().previousPlans).toEqual([]);
+  });
+
+  it('starts a v3 save with an empty list and leaves the draft alone', () => {
+    const migrated = migratePlanBuilderState({ routeText: 'SUGOL' }, 3) as Record<string, unknown>;
+    expect(migrated.previousPlans).toEqual([]);
+    expect(migrated.routeText).toBe('SUGOL');
   });
 });

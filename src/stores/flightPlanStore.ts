@@ -62,6 +62,8 @@ interface FlightPlanState {
 
   setSelectedWaypoint: (index: number | null) => void;
   clearFlightPlan: () => void;
+  /** Shows or hides the strip of the plan's fixes; the plan itself stays on the map. */
+  setFlightPlanBarShown: (shown: boolean) => void;
   getChips: () => FlightPlanChip[];
 
   // SimBrief Actions
@@ -131,6 +133,8 @@ export const useFlightPlanStore = create<FlightPlanState>((set, get) => ({
   },
 
   setSelectedWaypoint: (index) => set({ selectedWaypointIndex: index }),
+
+  setFlightPlanBarShown: (shown) => set({ showFlightPlanBar: shown }),
 
   clearFlightPlan: () => {
     useAppStore.getState().selectProcedure(null);

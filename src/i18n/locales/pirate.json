@@ -435,16 +435,11 @@
       "routes": "Courses",
       "weather": "Skies",
       "online": "Online",
-      "logbook": "Log"
+      "logbook": "Old charts"
     },
     "online": {
       "networkOff": "Pick a network to see who be sailin' online.",
       "none": "No controllers on watch right now."
-    },
-    "logbook": {
-      "none": "No finished voyages in the log yet.",
-      "flights_one": "{{count}} voyage",
-      "flights_other": "{{count}} voyages"
     },
     "weather": {
       "error": "Couldn't spy the skies",
@@ -465,6 +460,10 @@
         "dustSand": "Dust",
         "clear": "Fair winds"
       }
+    },
+    "previous": {
+      "none": "Charts ye toss or swap be kept here.",
+      "remove": "Strike from the list"
     }
   },
   "settings": {
@@ -2532,6 +2531,9 @@
   },
   "flightPlanBar": {
     "clear": "Scuttle the flight plan",
+    "cleared": "Chart tossed overboard",
+    "hide": "Stow the flight plan strip",
+    "show": "Hoist the flight plan strip",
     "jumpToDeparture": "Back to port",
     "jumpToArrival": "On to the landfall",
     "scrollBack": "Scroll astern",

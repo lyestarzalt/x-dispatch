@@ -17,6 +17,7 @@ import { fmsFileStem, serializeFms } from '@/lib/flightplan/builder/fmsWriter';
 import { builtProcedurePaths } from '@/lib/flightplan/builder/legGeometry';
 import {
   type ProcedureParts,
+  choiceKey,
   composePlan,
   enrichedFromPlan,
   planForFile,
@@ -55,6 +56,52 @@ export interface RouteNote {
 
 /** The persisted part of the planner: what an undo of "New plan" brings back. */
 type SavedDraft = PlanDraft & { aircraftClass: RangeRingCategory | null };
+
+/** A plan the planner put away, whole, so it can be brought back. */
+export type PreviousPlan = SavedDraft & { savedAt: number };
+
+export const MAX_PREVIOUS_PLANS = 10;
+
+/** What makes two plans the same plan: airports, runways, procedures, route and cruise. */
+function planKey(plan: SavedDraft): string {
+  const end = (e: PlanEndpoint | null | undefined) =>
+    e ? [e.icao, e.runway, choiceKey(e.sid), choiceKey(e.star), choiceKey(e.approach)] : null;
+  return JSON.stringify([
+    end(plan.departure),
+    end(plan.arrival),
+    plan.alternate?.icao ?? null,
+    plan.routeText.trim().toUpperCase(),
+    plan.cruiseAltitudeFt,
+  ]);
+}
+
+/**
+ * The list with this plan on top. A plan needs both airports to be worth keeping; the same plan
+ * is kept once, and the oldest falls off past the limit.
+ */
+export function withPreviousPlan(
+  list: PreviousPlan[],
+  plan: SavedDraft,
+  savedAt: number
+): PreviousPlan[] {
+  if (!plan.departure || !plan.arrival) return list;
+  const key = planKey(plan);
+  return [{ ...plan, savedAt }, ...list.filter((p) => planKey(p) !== key)].slice(
+    0,
+    MAX_PREVIOUS_PLANS
+  );
+}
+
+function draftOf(state: SavedDraft): SavedDraft {
+  return {
+    departure: state.departure,
+    arrival: state.arrival,
+    alternate: state.alternate ?? null,
+    routeText: state.routeText,
+    cruiseAltitudeFt: state.cruiseAltitudeFt,
+    aircraftClass: state.aircraftClass,
+  };
+}
 
 export type PlannerPanelSize = 'full' | 'half' | 'rail';
 
@@ -132,6 +179,13 @@ interface PlanBuilderState extends PlanDraft {
   showOnMap: () => void;
   saveToXPlane: () => Promise<string | null>;
   startAtDeparture: () => void;
+  /** The last plans the planner put away, newest first. */
+  previousPlans: PreviousPlan[];
+  /** Keeps the current plan in the list; called before something replaces or clears it. */
+  rememberPlan: () => void;
+  /** Loads a previous plan (by its `savedAt`) into the planner, keeping the current one. */
+  restorePreviousPlan: (savedAt: number) => void;
+  removePreviousPlan: (savedAt: number) => void;
   /** Empties the planner and returns what it held, for an undo. */
   reset: () => SavedDraft;
   /** Puts back a draft that `reset` returned. */
@@ -179,6 +233,9 @@ export function migratePlanBuilderState(persisted: unknown, version: number): un
   if (version < 3) {
     state.exploreMinStand = 'any';
   }
+  if (version < 4) {
+    state.previousPlans = [];
+  }
   return state;
 }
 
@@ -206,6 +263,7 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
       filedProcedures: null,
       setFiledProcedures: (filed) => set({ filedProcedures: filed }),
       loadFromFms: (draft) => {
+        get().rememberPlan();
         clearDrawnPlan(get().departure, get().arrival);
         resolvedDraft = null;
         set({
@@ -241,6 +299,7 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
             departure: endpoint,
             ...(endpoint?.icao !== state.departure?.icao
               ? {
+                  previousPlans: withPreviousPlan(state.previousPlans, draftOf(state), Date.now()),
                   routeText: '',
                   cruiseAltitudeFt: null,
                   result: null,
@@ -258,6 +317,7 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
             arrival: endpoint,
             ...(endpoint?.icao !== state.arrival?.icao
               ? {
+                  previousPlans: withPreviousPlan(state.previousPlans, draftOf(state), Date.now()),
                   routeText: '',
                   cruiseAltitudeFt: null,
                   result: null,
@@ -304,6 +364,7 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
         set((state) => {
           clearDrawnPlan(state.departure, state.arrival);
           return {
+            previousPlans: withPreviousPlan(state.previousPlans, draftOf(state), Date.now()),
             departure: state.arrival
               ? { ...state.arrival, sid: undefined, star: undefined, approach: undefined }
               : null,
@@ -489,6 +550,7 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
           cruiseAltitudeFt,
           aircraftClass,
         };
+        get().rememberPlan();
         clearDrawnPlan(departure, arrival);
         resolvedDraft = null;
         set({
@@ -506,6 +568,27 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
         });
         return previous;
       },
+
+      previousPlans: [],
+      rememberPlan: () =>
+        set((state) => ({
+          previousPlans: withPreviousPlan(state.previousPlans, draftOf(state), Date.now()),
+        })),
+      restorePreviousPlan: (savedAt) => {
+        const plan = get().previousPlans.find((p) => p.savedAt === savedAt);
+        if (!plan) return;
+        get().rememberPlan();
+        clearDrawnPlan(get().departure, get().arrival);
+        get().restoreDraft(draftOf(plan));
+        set((state) => ({
+          isOpen: true,
+          previousPlans: state.previousPlans.filter((p) => p.savedAt !== savedAt),
+        }));
+      },
+      removePreviousPlan: (savedAt) =>
+        set((state) => ({
+          previousPlans: state.previousPlans.filter((p) => p.savedAt !== savedAt),
+        })),
 
       restoreDraft: (draft) => {
         resolvedDraft = null;
@@ -525,7 +608,8 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
       // v2: RunwayEnd gained the optional `elevationFt` (nothing to convert - older saved runway
       // ends simply lack it until the runway is picked again).
       // v3: `exploreMinStand`, the Explore lists' stand size filter.
-      version: 3,
+      // v4: `previousPlans`, the last plans the planner put away.
+      version: 4,
       migrate: migratePlanBuilderState,
       partialize: (state) => ({
         departure: state.departure,
@@ -535,6 +619,7 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
         routeText: state.routeText,
         cruiseAltitudeFt: state.cruiseAltitudeFt,
         exploreMinStand: state.exploreMinStand,
+        previousPlans: state.previousPlans,
       }),
     }
   )

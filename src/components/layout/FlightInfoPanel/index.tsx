@@ -1,6 +1,7 @@
 import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, ChevronLeft, ChevronRight, FileText, X } from 'lucide-react';
+import { StripToggle } from '@/components/layout/FlightPlanBar/StripToggle';
 import { SimbriefLogo } from '@/components/ui/SimbriefLogo';
 import { Button } from '@/components/ui/button';
 import { IcaoCode } from '@/components/ui/icao-code';
@@ -115,6 +116,7 @@ function FlightInfoPanel() {
             <span className="truncate font-mono text-sm font-semibold">{flightNumber}</span>
           </div>
           <div className="flex items-center">
+            <StripToggle />
             <Button
               variant="ghost"
               size="icon-sm"

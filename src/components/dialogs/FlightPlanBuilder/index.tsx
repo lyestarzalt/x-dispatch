@@ -27,6 +27,7 @@ import {
   X,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { StripToggle } from '@/components/layout/FlightPlanBar/StripToggle';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { IcaoCode } from '@/components/ui/icao-code';
@@ -156,6 +157,7 @@ function FlightPlanBuilder({
   const compact = panel === 'half';
   const reset = usePlanBuilderStore((s) => s.reset);
   const restoreDraft = usePlanBuilderStore((s) => s.restoreDraft);
+  const showOnMap = usePlanBuilderStore((s) => s.showOnMap);
   const departure = usePlanBuilderStore((s) => s.departure);
   // A plan loaded by code alone (a file, a link) knows no airport names; the list does.
   const airportName = useCallback(
@@ -1254,7 +1256,7 @@ function FlightPlanBuilder({
             <Button
               variant={profileStripOpen ? 'secondary' : 'ghost'}
               size="xs"
-              className="mr-auto max-sm:px-1.5"
+              className="max-sm:px-1.5"
               onClick={() => setProfileStripOpen(!profileStripOpen)}
               disabled={!ready}
               aria-pressed={profileStripOpen}
@@ -1263,6 +1265,7 @@ function FlightPlanBuilder({
               <Mountain className="h-3.5 w-3.5" />
               <span className="max-sm:hidden">{t('planBuilder.profileShort')}</span>
             </Button>
+            <StripToggle className="mr-auto" onDraw={ready ? showOnMap : undefined} />
             <Button
               variant="outline"
               size="xs"

@@ -10,10 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **US RNAV SIDs and STARs are marked RNAV.** It reads the same `d-tpp_Metafile.xml` in Custom Data that marks obstacle departures.
+- **Your last ten flight plans are kept.** The clock in the planner lists them, whole, and a click loads one back; it replaces the list of flown routes there.
+- **Show or hide the flight plan strip.** A button next to Profile in the planner, and in the SimBrief panel; it also draws the plan again after it was cleared.
 
 ### Changed
 
 - **Zoomed in, each airway leg shows its airway.** The label reads "Q167 20 nm 223°", and a direct leg shows distance and course only.
+- **Clearing the flight plan from the strip can be undone.**
 
 ### Fixed
 

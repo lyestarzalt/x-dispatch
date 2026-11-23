@@ -435,16 +435,11 @@
       "routes": "Rotte",
       "weather": "Meteo",
       "online": "Online",
-      "logbook": "Logbook"
+      "logbook": "Piani precedenti"
     },
     "online": {
       "networkOff": "Scegli una rete per vedere chi è online.",
       "none": "Nessun controllore online al momento."
-    },
-    "logbook": {
-      "none": "Nessun volo completato nel logbook.",
-      "flights_one": "{{count}} volo",
-      "flights_other": "{{count}} voli"
     },
     "weather": {
       "error": "Impossibile caricare il meteo",
@@ -465,6 +460,10 @@
         "dustSand": "Polvere",
         "clear": "Sereno"
       }
+    },
+    "previous": {
+      "none": "I piani cancellati o sostituiti restano qui.",
+      "remove": "Rimuovi dall'elenco"
     }
   },
   "settings": {
@@ -2532,6 +2531,9 @@
   },
   "flightPlanBar": {
     "clear": "Cancella piano di volo",
+    "cleared": "Piano di volo cancellato",
+    "hide": "Nascondi la striscia del piano di volo",
+    "show": "Mostra la striscia del piano di volo",
     "jumpToDeparture": "Vai alla partenza",
     "jumpToArrival": "Vai all'arrivo",
     "scrollBack": "Scorri indietro",

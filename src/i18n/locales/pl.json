@@ -435,16 +435,11 @@
       "routes": "Trasy",
       "weather": "Pogoda",
       "online": "Online",
-      "logbook": "Dziennik"
+      "logbook": "Poprzednie plany"
     },
     "online": {
       "networkOff": "Wybierz sieć, aby zobaczyć, kto jest online.",
       "none": "Brak kontrolerów online w tej chwili."
-    },
-    "logbook": {
-      "none": "W dzienniku nie ma jeszcze ukończonych lotów.",
-      "flights_one": "{{count}} lot",
-      "flights_other": "{{count}} lotu"
     },
     "weather": {
       "error": "Nie udało się wczytać pogody",
@@ -465,6 +460,10 @@
         "dustSand": "Pył",
         "clear": "Bezchmurnie"
       }
+    },
+    "previous": {
+      "none": "Usunięte lub zastąpione plany są tu zachowywane.",
+      "remove": "Usuń z listy"
     }
   },
   "settings": {
@@ -2532,6 +2531,9 @@
   },
   "flightPlanBar": {
     "clear": "Wyczyść plan lotu",
+    "cleared": "Plan lotu wyczyszczony",
+    "hide": "Ukryj pasek planu lotu",
+    "show": "Pokaż pasek planu lotu",
     "jumpToDeparture": "Skocz do odlotu",
     "jumpToArrival": "Skocz do przylotu",
     "scrollBack": "Przewiń wstecz",

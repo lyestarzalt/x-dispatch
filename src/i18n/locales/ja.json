@@ -435,16 +435,11 @@
       "routes": "ルート",
       "weather": "気象",
       "online": "オンライン",
-      "logbook": "ログブック"
+      "logbook": "以前のプラン"
     },
     "online": {
       "networkOff": "ネットワークを選ぶと、誰がオンラインかわかります。",
       "none": "現在オンラインの管制官はいません。"
-    },
-    "logbook": {
-      "none": "ログブックに完了したフライトはまだありません。",
-      "flights_one": "{{count}} 回",
-      "flights_other": "{{count}} 回"
     },
     "weather": {
       "error": "気象情報を読み込めませんでした",
@@ -465,6 +460,10 @@
         "dustSand": "砂塵",
         "clear": "晴天"
       }
+    },
+    "previous": {
+      "none": "消去または置き換えたプランはここに残ります。",
+      "remove": "リストから削除"
     }
   },
   "settings": {
@@ -2532,6 +2531,9 @@
   },
   "flightPlanBar": {
     "clear": "フライトプランを消去",
+    "cleared": "フライトプランを消去しました",
+    "hide": "フライトプランストリップを隠す",
+    "show": "フライトプランストリップを表示",
     "jumpToDeparture": "出発地へ移動",
     "jumpToArrival": "到着地へ移動",
     "scrollBack": "前へスクロール",
