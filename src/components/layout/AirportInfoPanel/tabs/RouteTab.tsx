@@ -7,6 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { runwayMatches } from '@/lib/flightplan/builder/procedures';
 import { formatApproachName } from '@/lib/parsers/nav/approachName';
+import { chartTitleTags } from '@/lib/parsers/nav/faaChartIndex';
 import { cn } from '@/lib/utils/helpers';
 import { trackEvent, useAirportProcedures } from '@/queries';
 import { useAppStore } from '@/stores/appStore';
@@ -30,12 +31,13 @@ function ProcedureName({
 }) {
   const { t } = useTranslation();
   if (type !== 'APP') {
-    if (!proc.obstacle) return <span className="font-mono text-sm">{proc.name}</span>;
+    const tags = chartTitleTags(proc);
+    if (tags.length === 0) return <span className="font-mono text-sm">{proc.name}</span>;
     return (
       <span className="flex min-w-0 items-baseline gap-2">
         <span className="font-mono text-sm">{proc.name}</span>
         <span className="text-muted-foreground/50 text-2xs truncate">
-          {t('procedures.obstacle')}
+          {tags.map((tag) => t(`procedures.${tag}`)).join(' ')}
         </span>
       </span>
     );

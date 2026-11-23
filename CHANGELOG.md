@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **US RNAV SIDs and STARs are marked RNAV.** It reads the same `d-tpp_Metafile.xml` in Custom Data that marks obstacle departures.
+
 ### Changed
 
 - **Zoomed in, each airway leg shows its airway.** The label reads "Q167 20 nm 223°", and a direct leg shows distance and course only.

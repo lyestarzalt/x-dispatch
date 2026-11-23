@@ -1393,6 +1393,7 @@
   },
   "procedures": {
     "obstacle": "OBSTACLE",
+    "rnav": "RNAV",
     "noData": "无可用程序",
     "noTypeData": "无可用 {{type}}",
     "tabs": {

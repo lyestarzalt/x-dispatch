@@ -74,6 +74,7 @@ import {
 } from '@/lib/flightplan/builder/trackChoice';
 import type { LevelBand, PlanEndpoint, RouteToken } from '@/lib/flightplan/builder/types';
 import { formatApproachName } from '@/lib/parsers/nav/approachName';
+import { chartTitleTags } from '@/lib/parsers/nav/faaChartIndex';
 import { kgToLbs } from '@/lib/utils/format';
 import type { NauticalMiles } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
@@ -137,9 +138,11 @@ function FlightPlanBuilder({
   onActivate,
 }: FlightPlanBuilderProps) {
   const { t } = useTranslation();
-  // An obstacle departure says so in the picker; the chosen value stays the raw identifier.
-  const sidLabel = useCallback(
-    (p: ResolvedProcedure) => (p.obstacle ? `${p.name} (${t('procedures.obstacle')})` : p.name),
+  // A SID or STAR says what its chart title does (OBSTACLE, RNAV) in the picker; the chosen value
+  // stays the raw identifier.
+  const chartLabel = useCallback(
+    (p: ResolvedProcedure) =>
+      [p.name, ...chartTitleTags(p).map((tag) => `(${t(`procedures.${tag}`)})`)].join(' '),
     [t]
   );
   const units = useUnits();
@@ -1031,7 +1034,7 @@ function FlightPlanBuilder({
                       <Field label={t('planBuilder.sid')}>
                         <ProcedureSelect
                           procedures={sids}
-                          labelFor={sidLabel}
+                          labelFor={chartLabel}
                           runway={departure.runway}
                           value={departure.sid}
                           placeholder={t('planBuilder.noProcedure')}
@@ -1071,6 +1074,7 @@ function FlightPlanBuilder({
                       <Field label={t('planBuilder.star')}>
                         <ProcedureSelect
                           procedures={stars}
+                          labelFor={chartLabel}
                           runway={arrival.runway}
                           value={arrival.star}
                           placeholder={t('planBuilder.noProcedure')}

@@ -1393,6 +1393,7 @@
   },
   "procedures": {
     "obstacle": "OBSTACLE",
+    "rnav": "RNAV",
     "noData": "Aucune procédure disponible",
     "noTypeData": "Aucune {{type}} disponible",
     "tabs": {
