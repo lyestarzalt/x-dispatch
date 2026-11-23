@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Zoomed in, each airway leg shows its airway.** The label reads "Q167 20 nm 223°", and a direct leg shows distance and course only.
+
 ### Fixed
 
 - **A departure that turns to intercept a radial is drawn the right way.** KDVT's DVT3 off runway 07R ran straight to the VOR instead of north along the radial first.

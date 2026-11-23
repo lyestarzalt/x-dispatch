@@ -269,6 +269,8 @@ export function createLegLabelGeoJSON(
       geometry: { type: 'Point', coordinates: [lon, lat] },
       properties: {
         label: leg.label,
+        // Zoomed in, the airway leads the leg's distance and course; a direct leg has none.
+        detail: leg.airway ? `${leg.airway} ${leg.label}` : leg.label,
         airway: leg.airway,
         showAirway: leg.showAirway,
         rotate,
@@ -582,7 +584,7 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
   // Text embedded in the line: a chip in a darker shade of the line colour, sized to its text,
   // at the leg's midpoint and turned along the leg (one per leg - a line placement would repeat
   // per map tile). Chips collide with each other and with waypoint labels, so they thin out as
-  // the map zooms out. Zoomed out only airway names show; zoomed in, distance and course.
+  // the map zooms out. Zoomed out only airway names show; zoomed in, the airway with the distance and course.
   const chipLayout = {
     'text-font': labelFont(map, 'semibold'),
     'text-size': zoomScaledTextSize(9),
@@ -614,7 +616,7 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
     type: 'symbol',
     source: LEG_LABEL_SOURCE_ID,
     minzoom: 8,
-    layout: { ...chipLayout, 'text-field': ['get', 'label'] },
+    layout: { ...chipLayout, 'text-field': ['get', 'detail'] },
     paint: { 'text-color': COLORS.labelText },
   });
 
