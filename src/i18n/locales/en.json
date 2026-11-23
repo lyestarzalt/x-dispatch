@@ -435,16 +435,11 @@
       "routes": "Routes",
       "weather": "Weather",
       "online": "Online",
-      "logbook": "Logbook"
+      "logbook": "Previous plans"
     },
     "online": {
       "networkOff": "Choose a network to see who is online.",
       "none": "No controllers online right now."
-    },
-    "logbook": {
-      "none": "No completed flights in the logbook yet.",
-      "flights_one": "{{count}} flight",
-      "flights_other": "{{count}} flights"
     },
     "weather": {
       "error": "Could not load weather",
@@ -465,6 +460,10 @@
         "dustSand": "Dust",
         "clear": "Clear"
       }
+    },
+    "previous": {
+      "none": "Plans you clear or replace are kept here.",
+      "remove": "Remove from the list"
     }
   },
   "settings": {
@@ -1393,6 +1392,7 @@
   },
   "procedures": {
     "obstacle": "OBSTACLE",
+    "rnav": "RNAV",
     "noData": "No procedures available",
     "noTypeData": "No {{type}}s available",
     "tabs": {
@@ -2531,6 +2531,9 @@
   },
   "flightPlanBar": {
     "clear": "Clear flight plan",
+    "cleared": "Flight plan cleared",
+    "hide": "Hide the flight plan strip",
+    "show": "Show the flight plan strip",
     "jumpToDeparture": "Jump to departure",
     "jumpToArrival": "Jump to arrival",
     "scrollBack": "Scroll back",

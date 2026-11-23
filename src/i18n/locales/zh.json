@@ -435,16 +435,11 @@
       "routes": "航线",
       "weather": "天气",
       "online": "在线",
-      "logbook": "飞行日志"
+      "logbook": "之前的计划"
     },
     "online": {
       "networkOff": "选择一个网络以查看谁在线。",
       "none": "当前没有在线管制员。"
-    },
-    "logbook": {
-      "none": "飞行日志中还没有完成的飞行。",
-      "flights_one": "{{count}} 次飞行",
-      "flights_other": "{{count}} 次飞行"
     },
     "weather": {
       "error": "无法加载天气数据",
@@ -465,6 +460,10 @@
         "dustSand": "沙尘",
         "clear": "晴朗"
       }
+    },
+    "previous": {
+      "none": "清除或替换的计划会保留在这里。",
+      "remove": "从列表中移除"
     }
   },
   "settings": {
@@ -1393,6 +1392,7 @@
   },
   "procedures": {
     "obstacle": "OBSTACLE",
+    "rnav": "RNAV",
     "noData": "无可用程序",
     "noTypeData": "无可用 {{type}}",
     "tabs": {
@@ -2531,6 +2531,9 @@
   },
   "flightPlanBar": {
     "clear": "清除飞行计划",
+    "cleared": "飞行计划已清除",
+    "hide": "隐藏飞行计划条",
+    "show": "显示飞行计划条",
     "jumpToDeparture": "跳到出发机场",
     "jumpToArrival": "跳到到达机场",
     "scrollBack": "向后滚动",

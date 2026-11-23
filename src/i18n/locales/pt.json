@@ -435,16 +435,11 @@
       "routes": "Rotas",
       "weather": "Meteo",
       "online": "Online",
-      "logbook": "Diário"
+      "logbook": "Planos anteriores"
     },
     "online": {
       "networkOff": "Escolha uma rede para ver quem está online.",
       "none": "Nenhum controlador online agora."
-    },
-    "logbook": {
-      "none": "Ainda não há voos concluídos no diário.",
-      "flights_one": "{{count}} voo",
-      "flights_other": "{{count}} voos"
     },
     "weather": {
       "error": "Não foi possível carregar a meteorologia",
@@ -465,6 +460,10 @@
         "dustSand": "Poeira",
         "clear": "Céu limpo"
       }
+    },
+    "previous": {
+      "none": "Os planos que você limpa ou substitui ficam guardados aqui.",
+      "remove": "Remover da lista"
     }
   },
   "settings": {
@@ -1393,6 +1392,7 @@
   },
   "procedures": {
     "obstacle": "OBSTACLE",
+    "rnav": "RNAV",
     "noData": "Sem procedimentos disponíveis",
     "noTypeData": "Sem {{type}}s disponíveis",
     "tabs": {
@@ -2531,6 +2531,9 @@
   },
   "flightPlanBar": {
     "clear": "Limpar plano de voo",
+    "cleared": "Plano de voo limpo",
+    "hide": "Ocultar a faixa do plano de voo",
+    "show": "Mostrar a faixa do plano de voo",
     "jumpToDeparture": "Ir para a partida",
     "jumpToArrival": "Ir para a chegada",
     "scrollBack": "Recuar",

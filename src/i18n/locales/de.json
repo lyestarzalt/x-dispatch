@@ -435,16 +435,11 @@
       "routes": "Routen",
       "weather": "Wetter",
       "online": "Online",
-      "logbook": "Logbuch"
+      "logbook": "Frühere Pläne"
     },
     "online": {
       "networkOff": "Netzwerk wählen, um zu sehen, wer online ist.",
       "none": "Gerade keine Lotsen online."
-    },
-    "logbook": {
-      "none": "Noch keine abgeschlossenen Flüge im Logbuch.",
-      "flights_one": "{{count}} Flug",
-      "flights_other": "{{count}} Flüge"
     },
     "weather": {
       "error": "Wetter konnte nicht geladen werden",
@@ -465,6 +460,10 @@
         "dustSand": "Staub",
         "clear": "Klar"
       }
+    },
+    "previous": {
+      "none": "Gelöschte oder ersetzte Pläne werden hier aufbewahrt.",
+      "remove": "Aus der Liste entfernen"
     }
   },
   "settings": {
@@ -1393,6 +1392,7 @@
   },
   "procedures": {
     "obstacle": "OBSTACLE",
+    "rnav": "RNAV",
     "noData": "Keine Verfahren verfügbar",
     "noTypeData": "Keine {{type}} verfügbar",
     "tabs": {
@@ -2531,6 +2531,9 @@
   },
   "flightPlanBar": {
     "clear": "Flugplan löschen",
+    "cleared": "Flugplan gelöscht",
+    "hide": "Flugplanleiste ausblenden",
+    "show": "Flugplanleiste einblenden",
     "jumpToDeparture": "Zum Abflug springen",
     "jumpToArrival": "Zur Ankunft springen",
     "scrollBack": "Zurück blättern",

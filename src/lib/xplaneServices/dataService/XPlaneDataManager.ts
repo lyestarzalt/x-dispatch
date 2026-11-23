@@ -8,7 +8,7 @@ import * as fs from 'fs';
 import { airports, aptFileMeta, closeDb, getDb, isDbReady } from '@/lib/db';
 import { runwayEndsFromApt } from '@/lib/flightplan/builder/runways';
 import { parseCIFP } from '@/lib/parsers/nav/cifpParser';
-import { markObstacleDepartures } from '@/lib/parsers/nav/faaChartIndex';
+import { markFaaChartNames } from '@/lib/parsers/nav/faaChartIndex';
 import { markIlsOrLoc } from '@/lib/parsers/nav/faaProcedureIndex';
 import { isIlsDme } from '@/lib/parsers/nav/navaidParser';
 import {
@@ -57,7 +57,7 @@ import {
   loadWaypoints,
 } from './navdata';
 import { selectAtcForAirport } from './navdata/atcSelect';
-import { loadFaaObstacleDepartures } from './navdata/faaChartIndexLoader';
+import { loadFaaChartIndex } from './navdata/faaChartIndexLoader';
 import { loadFaaProcedureIndex } from './navdata/faaProcedureIndexLoader';
 import {
   type NavDataType,
@@ -671,9 +671,9 @@ export class XPlaneDataManager {
       const faaIndex = loadFaaProcedureIndex(xplanePath);
       if (faaIndex) markIlsOrLoc(enriched.approaches, faaIndex, icao);
 
-      // US departures the FAA charts as obstacle departures, when the user placed its chart index.
-      const obstacleDepartures = loadFaaObstacleDepartures(xplanePath);
-      if (obstacleDepartures) markObstacleDepartures(enriched.sids, obstacleDepartures, icao);
+      // US obstacle departures and RNAV SIDs and STARs, when the user placed the FAA's chart index.
+      const chartIndex = loadFaaChartIndex(xplanePath);
+      if (chartIndex) markFaaChartNames(enriched, chartIndex, icao);
 
       // Log resolution stats for debugging
       let total = 0;

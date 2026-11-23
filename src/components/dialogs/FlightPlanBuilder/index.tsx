@@ -27,6 +27,7 @@ import {
   X,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { StripToggle } from '@/components/layout/FlightPlanBar/StripToggle';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { IcaoCode } from '@/components/ui/icao-code';
@@ -74,6 +75,7 @@ import {
 } from '@/lib/flightplan/builder/trackChoice';
 import type { LevelBand, PlanEndpoint, RouteToken } from '@/lib/flightplan/builder/types';
 import { formatApproachName } from '@/lib/parsers/nav/approachName';
+import { chartTitleTags } from '@/lib/parsers/nav/faaChartIndex';
 import { kgToLbs } from '@/lib/utils/format';
 import type { NauticalMiles } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
@@ -137,9 +139,11 @@ function FlightPlanBuilder({
   onActivate,
 }: FlightPlanBuilderProps) {
   const { t } = useTranslation();
-  // An obstacle departure says so in the picker; the chosen value stays the raw identifier.
-  const sidLabel = useCallback(
-    (p: ResolvedProcedure) => (p.obstacle ? `${p.name} (${t('procedures.obstacle')})` : p.name),
+  // A SID or STAR says what its chart title does (OBSTACLE, RNAV) in the picker; the chosen value
+  // stays the raw identifier.
+  const chartLabel = useCallback(
+    (p: ResolvedProcedure) =>
+      [p.name, ...chartTitleTags(p).map((tag) => `(${t(`procedures.${tag}`)})`)].join(' '),
     [t]
   );
   const units = useUnits();
@@ -153,6 +157,7 @@ function FlightPlanBuilder({
   const compact = panel === 'half';
   const reset = usePlanBuilderStore((s) => s.reset);
   const restoreDraft = usePlanBuilderStore((s) => s.restoreDraft);
+  const showOnMap = usePlanBuilderStore((s) => s.showOnMap);
   const departure = usePlanBuilderStore((s) => s.departure);
   // A plan loaded by code alone (a file, a link) knows no airport names; the list does.
   const airportName = useCallback(
@@ -1031,7 +1036,7 @@ function FlightPlanBuilder({
                       <Field label={t('planBuilder.sid')}>
                         <ProcedureSelect
                           procedures={sids}
-                          labelFor={sidLabel}
+                          labelFor={chartLabel}
                           runway={departure.runway}
                           value={departure.sid}
                           placeholder={t('planBuilder.noProcedure')}
@@ -1071,6 +1076,7 @@ function FlightPlanBuilder({
                       <Field label={t('planBuilder.star')}>
                         <ProcedureSelect
                           procedures={stars}
+                          labelFor={chartLabel}
                           runway={arrival.runway}
                           value={arrival.star}
                           placeholder={t('planBuilder.noProcedure')}
@@ -1250,7 +1256,7 @@ function FlightPlanBuilder({
             <Button
               variant={profileStripOpen ? 'secondary' : 'ghost'}
               size="xs"
-              className="mr-auto max-sm:px-1.5"
+              className="max-sm:px-1.5"
               onClick={() => setProfileStripOpen(!profileStripOpen)}
               disabled={!ready}
               aria-pressed={profileStripOpen}
@@ -1259,6 +1265,7 @@ function FlightPlanBuilder({
               <Mountain className="h-3.5 w-3.5" />
               <span className="max-sm:hidden">{t('planBuilder.profileShort')}</span>
             </Button>
+            <StripToggle className="mr-auto" onDraw={ready ? showOnMap : undefined} />
             <Button
               variant="outline"
               size="xs"

@@ -44,6 +44,19 @@ describe('createLegLabelGeoJSON', () => {
     expect(label).toMatch(/ 0\d\d°/); // eastbound, a bit south of 090 true once magnetic
   });
 
+  // With one enroute colour, the airway name is what tells an airway leg from a direct one, and
+  // zoomed in it was on no leg at all (GitHub #409).
+  it('leads the zoomed-in label with the airway on an airway leg, and not on a direct one', () => {
+    const waypoints = [
+      wp({ id: 'SSOXS', latitude: 41.83, longitude: -70.76 }),
+      wp({ id: 'BUZRD', via: 'Q167', latitude: 41.55, longitude: -70.99 }),
+      wp({ id: 'ELSE', via: 'DRCT', latitude: 41.3, longitude: -71.4 }),
+    ];
+    const [onAirway, direct] = createLegLabelGeoJSON(waypoints).features;
+    expect(onAirway?.properties?.detail).toBe(`Q167 ${onAirway?.properties?.label}`);
+    expect(direct?.properties?.detail).toBe(direct?.properties?.label);
+  });
+
   it('skips the leg from the approach runway to the airport when an approach is flown (no line is drawn there)', () => {
     const waypoints = [
       wp({ id: 'Z', latitude: 39.5, longitude: -80 }),

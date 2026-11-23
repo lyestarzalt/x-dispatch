@@ -12,12 +12,14 @@ import {
   Star,
   X,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils/helpers';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import { useMapStore } from '@/stores/mapStore';
 import type { FlightPlanChip } from '@/types/fms';
+import { clearPlanFromMap } from './clearPlan';
 import { type ScrollEdges, getScrollEdges, pageStep } from './scrollEdges';
 
 // Minimum pixels moved to consider it a drag (not a click)
@@ -40,7 +42,6 @@ function FlightPlanBar({ onWaypointClick }: FlightPlanBarProps) {
   const setProfileStripOpen = useMapStore((s) => s.setProfileStripOpen);
   const selectedWaypointIndex = useFlightPlanStore((s) => s.selectedWaypointIndex);
   const setSelectedWaypoint = useFlightPlanStore((s) => s.setSelectedWaypoint);
-  const clearFlightPlan = useFlightPlanStore((s) => s.clearFlightPlan);
   const getChips = useFlightPlanStore((s) => s.getChips);
   const fmsData = useFlightPlanStore((s) => s.fmsData);
 
@@ -172,6 +173,11 @@ function FlightPlanBar({ onWaypointClick }: FlightPlanBarProps) {
   if (!visible) return null;
 
   const clearLabel = t('flightPlanBar.clear');
+  // The plan can come back: from the toast right away, or later from the previous plans.
+  const clearPlan = () => {
+    const undo = clearPlanFromMap();
+    toast(t('flightPlanBar.cleared'), { action: { label: t('common.undo'), onClick: undo } });
+  };
   const jumpStartLabel = t('flightPlanBar.jumpToDeparture');
   const jumpEndLabel = t('flightPlanBar.jumpToArrival');
   const backLabel = t('flightPlanBar.scrollBack');
@@ -180,11 +186,11 @@ function FlightPlanBar({ onWaypointClick }: FlightPlanBarProps) {
 
   return (
     <div className="border-border bg-card/95 flex h-10 items-center overflow-hidden rounded-lg border backdrop-blur-sm">
-      {/* Close button — left side for easy access */}
+      {/* Clears the plan from the map; hiding only the strip is the toggle in the plan's panel. */}
       <Button
         variant="ghost"
         size="icon"
-        onClick={clearFlightPlan}
+        onClick={clearPlan}
         className={cn(RAIL_BUTTON, 'text-muted-foreground hover:text-destructive border-r')}
         aria-label={clearLabel}
         title={clearLabel}

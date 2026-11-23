@@ -369,6 +369,8 @@ export interface Procedure {
   orLocalizer?: boolean;
   /** SIDs: one the FAA charts as an obstacle departure, from the user's d-tpp_Metafile.xml. */
   obstacle?: boolean;
+  /** SIDs and STARs: one the FAA's chart title marks (RNAV), from the same file. */
+  rnav?: boolean;
   waypoints: ProcedureWaypoint[];
 }
 
