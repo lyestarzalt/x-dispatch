@@ -3,6 +3,7 @@ import { MapLibreOverlay } from '@deck.gl/maplibre';
 import * as maplibregl from 'maplibre-gl';
 import { NAV_COLORS } from '@/config/navLayerConfig';
 import { labelFont } from '@/lib/map/labelFonts';
+import { hexToRgb } from '@/lib/utils/color';
 import { svgToDataUrl } from '@/lib/utils/helpers';
 import type { Navaid } from '@/types/navigation';
 import { setLayersVisibility } from '../types';
@@ -23,13 +24,7 @@ function createILSSymbolSVG(size: number = 36): string {
 }
 
 // Parse "#RRGGBB" → [R, G, B]. deck.gl wants RGB arrays, not CSS strings.
-function hexToRgb(hex: string): [number, number, number] {
-  const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex);
-  if (!m || !m[1] || !m[2] || !m[3]) return [255, 136, 0];
-  return [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)];
-}
-
-const ILS_BEAM_RGB = hexToRgb(NAV_COLORS.ils);
+const ILS_BEAM_RGB = hexToRgb(NAV_COLORS.ils) ?? [255, 136, 0];
 
 const BEAM_RENDER_ORDER: BeamKind[] = [
   'GS_LOWER',

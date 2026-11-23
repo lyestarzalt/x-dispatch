@@ -1,6 +1,8 @@
 /**
  * Centralized formatting utilities
  */
+import { normalize360 } from '@/lib/utils/math';
+import { KG_TO_LBS, LBS_TO_KG } from '@/lib/utils/units/constants';
 import type { WeightUnit } from './types';
 
 export * from './types';
@@ -60,12 +62,14 @@ export function formatAirportCountry(raw?: string): string | undefined {
   return match ? match[1] : trimmed;
 }
 
+/** A heading or bearing as three digits, rounded and wrapped: 7 is `007`, 359.6 is `000`. */
+export function formatHeading(deg: number): string {
+  return normalize360(Math.round(deg)).toString().padStart(3, '0');
+}
+
 export function formatFrequency(freq: number, decimals = 3): string {
   return freq.toFixed(decimals);
 }
-
-const LBS_TO_KG = 0.453592;
-const KG_TO_LBS = 2.20462;
 
 export function lbsToKg(lbs: number): number {
   return lbs * LBS_TO_KG;

@@ -8,7 +8,6 @@ import {
   isModuleLoadError,
   shouldRetryLoad,
   startupFailureHtml,
-  withTimeout,
 } from './startupFallback';
 
 const ELECTRON_UA =
@@ -113,32 +112,13 @@ describe('formatStartupError', () => {
     expect(formatStartupError({ code: 7 })).toBe('{"code":7}');
   });
 });
-
-describe('withTimeout', () => {
-  it('passes a prompt answer through and rejects a late one', async () => {
-    vi.useFakeTimers();
-    await expect(withTimeout(Promise.resolve(true), 100, 'Setting')).resolves.toBe(true);
-
-    const late = withTimeout(new Promise<boolean>(() => undefined), 100, 'Setting');
-    const outcome = late.catch((e: Error) => e.message);
-    await vi.advanceTimersByTimeAsync(100);
-    await expect(outcome).resolves.toBe('Setting did not answer within 100 ms');
-  });
-
-  it('keeps the original rejection', async () => {
-    await expect(withTimeout(Promise.reject(new Error('nope')), 100, 'Setting')).rejects.toThrow(
-      'nope'
-    );
-  });
-});
-
 describe('startupFailureHtml', () => {
   it('escapes error text and shows the log path and button on the desktop only', () => {
     const html = startupFailureHtml(
       failure({ error: '<script>alert(1)</script>', logPath: '/Users/me/Library/Logs/x.log' })
     );
     expect(html).not.toContain('<script>');
-    expect(html).toContain('&#60;script&#62;');
+    expect(html).toContain('&lt;script&gt;');
     expect(html).toContain('/Users/me/Library/Logs/x.log');
     expect(html).toContain('data-startup-action="log"');
     expect(html).toContain('data-startup-action="reload"');

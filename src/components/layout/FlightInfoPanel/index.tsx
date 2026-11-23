@@ -1,6 +1,7 @@
 import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, ChevronLeft, ChevronRight, FileText, X } from 'lucide-react';
+import { IcaoLink } from '@/components/IcaoLink';
 import { StripToggle } from '@/components/layout/FlightPlanBar/StripToggle';
 import { SimbriefLogo } from '@/components/ui/SimbriefLogo';
 import { Button } from '@/components/ui/button';
@@ -142,9 +143,14 @@ function FlightInfoPanel() {
           {/* The route */}
           <div>
             <div className="flex items-center gap-2">
-              <IcaoLink icao={origin.icao_code} onClick={() => goToAirport(origin.icao_code)} />
+              <IcaoLink
+                className="text-xl"
+                icao={origin.icao_code}
+                onClick={() => goToAirport(origin.icao_code)}
+              />
               <ArrowRight className="text-muted-foreground h-4 w-4" />
               <IcaoLink
+                className="text-xl"
                 icao={destination.icao_code}
                 onClick={() => goToAirport(destination.icao_code)}
               />
@@ -199,20 +205,6 @@ function FlightInfoPanel() {
         </div>
       </div>
     </div>
-  );
-}
-
-function IcaoLink({ icao, onClick }: { icao: string; onClick: () => void }) {
-  const { t } = useTranslation();
-  return (
-    <Button
-      variant="link"
-      onClick={onClick}
-      className="h-auto p-0 font-mono text-xl font-bold tracking-tight"
-      aria-label={t('simbriefDialog.header.goToAirportLayoutAria', { icao })}
-    >
-      {icao}
-    </Button>
   );
 }
 

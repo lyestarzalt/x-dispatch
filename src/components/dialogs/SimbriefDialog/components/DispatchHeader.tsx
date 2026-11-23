@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, Route } from 'lucide-react';
+import { IcaoLink } from '@/components/IcaoLink';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useOfpUnits } from '@/hooks/useOfpUnits';
@@ -72,9 +73,14 @@ export function DispatchHeader({
         {/* The route */}
         <div className="min-w-0">
           <div className="flex items-center gap-3">
-            <IcaoLink icao={origin.icao_code} onClick={() => goToAirport(origin.icao_code)} />
+            <IcaoLink
+              className="text-3xl"
+              icao={origin.icao_code}
+              onClick={() => goToAirport(origin.icao_code)}
+            />
             <ArrowRight className="text-muted-foreground h-6 w-6" />
             <IcaoLink
+              className="text-3xl"
               icao={destination.icao_code}
               onClick={() => goToAirport(destination.icao_code)}
             />
@@ -155,18 +161,4 @@ function airportLine(name: string, runway: string): string {
     .replace(/(^|[\s/-])([a-z])/g, (match) => match.toUpperCase())
     .replace(/\bIntl\b/g, 'Intl');
   return runway ? `${titled} ${runway}` : titled;
-}
-
-function IcaoLink({ icao, onClick }: { icao: string; onClick: () => void }) {
-  const { t } = useTranslation();
-  return (
-    <Button
-      variant="link"
-      onClick={onClick}
-      className="h-auto p-0 font-mono text-3xl font-bold tracking-tight"
-      aria-label={t('simbriefDialog.header.goToAirportLayoutAria', { icao })}
-    >
-      {icao}
-    </Button>
-  );
 }

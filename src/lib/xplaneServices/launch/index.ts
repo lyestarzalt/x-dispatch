@@ -12,6 +12,7 @@ import { XPLANE_WEB_API_PORT } from '../client/port';
 import { type PortHolder, findPortHolder } from '../client/portHolder';
 import { isXPlaneProcessRunning } from '../client/processCheck';
 import { getXPlaneService } from '../client/service';
+import { isSteamInstallation } from '../steamInstall';
 import { scanAircraftDirectory } from './acfParser';
 import { RESERVED_XP_ARG, filterReservedXpArgs } from './cliArgs';
 import { validateNewFlight } from './flightInit/schema';
@@ -94,19 +95,6 @@ const STEAM_APP_IDS = {
 } as const;
 
 // TODO: Check for a better way to detect if Steam version
-/**
- * Check if the X-Plane installation is from Steam
- */
-function isSteamInstallation(xplanePath: string): boolean {
-  // Check if path contains Steam directories
-  if (xplanePath.toLowerCase().includes('steamapps')) {
-    return true;
-  }
-  // Check for steam_appid.txt file
-  const steamAppIdFile = `${xplanePath}/steam_appid.txt`;
-  return fs.existsSync(steamAppIdFile);
-}
-
 /**
  * Get Steam App ID based on X-Plane version in path
  */

@@ -1,4 +1,5 @@
 import { errorMessage } from '@/lib/utils/errors';
+import { escapeHtml } from '@/lib/utils/escape';
 
 /**
  * What a start that goes wrong shows instead of a blank page, and what it reports to main.
@@ -91,35 +92,6 @@ export function buildStartupReport(
   return { host: failure.host, stage: failure.stage, error: failure.error, userAgent };
 }
 
-/**
- * The promise, or a rejection when it takes longer than the deadline. The first calls to the
- * desktop go over a WebSocket on a tablet; a socket that never opens would otherwise hold the
- * whole app at a blank page.
- */
-export function withTimeout<T>(
-  promise: Promise<T>,
-  ms: number,
-  what: string,
-  timers: { setTimeout: typeof setTimeout; clearTimeout: typeof clearTimeout } = globalThis
-): Promise<T> {
-  return new Promise<T>((resolve, reject) => {
-    const timer = timers.setTimeout(
-      () => reject(new Error(`${what} did not answer within ${ms} ms`)),
-      ms
-    );
-    promise.then(
-      (value) => {
-        timers.clearTimeout(timer);
-        resolve(value);
-      },
-      (err: unknown) => {
-        timers.clearTimeout(timer);
-        reject(err instanceof Error ? err : new Error(String(err)));
-      }
-    );
-  });
-}
-
 const RETRY_FLAG_KEY = 'x-dispatch-startup-retried';
 
 /**
@@ -139,10 +111,6 @@ export function shouldRetryLoad(
 
 export function clearRetryFlag(storage: Pick<Storage, 'removeItem'>): void {
   storage.removeItem(RETRY_FLAG_KEY);
-}
-
-function escapeHtml(text: string): string {
-  return text.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 }
 
 /** The fallback page: system fonts and colours only, since the app's stylesheet may be what failed. */

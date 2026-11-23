@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { formatCursorElevation, formatHeading } from './CompassWidget';
+import { formatHeading } from '@/lib/utils/format';
+import { formatCursorElevation } from './CompassWidget';
 
 const t = (key: string) => ({ 'units.ft': 'ft', 'units.m': 'm' })[key] ?? key;
 

@@ -1,3 +1,5 @@
+import { smoothstep } from '@/lib/utils/math';
+
 /**
  * Sun geometry shared by the sky lighting and the city-light layers.
  *
@@ -112,11 +114,6 @@ export function sunPosition(timeMs: number, lat: number, lon: number): SunPositi
   );
   const azimuth = (fromSouth * DEG + 180 + 360) % 360;
   return { altitude: altitude * DEG, azimuth };
-}
-
-function smoothstep(t: number): number {
-  const x = Math.min(1, Math.max(0, t));
-  return x * x * (3 - 2 * x);
 }
 
 /**

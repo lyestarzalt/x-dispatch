@@ -24,9 +24,12 @@ import {
   wheelSteps,
 } from '@/lib/flightStrip/wheelAdjust';
 import { exitEase, panelSpring, quickFade } from '@/lib/motionPresets';
+import { formatHeading } from '@/lib/utils/format';
 import type { Feet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
+import { clamp } from '@/lib/utils/math';
 import type { FeetPerMinute, Knots, SpeedUnit } from '@/lib/utils/units';
+import { HPA_PER_INHG } from '@/lib/utils/units/constants';
 import { useFlightStripWindowOpen } from '@/queries';
 import { useMapStore } from '@/stores/mapStore';
 import { usePlaneStore } from '@/stores/planeStore';
@@ -99,10 +102,9 @@ function formatValue(value: number | undefined, decimals = 0): string {
   return value.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
-function formatHeading(heading: number | undefined): string {
+function headingReadout(heading: number | undefined): string {
   if (heading === undefined || isNaN(heading)) return '---';
-  const normalized = ((heading % 360) + 360) % 360;
-  return normalized.toFixed(0).padStart(3, '0');
+  return formatHeading(heading);
 }
 
 /** fpm reads in steps of 100, m/s with one decimal; both carry an explicit sign. */
@@ -119,8 +121,6 @@ function formatComFrequency(khz: number | undefined): string {
   if (khz === undefined || isNaN(khz) || khz < 118_000 || khz > 137_000) return '---.---';
   return (khz / 1000).toFixed(3);
 }
-
-const HPA_PER_INHG = 33.8639;
 
 function formatQnhHpa(inHg: number | undefined): string {
   if (inHg === undefined || isNaN(inHg) || inHg <= 0) return '----';
@@ -325,9 +325,9 @@ export default function FlightStrip({
         label={t('flightStrip.hdg')}
         onWheelAdjust={onAdjust.heading}
         adjustHint={adjustHint}
-        target={target(formatTarget(formatHeading, planeState?.apHeading))}
+        target={target(formatTarget(headingReadout, planeState?.apHeading))}
         value={
-          <Reading chars={HEADING_CHARS}>{formatHeading(planeState?.magneticHeading)}</Reading>
+          <Reading chars={HEADING_CHARS}>{headingReadout(planeState?.magneticHeading)}</Reading>
         }
         unit="°"
         showDetails={details}
@@ -335,12 +335,12 @@ export default function FlightStrip({
           <>
             {t('flightStrip.trk')}{' '}
             <Reading align="left" chars={HEADING_CHARS}>
-              {formatHeading(planeState?.groundTrack)}
+              {headingReadout(planeState?.groundTrack)}
             </Reading>
             °<span className="inline-block w-2" />
             {t('flightStrip.crs')}{' '}
             <Reading align="left" chars={HEADING_CHARS}>
-              {formatHeading(planeState?.nav1Course)}
+              {headingReadout(planeState?.nav1Course)}
             </Reading>
             °
           </>
@@ -561,10 +561,6 @@ const ADI_RADIUS = 19;
 const ADI_PX_PER_DEG = 0.8;
 const ADI_MAX_PITCH_DEG = 18;
 const ADI_MAX_ROLL_DEG = 75;
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, value));
-}
 
 /** Size of the sky and ground layer; large enough to cover the dial at any roll and pitch. */
 const ADI_LAYER_WIDTH = 120;
