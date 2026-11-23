@@ -1846,6 +1846,7 @@
         "TOGGLE_FAILED": "Couldn't flip it: {{reason}}",
         "DELETE_FAILED": "Couldn't scuttle it: {{reason}}",
         "PLUGIN_IN_USE": "X-Plane be usin' this plugin. Close X-Plane an' try again.",
+        "FILE_IN_USE": "{{fileName}} be open in another program. Close it an' try again.",
         "PERMISSION_DENIED": "Access denied, matey. The X-Plane hold be in protected waters. Run X-Dispatch as the admiral.",
         "PATH_TRAVERSAL": "Treacherous path refused: {{path}}",
         "INVALID_INPUT": "Bad input: {{field}}"
@@ -1885,6 +1886,8 @@
         "DSF_INVALID": "Rotten DSF file: {{reason}}",
         "DSF_COMPRESSED": "Compressed DSF ain't supported yet: {{path}}",
         "WRITE_FAILED": "Couldn't write scenery_packs.ini: {{reason}}",
+        "DELETE_FAILED": "Couldn't scuttle it: {{reason}}",
+        "FILE_IN_USE": "{{fileName}} be open in another program. Close it an' try again.",
         "BACKUP_FAILED": "Backup failed: {{reason}}"
       },
       "loading": "Scannin' scenery folders...",

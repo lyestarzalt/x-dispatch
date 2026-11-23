@@ -1846,6 +1846,7 @@
         "TOGGLE_FAILED": "Não foi possível alternar: {{reason}}",
         "DELETE_FAILED": "Não foi possível excluir: {{reason}}",
         "PLUGIN_IN_USE": "O X-Plane está usando este plugin. Feche o X-Plane e tente novamente.",
+        "FILE_IN_USE": "{{fileName}} está aberto em outro programa. Feche-o e tente novamente.",
         "PERMISSION_DENIED": "Permissão negada. A pasta do X-Plane está em um local protegido. Execute o X-Dispatch como administrador.",
         "PATH_TRAVERSAL": "Caminho inseguro recusado: {{path}}",
         "INVALID_INPUT": "Entrada inválida: {{field}}"
@@ -1885,6 +1886,8 @@
         "DSF_INVALID": "Arquivo DSF inválido: {{reason}}",
         "DSF_COMPRESSED": "DSF comprimido ainda não é suportado: {{path}}",
         "WRITE_FAILED": "Não foi possível gravar scenery_packs.ini: {{reason}}",
+        "DELETE_FAILED": "Não foi possível excluir: {{reason}}",
+        "FILE_IN_USE": "{{fileName}} está aberto em outro programa. Feche-o e tente novamente.",
         "BACKUP_FAILED": "Falha no backup: {{reason}}"
       },
       "loading": "A analisar pastas de cenários...",

@@ -1846,6 +1846,7 @@
         "TOGGLE_FAILED": "Impossibile cambiare stato: {{reason}}",
         "DELETE_FAILED": "Impossibile eliminare: {{reason}}",
         "PLUGIN_IN_USE": "X-Plane sta usando questo plugin. Chiudi X-Plane e riprova.",
+        "FILE_IN_USE": "{{fileName}} è aperto in un altro programma. Chiudilo e riprova.",
         "PERMISSION_DENIED": "Permesso negato. La cartella di X-Plane è in una posizione protetta. Esegui X-Dispatch come amministratore.",
         "PATH_TRAVERSAL": "Percorso non sicuro rifiutato: {{path}}",
         "INVALID_INPUT": "Input non valido: {{field}}"
@@ -1885,6 +1886,8 @@
         "DSF_INVALID": "File DSF non valido: {{reason}}",
         "DSF_COMPRESSED": "I DSF compressi non sono ancora supportati: {{path}}",
         "WRITE_FAILED": "Impossibile scrivere scenery_packs.ini: {{reason}}",
+        "DELETE_FAILED": "Impossibile eliminare: {{reason}}",
+        "FILE_IN_USE": "{{fileName}} è aperto in un altro programma. Chiudilo e riprova.",
         "BACKUP_FAILED": "Backup non riuscito: {{reason}}"
       },
       "loading": "Analisi delle cartelle scenari...",

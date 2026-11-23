@@ -1846,6 +1846,7 @@
         "TOGGLE_FAILED": "切り替えできません: {{reason}}",
         "DELETE_FAILED": "削除できません: {{reason}}",
         "PLUGIN_IN_USE": "X-Plane がこのプラグインを使用中です。X-Plane を終了してやり直してください。",
+        "FILE_IN_USE": "{{fileName}} は別のプログラムで開かれています。閉じてからやり直してください。",
         "PERMISSION_DENIED": "アクセスが拒否されました。X-Plane フォルダは保護された場所にあります。X-Dispatch を管理者として実行してください。",
         "PATH_TRAVERSAL": "安全でないパスを拒否しました: {{path}}",
         "INVALID_INPUT": "無効な入力: {{field}}"
@@ -1885,6 +1886,8 @@
         "DSF_INVALID": "無効な DSF ファイル: {{reason}}",
         "DSF_COMPRESSED": "圧縮 DSF はまだ対応していません: {{path}}",
         "WRITE_FAILED": "scenery_packs.ini を書き込めません: {{reason}}",
+        "DELETE_FAILED": "削除できません: {{reason}}",
+        "FILE_IN_USE": "{{fileName}} は別のプログラムで開かれています。閉じてからやり直してください。",
         "BACKUP_FAILED": "バックアップに失敗しました: {{reason}}"
       },
       "loading": "シーナリーフォルダを確認中...",

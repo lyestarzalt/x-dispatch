@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **A departure that turns to intercept a radial is drawn the right way.** KDVT's DVT3 off runway 07R ran straight to the VOR instead of north along the radial first.
 - **The flight strip shows 000 just before north.** It read 360 there while the compass read 000.
+- **A delete or switch that fails on an open file names that file.** Close it and try again; a failed scenery delete no longer blames scenery_packs.ini.
+- **Changing flight on a slow PC waits for X-Plane to finish loading.** It reported a lost connection after 45 seconds while X-Plane was still loading.
 
 ## [2.17.0] - 2026-11-22
 

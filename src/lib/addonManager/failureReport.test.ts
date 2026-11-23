@@ -28,6 +28,8 @@ describe('addonFailureLevel', () => {
     expect(addonFailureLevel('EXTRACTION_FAILED', false)).toBe('error');
     expect(addonFailureLevel('DELETE_FAILED', false)).toBe('error');
     expect(addonFailureLevel('EACCES', false)).toBe('error');
+    // A plugin X-Plane has loaded, a PDF open in a viewer: the user closes it.
+    expect(addonFailureLevel('FILE_IN_USE', false)).toBe('warning');
   });
 
   it('downgrades a permission failure on a protected X-Plane folder to a warning', () => {

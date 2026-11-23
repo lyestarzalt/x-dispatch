@@ -1846,6 +1846,7 @@
         "TOGGLE_FAILED": "无法切换：{{reason}}",
         "DELETE_FAILED": "无法删除：{{reason}}",
         "PLUGIN_IN_USE": "X-Plane 正在使用此插件。请关闭 X-Plane 后重试。",
+        "FILE_IN_USE": "{{fileName}} 已在其他程序中打开。请关闭后重试。",
         "PERMISSION_DENIED": "权限被拒绝。X-Plane 文件夹位于受保护的位置。请以管理员身份运行 X-Dispatch。",
         "PATH_TRAVERSAL": "已拒绝不安全的路径：{{path}}",
         "INVALID_INPUT": "无效输入：{{field}}"
@@ -1885,6 +1886,8 @@
         "DSF_INVALID": "无效的 DSF 文件：{{reason}}",
         "DSF_COMPRESSED": "暂不支持压缩的 DSF：{{path}}",
         "WRITE_FAILED": "无法写入 scenery_packs.ini：{{reason}}",
+        "DELETE_FAILED": "无法删除：{{reason}}",
+        "FILE_IN_USE": "{{fileName}} 已在其他程序中打开。请关闭后重试。",
         "BACKUP_FAILED": "备份失败：{{reason}}"
       },
       "loading": "正在扫描地景文件夹...",

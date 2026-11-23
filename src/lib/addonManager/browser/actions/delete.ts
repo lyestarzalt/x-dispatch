@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { errorMessage } from '@/lib/utils/errors';
+import { fileInUseError } from '../../core/fileErrors';
 import type { BrowserError, Result } from '../../core/types';
 import { err, ok } from '../../core/types';
 import { validatePathWithin } from './pathGuard';
@@ -31,8 +32,9 @@ export function deleteAircraft(
     fs.rmSync(folder, { recursive: true, force: true });
     return ok(undefined);
   } catch (e) {
-    const message = errorMessage(e);
-    return err({ code: 'DELETE_FAILED', path: folder, reason: message });
+    return err(
+      fileInUseError(e) ?? { code: 'DELETE_FAILED', path: folder, reason: errorMessage(e) }
+    );
   }
 }
 
@@ -59,8 +61,9 @@ export function deletePlugin(xplanePath: string, pluginFolder: string): Result<v
     fs.rmSync(folder, { recursive: true, force: true });
     return ok(undefined);
   } catch (e) {
-    const message = errorMessage(e);
-    return err({ code: 'DELETE_FAILED', path: folder, reason: message });
+    return err(
+      fileInUseError(e) ?? { code: 'DELETE_FAILED', path: folder, reason: errorMessage(e) }
+    );
   }
 }
 
@@ -91,8 +94,9 @@ export function deleteLivery(
     fs.rmSync(folder, { recursive: true, force: true });
     return ok(undefined);
   } catch (e) {
-    const message = errorMessage(e);
-    return err({ code: 'DELETE_FAILED', path: folder, reason: message });
+    return err(
+      fileInUseError(e) ?? { code: 'DELETE_FAILED', path: folder, reason: errorMessage(e) }
+    );
   }
 }
 
@@ -119,7 +123,8 @@ export function deleteLuaScript(xplanePath: string, fileName: string): Result<vo
     fs.unlinkSync(filePath);
     return ok(undefined);
   } catch (e) {
-    const message = errorMessage(e);
-    return err({ code: 'DELETE_FAILED', path: filePath, reason: message });
+    return err(
+      fileInUseError(e) ?? { code: 'DELETE_FAILED', path: filePath, reason: errorMessage(e) }
+    );
   }
 }

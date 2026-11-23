@@ -1846,6 +1846,7 @@
         "TOGGLE_FAILED": "Nie udało się przełączyć: {{reason}}",
         "DELETE_FAILED": "Nie udało się usunąć: {{reason}}",
         "PLUGIN_IN_USE": "X-Plane używa tej wtyczki. Zamknij X-Plane i spróbuj ponownie.",
+        "FILE_IN_USE": "Plik {{fileName}} jest otwarty w innym programie. Zamknij go i spróbuj ponownie.",
         "PERMISSION_DENIED": "Brak uprawnień. Folder X-Plane znajduje się w chronionej lokalizacji. Uruchom X-Dispatch jako administrator.",
         "PATH_TRAVERSAL": "Odrzucono niebezpieczną ścieżkę: {{path}}",
         "INVALID_INPUT": "Nieprawidłowe dane: {{field}}"
@@ -1885,6 +1886,8 @@
         "DSF_INVALID": "Nieprawidłowy plik DSF: {{reason}}",
         "DSF_COMPRESSED": "Skompresowane DSF nie są jeszcze obsługiwane: {{path}}",
         "WRITE_FAILED": "Nie można zapisać scenery_packs.ini: {{reason}}",
+        "DELETE_FAILED": "Nie udało się usunąć: {{reason}}",
+        "FILE_IN_USE": "Plik {{fileName}} jest otwarty w innym programie. Zamknij go i spróbuj ponownie.",
         "BACKUP_FAILED": "Kopia zapasowa nie powiodła się: {{reason}}"
       },
       "loading": "Skanowanie folderów scenerii...",

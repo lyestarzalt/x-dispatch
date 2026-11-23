@@ -1846,6 +1846,7 @@
         "TOGGLE_FAILED": "No se pudo cambiar: {{reason}}",
         "DELETE_FAILED": "No se pudo eliminar: {{reason}}",
         "PLUGIN_IN_USE": "X-Plane está usando este plugin. Cierra X-Plane e inténtalo de nuevo.",
+        "FILE_IN_USE": "{{fileName}} está abierto en otro programa. Ciérralo e inténtalo de nuevo.",
         "PERMISSION_DENIED": "Permiso denegado. La carpeta de X-Plane está en una ubicación protegida. Ejecuta X-Dispatch como administrador.",
         "PATH_TRAVERSAL": "Ruta insegura rechazada: {{path}}",
         "INVALID_INPUT": "Entrada no válida: {{field}}"
@@ -1885,6 +1886,8 @@
         "DSF_INVALID": "Archivo DSF no válido: {{reason}}",
         "DSF_COMPRESSED": "Los DSF comprimidos aún no son compatibles: {{path}}",
         "WRITE_FAILED": "No se pudo escribir scenery_packs.ini: {{reason}}",
+        "DELETE_FAILED": "No se pudo eliminar: {{reason}}",
+        "FILE_IN_USE": "{{fileName}} está abierto en otro programa. Ciérralo e inténtalo de nuevo.",
         "BACKUP_FAILED": "Falló la copia de seguridad: {{reason}}"
       },
       "loading": "Analizando carpetas de escenarios...",

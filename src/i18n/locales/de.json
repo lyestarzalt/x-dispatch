@@ -1846,6 +1846,7 @@
         "TOGGLE_FAILED": "Umschalten fehlgeschlagen: {{reason}}",
         "DELETE_FAILED": "Löschen fehlgeschlagen: {{reason}}",
         "PLUGIN_IN_USE": "X-Plane verwendet dieses Plugin. X-Plane beenden und erneut versuchen.",
+        "FILE_IN_USE": "{{fileName}} ist in einem anderen Programm geöffnet. Schließen und erneut versuchen.",
         "PERMISSION_DENIED": "Zugriff verweigert. Der X-Plane-Ordner liegt an einem geschützten Ort. X-Dispatch als Administrator ausführen.",
         "PATH_TRAVERSAL": "Unsicherer Pfad abgelehnt: {{path}}",
         "INVALID_INPUT": "Ungültige Eingabe: {{field}}"
@@ -1885,6 +1886,8 @@
         "DSF_INVALID": "Ungültige DSF-Datei: {{reason}}",
         "DSF_COMPRESSED": "Komprimierte DSF wird noch nicht unterstützt: {{path}}",
         "WRITE_FAILED": "scenery_packs.ini konnte nicht geschrieben werden: {{reason}}",
+        "DELETE_FAILED": "Löschen fehlgeschlagen: {{reason}}",
+        "FILE_IN_USE": "{{fileName}} ist in einem anderen Programm geöffnet. Schließen und erneut versuchen.",
         "BACKUP_FAILED": "Sicherung fehlgeschlagen: {{reason}}"
       },
       "loading": "Szenerie-Ordner werden durchsucht...",
