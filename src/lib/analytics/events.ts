@@ -626,7 +626,12 @@ const EVENT_SCHEMA = {
   /** macOS/Linux: the update notice's download button was clicked. */
   update_notice_clicked: {},
   /** Once per launch: how long until the map was ready, and whether data came from the cache. */
-  app_ready: { startup: oneOf(ANALYTICS_STARTUP_BUCKETS), from_cache: { kind: 'boolean' } },
+  app_ready: {
+    startup: oneOf(ANALYTICS_STARTUP_BUCKETS),
+    from_cache: { kind: 'boolean' },
+    /** Main-process time from process start to the window showing; added in main, absent before 2.18. */
+    window: optionalOneOf(ANALYTICS_STARTUP_BUCKETS),
+  },
   /** Once per session, the first time X-Plane connects: the app is used alongside the sim. */
   xplane_connected: {},
   /** Once per launch: window size and display scaling, as buckets. */
@@ -707,8 +712,15 @@ type PropValue<R> = R extends { kind: 'enum'; values: readonly (infer V)[]; opti
             ? string | null
             : string;
 
+type OptionalKeys<S> = { [K in keyof S]: S[K] extends { optional: true } ? K : never }[keyof S];
+
+/** A call site names every property; an optional one may be left out (or null). */
 export type AnalyticsEventProps<E extends AnalyticsEventName> = {
-  -readonly [K in keyof (typeof EVENT_SCHEMA)[E]]: PropValue<(typeof EVENT_SCHEMA)[E][K]>;
+  -readonly [
+    K in Exclude<keyof (typeof EVENT_SCHEMA)[E], OptionalKeys<(typeof EVENT_SCHEMA)[E]>>
+  ]: PropValue<(typeof EVENT_SCHEMA)[E][K]>;
+} & {
+  -readonly [K in OptionalKeys<(typeof EVENT_SCHEMA)[E]>]?: PropValue<(typeof EVENT_SCHEMA)[E][K]>;
 };
 
 export type SanitizedEvent = {
