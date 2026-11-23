@@ -1,4 +1,4 @@
-import type { Degrees, Feet, NauticalMiles } from '@/types/units';
+import type { Feet, NauticalMiles, TrueDegrees } from '@/types/units';
 import type { AltitudeConstraint } from './navigation';
 
 /**
@@ -26,7 +26,7 @@ export interface RunwayEnd {
   name: string;
   latitude: number;
   longitude: number;
-  headingDeg: Degrees;
+  headingDeg: TrueDegrees;
   lengthNm: NauticalMiles;
   /** Airport elevation from the apt.dat header, for climb-gradient math off the runway. */
   elevationFt?: Feet;

@@ -11,7 +11,7 @@ import {
 } from '@/types/layers';
 import type { RangeRingCategory } from '@/types/layers';
 import type { AirportStaffing, NetworkId } from '@/types/networkTraffic';
-import type { Degrees, Feet, Meters } from '@/types/units';
+import type { Degrees, Feet, Meters, TrueDegrees } from '@/types/units';
 
 export interface FeatureDebugInfo {
   type: 'line' | 'sign' | 'gate' | 'runway' | 'taxiway' | 'unknown';
@@ -52,7 +52,7 @@ export interface NavInfoSelection {
   /** Runway served by a localizer. */
   runway?: string;
   /** Published localizer course, degrees true. */
-  courseTrue?: number;
+  courseTrue?: TrueDegrees;
   /** Position in the flight plan's waypoint list, for a clicked plan waypoint. */
   routeIndex?: number;
   latitude: number;

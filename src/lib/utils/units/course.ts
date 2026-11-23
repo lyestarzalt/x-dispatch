@@ -1,6 +1,7 @@
 import { magneticVariation } from '@/lib/magvar';
 import type { Degrees } from '@/lib/utils/geomath';
 import { normalize360 } from '@/lib/utils/math';
+import type { TrueDegrees } from '@/types/units';
 import type { Translate } from './types';
 
 export type CourseMode = 'magnetic' | 'true' | 'both';
@@ -19,7 +20,7 @@ function pad3(deg: Degrees): string {
  * for compound readouts (e.g. FlightPlanBuilder's "Alternate · 42.0 NM").
  */
 export function formatCourseWithVariation(
-  trueDeg: Degrees,
+  trueDeg: TrueDegrees,
   mode: CourseMode,
   variationDeg: Degrees,
   t: Translate
@@ -32,7 +33,7 @@ export function formatCourseWithVariation(
 
 /** Same as `formatCourseWithVariation`, but looks up live WMM2025 variation at a position. */
 export function formatCourse(
-  trueDeg: Degrees,
+  trueDeg: TrueDegrees,
   mode: CourseMode,
   lat: number,
   lon: number,

@@ -24,7 +24,7 @@ import {
   formatWeightExact,
 } from '@/lib/utils/units';
 import { useSettingsStore } from '@/stores/settingsStore';
-import type { Pounds } from '@/types/units';
+import type { Pounds, TrueDegrees } from '@/types/units';
 
 type UnitPreferences = ReturnType<typeof useSettingsStore.getState>['map']['units'];
 
@@ -48,11 +48,11 @@ export function buildUnitFormatters(units: UnitPreferences, t: Translate) {
     // Full digits for dispatch figures (fuel, takeoff weight), where "50k lbs" is not enough.
     weightExact: (lbs: Pounds) => formatWeightExact(lbs, units.weight),
     coordinates: (lat: number, lon: number) => formatCoordinates(lat, lon, units.coordinates, t),
-    course: (trueDeg: Degrees, lat: number, lon: number, date?: Date) =>
+    course: (trueDeg: TrueDegrees, lat: number, lon: number, date?: Date) =>
       formatCourse(trueDeg, units.course, lat, lon, t, date),
     // For sources with their own published variation (e.g. an ILS record) —
     // more accurate than a WMM lookup, and skips it entirely.
-    courseWithVariation: (trueDeg: Degrees, variationDeg: Degrees) =>
+    courseWithVariation: (trueDeg: TrueDegrees, variationDeg: Degrees) =>
       formatCourseWithVariation(trueDeg, units.course, variationDeg, t),
     // Raw converted numbers, for charts/axes that need a value, not a string.
     distanceF: (nm: NauticalMiles) => convertDistance(nm, units.distance),

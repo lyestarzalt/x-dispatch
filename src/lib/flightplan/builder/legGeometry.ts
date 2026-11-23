@@ -26,7 +26,7 @@ import type {
   ResolvedProcedure,
   ResolvedProcedureWaypoint,
 } from '@/types/navigation';
-import type { Feet } from '@/types/units';
+import type { Feet, TrueDegrees } from '@/types/units';
 import { type LatLon, bearingDeg, destinationPoint, greatCircleNm } from './geometry';
 
 /** Planning climb gradient for altitude-terminated legs (LNM's figure; ours was 300, half real). */
@@ -277,7 +277,7 @@ export function holdLabelPoint(wp: ResolvedProcedureWaypoint): LatLon | null {
  */
 function procedureTurnShape(
   fix: LatLon,
-  outboundTrue: number,
+  outboundTrue: TrueDegrees,
   turn: 'L' | 'R',
   distanceNm: NauticalMiles | null
 ): { points: LatLon[]; turnPoint: LatLon; course45: number } {
@@ -301,7 +301,7 @@ function procedureTurnShape(
 function buildOverlay(
   wp: ResolvedProcedureWaypoint,
   fix: LatLon,
-  courseTrue: number | null
+  courseTrue: TrueDegrees | null
 ): ProcedureOverlay | null {
   if (courseTrue === null) return null;
   const turn = wp.turnDirection ?? 'R';

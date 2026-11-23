@@ -2,7 +2,7 @@
  * Airport Types - apt.dat parsing types
  * All types related to X-Plane airport data format
  */
-import type { Degrees, Feet, Meters } from '@/types/units';
+import type { Feet, Meters, TrueDegrees } from '@/types/units';
 import type { Coordinates, LonLatPath, LonLatPolygon } from './geo';
 
 // ============================================================================
@@ -293,7 +293,7 @@ export interface WaterRunway {
 }
 
 export interface StartupLocation extends Coordinates {
-  heading: Degrees;
+  heading: TrueDegrees;
   location_type: string;
   airplane_types: string;
   name: string;
@@ -312,7 +312,7 @@ export interface Windsock extends Coordinates {
 }
 
 export interface Sign extends Coordinates {
-  heading: Degrees;
+  heading: TrueDegrees;
   size: SignSize;
   text: string;
 }
@@ -352,7 +352,7 @@ export interface Beacon extends Coordinates {
 
 export interface Helipad extends Coordinates {
   name: string;
-  heading: Degrees;
+  heading: TrueDegrees;
   length: Meters;
   width: Meters;
   surface_type: SurfaceType;
@@ -429,7 +429,7 @@ export interface TruckEdge {
 export interface TruckParking {
   latitude: number;
   longitude: number;
-  heading: Degrees;
+  heading: TrueDegrees;
   type: string;
   /** 0–10 for baggage_train, 0 otherwise */
   extra: number;
@@ -441,7 +441,7 @@ export interface TruckParking {
 export interface TruckDestination {
   latitude: number;
   longitude: number;
-  heading: Degrees;
+  heading: TrueDegrees;
   /** Pipe-separated types in raw data, stored as array */
   types: string[];
   /** Name of destination */

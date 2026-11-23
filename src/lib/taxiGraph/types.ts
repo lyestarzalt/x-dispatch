@@ -1,5 +1,5 @@
 import type { TaxiEdge } from '@/types/apt';
-import type { Degrees, Meters } from '@/types/units';
+import type { Meters, TrueDegrees } from '@/types/units';
 
 /** Adjacency list entry — one neighbor reachable from a node */
 export interface GraphEdge {
@@ -7,7 +7,7 @@ export interface GraphEdge {
   /** Distance in metres (haversine between the two nodes) */
   distance: Meters;
   /** True bearing of travel along this edge in degrees, NaN when its two nodes coincide */
-  bearing: Degrees;
+  bearing: TrueDegrees;
   /** Reference to the original TaxiEdge for metadata access */
   edge: TaxiEdge;
 }

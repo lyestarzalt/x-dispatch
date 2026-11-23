@@ -1,5 +1,5 @@
 import { formatHeading } from '@/lib/utils/format';
-import type { Degrees, NauticalMiles } from '@/lib/utils/geomath';
+import type { NauticalMiles } from '@/lib/utils/geomath';
 import {
   type CourseMode,
   type DistanceUnit,
@@ -8,6 +8,7 @@ import {
   formatDistance,
 } from '@/lib/utils/units';
 import { METERS_PER_NM } from '@/lib/utils/units/constants';
+import type { TrueDegrees } from '@/types/units';
 
 const FEET_PER_NM = 6076.11549;
 /** Below this many long units (NM or mi) the short unit is appended. */
@@ -26,8 +27,8 @@ export interface MeasureSnap {
 }
 
 export interface MeasureGeometry {
-  initialTrue: Degrees;
-  finalTrue: Degrees;
+  initialTrue: TrueDegrees;
+  finalTrue: TrueDegrees;
   distanceNm: NauticalMiles;
   /** Variation applied at the start, east positive. */
   startVariation: number;

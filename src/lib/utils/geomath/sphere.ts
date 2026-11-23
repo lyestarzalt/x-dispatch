@@ -3,7 +3,7 @@
  * the exact arithmetic the callers used before they shared it, so a drawn route does not
  * move by a digit. Callers keep their own point shapes and units and convert at the edge.
  */
-import type { Degrees, Radians } from '@/types/units';
+import type { Degrees, Radians, TrueDegrees } from '@/types/units';
 
 /** Mean Earth radius in metres. */
 export const EARTH_RADIUS_M = 6371000;
@@ -19,7 +19,12 @@ export function toDegrees(radians: Radians): Degrees {
 }
 
 /** Initial true bearing from point 1 to point 2, in degrees, 0 to 360. */
-export function initialBearing(lat1: number, lon1: number, lat2: number, lon2: number): Degrees {
+export function initialBearing(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): TrueDegrees {
   const φ1 = toRadians(lat1);
   const φ2 = toRadians(lat2);
   const Δλ = toRadians(lon2 - lon1);
@@ -27,7 +32,7 @@ export function initialBearing(lat1: number, lon1: number, lat2: number, lon2: n
   const y = Math.sin(Δλ) * Math.cos(φ2);
   const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
 
-  return ((toDegrees(Math.atan2(y, x)) + 360) % 360) as Degrees;
+  return ((toDegrees(Math.atan2(y, x)) + 360) % 360) as TrueDegrees;
 }
 
 /**

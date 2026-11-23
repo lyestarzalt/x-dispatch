@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import type { Degrees, Feet, Meters, NauticalMiles, Radians } from './units';
+import type {
+  Degrees,
+  Feet,
+  MagneticDegrees,
+  Meters,
+  NauticalMiles,
+  Radians,
+  TrueDegrees,
+} from './units';
 
 /*
  * The compiler is what is under test here: `npm run typecheck` fails if a line marked
@@ -30,5 +38,23 @@ describe('unit types', () => {
     // @ts-expect-error radians are not degrees
     const alsoWrong: Degrees = angle;
     expect([wrong, alsoWrong]).toEqual([5, 1]);
+  });
+
+  it('tell true directions from magnetic ones, and treat both as degrees', () => {
+    const wantsTrue = (x: TrueDegrees): TrueDegrees => x;
+    const wantsDegrees = (x: Degrees): Degrees => x;
+    const magnetic = 262 as MagneticDegrees;
+    const trueCourse = 270 as TrueDegrees;
+    const unlabelled = 90 as Degrees;
+    // @ts-expect-error a magnetic course is not a true one
+    wantsTrue(magnetic);
+    // @ts-expect-error nor the reverse
+    const wrong: MagneticDegrees = trueCourse;
+    expect(wantsTrue(trueCourse)).toBe(270);
+    expect(wantsTrue(unlabelled)).toBe(90);
+    expect(wantsTrue(45)).toBe(45);
+    expect(wantsDegrees(magnetic)).toBe(262);
+    expect(wantsDegrees(trueCourse)).toBe(270);
+    expect(wrong).toBe(270);
   });
 });

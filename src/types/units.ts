@@ -14,11 +14,20 @@
  * quantity where it is declared.
  */
 declare const unit: unique symbol;
+declare const reference: unique symbol;
 
 type Brand<Base, Label extends string> = Base & { readonly [unit]?: Label };
 
 /** An angle in degrees: a heading, bearing, course, latitude or longitude. */
 export type Degrees = Brand<number, 'degrees'>;
+/**
+ * A direction measured from true north, and one measured from magnetic north. Each is a
+ * `Degrees`, so the angle helpers take them, and a plain `Degrees` or number is accepted
+ * where one is asked for; a true direction passed where a magnetic one is asked for, or the
+ * reverse, is a compile error. Convert with `trueToMagnetic` / `magneticToTrue`.
+ */
+export type TrueDegrees = Degrees & { readonly [reference]?: 'true' };
+export type MagneticDegrees = Degrees & { readonly [reference]?: 'magnetic' };
 /** An angle in radians. */
 export type Radians = Brand<number, 'radians'>;
 export type Meters = Brand<number, 'meters'>;

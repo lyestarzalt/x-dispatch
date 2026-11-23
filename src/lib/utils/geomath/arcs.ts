@@ -8,7 +8,7 @@
 import { normalize360 } from '@/lib/utils/math';
 import { METERS_PER_NM } from '@/lib/utils/units/constants';
 import type { LonLat } from '@/types/geo';
-import type { Degrees, Meters, NauticalMiles } from '@/types/units';
+import type { Degrees, Meters, NauticalMiles, TrueDegrees } from '@/types/units';
 import { EARTH_RADIUS_M, destinationRad, initialBearing, toDegrees, toRadians } from './sphere';
 
 /** Start, distance in metres and bearing in degrees to the point reached, as `[lon, lat]`. */
@@ -16,7 +16,7 @@ function destinationPoint(
   lat: number,
   lon: number,
   distanceMeters: Meters,
-  bearingDegrees: Degrees
+  bearingDegrees: TrueDegrees
 ): LonLat {
   const [φ2, λ2] = destinationRad(
     toRadians(lat),

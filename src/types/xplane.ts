@@ -4,8 +4,10 @@ import type {
   FeetPerMinute,
   Kilograms,
   Knots,
+  MagneticDegrees,
   Meters,
   Seconds,
+  TrueDegrees,
 } from '@/types/units';
 import type { Coordinates } from './geo';
 
@@ -33,7 +35,7 @@ export type AircraftCategory =
 export interface PlaneState extends Coordinates {
   altitudeMSL: Feet;
   altitudeAGL: Feet;
-  heading: Degrees;
+  heading: TrueDegrees;
   pitch: Degrees;
   roll: Degrees;
   groundspeed: Knots;
@@ -54,17 +56,17 @@ export interface PlaneState extends Coordinates {
   gForceSide: number;
   /** Autopilot dial settings. Absent until the first sample arrives. */
   apAltitude?: Feet;
-  apHeading?: Degrees;
+  apHeading?: MagneticDegrees;
   /** Knots, or Mach when apAirspeedIsMach is set. */
   apAirspeed?: number;
   apAirspeedIsMach?: boolean;
   apVerticalSpeed?: FeetPerMinute;
   /** NAV1 OBS course, degrees magnetic. */
-  nav1Course?: Degrees;
+  nav1Course?: MagneticDegrees;
   /** Ground track, degrees magnetic. */
-  groundTrack?: Degrees;
+  groundTrack?: MagneticDegrees;
   /** Heading in degrees magnetic, as the autopilot dial and the strip read it; `heading` stays true for the map. */
-  magneticHeading?: Degrees;
+  magneticHeading?: MagneticDegrees;
   /** COM1 active and standby frequencies in kHz, so 118805 is 118.805 MHz. */
   com1Frequency?: number;
   com1StandbyFrequency?: number;
@@ -91,7 +93,7 @@ export interface PlanePosition {
   lng: number;
   altitude: Feet;
   altitudeAGL: Feet;
-  heading: Degrees;
+  heading: TrueDegrees;
   groundspeed: Knots;
   aircraftCategory: AircraftCategory | null;
   icaoType: string;

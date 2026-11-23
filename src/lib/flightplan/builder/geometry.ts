@@ -7,7 +7,7 @@ import {
 } from '@/lib/utils/geomath/sphere';
 import type { RangeRingCategory } from '@/types/layers';
 import { RANGE_RING_SPEEDS } from '@/types/layers';
-import type { Degrees, Feet, Kilograms, Minutes, NauticalMiles } from '@/types/units';
+import type { Degrees, Feet, Kilograms, Minutes, NauticalMiles, TrueDegrees } from '@/types/units';
 
 export interface LatLon {
   latitude: number;
@@ -24,12 +24,16 @@ export function greatCircleNm(a: LatLon, b: LatLon): NauticalMiles {
 }
 
 /** Initial true bearing from a to b, 0 to 360. */
-export function bearingDeg(a: LatLon, b: LatLon): Degrees {
+export function bearingDeg(a: LatLon, b: LatLon): TrueDegrees {
   return initialBearing(a.latitude, a.longitude, b.latitude, b.longitude);
 }
 
 /** Point reached from p after travelling the distance along a true bearing. */
-export function destinationPoint(p: LatLon, bearing: Degrees, distanceNm: NauticalMiles): LatLon {
+export function destinationPoint(
+  p: LatLon,
+  bearing: TrueDegrees,
+  distanceNm: NauticalMiles
+): LatLon {
   const [φ2, λ2] = destinationRad(
     toRadians(p.latitude),
     toRadians(p.longitude),

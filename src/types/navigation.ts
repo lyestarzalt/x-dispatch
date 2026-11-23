@@ -3,7 +3,7 @@
  * Consolidated types for all navigation data: navaids, waypoints, airways,
  * airspace, procedures (SID/STAR/Approach), holdings, and ATC.
  */
-import type { Degrees, Feet, Knots, Minutes, NauticalMiles } from '@/types/units';
+import type { Degrees, Feet, Knots, MagneticDegrees, Minutes, NauticalMiles } from '@/types/units';
 import type { Coordinates, LonLatPath } from './geo';
 
 // ============================================================================
@@ -299,7 +299,7 @@ export interface ProcedureWaypoint {
   fixRegion: string;
   fixType: FixTypeCode;
   pathTerminator: PathTerminator;
-  course: Degrees | null; // Magnetic course in degrees
+  course: MagneticDegrees | null; // Magnetic course in degrees
   distance: NauticalMiles | null; // Distance in nautical miles (never the hold/route time encoding)
   altitude: AltitudeConstraint | null;
   speed: Knots | null; // Speed constraint in knots (ARINC 424 SPEED_LIMIT, not TRANS_ALT)
@@ -414,7 +414,7 @@ export interface HoldingPattern {
   fixRegion: string;
   airport: string;
   fixType: FixTypeNumber;
-  inboundCourse: Degrees; // Magnetic course
+  inboundCourse: MagneticDegrees; // Magnetic course
   legTime: Minutes; // Minutes
   legDistance: NauticalMiles; // Nautical miles (0 if time-based)
   turnDirection: TurnDirection;

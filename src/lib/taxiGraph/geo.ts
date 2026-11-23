@@ -1,5 +1,5 @@
 import { METERS_PER_DEG_LAT } from '@/lib/utils/units/constants';
-import type { Degrees, Meters } from '@/types/units';
+import type { Degrees, Meters, TrueDegrees } from '@/types/units';
 
 /** Haversine distance between two lat/lon points in metres */
 export function haversineMetres(lat1: number, lon1: number, lat2: number, lon2: number): Meters {
@@ -19,10 +19,10 @@ interface LatLon {
 }
 
 /** True bearing from `a` to `b` in [0, 360). Flat-earth, fine across an airport. */
-export function bearingDeg(a: LatLon, b: LatLon): Degrees {
+export function bearingDeg(a: LatLon, b: LatLon): TrueDegrees {
   const x = (b.lon - a.lon) * Math.cos((a.lat * Math.PI) / 180);
   const y = b.lat - a.lat;
-  return (((Math.atan2(x, y) * 180) / Math.PI + 360) % 360) as Degrees;
+  return (((Math.atan2(x, y) * 180) / Math.PI + 360) % 360) as TrueDegrees;
 }
 
 /** Absolute heading change from `inDeg` to `outDeg`, in [0, 180]. */
