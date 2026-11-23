@@ -925,13 +925,11 @@
       "delayInline": "opóźnienie {{seconds}} s",
       "add": "Dodaj",
       "unknownError": "Nieznany błąd",
-      "notElevatedTitle": "X-Dispatch nie jest uruchomiony jako administrator",
-      "notElevatedHint": "Aplikacje towarzyszące nie zostaną uruchomione. Kliknij prawym przyciskiem myszy X-Dispatch i wybierz Uruchom jako administrator (Windows) albo uruchom z terminala z sudo (macOS/Linux).",
       "error": {
-        "needsAdmin": "X-Dispatch potrzebuje uprawnień administratora do uruchomienia tej aplikacji",
         "fileMissing": "Nie znaleziono pliku wykonywalnego pod skonfigurowaną ścieżką",
-        "fileNotExecutable": "Plik nie jest wykonywalny",
-        "batchNotSupported": "Plików wsadowych (.bat, .cmd) nie można uruchomić bezpośrednio. W polu „Ścieżka do pliku wykonywalnego” wskaż sam program, na przykład javaw.exe, resztę wpisz w „Argumenty”, a w „Katalog roboczy” podaj folder aplikacji.",
+        "accessDenied": "Windows odmówił uruchomienia tej aplikacji. Sprawdź antywirus i uprawnienia folderu.",
+        "cancelled": "Okno uprawnień zostało zamknięte, aplikacja nie została uruchomiona",
+        "timedOut": "Aplikacja nie uruchomiła się w ciągu dwóch minut",
         "spawnFailed": "Nie udało się uruchomić procesu"
       }
     },

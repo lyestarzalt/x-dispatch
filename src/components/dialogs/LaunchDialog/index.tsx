@@ -299,14 +299,14 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
 
       const errorKeyFor = (code: string | undefined): string => {
         switch (code) {
-          case 'NEEDS_ADMIN':
-            return 'settings.companionApps.error.needsAdmin';
           case 'FILE_MISSING':
             return 'settings.companionApps.error.fileMissing';
-          case 'FILE_NOT_EXECUTABLE':
-            return 'settings.companionApps.error.fileNotExecutable';
-          case 'BATCH_NOT_SUPPORTED':
-            return 'settings.companionApps.error.batchNotSupported';
+          case 'ACCESS_DENIED':
+            return 'settings.companionApps.error.accessDenied';
+          case 'CANCELLED':
+            return 'settings.companionApps.error.cancelled';
+          case 'TIMED_OUT':
+            return 'settings.companionApps.error.timedOut';
           default:
             return 'settings.companionApps.error.spawnFailed';
         }

@@ -1,12 +1,13 @@
 import { useEffect } from 'react';
 import i18n from 'i18next';
 import { classifyCompanionApp } from '@/lib/analytics/companionApps';
+import { ANALYTICS_LANGUAGES, type AnalyticsWidget } from '@/lib/analytics/events';
 import {
-  ANALYTICS_LANGUAGES,
-  type AnalyticsLayer,
-  type AnalyticsWidget,
-} from '@/lib/analytics/events';
-import { builtTaxiRoute, isNewStartPosition, pickedProcedures } from '@/lib/analytics/mapActions';
+  builtTaxiRoute,
+  isNewStartPosition,
+  layerToggles,
+  pickedProcedures,
+} from '@/lib/analytics/mapActions';
 import { useAppStore } from '@/stores/appStore';
 import { useCompanionAppsStore } from '@/stores/companionAppsStore';
 import { useFlightPlanStore } from '@/stores/flightPlanStore';
@@ -20,29 +21,6 @@ import { useThemeStore } from '@/stores/themeStore';
 import { trackEvent, useAnalyticsConsent } from './useAnalytics';
 
 type MapState = ReturnType<typeof useMapStore.getState>;
-
-/**
- * Map state that counts as "switched on" for each tracked layer. The plane
- * tracker is left out: the app switches it on when X-Plane connects, so only
- * its button reports it.
- */
-const LAYER_STATE: ReadonlyArray<[AnalyticsLayer, (s: MapState) => boolean]> = [
-  ['vatsim', (s) => s.vatsimEnabled],
-  ['ivao', (s) => s.ivaoEnabled],
-  ['sim_traffic', (s) => s.simTrafficEnabled],
-  ['weather_radar', (s) => s.weatherRadarEnabled],
-  ['clouds', (s) => s.cloudLayerEnabled],
-  ['flight_trail', (s) => s.flightTrailEnabled],
-  ['range_rings', (s) => s.rangeRingsEnabled],
-  ['terrain_3d', (s) => s.terrain3dEnabled],
-  ['terrain_shading', (s) => s.terrainShadingEnabled],
-  ['follow_plane', (s) => s.followPlane],
-  ['night_mode', (s) => s.isNightMode],
-  ['navaids', (s) => s.navVisibility.navaids],
-  ['ils', (s) => s.navVisibility.ils],
-  ['airspaces', (s) => s.navVisibility.airspaces],
-  ['airways', (s) => s.navVisibility.airwaysMode !== 'off'],
-];
 
 const MAP_WIDGET_STATE: ReadonlyArray<[AnalyticsWidget, (s: MapState) => boolean]> = [
   ['nav_info', (s) => s.navInfo !== null],
@@ -119,10 +97,7 @@ export function useUsageTracking() {
 
   useEffect(() => {
     const unsubMap = useMapStore.subscribe((next, prev) => {
-      for (const [layer, isOn] of LAYER_STATE) {
-        if (isOn(next) && !isOn(prev)) trackEvent('layer_enabled', { layer });
-        if (!isOn(next) && isOn(prev)) trackEvent('layer_disabled', { layer });
-      }
+      for (const { event, layer } of layerToggles(next, prev)) trackEvent(event, { layer });
       for (const [widget, isOpen] of MAP_WIDGET_STATE) {
         if (isOpen(next) && !isOpen(prev)) trackEvent('widget_opened', { widget });
       }

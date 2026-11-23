@@ -604,7 +604,6 @@ declare global {
         cwd?: string;
       }) => Promise<import('@/lib/companionApps/spawn').SpawnResult>;
       browseForExe: (currentExePath?: string) => Promise<string | null>;
-      isElevated: () => Promise<boolean>;
     };
     versions: { node: () => string; chrome: () => string; electron: () => string };
     remoteAccessAPI: {

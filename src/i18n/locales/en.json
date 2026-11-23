@@ -925,13 +925,11 @@
       "delayInline": "delay {{seconds}}s",
       "add": "Add",
       "unknownError": "Unknown error",
-      "notElevatedTitle": "X-Dispatch isn't running as administrator",
-      "notElevatedHint": "Companion apps may fail to launch. Right-click X-Dispatch and choose Run as administrator (Windows), or relaunch from a terminal with sudo (macOS/Linux).",
       "error": {
-        "needsAdmin": "X-Dispatch needs administrator privileges to launch this app",
         "fileMissing": "Executable not found at the configured path",
-        "fileNotExecutable": "File is not executable",
-        "batchNotSupported": "Batch files (.bat, .cmd) can't be launched directly. Point Executable path at the program itself, for example javaw.exe, put the rest in Arguments, and set Working directory to the app's folder.",
+        "accessDenied": "Windows refused to start this app. Check antivirus and the folder's permissions.",
+        "cancelled": "The permission prompt was closed, so the app did not start",
+        "timedOut": "The app did not start within two minutes",
         "spawnFailed": "Couldn't start the process"
       }
     },

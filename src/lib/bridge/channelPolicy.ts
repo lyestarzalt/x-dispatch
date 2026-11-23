@@ -26,7 +26,6 @@ export const REMOTE_ALLOWED_CHANNELS: readonly string[] = [
   'app:getXPlaneVersion',
   'app:isSetupComplete',
   'app:startLoading',
-  'companion-apps:isElevated',
   'companion-apps:launch',
   'data:getDistinctCountries',
   'fetch-gateway-airport',

@@ -925,13 +925,11 @@
       "delayInline": "延迟 {{seconds}} 秒",
       "add": "添加",
       "unknownError": "未知错误",
-      "notElevatedTitle": "X-Dispatch 未以管理员身份运行",
-      "notElevatedHint": "配套应用将无法启动。请右键 X-Dispatch 并选择以管理员身份运行（Windows），或在终端中使用 sudo 重新启动（macOS/Linux）。",
       "error": {
-        "needsAdmin": "X-Dispatch 需要管理员权限才能启动此应用",
         "fileMissing": "在配置的路径中找不到可执行文件",
-        "fileNotExecutable": "文件不可执行",
-        "batchNotSupported": "批处理文件（.bat、.cmd）无法直接启动。请在「可执行文件路径」中指向程序本身（例如 javaw.exe），将其余内容填入「参数」，并将「工作目录」设为该应用的文件夹。",
+        "accessDenied": "Windows 拒绝启动此应用。请检查杀毒软件和文件夹权限。",
+        "cancelled": "权限提示已关闭，应用未启动",
+        "timedOut": "应用在两分钟内未启动",
         "spawnFailed": "无法启动进程"
       }
     },

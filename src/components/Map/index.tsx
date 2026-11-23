@@ -898,6 +898,8 @@ export default function Map({ airports }: MapProps) {
     // Toggle follow mode
     const newFollowState = !followPlane;
     setFollowPlane(newFollowState);
+    // Reported here, not from map state: a map drag also switches follow mode off.
+    trackEvent(newFollowState ? 'layer_enabled' : 'layer_disabled', { layer: 'follow_plane' });
 
     if (newFollowState) {
       // Mark as programmatic to avoid triggering disable

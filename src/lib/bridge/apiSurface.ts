@@ -432,7 +432,6 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
         t.invoke('companion-apps:launch', input),
       browseForExe: (currentExePath?: string): Promise<string | null> =>
         t.invoke('companion-apps:browseForExe', currentExePath),
-      isElevated: (): Promise<boolean> => t.invoke('companion-apps:isElevated'),
     },
 
     flightsAPI: {

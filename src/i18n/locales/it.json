@@ -925,13 +925,11 @@
       "delayInline": "ritardo {{seconds}} s",
       "add": "Aggiungi",
       "unknownError": "Errore sconosciuto",
-      "notElevatedTitle": "X-Dispatch non è in esecuzione come amministratore",
-      "notElevatedHint": "Le app complementari non potranno essere avviate. Fai clic destro su X-Dispatch e seleziona Esegui come amministratore (Windows), oppure riavvia da terminale con sudo (macOS/Linux).",
       "error": {
-        "needsAdmin": "X-Dispatch ha bisogno dei privilegi di amministratore per avviare questa app",
         "fileMissing": "Eseguibile non trovato nel percorso configurato",
-        "fileNotExecutable": "Il file non è eseguibile",
-        "batchNotSupported": "I file batch (.bat, .cmd) non possono essere avviati direttamente. Indica in \"Percorso eseguibile\" il programma stesso, ad esempio javaw.exe, metti il resto in \"Argomenti\" e imposta \"Directory di lavoro\" sulla cartella dell’applicazione.",
+        "accessDenied": "Windows ha rifiutato di avviare questa app. Controlla l'antivirus e i permessi della cartella.",
+        "cancelled": "La richiesta di autorizzazione è stata chiusa, l'app non è stata avviata",
+        "timedOut": "L'app non si è avviata entro due minuti",
         "spawnFailed": "Impossibile avviare il processo"
       }
     },
