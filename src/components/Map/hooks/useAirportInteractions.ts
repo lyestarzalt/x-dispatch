@@ -6,6 +6,7 @@ import {
   normalizeWidthCode,
 } from '@/lib/airports/standIdentity';
 import { helipadStartRow } from '@/lib/airports/startRunways';
+import { calculateBearing } from '@/lib/utils/geomath';
 import logger from '@/lib/utils/loggerRenderer';
 import { useAppStore } from '@/stores/appStore';
 import type { ParsedAirport } from '@/types/apt';
@@ -596,13 +597,7 @@ export function useAirportInteractions({
       const centerLat = (e1.latitude + e2.latitude) / 2;
       const centerLon = (e1.longitude + e2.longitude) / 2;
 
-      // Calculate bearing
-      const dLon = ((e2.longitude - e1.longitude) * Math.PI) / 180;
-      const lat1 = (e1.latitude * Math.PI) / 180;
-      const lat2 = (e2.latitude * Math.PI) / 180;
-      const y = Math.sin(dLon) * Math.cos(lat2);
-      const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
-      const bearing = ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+      const bearing = calculateBearing(e1.latitude, e1.longitude, e2.latitude, e2.longitude);
 
       map.flyTo({
         center: [centerLon, centerLat],

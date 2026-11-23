@@ -1,18 +1,7 @@
+import { escapeHtml } from '@/lib/utils/escape';
 import type { SignSize } from '@/types/apt';
 import { SIGN_CONFIG, getSignDimensions } from './config';
 import type { SignSegment } from './types';
-
-/**
- * Escape special XML characters for SVG text content
- */
-function escapeXml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
-}
 
 /**
  * Calculate the width of a text segment
@@ -80,7 +69,7 @@ export function generateSignSVG(segments: SignSegment[], signSize: SignSize | nu
 
         // Draw text part
         if (part) {
-          svg += `<text x="${textX + partWidth / 2}" y="${height / 2}" fill="${colors.text}" font-family="Arial, sans-serif" font-size="${fontSize}" font-weight="bold" text-anchor="middle" dominant-baseline="central">${escapeXml(part)}</text>`;
+          svg += `<text x="${textX + partWidth / 2}" y="${height / 2}" fill="${colors.text}" font-family="Arial, sans-serif" font-size="${fontSize}" font-weight="bold" text-anchor="middle" dominant-baseline="central">${escapeHtml(part)}</text>`;
         }
 
         textX += partWidth;
@@ -95,7 +84,7 @@ export function generateSignSVG(segments: SignSegment[], signSize: SignSize | nu
     } else {
       // No dividers - simple centered text
       const textX = x + w / 2;
-      svg += `<text x="${textX}" y="${height / 2}" fill="${colors.text}" font-family="Arial, sans-serif" font-size="${fontSize}" font-weight="bold" text-anchor="middle" dominant-baseline="central">${escapeXml(seg.text)}</text>`;
+      svg += `<text x="${textX}" y="${height / 2}" fill="${colors.text}" font-family="Arial, sans-serif" font-size="${fontSize}" font-weight="bold" text-anchor="middle" dominant-baseline="central">${escapeHtml(seg.text)}</text>`;
     }
 
     // Segment border (between segments)

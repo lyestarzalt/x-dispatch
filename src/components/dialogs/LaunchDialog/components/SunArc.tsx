@@ -4,6 +4,7 @@ import * as SunCalc from 'suncalc';
 import tzlookup from 'tz-lookup';
 import { Slider } from '@/components/ui/slider';
 import { formatZulu } from '@/lib/utils/format';
+import { clamp } from '@/lib/utils/math';
 import { useThemeStore } from '@/stores/themeStore';
 
 interface SunArcProps {
@@ -34,8 +35,6 @@ export function getHoursInTimezone(date: Date, timezone: string): number {
   if (h === undefined || m === undefined) return 0;
   return h + m / 60;
 }
-
-const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 
 /* Read CSS custom properties as hex — SVG gradient stops require hex values */
 function readPalette(el: HTMLElement) {

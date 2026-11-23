@@ -10,6 +10,7 @@ import { greatCircleNm } from '@/lib/flightplan/builder/geometry';
 import { validityLabel } from '@/lib/flightplan/builder/trackChoice';
 import type { NatMessageStatus, OceanicTrackInfo } from '@/lib/flightplan/builder/types';
 import { labelFont } from '@/lib/map/labelFonts';
+import { escapeHtml } from '@/lib/utils/escape';
 import { zoomScaledTextSize } from '../labelSize';
 import { safeAddGeoJSONSource } from '../types';
 import { legLabelPlacement } from './FlightPlanLayer';
@@ -111,14 +112,6 @@ export function natTracksGeoJSON(
     });
   }
   return { type: 'FeatureCollection', features };
-}
-
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
 }
 
 /** The hover card for a track: designator, direction, status, levels, window, NARs, feeders. */

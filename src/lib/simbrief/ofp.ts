@@ -1,3 +1,4 @@
+import { isRecord } from '@/lib/utils/typeGuards';
 import type {
   SimBriefAlternate,
   SimBriefErrorCode,
@@ -164,10 +165,6 @@ export function text(value: unknown): string {
   if (typeof value === 'string') return value;
   if (typeof value === 'number') return String(value);
   return '';
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 /** The alternate the plan is dispatched with; SimBrief lists extra alternates after it. */
