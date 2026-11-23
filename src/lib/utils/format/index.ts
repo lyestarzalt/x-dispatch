@@ -1,6 +1,9 @@
 /**
  * Centralized formatting utilities
  */
+import { normalize360 } from '@/lib/utils/math';
+import { KG_TO_LBS, LBS_TO_KG } from '@/lib/utils/units/constants';
+import type { Degrees, Kilograms, Pounds } from '@/types/units';
 import type { WeightUnit } from './types';
 
 export * from './types';
@@ -60,19 +63,21 @@ export function formatAirportCountry(raw?: string): string | undefined {
   return match ? match[1] : trimmed;
 }
 
+/** A heading or bearing as three digits, rounded and wrapped: 7 is `007`, 359.6 is `000`. */
+export function formatHeading(deg: Degrees): string {
+  return normalize360(Math.round(deg)).toString().padStart(3, '0');
+}
+
 export function formatFrequency(freq: number, decimals = 3): string {
   return freq.toFixed(decimals);
 }
 
-const LBS_TO_KG = 0.453592;
-const KG_TO_LBS = 2.20462;
-
-export function lbsToKg(lbs: number): number {
-  return lbs * LBS_TO_KG;
+export function lbsToKg(lbs: Pounds): Kilograms {
+  return (lbs * LBS_TO_KG) as Kilograms;
 }
 
-export function kgToLbs(kg: number): number {
-  return kg * KG_TO_LBS;
+export function kgToLbs(kg: Kilograms): Pounds {
+  return (kg * KG_TO_LBS) as Pounds;
 }
 
 /**
@@ -80,7 +85,7 @@ export function kgToLbs(kg: number): number {
  * @param lbs Weight in pounds (X-Plane native unit)
  * @param unit Target unit for display
  */
-export function formatWeight(lbs: number, unit: WeightUnit): string {
+export function formatWeight(lbs: Pounds, unit: WeightUnit): string {
   if (unit === 'kg') {
     const kg = lbsToKg(lbs);
     if (kg >= 1000) {

@@ -302,7 +302,7 @@ function FlightPlanBuilder({
   const suggestCruise = (
     departure: PlanEndpoint,
     arrival: PlanEndpoint,
-    distanceNm: number,
+    distanceNm: NauticalMiles,
     band?: LevelBand
   ) => {
     const eastbound = isEastbound(departure, arrival);

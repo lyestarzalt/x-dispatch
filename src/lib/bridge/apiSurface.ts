@@ -28,6 +28,7 @@ import type {
 // Import types from canonical sources
 import type { AircraftHint, FlightRecorderEvent } from '@/types/flightRecorder';
 import type { TrafficSnapshot } from '@/types/traffic';
+import type { NauticalMiles } from '@/types/units';
 import type { UpdateStatus } from '@/types/update';
 import type { LoadingProgress, PlaneState } from '@/types/xplane';
 
@@ -217,27 +218,27 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
     navAPI: {
       loadDatabase: (xplanePath?: string) => t.invoke('nav:loadDatabase', xplanePath),
       getStatus: () => t.invoke('nav:getStatus'),
-      getVORsInRadius: (lat: number, lon: number, radiusNm: number) =>
+      getVORsInRadius: (lat: number, lon: number, radiusNm: NauticalMiles) =>
         t.invoke('nav:getVORsInRadius', lat, lon, radiusNm),
-      getNDBsInRadius: (lat: number, lon: number, radiusNm: number) =>
+      getNDBsInRadius: (lat: number, lon: number, radiusNm: NauticalMiles) =>
         t.invoke('nav:getNDBsInRadius', lat, lon, radiusNm),
-      getDMEsInRadius: (lat: number, lon: number, radiusNm: number) =>
+      getDMEsInRadius: (lat: number, lon: number, radiusNm: NauticalMiles) =>
         t.invoke('nav:getDMEsInRadius', lat, lon, radiusNm),
-      getILSInRadius: (lat: number, lon: number, radiusNm: number) =>
+      getILSInRadius: (lat: number, lon: number, radiusNm: NauticalMiles) =>
         t.invoke('nav:getILSInRadius', lat, lon, radiusNm),
-      getWaypointsInRadius: (lat: number, lon: number, radiusNm: number) =>
+      getWaypointsInRadius: (lat: number, lon: number, radiusNm: NauticalMiles) =>
         t.invoke('nav:getWaypointsInRadius', lat, lon, radiusNm),
-      getAirspacesNearPoint: (lat: number, lon: number, radiusNm: number) =>
+      getAirspacesNearPoint: (lat: number, lon: number, radiusNm: NauticalMiles) =>
         t.invoke('nav:getAirspacesNearPoint', lat, lon, radiusNm),
       getAllAirspaces: () => t.invoke('nav:getAllAirspaces'),
       getAirwaySegments: (airwayName: string) => t.invoke('nav:getAirwaySegments', airwayName),
-      getGlideSlopesInRadius: (lat: number, lon: number, radiusNm: number) =>
+      getGlideSlopesInRadius: (lat: number, lon: number, radiusNm: NauticalMiles) =>
         t.invoke('nav:getGlideSlopesInRadius', lat, lon, radiusNm),
-      getMarkersInRadius: (lat: number, lon: number, radiusNm: number) =>
+      getMarkersInRadius: (lat: number, lon: number, radiusNm: NauticalMiles) =>
         t.invoke('nav:getMarkersInRadius', lat, lon, radiusNm),
-      getILSComponentsInRadius: (lat: number, lon: number, radiusNm: number) =>
+      getILSComponentsInRadius: (lat: number, lon: number, radiusNm: NauticalMiles) =>
         t.invoke('nav:getILSComponentsInRadius', lat, lon, radiusNm),
-      getApproachAidsInRadius: (lat: number, lon: number, radiusNm: number) =>
+      getApproachAidsInRadius: (lat: number, lon: number, radiusNm: NauticalMiles) =>
         t.invoke('nav:getApproachAidsInRadius', lat, lon, radiusNm),
       getApproachNavaidsByAirport: (airportIcao: string) =>
         t.invoke('nav:getApproachNavaidsByAirport', airportIcao),

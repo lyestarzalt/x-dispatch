@@ -1,3 +1,4 @@
+import type { Degrees } from '@/types/units';
 import {
   type RouteGeometry,
   type Vec,
@@ -19,7 +20,7 @@ const CONTINUE_MAX_DEG = 25;
 const BEAR_MAX_DEG = 60;
 const TURN_MAX_DEG = 130;
 
-export function classifyTurn(deltaDeg: number): TurnKind {
+export function classifyTurn(deltaDeg: Degrees): TurnKind {
   const a = Math.abs(deltaDeg);
   if (a < CONTINUE_MAX_DEG) return 'continue';
   const right = deltaDeg > 0;

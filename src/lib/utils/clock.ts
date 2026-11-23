@@ -7,6 +7,7 @@
  * one place is what keeps the readout and the day/night rendering in step.
  */
 import { simTimeToEpochMs } from '@/lib/map/solar/solarPosition';
+import type { Seconds } from '@/types/units';
 
 export type ClockSource = 'system' | 'sim';
 export type ClockMode = 'zulu' | 'local';
@@ -21,7 +22,7 @@ export interface ClockInputs {
   followSimTime: boolean;
   connected: boolean;
   /** sim/time/zulu_time_sec */
-  simZuluTimeSec?: number;
+  simZuluTimeSec?: Seconds;
   /** sim/time/local_date_days, 0-based day of the year */
   simDayOfYear?: number;
   /** Machine clock, epoch ms. */

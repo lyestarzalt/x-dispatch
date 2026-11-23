@@ -5,6 +5,7 @@ import {
   nauticalMilesToMeters,
 } from '@/lib/utils/geomath';
 import type { Navaid } from '@/types/navigation';
+import type { Degrees, Feet } from '@/types/units';
 
 // LOC/GS antenna elevation comes from earth_nav.dat in feet.
 const FEET_TO_METERS = 0.3048;
@@ -41,7 +42,7 @@ interface BeamSpec {
   id: string;
   apexLat: number;
   apexLon: number;
-  apexElevationFt: number;
+  apexElevationFt: Feet;
   /** Approach-direction bearing (i.e. the LOC course +180°). */
   course: number;
   glidepathAngle: number;
@@ -72,7 +73,7 @@ function indexGlideSlopes(navaids: Navaid[]): Map<string, Navaid> {
 interface Anchor {
   lat: number;
   lon: number;
-  elevationFt: number;
+  elevationFt: Feet;
 }
 
 /**
@@ -155,7 +156,7 @@ export function pairLocAndGs(navaids: Navaid[]): BeamSpec[] {
  * wall is steeper (slope = glidepath + 0.7°). The sign of `verticalOffsetDeg`
  * picks which.
  */
-function buildGsFarEdge(spec: BeamSpec, verticalOffsetDeg: number): BeamVertex[] {
+function buildGsFarEdge(spec: BeamSpec, verticalOffsetDeg: Degrees): BeamVertex[] {
   const baseZ = spec.apexElevationFt * FEET_TO_METERS;
   const farDistanceM = nauticalMilesToMeters(BEAM_LENGTH_NM);
   const slopeDeg = spec.glidepathAngle + verticalOffsetDeg;

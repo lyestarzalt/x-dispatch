@@ -13,6 +13,7 @@
  */
 import { useEffect, useRef } from 'react';
 import { ZOOM_BEHAVIORS } from '@/config/mapStyles/zoomBehaviors';
+import { backingScale } from '@/lib/map/backingScale';
 import { useAppStore } from '@/stores/appStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { MapRef } from './useMapSetup';
@@ -25,8 +26,6 @@ const TRAIL_BARS = 4;
 const FLASH_ALPHA = 0.95;
 const FLASH_RADIUS = 10;
 const TRAIL_RADIUS = 6;
-/** Soft glows do not need retina pixels; 1x quarters the fill cost on 2x screens. */
-const MAX_BACKING_SCALE = 1;
 /** Glow halo reaches this far beyond the disc, as the old shadow blur did. */
 const GLOW_REACH = 2.5;
 // Track the underlying MapLibre `airport-approach-lights` dot layer so the
@@ -42,10 +41,6 @@ interface Glow {
   canvas: HTMLCanvasElement;
   /** Half the sprite size, in canvas pixels. */
   half: number;
-}
-
-function backingScale(): number {
-  return Math.min(window.devicePixelRatio || 1, MAX_BACKING_SCALE);
 }
 
 /** A white disc with a soft halo, drawn once so frames only stamp it. */

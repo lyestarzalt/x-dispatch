@@ -1,3 +1,4 @@
+import type { Degrees } from '@/types/units';
 import { turnDeg } from './geo';
 import type { GraphEdge, PathResult, TaxiGraph } from './types';
 
@@ -249,10 +250,10 @@ export function summarizePath(graph: TaxiGraph, nodeIds: number[]): PathResult {
 }
 
 /** Heading the route arrives at its last node on, or null when it never moved. */
-export function arrivalBearing(graph: TaxiGraph, nodeIds: number[]): number | null {
+export function arrivalBearing(graph: TaxiGraph, nodeIds: number[]): Degrees | null {
   for (let i = nodeIds.length - 1; i > 0; i--) {
     const edge = edgeBetween(graph, nodeIds[i - 1]!, nodeIds[i]!);
-    if (edge && !Number.isNaN(edge.bearing)) return edge.bearing;
+    if (edge && !Number.isNaN(edge.bearing)) return edge.bearing as Degrees;
   }
   return null;
 }

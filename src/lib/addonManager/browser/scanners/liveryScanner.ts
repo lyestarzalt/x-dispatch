@@ -1,32 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { errorMessage } from '@/lib/utils/errors';
+import { isDirEntrySync, isFileEntrySync } from '@/lib/utils/fsEntries';
 import type { BrowserError, LiveryInfo, Result } from '../../core/types';
 import { err, ok } from '../../core/types';
-
-function isDirEntry(entry: fs.Dirent, parentPath: string): boolean {
-  if (entry.isDirectory()) return true;
-  if (entry.isSymbolicLink()) {
-    try {
-      return fs.statSync(path.join(parentPath, entry.name)).isDirectory();
-    } catch {
-      return false;
-    }
-  }
-  return false;
-}
-
-function isFileEntry(entry: fs.Dirent, parentPath: string): boolean {
-  if (entry.isFile()) return true;
-  if (entry.isSymbolicLink()) {
-    try {
-      return fs.statSync(path.join(parentPath, entry.name)).isFile();
-    } catch {
-      return false;
-    }
-  }
-  return false;
-}
 
 /**
  * Scan liveries for a specific aircraft.
@@ -68,7 +45,7 @@ export function scanLiveries(
   }
 
   for (const entry of entries) {
-    if (!isDirEntry(entry, resolvedLiveries)) continue;
+    if (!isDirEntrySync(entry, resolvedLiveries)) continue;
 
     const liveryPath = path.join(resolvedLiveries, entry.name);
     const iconPath = findLiveryIcon(liveryPath);
@@ -95,7 +72,7 @@ function findLiveryIcon(liveryPath: string): string | undefined {
   try {
     files = fs
       .readdirSync(liveryPath, { withFileTypes: true })
-      .filter((e) => isFileEntry(e, liveryPath));
+      .filter((e) => isFileEntrySync(e, liveryPath));
   } catch {
     return undefined;
   }

@@ -1,3 +1,5 @@
+import { METERS_PER_DEG_LAT } from '@/lib/utils/units/constants';
+import type { Degrees } from '@/types/units';
 import type { GuidancePoint } from './types';
 
 /**
@@ -5,7 +7,6 @@ import type { GuidancePoint } from './types';
  * kilometres across, so an equirectangular projection is well inside the
  * accuracy the guidance needs.
  */
-const METRES_PER_DEG_LAT = 111_320;
 
 export interface Vec {
   x: number;
@@ -26,10 +27,10 @@ export interface RouteGeometry {
 export function buildGeometry(points: GuidancePoint[]): RouteGeometry {
   const lat0 = points[0]?.lat ?? 0;
   const lon0 = points[0]?.lon ?? 0;
-  const kx = METRES_PER_DEG_LAT * Math.cos((lat0 * Math.PI) / 180);
+  const kx = METERS_PER_DEG_LAT * Math.cos((lat0 * Math.PI) / 180);
   const xy = points.map((p) => ({
     x: (p.lon - lon0) * kx,
-    y: (p.lat - lat0) * METRES_PER_DEG_LAT,
+    y: (p.lat - lat0) * METERS_PER_DEG_LAT,
   }));
   const cum: number[] = [];
   let total = 0;
@@ -41,11 +42,11 @@ export function buildGeometry(points: GuidancePoint[]): RouteGeometry {
 }
 
 export function toLocal(g: RouteGeometry, lat: number, lon: number): Vec {
-  return { x: (lon - g.lon0) * g.kx, y: (lat - g.lat0) * METRES_PER_DEG_LAT };
+  return { x: (lon - g.lon0) * g.kx, y: (lat - g.lat0) * METERS_PER_DEG_LAT };
 }
 
 export function toLatLon(g: RouteGeometry, v: Vec): GuidancePoint {
-  return { lat: g.lat0 + v.y / METRES_PER_DEG_LAT, lon: g.lon0 + v.x / g.kx };
+  return { lat: g.lat0 + v.y / METERS_PER_DEG_LAT, lon: g.lon0 + v.x / g.kx };
 }
 
 /** The point `s` metres along the route, clamped to its ends. */
@@ -74,17 +75,17 @@ export function routeBetween(g: RouteGeometry, from: number, to: number): Guidan
 }
 
 /** True bearing from `a` to `b`, 0 = north, clockwise, in [0, 360). */
-export function bearingOf(a: Vec, b: Vec): number {
+export function bearingOf(a: Vec, b: Vec): Degrees {
   const deg = (Math.atan2(b.x - a.x, b.y - a.y) * 180) / Math.PI;
-  return (deg + 360) % 360;
+  return ((deg + 360) % 360) as Degrees;
 }
 
 /** Signed change of heading from `inDeg` to `outDeg`, in (-180, 180]. Positive turns right. */
-export function signedTurn(inDeg: number, outDeg: number): number {
+export function signedTurn(inDeg: Degrees, outDeg: Degrees): Degrees {
   let d = (outDeg - inDeg) % 360;
   if (d <= -180) d += 360;
   if (d > 180) d -= 360;
-  return d;
+  return d as Degrees;
 }
 
 /** Closest point to `p` on segment `ab`, with how far along it (0..1) and how far away. */

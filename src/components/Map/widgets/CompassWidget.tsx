@@ -1,19 +1,11 @@
 import { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { formatHeading } from '@/lib/utils/format';
 import { metersToFeet } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
 import { type AltitudeUnit, type Translate, formatAltitude } from '@/lib/utils/units';
 import { useMapStore } from '@/stores/mapStore';
 import { useSettingsStore } from '@/stores/settingsStore';
-
-/**
- * Map MapLibre's signed bearing (-180..180) to a 3-digit aviation heading
- * string ('000'..'359'). Exported for unit tests.
- */
-export function formatHeading(mapBearing: number): string {
-  const normalized = ((Math.round(mapBearing) % 360) + 360) % 360;
-  return normalized.toString().padStart(3, '0');
-}
 
 /**
  * Format the cursor elevation (sourced in metres) in the user's altitude

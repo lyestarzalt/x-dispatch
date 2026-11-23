@@ -16,6 +16,7 @@ import type {
   ResolvedProcedureWaypoint,
   Waypoint,
 } from '@/types/navigation';
+import type { NauticalMiles } from '@/types/units';
 
 // Re-export types for backward compatibility
 export type {
@@ -42,7 +43,7 @@ export interface ResolverOptions {
   airportLat?: number;
   airportLon?: number;
   /** Maximum distance in nm for fallback matching (default: 500nm) */
-  maxFallbackDistanceNm?: number;
+  maxFallbackDistanceNm?: NauticalMiles;
 }
 
 /**

@@ -5,8 +5,9 @@ import { reactErrorHandler, init as reactInit } from '@sentry/react';
 import { scrubEventPaths } from '@/lib/sentry/scrubPaths';
 import { initSentryContext } from '@/lib/sentry/sentryContext';
 import { TRANSIENT_NET_ERROR_PATTERN } from '@/lib/sentry/transientNetErrors';
-import { BRIDGE_CALL_TIMEOUT_MS, withTimeout } from '@/lib/startup/startupFallback';
+import { BRIDGE_CALL_TIMEOUT_MS } from '@/lib/startup/startupFallback';
 import { showStartupFailure } from '@/lib/startup/startupPage';
+import { withTimeout } from '@/lib/utils/async';
 
 /** The detached flight strip is the same renderer opened with ?view=flight-strip. */
 const isFlightStripView =

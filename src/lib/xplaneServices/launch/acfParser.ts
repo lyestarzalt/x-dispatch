@@ -1,35 +1,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { mapWithConcurrency } from '@/lib/utils/async';
+import { isDirEntry, isFileEntry } from '@/lib/utils/fsEntries';
 import logger from '@/lib/utils/logger';
 import type { Aircraft, Livery } from '@/types/aircraft';
 
 /** Parallel .acf reads; the files are large, so a small pool overlaps disk
  * I/O without holding many multi-MB strings in memory at once. */
 const PARSE_CONCURRENCY = 4;
-
-async function isDirEntry(entry: fs.Dirent, parentPath: string): Promise<boolean> {
-  if (entry.isDirectory()) return true;
-  if (entry.isSymbolicLink()) {
-    try {
-      return (await fs.promises.stat(path.join(parentPath, entry.name))).isDirectory();
-    } catch {
-      return false;
-    }
-  }
-  return false;
-}
-
-async function isFileEntry(entry: fs.Dirent, parentPath: string): Promise<boolean> {
-  if (entry.isFile()) return true;
-  if (entry.isSymbolicLink()) {
-    try {
-      return (await fs.promises.stat(path.join(parentPath, entry.name))).isFile();
-    } catch {
-      return false;
-    }
-  }
-  return false;
-}
 
 async function fileExists(filePath: string): Promise<boolean> {
   try {
@@ -38,22 +16,6 @@ async function fileExists(filePath: string): Promise<boolean> {
   } catch {
     return false;
   }
-}
-
-async function mapWithConcurrency<T, R>(
-  items: T[],
-  limit: number,
-  fn: (item: T) => Promise<R>
-): Promise<R[]> {
-  const results = new Array<R>(items.length);
-  let next = 0;
-  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
-    for (let i = next++; i < items.length; i = next++) {
-      results[i] = await fn(items[i]!);
-    }
-  });
-  await Promise.all(workers);
-  return results;
 }
 
 /** Safely read a numeric property, returning 0 if missing or NaN */

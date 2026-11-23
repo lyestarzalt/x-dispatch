@@ -1,4 +1,6 @@
+import { KNOTS_PER_MPS } from '@/lib/utils/units/constants';
 import { type FlareGrade, type LandingReport, landingRating } from '@/types/flightRecorder';
+import type { FeetPerMinute, Meters } from '@/types/units';
 import type { SimFrame } from './frames';
 
 /**
@@ -22,13 +24,12 @@ const PEAK_G_WINDOW_S = 1;
 const BOUNCE_WINDOW_S = 2;
 const CLOSE_AFTER_S = 3;
 const MS_TO_FPM = 196.8504;
-const MS_TO_KT = 1.94384;
 
 type DetectorState = 'standby' | 'armed' | 'contact' | 'rollout';
 
 interface WindowSample {
   t: number;
-  aglM: number;
+  aglM: Meters;
 }
 
 export function flareGrade(pitchRateDegSec: number): FlareGrade {
@@ -40,7 +41,7 @@ export function flareGrade(pitchRateDegSec: number): FlareGrade {
 }
 
 /** Least-squares slope of height over time, in feet per minute. */
-export function descentRateFpm(samples: readonly WindowSample[]): number | null {
+export function descentRateFpm(samples: readonly WindowSample[]): FeetPerMinute | null {
   if (samples.length < 2) return null;
   const n = samples.length;
   let sumT = 0;
@@ -59,7 +60,7 @@ export function descentRateFpm(samples: readonly WindowSample[]): number | null 
     den += dt * dt;
   }
   if (den === 0) return null;
-  return (num / den) * MS_TO_FPM;
+  return ((num / den) * MS_TO_FPM) as FeetPerMinute;
 }
 
 export class LandingDetector {
@@ -180,7 +181,7 @@ export class LandingDetector {
       lat: frame.lat,
       lon: frame.lon,
       headingDeg: frame.headingDeg,
-      groundspeedKt: frame.groundspeedMs * MS_TO_KT,
+      groundspeedKt: frame.groundspeedMs * KNOTS_PER_MPS,
       touchdownRateFpm,
       indicatedRateFpm: Math.round(lastAirborne?.vsFpm ?? frame.vsFpm),
       peakG: frame.gNormal,

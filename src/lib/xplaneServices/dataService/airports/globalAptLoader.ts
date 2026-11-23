@@ -6,10 +6,10 @@
  * Location: X-Plane 12/Global Scenery/Global Airports/Earth nav data/apt.dat
  */
 import * as fs from 'fs';
+import { getFileMtime } from '@/lib/utils/fsEntries';
 import logger from '@/lib/utils/logger';
 import { getAptDataPath } from '../paths';
 import type { AirportProgressCallback, AptFileInfo, ParsedAirportEntry } from '../types';
-import { getFileMtime } from './airportCache';
 import { scanAptFile } from './airportScanner';
 
 export interface GlobalAptLoadResult {

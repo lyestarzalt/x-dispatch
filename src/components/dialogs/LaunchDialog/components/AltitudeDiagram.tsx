@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
+import type { Feet } from '@/types/units';
 import type { CloudLayer, WindLayer } from '../weatherTypes';
 import { CLOUD_TYPE_LABELS, getCoverageCategory } from '../weatherTypes';
 
@@ -12,7 +13,7 @@ export interface SelectedLayer {
 interface AltitudeDiagramProps {
   clouds: CloudLayer[];
   wind: WindLayer[];
-  airportElevationFt?: number;
+  airportElevationFt?: Feet;
   selectedLayer: SelectedLayer | null;
   onSelectLayer: (sel: SelectedLayer | null) => void;
   onUpdateCloud: (index: number, data: Partial<CloudLayer>) => void;

@@ -5,6 +5,7 @@
  */
 import { type LatLon, greatCircleNm } from '@/lib/flightplan/builder/geometry';
 import type { NetworkPilot } from '@/types/networkTraffic';
+import type { NauticalMiles } from '@/types/units';
 
 export type FlightPhase =
   | 'departing'
@@ -19,9 +20,9 @@ export type FlightPhase =
 export interface FlightProgress {
   phase: FlightPhase;
   /** Distance flown from the departure airport, when it is known. */
-  flownNm: number | null;
+  flownNm: NauticalMiles | null;
   /** Distance left to the arrival airport, when it is known. */
-  remainingNm: number | null;
+  remainingNm: NauticalMiles | null;
   /** 0..100 along the city pair; null until both airports are known. */
   percent: number | null;
 }
@@ -48,7 +49,11 @@ export function flightProgress(
   return { phase: phaseOf(pilot, flownNm, remainingNm), flownNm, remainingNm, percent };
 }
 
-function phaseOf(pilot: NetworkPilot, flownNm: number | null, remainingNm: number | null) {
+function phaseOf(
+  pilot: NetworkPilot,
+  flownNm: NauticalMiles | null,
+  remainingNm: NauticalMiles | null
+) {
   if (pilot.onGround) {
     if (remainingNm !== null && remainingNm < AT_AIRPORT_NM) return 'arrived';
     if (flownNm !== null && flownNm < AT_AIRPORT_NM) return 'departing';

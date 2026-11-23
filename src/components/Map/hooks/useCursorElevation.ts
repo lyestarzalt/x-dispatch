@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import type * as maplibregl from 'maplibre-gl';
 import { useMapStore } from '@/stores/mapStore';
+import type { Meters } from '@/types/units';
 import type { MapRef } from './useMapSetup';
 
 export type { CursorElevation } from '@/stores/mapStore';
@@ -29,7 +30,7 @@ export function useCursorElevation(mapRef: MapRef): void {
     // recompute runs per mousemove and per map frame — skip the store write
     // (which fans out through the persist middleware) when nothing changed.
     let last = useMapStore.getState().cursorElevation;
-    const publish = (next: { supported: boolean; valueM: number | null }) => {
+    const publish = (next: { supported: boolean; valueM: Meters | null }) => {
       if (next.supported === last.supported && next.valueM === last.valueM) return;
       last = next;
       setCursorElevation(next);

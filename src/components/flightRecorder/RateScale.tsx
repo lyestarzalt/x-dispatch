@@ -1,6 +1,7 @@
 import { RATING_BG_CLASS } from '@/lib/flightRecorder/format';
 import { cn } from '@/lib/utils/helpers';
 import type { LandingRating } from '@/types/flightRecorder';
+import type { FeetPerMinute } from '@/types/units';
 
 interface Band {
   rating: LandingRating;
@@ -23,7 +24,7 @@ function position(fpm: number): number {
 }
 
 interface RateScaleProps {
-  touchdownRateFpm: number;
+  touchdownRateFpm: FeetPerMinute;
   rating: LandingRating;
   /** Hides the threshold labels under the bar. */
   compact?: boolean;

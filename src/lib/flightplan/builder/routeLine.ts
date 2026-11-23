@@ -6,6 +6,7 @@
  * straight final onto the arrival threshold. No fly-by arcs are ever invented.
  */
 import type { RunwayEnd } from '@/types/fms';
+import type { NauticalMiles } from '@/types/units';
 import { type LatLon, destinationPoint, unwrapLongitude } from './geometry';
 import { NAT_TRACK_RE } from './routeTokens';
 
@@ -82,7 +83,7 @@ function appendDeduped(line: LatLon[], points: LatLon[]): void {
 export function routeLineSegments(
   waypoints: RoutePoint[],
   ends?: RunwayEnds,
-  initialClimbNm?: number,
+  initialClimbNm?: NauticalMiles,
   procedurePaths?: ProcedurePathHint[]
 ): RouteLineSegment[] {
   const hintByVia = new Map((procedurePaths ?? []).map((p) => [p.via, p]));
@@ -165,7 +166,7 @@ export function routeLineSegments(
 export function routeLinePoints(
   waypoints: RoutePoint[],
   ends?: RunwayEnds,
-  initialClimbNm?: number,
+  initialClimbNm?: NauticalMiles,
   procedurePaths?: ProcedurePathHint[]
 ): LatLon[] {
   const line: LatLon[] = [];

@@ -1,12 +1,13 @@
 import type { TaxiEdge } from '@/types/apt';
+import type { Meters, TrueDegrees } from '@/types/units';
 
 /** Adjacency list entry — one neighbor reachable from a node */
 export interface GraphEdge {
   toNodeId: number;
   /** Distance in metres (haversine between the two nodes) */
-  distance: number;
+  distance: Meters;
   /** True bearing of travel along this edge in degrees, NaN when its two nodes coincide */
-  bearing: number;
+  bearing: TrueDegrees;
   /** Reference to the original TaxiEdge for metadata access */
   edge: TaxiEdge;
 }
@@ -38,7 +39,7 @@ export interface PathResult {
   /** Where the route leaves the network for its stand, after the last node. */
   to?: StandLink;
   /** Total distance in metres */
-  totalDistance: number;
+  totalDistance: Meters;
   /** Taxiway names traversed in order (may have duplicates for consecutive edges on same taxiway) */
   taxiwayNames: string[];
 }

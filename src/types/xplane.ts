@@ -1,3 +1,14 @@
+import type {
+  Degrees,
+  Feet,
+  FeetPerMinute,
+  Kilograms,
+  Knots,
+  MagneticDegrees,
+  Meters,
+  Seconds,
+  TrueDegrees,
+} from '@/types/units';
 import type { Coordinates } from './geo';
 
 /**
@@ -22,18 +33,18 @@ export type AircraftCategory =
   | 'vtol';
 
 export interface PlaneState extends Coordinates {
-  altitudeMSL: number;
-  altitudeAGL: number;
-  heading: number;
-  pitch: number;
-  roll: number;
-  groundspeed: number;
-  indicatedAirspeed: number;
-  trueAirspeed: number;
-  verticalSpeed: number;
+  altitudeMSL: Feet;
+  altitudeAGL: Feet;
+  heading: TrueDegrees;
+  pitch: Degrees;
+  roll: Degrees;
+  groundspeed: Knots;
+  indicatedAirspeed: Knots;
+  trueAirspeed: Knots;
+  verticalSpeed: FeetPerMinute;
   mach: number;
-  windDirection: number;
-  windSpeed: number;
+  windDirection: Degrees;
+  windSpeed: Knots;
   oat: number;
   throttle: number;
   flaps: number;
@@ -44,18 +55,18 @@ export interface PlaneState extends Coordinates {
   gForceAxial: number;
   gForceSide: number;
   /** Autopilot dial settings. Absent until the first sample arrives. */
-  apAltitude?: number;
-  apHeading?: number;
+  apAltitude?: Feet;
+  apHeading?: MagneticDegrees;
   /** Knots, or Mach when apAirspeedIsMach is set. */
   apAirspeed?: number;
   apAirspeedIsMach?: boolean;
-  apVerticalSpeed?: number;
+  apVerticalSpeed?: FeetPerMinute;
   /** NAV1 OBS course, degrees magnetic. */
-  nav1Course?: number;
+  nav1Course?: MagneticDegrees;
   /** Ground track, degrees magnetic. */
-  groundTrack?: number;
+  groundTrack?: MagneticDegrees;
   /** Heading in degrees magnetic, as the autopilot dial and the strip read it; `heading` stays true for the map. */
-  magneticHeading?: number;
+  magneticHeading?: MagneticDegrees;
   /** COM1 active and standby frequencies in kHz, so 118805 is 118.805 MHz. */
   com1Frequency?: number;
   com1StandbyFrequency?: number;
@@ -63,33 +74,33 @@ export interface PlaneState extends Coordinates {
   baroSettingInHg?: number;
   aircraftCategory: AircraftCategory | null;
   /** Simulator clock: seconds since midnight UTC. Absent until the first sample arrives. */
-  simZuluTimeSec?: number;
+  simZuluTimeSec?: Seconds;
   /** Simulator clock: zero-based day of the year. */
   simDayOfYear?: number;
   /** Any wheel in contact with the ground. */
   onGround?: boolean;
-  fuelKg?: number;
+  fuelKg?: Kilograms;
   /** ICAO type designator from the aircraft file, for example B77W. Empty when the author left it blank. */
   icaoType?: string;
   aircraftName?: string;
   tailNumber?: string;
   /** Full wingspan in metres, twice the model's half extent. */
-  wingspanM?: number;
+  wingspanM?: Meters;
 }
 
 export interface PlanePosition {
   lat: number;
   lng: number;
-  altitude: number;
-  altitudeAGL: number;
-  heading: number;
-  groundspeed: number;
+  altitude: Feet;
+  altitudeAGL: Feet;
+  heading: TrueDegrees;
+  groundspeed: Knots;
   aircraftCategory: AircraftCategory | null;
   icaoType: string;
   tailNumber: string;
-  wingspanM: number | null;
+  wingspanM: Meters | null;
   /** Feet per minute, positive climbing. */
-  verticalSpeed: number;
+  verticalSpeed: FeetPerMinute;
 }
 
 export interface XPlaneAPIResult {

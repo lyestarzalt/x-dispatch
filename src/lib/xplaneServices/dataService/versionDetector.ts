@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import logger from '@/lib/utils/logger';
 import { getXPlaneExecutable } from '../launch/freeflightGenerator';
+import { isSteamInstallation } from '../steamInstall';
 
 export interface XPlaneVersionInfo {
   /** Full version string, e.g. "12.4.0-r2-9b69b91a" */
@@ -63,14 +64,6 @@ export function isVersionAtLeast(
   if (v.major !== major) return v.major > major;
   if (v.minor !== minor) return v.minor > minor;
   return v.patch >= patch;
-}
-
-/**
- * Check if the X-Plane installation is from Steam
- */
-function isSteamInstallation(xplanePath: string): boolean {
-  if (xplanePath.toLowerCase().includes('steamapps')) return true;
-  return fs.existsSync(path.join(xplanePath, 'steam_appid.txt'));
 }
 
 /**

@@ -1,3 +1,5 @@
+import type { NauticalMiles } from '@/types/units';
+
 /**
  * Geographic bounding boxes for radius queries.
  */
@@ -20,7 +22,7 @@ export interface GeoBounds {
  * Callers still filter the result by true distance; the box only has to be
  * a superset of the circle.
  */
-export function boundsAroundPoint(lat: number, lon: number, radiusNm: number): GeoBounds {
+export function boundsAroundPoint(lat: number, lon: number, radiusNm: NauticalMiles): GeoBounds {
   const latBuffer = radiusNm / 60;
   const cosLat = Math.cos((lat * Math.PI) / 180);
   const lonBuffer = cosLat > 1e-6 ? Math.min(180, latBuffer / cosLat) : 180;

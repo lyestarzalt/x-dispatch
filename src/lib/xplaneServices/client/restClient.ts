@@ -6,6 +6,7 @@
  *
  * Types are from the generated OpenAPI client at ./generated/xplaneApi.ts
  */
+import { sleep } from '@/lib/utils/async';
 import { errorMessage } from '@/lib/utils/errors';
 import { validateNewFlight } from '../launch/flightInit/schema';
 import type { FlightInit } from './generated/xplaneApi';
@@ -93,8 +94,6 @@ export function describeFetchFailure(err: unknown): string {
   }
   return errorMessage(err);
 }
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * X-Plane answers a refused flight with `{ error_code, error_message }`. Keep

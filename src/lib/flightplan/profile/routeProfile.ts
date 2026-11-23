@@ -10,6 +10,7 @@ import type { LatLon } from '@/lib/flightplan/builder/geometry';
 import { bearingDeg, destinationPoint, greatCircleNm } from '@/lib/flightplan/builder/geometry';
 import type { RangeRingCategory } from '@/types/layers';
 import type { AltitudeConstraint } from '@/types/navigation';
+import type { Feet, Knots, NauticalMiles } from '@/types/units';
 
 export interface ProfileWaypointInput extends LatLon {
   id: string;
@@ -19,16 +20,16 @@ export interface ProfileWaypointInput extends LatLon {
   /** Published altitude restriction, feet. */
   constraint?: AltitudeConstraint | null;
   /** Field elevation for the departure and destination airports, feet. */
-  elevationFt?: number;
+  elevationFt?: Feet;
 }
 
 /** Climb and descent gradients plus speeds for a class of aircraft. */
 export interface ProfilePerformance {
   climbFtPerNm: number;
   descentFtPerNm: number;
-  climbKt: number;
-  cruiseKt: number;
-  descentKt: number;
+  climbKt: Knots;
+  cruiseKt: Knots;
+  descentKt: Knots;
 }
 
 /**
@@ -51,8 +52,8 @@ export type ProfileStage = 'CLB' | 'CRZ' | 'DSC';
 export type ProfileError = 'tooShort' | 'cruiseTooLow' | 'cruiseNotReached';
 
 export interface ProfilePoint extends LatLon {
-  distanceNm: number;
-  altitudeFt: number;
+  distanceNm: NauticalMiles;
+  altitudeFt: Feet;
   ident: string;
   stage: ProfileStage;
   isTopOfClimb: boolean;
@@ -64,12 +65,12 @@ export interface ProfilePoint extends LatLon {
 export interface RouteProfile {
   points: ProfilePoint[];
   /** Planned altitude at each input waypoint, feet. */
-  altitudesFt: number[];
+  altitudesFt: Feet[];
   /** Cumulative distance to each input waypoint, NM. */
-  distancesNm: number[];
-  tocDistanceNm: number | null;
-  todDistanceNm: number | null;
-  totalDistanceNm: number;
+  distancesNm: NauticalMiles[];
+  tocDistanceNm: NauticalMiles | null;
+  todDistanceNm: NauticalMiles | null;
+  totalDistanceNm: NauticalMiles;
   cruiseReached: boolean;
   errors: ProfileError[];
 }
@@ -81,7 +82,7 @@ const GROUND_BUFFER_FT = 1000;
 const ROUND_BUFFER_FT = 500;
 
 /** A restriction applied to a computed altitude, the way the reference's profile does it. */
-function applyRestriction(altitudeFt: number, c: AltitudeConstraint | null | undefined): number {
+function applyRestriction(altitudeFt: Feet, c: AltitudeConstraint | null | undefined): number {
   if (!c || c.altitude1 === null) return altitudeFt;
   switch (c.descriptor) {
     case '@':
@@ -114,11 +115,11 @@ function interpolate(a: LatLon, b: LatLon, fraction: number): LatLon {
 
 export function computeRouteProfile(
   waypoints: ProfileWaypointInput[],
-  cruiseAltitudeFt: number,
+  cruiseAltitudeFt: Feet,
   perf: ProfilePerformance
 ): RouteProfile {
   const n = waypoints.length;
-  const distancesNm: number[] = [];
+  const distancesNm: NauticalMiles[] = [];
   let total = 0;
   for (let i = 0; i < n; i++) {
     if (i > 0) total += greatCircleNm(waypoints[i - 1]!, waypoints[i]!);
@@ -292,14 +293,15 @@ export function computeRouteProfile(
 }
 
 /** Highest terrain plus the ground buffer, rounded up to the next 500 ft. */
-export function safeAltitudeFt(maxElevationFt: number): number {
-  return Math.ceil((maxElevationFt + GROUND_BUFFER_FT) / ROUND_BUFFER_FT) * ROUND_BUFFER_FT;
+export function safeAltitudeFt(maxElevationFt: Feet): Feet {
+  return (Math.ceil((maxElevationFt + GROUND_BUFFER_FT) / ROUND_BUFFER_FT) *
+    ROUND_BUFFER_FT) as Feet;
 }
 
 /** Safe altitude per leg from the highest terrain under each, and the route's minimum. */
 export function legSafeAltitudes(maxElevationPerLegFt: number[]): {
-  perLegFt: number[];
-  routeFt: number | null;
+  perLegFt: Feet[];
+  routeFt: Feet | null;
 } {
   const perLegFt = maxElevationPerLegFt.map(safeAltitudeFt);
   return { perLegFt, routeFt: perLegFt.length > 0 ? Math.max(...perLegFt) : null };

@@ -1,3 +1,5 @@
+import { HPA_PER_INHG } from '@/lib/utils/units/constants';
+
 // ─── Weather Configuration Types ─────────────────────────────────────────────
 
 export interface WeatherConfig {
@@ -121,11 +123,11 @@ export function getCategoryMidpoint(cat: CoverageCategory): number {
 // ─── Unit Conversion Helpers ────────────────────────────────────────────────
 
 export function hpaToInHg(hpa: number): number {
-  return hpa * 0.02953;
+  return hpa / HPA_PER_INHG;
 }
 
 export function inHgToHpa(inHg: number): number {
-  return inHg / 0.02953;
+  return inHg * HPA_PER_INHG;
 }
 
 export function celsiusToFahrenheit(c: number): number {

@@ -19,6 +19,7 @@ import { bearingDeg } from '@/lib/flightplan/builder/geometry';
 import '@/lib/map/maplibreWorker';
 import { AirportParser } from '@/lib/parsers/apt';
 import { type GuidanceRoute, createGuidanceTracker } from '@/lib/taxiGuidance';
+import { signedAngleDelta } from '@/lib/utils/math';
 import { usePlaneStore } from '@/stores/planeStore';
 import { guidanceRoutes, useTaxiGuidanceStore } from '@/stores/taxiGuidanceStore';
 
@@ -55,7 +56,7 @@ interface Pose {
 }
 
 function lerpPose(a: Pose, b: Pose, t: number): Pose {
-  const turn = ((((b.heading - a.heading) % 360) + 540) % 360) - 180;
+  const turn = signedAngleDelta(a.heading, b.heading);
   return {
     lon: a.lon + (b.lon - a.lon) * t,
     lat: a.lat + (b.lat - a.lat) * t,

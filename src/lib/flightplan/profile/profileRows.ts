@@ -4,6 +4,7 @@
  * points get the ground height interpolated from the terrain, and every row carries the safe
  * altitude of the leg it lies on.
  */
+import type { Feet, NauticalMiles } from '@/types/units';
 import type { ProfilePoint, RouteProfile } from './routeProfile';
 import type { TerrainSample } from './terrainSampler';
 
@@ -36,7 +37,7 @@ function interpolateSeries(xs: number[], ys: number[], x: number): number | null
 }
 
 /** Index of the leg (between input waypoints) a distance lies on. */
-function legIndexAt(distancesNm: number[], d: number): number {
+function legIndexAt(distancesNm: NauticalMiles[], d: number): number {
   for (let i = 1; i < distancesNm.length; i++) if (d <= distancesNm[i]!) return i - 1;
   return Math.max(0, distancesNm.length - 2);
 }
@@ -44,7 +45,7 @@ function legIndexAt(distancesNm: number[], d: number): number {
 export function buildProfileRows(
   profile: RouteProfile,
   terrain: TerrainSample[] | undefined,
-  legSafeFt: number[] | undefined
+  legSafeFt: Feet[] | undefined
 ): ProfileChartRow[] {
   const pts: ProfilePoint[] = profile.points;
   const px = pts.map((p) => p.distanceNm);

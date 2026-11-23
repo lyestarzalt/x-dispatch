@@ -4,10 +4,12 @@
  * edits and apply the others'. The last edit wins.
  */
 import type { PlanEndpoint } from '@/lib/flightplan/builder/types';
+import { isRecord } from '@/lib/utils/typeGuards';
 import type { FlightPlanEndpoint, FlightPlanWaypoint } from '@/stores/flightPlanStore';
 import type { EnrichedFlightPlan } from '@/types/fms';
 import type { RangeRingCategory } from '@/types/layers';
 import type { SimBriefOFP } from '@/types/simbrief';
+import type { Feet } from '@/types/units';
 
 /** What the map draws: a SimBrief OFP, a .fms file or the planner's hand-off. */
 export interface MapPlanSnapshot {
@@ -28,7 +30,7 @@ export interface DraftSnapshot {
   alternate: PlanEndpoint | null;
   aircraftClass: RangeRingCategory | null;
   routeText: string;
-  cruiseAltitudeFt: number | null;
+  cruiseAltitudeFt: Feet | null;
 }
 
 export interface SharedPlanDoc {
@@ -51,10 +53,6 @@ export function sameSnapshot<T extends object>(a: T, b: T): boolean {
   return keys.every(
     (key) => a[key] === b[key] || JSON.stringify(a[key]) === JSON.stringify(b[key])
   );
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 /** IPC input is untrusted: the shape main needs before it stores and relays a document. */

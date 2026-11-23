@@ -2,6 +2,7 @@
  * Airport Types - apt.dat parsing types
  * All types related to X-Plane airport data format
  */
+import type { Feet, Meters, TrueDegrees } from '@/types/units';
 import type { Coordinates, LonLatPath, LonLatPolygon } from './geo';
 
 // ============================================================================
@@ -247,8 +248,8 @@ export interface LinearFeature {
 
 export interface RunwayEnd extends Coordinates {
   name: string;
-  dthr_length: number;
-  overrun_length: number;
+  dthr_length: Meters;
+  overrun_length: Meters;
   marking: RunwayMarking;
   lighting: ApproachLighting;
   tdz_lighting: boolean;
@@ -256,10 +257,10 @@ export interface RunwayEnd extends Coordinates {
 }
 
 export interface Runway {
-  width: number;
+  width: Meters;
   surface_type: SurfaceType;
   shoulder_surface_type: ShoulderSurfaceType;
-  shoulder_width: number;
+  shoulder_width: Meters;
   smoothness: number;
   centerline_lights: boolean;
   edge_lights: boolean;
@@ -279,7 +280,7 @@ export interface WaterRunwayEnd extends Coordinates {
 
 /** Water runway (row code 101): a lane on a lake or bay, no markings or lights. */
 export interface WaterRunway {
-  width: number;
+  width: Meters;
   /** Buoys mark the lane perimeter. */
   perimeter_buoys: boolean;
   ends: [WaterRunwayEnd, WaterRunwayEnd];
@@ -292,7 +293,7 @@ export interface WaterRunway {
 }
 
 export interface StartupLocation extends Coordinates {
-  heading: number;
+  heading: TrueDegrees;
   location_type: string;
   airplane_types: string;
   name: string;
@@ -311,7 +312,7 @@ export interface Windsock extends Coordinates {
 }
 
 export interface Sign extends Coordinates {
-  heading: number;
+  heading: TrueDegrees;
   size: SignSize;
   text: string;
 }
@@ -351,9 +352,9 @@ export interface Beacon extends Coordinates {
 
 export interface Helipad extends Coordinates {
   name: string;
-  heading: number;
-  length: number;
-  width: number;
+  heading: TrueDegrees;
+  length: Meters;
+  width: Meters;
   surface_type: SurfaceType;
   /**
    * Position among the runway-type starts (land runways, water runways and
@@ -428,7 +429,7 @@ export interface TruckEdge {
 export interface TruckParking {
   latitude: number;
   longitude: number;
-  heading: number;
+  heading: TrueDegrees;
   type: string;
   /** 0–10 for baggage_train, 0 otherwise */
   extra: number;
@@ -440,7 +441,7 @@ export interface TruckParking {
 export interface TruckDestination {
   latitude: number;
   longitude: number;
-  heading: number;
+  heading: TrueDegrees;
   /** Pipe-separated types in raw data, stored as array */
   types: string[];
   /** Name of destination */
@@ -464,7 +465,7 @@ export interface ParsedAirport {
   name: string;
   latitude: number;
   longitude: number;
-  elevation: number;
+  elevation: Feet;
   metadata: Record<string, string>;
   runways: Runway[];
   waterRunways: WaterRunway[];

@@ -1,10 +1,12 @@
+import type { Degrees } from '@/types/units';
+
 export interface Coordinates {
   latitude: number;
   longitude: number;
 }
 
 export interface Position extends Coordinates {
-  heading?: number;
+  heading?: Degrees;
 }
 
 export interface NamedPosition extends Position {

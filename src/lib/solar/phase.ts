@@ -9,6 +9,7 @@
 import * as SunCalc from 'suncalc';
 import { sunPosition } from '@/lib/map/solar/solarPosition';
 import { haversineDistance } from '@/lib/utils/geomath';
+import type { Degrees } from '@/types/units';
 
 export type LightPhase = 'day' | 'civil' | 'nautical' | 'astro' | 'night';
 
@@ -39,7 +40,7 @@ const MIN_MS = 60_000;
 const RAD = Math.PI / 180;
 const DEG = 180 / Math.PI;
 
-export function phaseForAltitude(altitudeDeg: number): LightPhase {
+export function phaseForAltitude(altitudeDeg: Degrees): LightPhase {
   if (altitudeDeg > 0) return 'day';
   if (altitudeDeg > TWILIGHT_ALTITUDE.civil) return 'civil';
   if (altitudeDeg > TWILIGHT_ALTITUDE.nautical) return 'nautical';
@@ -47,8 +48,8 @@ export function phaseForAltitude(altitudeDeg: number): LightPhase {
   return 'night';
 }
 
-export function sunAltitudeAt(timeMs: number, lat: number, lon: number): number {
-  return sunPosition(timeMs, lat, lon).altitude;
+export function sunAltitudeAt(timeMs: number, lat: number, lon: number): Degrees {
+  return sunPosition(timeMs, lat, lon).altitude as Degrees;
 }
 
 export function phaseAt(timeMs: number, lat: number, lon: number): LightPhase {

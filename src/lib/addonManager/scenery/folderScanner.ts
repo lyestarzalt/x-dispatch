@@ -1,6 +1,7 @@
 // src/lib/addonManager/scenery/folderScanner.ts
 import * as fs from 'fs';
 import * as path from 'path';
+import { isFileEntry } from '@/lib/utils/fsEntries';
 import { parseDsfHeader } from '../core/dsfParser';
 import { type SceneryClassification, createDefaultClassification } from '../core/types';
 import { readAptIdents } from './aptIdents';
@@ -20,22 +21,6 @@ async function isDirectoryEntry(entry: fs.Dirent, parentPath: string): Promise<b
   if (entry.isSymbolicLink()) {
     try {
       return (await fs.promises.stat(path.join(parentPath, entry.name))).isDirectory();
-    } catch {
-      return false;
-    }
-  }
-  return false;
-}
-
-/**
- * Symlink-aware file check.
- * Follows symlinks via stat fallback.
- */
-async function isFileEntry(entry: fs.Dirent, parentPath: string): Promise<boolean> {
-  if (entry.isFile()) return true;
-  if (entry.isSymbolicLink()) {
-    try {
-      return (await fs.promises.stat(path.join(parentPath, entry.name))).isFile();
     } catch {
       return false;
     }

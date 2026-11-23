@@ -9,6 +9,7 @@
  */
 import type { RunwayEnd } from '@/types/fms';
 import type { AirportProcedures } from '@/types/navigation';
+import type { Feet } from '@/types/units';
 import { bearingDeg, greatCircleNm } from './geometry';
 import { approachRunway } from './procedures';
 
@@ -104,7 +105,7 @@ export function runwayEndsFromAirport(airport: {
 
 export function runwayEndsFromApt(aptText: string): RunwayEnd[] {
   const ends = new Map<string, RunwayEnd>();
-  let elevationFt: number | undefined;
+  let elevationFt: Feet | undefined;
   for (const rawLine of aptText.split(/\r?\n/)) {
     const line = rawLine.trim();
     if (line.startsWith(`${AIRPORT_HEADER_ROW} `)) {

@@ -1,8 +1,9 @@
+import { METERS_PER_FOOT } from './constants';
 import type { FeetPerMinute, Translate, VerticalSpeedUnit } from './types';
 
 // fpm -> m/s: feet-per-minute to meters-per-second. Matches littlenavmap's
 // `speedVertFpmOther` (feetToMeter(fpm) / 60) — see the spec's Source references.
-const METERS_PER_SEC_PER_FPM = 0.3048 / 60;
+const METERS_PER_SEC_PER_FPM = METERS_PER_FOOT / 60;
 
 const SUFFIX_KEY: Record<VerticalSpeedUnit, string> = {
   fpm: 'units.fpm',

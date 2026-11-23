@@ -1,3 +1,4 @@
+import { lerpHeading } from '@/lib/utils/math';
 import {
   TRACK_ALT,
   TRACK_GS,
@@ -87,11 +88,6 @@ export interface TrackSample {
   vs: number;
   /** Index of the point at or before the sampled time. */
   index: number;
-}
-
-function lerpHeading(a: number, b: number, f: number): number {
-  const delta = ((b - a + 540) % 360) - 180;
-  return (a + delta * f + 360) % 360;
 }
 
 /** Position along the track at wall-clock `tMs`, clamped to the ends. */

@@ -9,6 +9,7 @@ import {
   pickTargetOverlay,
 } from '@/lib/flightStrip/targetOverlays';
 import logger from '@/lib/utils/logger';
+import { FEET_PER_METER, KNOTS_PER_MPS } from '@/lib/utils/units/constants';
 import type { TrafficSnapshot, TrafficTarget } from '@/types/traffic';
 import { type AircraftCategory, PLANE_STATE_INTERVAL_MS, type PlaneState } from '@/types/xplane';
 import { XPLANE_WEB_API_PORT } from './port';
@@ -29,9 +30,6 @@ const PONG_TIMEOUT_MS = 20_000;
 // Grace period before clearing state after disconnect; long enough to ride out a stall
 // and a reconnect without the tracker vanishing from the map.
 const GRACE_PERIOD_MS = 30_000;
-
-const METERS_TO_FEET = 3.28084;
-const MPS_TO_KNOTS = 1.94384;
 
 const STATE_DATAREF_NAMES = [
   'sim/flightmodel/position/latitude',
@@ -660,12 +658,12 @@ export class XPlaneWebSocketClient {
           datarefName === 'sim/flightmodel/position/elevation' ||
           datarefName === 'sim/flightmodel/position/y_agl'
         ) {
-          convertedValue = value * METERS_TO_FEET;
+          convertedValue = value * FEET_PER_METER;
         } else if (
           datarefName === 'sim/flightmodel/position/groundspeed' ||
           datarefName === 'sim/weather/aircraft/wind_now_speed_msc'
         ) {
-          convertedValue = value * MPS_TO_KNOTS;
+          convertedValue = value * KNOTS_PER_MPS;
         }
         (this.currentState as Record<string, unknown>)[stateKey] = convertedValue;
       }
@@ -751,9 +749,9 @@ export class XPlaneWebSocketClient {
         icaoType: types[i] ?? '',
         latitude: la,
         longitude: lo,
-        altitudeFt: (ele[i] ?? 0) * METERS_TO_FEET,
+        altitudeFt: (ele[i] ?? 0) * FEET_PER_METER,
         headingDeg: psi[i] ?? 0,
-        groundspeedKt: (speed[i] ?? 0) * MPS_TO_KNOTS,
+        groundspeedKt: (speed[i] ?? 0) * KNOTS_PER_MPS,
         verticalSpeedFpm: vs[i] ?? 0,
       });
     }

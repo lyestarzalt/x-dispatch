@@ -8,7 +8,9 @@
 import * as maplibregl from 'maplibre-gl';
 import { labelFont } from '@/lib/map/labelFonts';
 import { destinationPoint, haversineDistance, nauticalMilesToMeters } from '@/lib/utils/geomath';
+import { METERS_PER_NM } from '@/lib/utils/units/constants';
 import type { RangeRingCategory } from '@/types/layers';
+import type { NauticalMiles } from '@/types/units';
 import { safeAddGeoJSONSource } from '../types';
 
 // ============================================================================
@@ -50,7 +52,7 @@ const ENTRANCE_MS = 450;
 function generateCircleCoords(
   lat: number,
   lon: number,
-  radiusNm: number,
+  radiusNm: NauticalMiles,
   steps = 128
 ): [number, number][] {
   const radiusMeters = nauticalMilesToMeters(radiusNm) as number;
@@ -77,7 +79,7 @@ function formatDuration(hours: number): string {
 function createBearingTicks(
   lat: number,
   lon: number,
-  radiusNm: number,
+  radiusNm: NauticalMiles,
   color: string
 ): GeoJSON.Feature[] {
   const radiusMeters = nauticalMilesToMeters(radiusNm) as number;
@@ -135,8 +137,6 @@ function createRingsGeoJSON(config: RangeRingsConfig, scale = 1): GeoJSON.Featur
 // ============================================================================
 // Interactive Ring Drag
 // ============================================================================
-
-const METERS_PER_NM = 1852;
 
 // Stored references to clean up all listeners
 let dragState: {

@@ -1,3 +1,4 @@
+import type { FeetPerMinute, Meters, Seconds } from '@/types/units';
 import type { SimFrame } from './frames';
 
 export const BASE_FRAME: SimFrame = {
@@ -31,10 +32,10 @@ export function frame(overrides: Partial<SimFrame>): SimFrame {
  * down to touchdown then `rolloutSec` seconds on the ground.
  */
 export function approachFrames(opts: {
-  descentFpm: number;
-  startAglM?: number;
+  descentFpm: FeetPerMinute;
+  startAglM?: Meters;
   hz?: number;
-  rolloutSec?: number;
+  rolloutSec?: Seconds;
   pitchRateAtContact?: number;
   peakG?: number;
   startSimT?: number;

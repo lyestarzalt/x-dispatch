@@ -39,6 +39,7 @@ import type {
 import { uuid } from '@/lib/utils/uuid';
 import { XPLANE_WEB_API_PORT } from '@/lib/xplaneServices/client/port';
 import type { LaunchEnvVar } from '@/lib/xplaneServices/launch/launchEnv';
+import type { NauticalMiles } from '@/types/units';
 
 export type FontSize = 'small' | 'medium' | 'large';
 
@@ -85,7 +86,7 @@ const DEFAULT_MAP_STYLE_URL =
   MAP_STYLE_PRESETS.find((s) => s.id === 'carto-dark')?.url ?? MAP_STYLE_PRESETS[0]?.url ?? '';
 
 export interface MapSettings {
-  navDataRadiusNm: number;
+  navDataRadiusNm: NauticalMiles;
   vatsimRefreshInterval: number;
   mapStyleUrl: string;
   /** User-added custom map styles, rendered alongside MAP_STYLE_PRESETS in the picker. */

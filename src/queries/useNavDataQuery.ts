@@ -1,5 +1,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import type { Airspace, Navaid, Waypoint } from '@/types/navigation';
+import type { NauticalMiles } from '@/types/units';
 
 // Local nav data (around airport)
 export interface NavigationData {
@@ -22,7 +23,11 @@ const navDataKeys = {
   airspaces: ['navData', 'airspaces', 'global'] as const,
 };
 
-async function fetchNavData(lat: number, lon: number, radiusNm: number): Promise<NavigationData> {
+async function fetchNavData(
+  lat: number,
+  lon: number,
+  radiusNm: NauticalMiles
+): Promise<NavigationData> {
   const [vors, ndbs, dmes, ils, gs, waypoints, airspaces] = await Promise.all([
     window.navAPI.getVORsInRadius(lat, lon, radiusNm),
     window.navAPI.getNDBsInRadius(lat, lon, radiusNm),
@@ -39,7 +44,7 @@ async function fetchNavData(lat: number, lon: number, radiusNm: number): Promise
 export function useNavDataQuery(
   lat: number | null,
   lon: number | null,
-  radiusNm: number = 50,
+  radiusNm: NauticalMiles = 50,
   enabled?: boolean
 ) {
   const hasCoords = lat !== null && lon !== null;

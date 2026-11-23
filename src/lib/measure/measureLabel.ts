@@ -1,4 +1,5 @@
-import type { Degrees, NauticalMiles } from '@/lib/utils/geomath';
+import { formatHeading } from '@/lib/utils/format';
+import type { NauticalMiles } from '@/lib/utils/geomath';
 import {
   type CourseMode,
   type DistanceUnit,
@@ -6,8 +7,9 @@ import {
   convertDistance,
   formatDistance,
 } from '@/lib/utils/units';
+import { METERS_PER_NM } from '@/lib/utils/units/constants';
+import type { TrueDegrees } from '@/types/units';
 
-const METERS_PER_NM = 1852;
 const FEET_PER_NM = 6076.11549;
 /** Below this many long units (NM or mi) the short unit is appended. */
 const SHORT_UNIT_BELOW = 3;
@@ -25,8 +27,8 @@ export interface MeasureSnap {
 }
 
 export interface MeasureGeometry {
-  initialTrue: Degrees;
-  finalTrue: Degrees;
+  initialTrue: TrueDegrees;
+  finalTrue: TrueDegrees;
   distanceNm: NauticalMiles;
   /** Variation applied at the start, east positive. */
   startVariation: number;
@@ -45,17 +47,14 @@ export interface MeasureLabelOptions {
   flipped: boolean;
 }
 
-const normalize360 = (deg: number): number => ((deg % 360) + 360) % 360;
-const pad3 = (deg: number): string => normalize360(Math.round(deg)).toString().padStart(3, '0');
-
 function courseLine(a: number, b: number, suffix: string, opts: MeasureLabelOptions): string {
-  const first = `${pad3(a)}°${suffix}`;
-  if (opts.placing || pad3(a) === pad3(b)) return first;
-  const second = `${pad3(b)}°${suffix}`;
+  const first = `${formatHeading(a)}°${suffix}`;
+  if (opts.placing || formatHeading(a) === formatHeading(b)) return first;
+  const second = `${formatHeading(b)}°${suffix}`;
   return opts.flipped ? `${second} \\ ${first}` : `${first} \\ ${second}`;
 }
 
-function shortDistance(nm: number, unit: 'ft' | 'm', t: Translate): string {
+function shortDistance(nm: NauticalMiles, unit: 'ft' | 'm', t: Translate): string {
   const value = Math.round(unit === 'ft' ? nm * FEET_PER_NM : nm * METERS_PER_NM);
   return `${value.toLocaleString()} ${t(unit === 'ft' ? 'units.ft' : 'units.m')}`;
 }
@@ -90,8 +89,8 @@ export function buildMeasureLabel(
   let trueLine = '';
   if (
     opts.courseMode === 'both' &&
-    pad3(initialMag) === pad3(g.initialTrue) &&
-    pad3(finalMag) === pad3(g.finalTrue)
+    formatHeading(initialMag) === formatHeading(g.initialTrue) &&
+    formatHeading(finalMag) === formatHeading(g.finalTrue)
   ) {
     magLine = courseLine(g.initialTrue, g.finalTrue, `${magSuffix}/${trueSuffix}`, opts);
   } else {
@@ -102,7 +101,9 @@ export function buildMeasureLabel(
 
   const label = g.snap?.label ?? '';
   const radial =
-    g.snap && (g.snap.kind === 'vor' || g.snap.kind === 'ndb') ? `R${pad3(initialMag)}` : '';
+    g.snap && (g.snap.kind === 'vor' || g.snap.kind === 'ndb')
+      ? `R${formatHeading(initialMag)}`
+      : '';
   const dist = distanceText(g.distanceNm, opts, t);
 
   // A single course line always sits on top; with two, the true course closes the label.

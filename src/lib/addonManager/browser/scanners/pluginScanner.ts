@@ -1,31 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { isDirEntry, isFileEntry } from '@/lib/utils/fsEntries';
 import type { PluginInfo } from '../../core/types';
 import { detectVersion, findUpdaterCfg, findVersionFiles } from '../version/detector';
-
-async function isDirEntry(entry: fs.Dirent, parentPath: string): Promise<boolean> {
-  if (entry.isDirectory()) return true;
-  if (entry.isSymbolicLink()) {
-    try {
-      return (await fs.promises.stat(path.join(parentPath, entry.name))).isDirectory();
-    } catch {
-      return false;
-    }
-  }
-  return false;
-}
-
-async function isFileEntry(entry: fs.Dirent, parentPath: string): Promise<boolean> {
-  if (entry.isFile()) return true;
-  if (entry.isSymbolicLink()) {
-    try {
-      return (await fs.promises.stat(path.join(parentPath, entry.name))).isFile();
-    } catch {
-      return false;
-    }
-  }
-  return false;
-}
 
 const MAX_XPL_SEARCH_DEPTH = 3;
 

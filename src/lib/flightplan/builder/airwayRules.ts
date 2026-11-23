@@ -4,6 +4,7 @@
  * airways that fit the cruise level).
  */
 import type { AirwaySegment } from '@/types/navigation';
+import type { Feet } from '@/types/units';
 import type { LevelBand } from './types';
 
 /** Flight level to feet; a 0 top means the band is open at the top. */
@@ -36,8 +37,8 @@ export function segmentsForPair(segments: AirwaySegment[], a: string, b: string)
 
 /** The most permissive band across the segments stored for one pair, in feet. */
 export function pairBand(segments: AirwaySegment[]): LevelBand {
-  let minFt: number | null = null;
-  let maxFt: number | null = null;
+  let minFt: Feet | null = null;
+  let maxFt: Feet | null = null;
   let open = false;
   for (const s of segments) {
     if (s.baseFl === 0 && s.topFl === 0) return { minFt: null, maxFt: null };

@@ -1,3 +1,4 @@
+import type { Seconds } from '@/types/units';
 import { sanitizeEvent } from './events';
 
 type PropertyValue = string | number | boolean | null;
@@ -15,7 +16,7 @@ export interface AnalyticsClient {
 
 /** A finished session, stored at quit and reported on the next launch. */
 export interface PendingSession {
-  durationSeconds: number;
+  durationSeconds: Seconds;
   endedAt: string;
   appVersion: string;
   /** Most tablets connected at once during the session; absent when none. */

@@ -1,4 +1,5 @@
 import { type Feet, metersToFeet } from '@/lib/utils/geomath';
+import type { Meters } from '@/types/units';
 
 /** The two `useUnits()` formatters the context menu header needs. */
 export interface ContextPointFormatters {
@@ -22,7 +23,7 @@ export interface ContextPointLabels {
 export function buildContextPointLabels(
   lat: number,
   lon: number,
-  elevationM: number | null,
+  elevationM: Meters | null,
   units: ContextPointFormatters
 ): ContextPointLabels {
   return {

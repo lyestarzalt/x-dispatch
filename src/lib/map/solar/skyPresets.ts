@@ -5,6 +5,7 @@
  * every latitude and season, and blends continuously between keyframes.
  */
 import type { LightSpecification, SkySpecification } from 'maplibre-gl';
+import { hexToRgb } from '@/lib/utils/color';
 import type { GeoPoint } from './solarPosition';
 
 const RAD = Math.PI / 180;
@@ -106,10 +107,7 @@ export interface SolarAppearance {
   hillshade: HillshadeSunProps;
 }
 
-function hexToRgb(hex: string): [number, number, number] {
-  const value = parseInt(hex.slice(1), 16);
-  return [(value >> 16) & 0xff, (value >> 8) & 0xff, value & 0xff];
-}
+const BLACK: [number, number, number] = [0, 0, 0];
 
 function rgbToHex([r, g, b]: [number, number, number]): string {
   const channel = (c: number) => Math.round(c).toString(16).padStart(2, '0');
@@ -117,8 +115,8 @@ function rgbToHex([r, g, b]: [number, number, number]): string {
 }
 
 export function mixHex(a: string, b: string, t: number): string {
-  const ca = hexToRgb(a);
-  const cb = hexToRgb(b);
+  const ca = hexToRgb(a) ?? BLACK;
+  const cb = hexToRgb(b) ?? BLACK;
   return rgbToHex([
     ca[0] + (cb[0] - ca[0]) * t,
     ca[1] + (cb[1] - ca[1]) * t,

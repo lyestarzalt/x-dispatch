@@ -1,67 +1,75 @@
+import {
+  EARTH_RADIUS_NM,
+  destinationRad,
+  initialBearing,
+  toDegrees,
+  toRadians,
+} from '@/lib/utils/geomath/sphere';
 import type { RangeRingCategory } from '@/types/layers';
 import { RANGE_RING_SPEEDS } from '@/types/layers';
-
-const EARTH_RADIUS_NM = 3440.065;
+import type { Degrees, Feet, Kilograms, Minutes, NauticalMiles, TrueDegrees } from '@/types/units';
 
 export interface LatLon {
   latitude: number;
   longitude: number;
 }
 
-export function greatCircleNm(a: LatLon, b: LatLon): number {
+export function greatCircleNm(a: LatLon, b: LatLon): NauticalMiles {
   const φ1 = (a.latitude * Math.PI) / 180;
   const φ2 = (b.latitude * Math.PI) / 180;
   const Δφ = φ2 - φ1;
   const Δλ = ((b.longitude - a.longitude) * Math.PI) / 180;
   const h = Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
-  return 2 * EARTH_RADIUS_NM * Math.asin(Math.min(1, Math.sqrt(h)));
+  return (2 * EARTH_RADIUS_NM * Math.asin(Math.min(1, Math.sqrt(h)))) as NauticalMiles;
 }
 
 /** Initial true bearing from a to b, 0 to 360. */
-export function bearingDeg(a: LatLon, b: LatLon): number {
-  const φ1 = (a.latitude * Math.PI) / 180;
-  const φ2 = (b.latitude * Math.PI) / 180;
-  const Δλ = ((b.longitude - a.longitude) * Math.PI) / 180;
-  const y = Math.sin(Δλ) * Math.cos(φ2);
-  const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
-  return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+export function bearingDeg(a: LatLon, b: LatLon): TrueDegrees {
+  return initialBearing(a.latitude, a.longitude, b.latitude, b.longitude);
 }
 
 /** Point reached from p after travelling the distance along a true bearing. */
-export function destinationPoint(p: LatLon, bearing: number, distanceNm: number): LatLon {
-  const δ = distanceNm / EARTH_RADIUS_NM;
-  const θ = (bearing * Math.PI) / 180;
-  const φ1 = (p.latitude * Math.PI) / 180;
-  const λ1 = (p.longitude * Math.PI) / 180;
-  const φ2 = Math.asin(Math.sin(φ1) * Math.cos(δ) + Math.cos(φ1) * Math.sin(δ) * Math.cos(θ));
-  const λ2 =
-    λ1 +
-    Math.atan2(Math.sin(θ) * Math.sin(δ) * Math.cos(φ1), Math.cos(δ) - Math.sin(φ1) * Math.sin(φ2));
+export function destinationPoint(
+  p: LatLon,
+  bearing: TrueDegrees,
+  distanceNm: NauticalMiles
+): LatLon {
+  const [φ2, λ2] = destinationRad(
+    toRadians(p.latitude),
+    toRadians(p.longitude),
+    toRadians(bearing),
+    distanceNm / EARTH_RADIUS_NM
+  );
   return {
-    latitude: (φ2 * 180) / Math.PI,
-    longitude: (((λ2 * 180) / Math.PI + 540) % 360) - 180,
+    latitude: toDegrees(φ2),
+    longitude: ((toDegrees(λ2) + 540) % 360) - 180,
   };
 }
 
-export function pathDistanceNm(points: LatLon[]): number {
+export function pathDistanceNm(points: LatLon[]): NauticalMiles {
   let total = 0;
   for (let i = 1; i < points.length; i++) {
     total += greatCircleNm(points[i - 1] as LatLon, points[i] as LatLon);
   }
-  return total;
+  return total as NauticalMiles;
 }
 
 /** Cruise leg only; climb and descent are folded into a flat allowance per class. */
 const TERMINAL_MINUTES: Record<RangeRingCategory, number> = { jet: 20, turboprop: 15, prop: 8 };
 
-export function estimateMinutes(distanceNm: number, category: RangeRingCategory): number {
-  if (distanceNm <= 0) return 0;
-  return Math.round((distanceNm / RANGE_RING_SPEEDS[category]) * 60 + TERMINAL_MINUTES[category]);
+export function estimateMinutes(distanceNm: NauticalMiles, category: RangeRingCategory): Minutes {
+  if (distanceNm <= 0) return 0 as Minutes;
+  return Math.round(
+    (distanceNm / RANGE_RING_SPEEDS[category]) * 60 + TERMINAL_MINUTES[category]
+  ) as Minutes;
 }
 
 /** The leg length a block time allows: the inverse of estimateMinutes. */
-export function minutesToNm(minutes: number, category: RangeRingCategory): number {
-  return Math.max(0, ((minutes - TERMINAL_MINUTES[category]) / 60) * RANGE_RING_SPEEDS[category]);
+export function minutesToNm(minutes: Minutes, category: RangeRingCategory): NauticalMiles {
+  return Math.max(
+    0,
+    ((minutes - TERMINAL_MINUTES[category]) / 60) * RANGE_RING_SPEEDS[category]
+  ) as NauticalMiles;
 }
 
 /** Typical block burn per class, kg per hour: a narrow-body jet, a regional turboprop, a light piston. */
@@ -70,12 +78,12 @@ const RESERVE_MINUTES = 45;
 const CONTINGENCY = 0.05;
 
 /** Trip fuel plus five percent contingency and a 45 minute reserve, rounded to 10 kg. */
-export function estimateFuelKg(distanceNm: number, category: RangeRingCategory): number {
-  if (distanceNm <= 0) return 0;
+export function estimateFuelKg(distanceNm: NauticalMiles, category: RangeRingCategory): Kilograms {
+  if (distanceNm <= 0) return 0 as Kilograms;
   const perMinute = BURN_KG_PER_HOUR[category] / 60;
   const trip = estimateMinutes(distanceNm, category) * perMinute;
   const block = trip * (1 + CONTINGENCY) + RESERVE_MINUTES * perMinute;
-  return Math.round(block / 10) * 10;
+  return (Math.round(block / 10) * 10) as Kilograms;
 }
 
 /**
@@ -83,10 +91,10 @@ export function estimateFuelKg(distanceNm: number, category: RangeRingCategory):
  * to a thousand and nudged onto the hemispheric level for eastbound tracks.
  */
 export function suggestCruiseAltitudeFt(
-  distanceNm: number,
+  distanceNm: NauticalMiles,
   category: RangeRingCategory,
   eastbound: boolean
-): number {
+): Feet {
   const cap = category === 'jet' ? 41000 : category === 'turboprop' ? 27000 : 11000;
   const perNm = category === 'jet' ? 150 : category === 'turboprop' ? 110 : 60;
   const floor = category === 'prop' ? 3000 : 6000;
@@ -94,7 +102,7 @@ export function suggestCruiseAltitudeFt(
   const thousands = alt / 1000;
   const wantOdd = eastbound;
   const isOdd = thousands % 2 === 1;
-  return isOdd === wantOdd ? alt : Math.max(floor - 1000, alt - 1000);
+  return (isOdd === wantOdd ? alt : Math.max(floor - 1000, alt - 1000)) as Feet;
 }
 
 /**
@@ -136,8 +144,8 @@ export function greatCirclePoints(a: LatLon, b: LatLon, count: number): LatLon[]
 }
 
 /** Degrees east from one longitude to another, the short way round: -180 to 180. */
-export function lonDeltaDeg(fromLon: number, toLon: number): number {
-  return ((toLon - fromLon + 540) % 360) - 180;
+export function lonDeltaDeg(fromLon: number, toLon: number): Degrees {
+  return (((toLon - fromLon + 540) % 360) - 180) as Degrees;
 }
 
 /**
@@ -145,11 +153,11 @@ export function lonDeltaDeg(fromLon: number, toLon: number): number {
  * through unwrapped longitudes crosses the antimeridian the short way instead of circling
  * the globe; MapLibre accepts longitudes past 180 for exactly this.
  */
-export function unwrapLongitude(previousLon: number, lon: number): number {
+export function unwrapLongitude(previousLon: number, lon: number): Degrees {
   const diff = lon - previousLon;
-  if (diff > 180) return lon - 360;
-  if (diff < -180) return lon + 360;
-  return lon;
+  if (diff > 180) return (lon - 360) as Degrees;
+  if (diff < -180) return (lon + 360) as Degrees;
+  return lon as Degrees;
 }
 
 const NM_PER_DEG_LAT = 60;
@@ -163,7 +171,7 @@ const MIN_TURN_DEG = 3;
  * actually fly. Works in a local flat frame around each corner, which is
  * accurate for turn radii of a few miles.
  */
-export function smoothRoutePath(points: LatLon[], radiusNm: number): LatLon[] {
+export function smoothRoutePath(points: LatLon[], radiusNm: NauticalMiles): LatLon[] {
   if (points.length < 3 || radiusNm <= 0) return points;
   const out: LatLon[] = [points[0] as LatLon];
 

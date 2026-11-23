@@ -1,3 +1,14 @@
+import type {
+  Degrees,
+  Feet,
+  FeetPerMinute,
+  Kilograms,
+  Knots,
+  Meters,
+  NauticalMiles,
+  Seconds,
+} from '@/types/units';
+
 export type FlightPhase =
   | 'preflight'
   | 'taxi-out'
@@ -19,11 +30,11 @@ export type TrackPointTuple = [
   t: number,
   lat: number,
   lon: number,
-  alt: number,
-  gs: number,
-  hdg: number,
-  vs: number,
-  agl: number,
+  alt: Feet,
+  gs: Knots,
+  hdg: Degrees,
+  vs: FeetPerMinute,
+  agl: Feet,
 ];
 
 export const TRACK_T = 0;
@@ -48,11 +59,11 @@ export interface LandingRunway {
   airportName: string;
   /** Runway end that was landed on, e.g. "27L". */
   runway: string;
-  runwayLengthM: number;
+  runwayLengthM: Meters;
   /** Along-track distance from the landing threshold; negative means short. */
-  distancePastThresholdM: number;
+  distancePastThresholdM: Meters;
   /** Lateral offset from the centreline, positive to the right of the landing direction. */
-  centerlineOffsetM: number;
+  centerlineOffsetM: Meters;
 }
 
 export interface LandingReport {
@@ -60,26 +71,26 @@ export interface LandingReport {
   at: number;
   lat: number;
   lon: number;
-  headingDeg: number;
-  groundspeedKt: number;
+  headingDeg: Degrees;
+  groundspeedKt: Knots;
   /** Descent rate at contact from the height-above-ground slope, negative going down. */
-  touchdownRateFpm: number;
+  touchdownRateFpm: FeetPerMinute;
   /** X-Plane's own vertical speed in the last airborne frame, for comparison. */
-  indicatedRateFpm: number;
+  indicatedRateFpm: FeetPerMinute;
   /** Highest normal load factor in the second after contact. */
   peakG: number;
-  pitchDeg: number;
-  rollDeg: number;
+  pitchDeg: Degrees;
+  rollDeg: Degrees;
   /** Body pitch rate at contact, degrees per second. Positive is nose up. */
   pitchRateDegSec: number;
   flare: FlareGrade;
   /** Pitch rate when the nose gear came down, null if it never did before the report closed. */
   noseRateDegSec: number | null;
   /** Seconds between crossing 15 m above ground and first contact. */
-  floatSec: number;
+  floatSec: Seconds;
   bounces: number;
   /** Descent rate of each subsequent contact after a bounce. */
-  bounceRatesFpm: number[];
+  bounceRatesFpm: FeetPerMinute[];
   rating: LandingRating;
   runway: LandingRunway | null;
 }
@@ -106,14 +117,14 @@ export interface FlightSummary {
   departure: FlightAirport | null;
   arrival: FlightAirport | null;
   /** Wall-clock seconds from first movement to parking. */
-  blockTimeSec: number;
+  blockTimeSec: Seconds;
   /** Wall-clock seconds spent airborne. */
-  airTimeSec: number;
-  distanceNm: number;
-  maxAltFt: number;
-  maxGroundspeedKt: number;
-  fuelStartKg: number | null;
-  fuelEndKg: number | null;
+  airTimeSec: Seconds;
+  distanceNm: NauticalMiles;
+  maxAltFt: Feet;
+  maxGroundspeedKt: Knots;
+  fuelStartKg: Kilograms | null;
+  fuelEndKg: Kilograms | null;
   /** Most recent landing, also the one shown on the card. */
   landing: LandingReport | null;
   landingCount: number;
@@ -147,7 +158,7 @@ export interface AircraftHint {
   livery: string | null;
 }
 
-export function landingRating(touchdownRateFpm: number): LandingRating {
+export function landingRating(touchdownRateFpm: FeetPerMinute): LandingRating {
   if (touchdownRateFpm >= -125) return 'butter';
   if (touchdownRateFpm >= -250) return 'great';
   if (touchdownRateFpm >= -350) return 'acceptable';

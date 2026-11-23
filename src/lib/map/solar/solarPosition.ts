@@ -1,3 +1,6 @@
+import { smoothstep } from '@/lib/utils/math';
+import type { Degrees, Seconds } from '@/types/units';
+
 /**
  * Sun geometry shared by the sky lighting and the city-light layers.
  *
@@ -62,11 +65,11 @@ function sunCoords(timeMs: number): SunCoords {
   };
 }
 
-export function normalizeLongitude(lon: number): number {
+export function normalizeLongitude(lon: number): Degrees {
   const wrapped = ((((lon + 180) % 360) + 360) % 360) - 180;
   // Keep the antimeridian on the positive side so a polygon that starts
   // there does not flip between -180 and 180 on consecutive frames.
-  return wrapped === -180 ? 180 : wrapped;
+  return (wrapped === -180 ? 180 : wrapped) as Degrees;
 }
 
 /** Point on Earth where the sun is directly overhead. */
@@ -114,11 +117,6 @@ export function sunPosition(timeMs: number, lat: number, lon: number): SunPositi
   return { altitude: altitude * DEG, azimuth };
 }
 
-function smoothstep(t: number): number {
-  const x = Math.min(1, Math.max(0, t));
-  return x * x * (3 - 2 * x);
-}
-
 /**
  * 0 while the sun is up, 1 once it is six degrees below the horizon, with a
  * smooth ramp between. Drives every night-only effect so they come on
@@ -136,6 +134,6 @@ export function nightFactor(sunAltitude: number): number {
  * enough: the sun's declination for a given day barely changes between
  * years.
  */
-export function simTimeToEpochMs(dayOfYear: number, zuluSeconds: number, year: number): number {
+export function simTimeToEpochMs(dayOfYear: number, zuluSeconds: Seconds, year: number): number {
   return Date.UTC(year, 0, 1) + dayOfYear * DAY_MS + zuluSeconds * 1000;
 }

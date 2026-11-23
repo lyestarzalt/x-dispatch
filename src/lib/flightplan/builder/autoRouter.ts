@@ -16,6 +16,8 @@
  * give nothing or only a long detour, a second pass allows direct legs between
  * airway fixes, the way FRA routes are filed.
  */
+import { pointInRing } from '@/lib/utils/geomath/polygon';
+import { EARTH_RADIUS_NM } from '@/lib/utils/geomath/sphere';
 import {
   getAirspacesInBounds,
   getAllAirwaysFromDb,
@@ -23,6 +25,7 @@ import {
   getWaypointsInBounds,
 } from '@/lib/xplaneServices/dataService/navdata/navCache';
 import type { Airspace, AirwaySegment } from '@/types/navigation';
+import type { Degrees, Feet, NauticalMiles } from '@/types/units';
 import { bandAllows } from './airwayRules';
 import { type LatLon, bearingDeg, greatCircleNm, greatCirclePoints } from './geometry';
 import { type OceanicTrack, getOceanicTracks, tracksForAutoRouting } from './oceanicTracks';
@@ -80,7 +83,6 @@ const TRACK_PREFERENCE = 0.9;
 const NAR_PREFERENCE = 0.8;
 /** Fixes inside a run of direct legs are dropped while the track stays within this corridor. */
 const STRAIGHT_CORRIDOR_NM = 8;
-const EARTH_RADIUS_NM = 3440.065;
 /** ARINC 424 lat/lon reporting points, "5250N" is 52N 050W and "50E60" 50N 160E. */
 const REPORTING_POINT_RE = /^\d{4}[NSEW]$|^\d{2}[NSEW]\d{2}$/;
 /**
@@ -120,7 +122,7 @@ export interface AutoRouteInput {
   /** Candidate joins when no procedure is fixed yet; the router picks the pair that routes best. */
   exits?: RouteJoin[];
   entries?: RouteJoin[];
-  cruiseAltitudeFt: number | null;
+  cruiseAltitudeFt: Feet | null;
   /** A NAT track the route must use, by designator ("NATA"); the other tracks are left out. */
   track?: string;
   /** Receives one line per pass, for the main log. */
@@ -210,14 +212,14 @@ function fixKey(id: string, region: string): string {
 // ----------------------------------------------------------------------------
 
 /** "FL195", "5000ft", "GND", "UNL" and friends to feet; null when unreadable. */
-export function limitToFeet(text: string): number | null {
+export function limitToFeet(text: string): Feet | null {
   const s = text.trim().toUpperCase();
-  if (s === 'GND' || s === 'SFC' || s === 'MSL' || s === '0') return 0;
-  if (s === 'UNL' || s === 'UNLTD' || s === 'UNLIMITED') return Infinity;
+  if (s === 'GND' || s === 'SFC' || s === 'MSL' || s === '0') return 0 as Feet;
+  if (s === 'UNL' || s === 'UNLTD' || s === 'UNLIMITED') return Infinity as Feet;
   const fl = /^FL\s*(\d+)/.exec(s);
-  if (fl) return Number(fl[1]) * 100;
+  if (fl) return (Number(fl[1]) * 100) as Feet;
   const ft = /^(\d+)\s*(FT|F|')?/.exec(s);
-  if (ft) return Number(ft[1]);
+  if (ft) return Number(ft[1]) as Feet;
   return null;
 }
 
@@ -230,7 +232,7 @@ interface AvoidArea {
   penalty: number;
 }
 
-function avoidAreasAtLevel(spaces: Airspace[], cruiseFt: number): AvoidArea[] {
+function avoidAreasAtLevel(spaces: Airspace[], cruiseFt: Feet): AvoidArea[] {
   const out: AvoidArea[] = [];
   for (const a of spaces) {
     const penalty = AIRSPACE_PENALTY[a.class];
@@ -251,16 +253,6 @@ function avoidAreasAtLevel(spaces: Airspace[], cruiseFt: number): AvoidArea[] {
     out.push({ ring: a.coordinates, minLat, maxLat, minLon, maxLon, penalty });
   }
   return out;
-}
-
-function pointInRing(lon: number, lat: number, ring: [number, number][]): boolean {
-  let inside = false;
-  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-    const [xi, yi] = ring[i]!;
-    const [xj, yj] = ring[j]!;
-    if (yi > lat !== yj > lat && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) inside = !inside;
-  }
-  return inside;
 }
 
 function segmentsCross(
@@ -336,7 +328,7 @@ interface BuildOptions {
  * Longitude spans to query, padded. A leg whose endpoints are more than 180° apart is
  * shorter across the antimeridian, so it is covered by two spans that meet at ±180.
  */
-export function longitudeRanges(lons: number[], padDeg: number): [number, number][] {
+export function longitudeRanges(lons: number[], padDeg: Degrees): [number, number][] {
   const min = Math.min(...lons);
   const max = Math.max(...lons);
   if (max - min <= 180) return [[min - padDeg, max + padDeg]];
@@ -708,7 +700,7 @@ function connectEndpoints(graph: Graph, input: AutoRouteInput): Map<string, Rout
 
 interface SearchResult {
   chain: { key: string; arrivedBy: string | null }[];
-  distanceNm: number;
+  distanceNm: NauticalMiles;
 }
 
 /**
@@ -792,11 +784,12 @@ function searchViaTrack(
 }
 
 /** Perpendicular distance of p from the great circle through a and b, in nautical miles. */
-export function crossTrackNm(a: LatLon, b: LatLon, p: LatLon): number {
+export function crossTrackNm(a: LatLon, b: LatLon, p: LatLon): NauticalMiles {
   const d13 = greatCircleNm(a, p) / EARTH_RADIUS_NM;
   const t13 = (bearingDeg(a, p) * Math.PI) / 180;
   const t12 = (bearingDeg(a, b) * Math.PI) / 180;
-  return Math.abs(Math.asin(Math.sin(d13) * Math.sin(t13 - t12))) * EARTH_RADIUS_NM;
+  return (Math.abs(Math.asin(Math.sin(d13) * Math.sin(t13 - t12))) *
+    EARTH_RADIUS_NM) as NauticalMiles;
 }
 
 /**

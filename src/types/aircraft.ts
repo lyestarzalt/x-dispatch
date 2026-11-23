@@ -2,6 +2,7 @@
  * Aircraft Types - Aircraft and launch configuration types
  * All types related to aircraft, liveries, launch configuration
  */
+import type { Knots, Pounds } from '@/types/units';
 import type { Coordinates } from './geo';
 
 // ============================================================================
@@ -19,9 +20,9 @@ export interface Aircraft {
   /** Add-on version, from version.txt next to the .acf or acf/_version; empty when unknown */
   version: string;
   tailNumber: string;
-  emptyWeight: number;
-  maxWeight: number;
-  maxFuel: number;
+  emptyWeight: Pounds;
+  maxWeight: Pounds;
+  maxFuel: Pounds;
   tankNames: string[];
   tankRatios: number[];
   /** X-Plane tank slot indices — maps each logical tank to its real slot (0-8) */
@@ -30,8 +31,8 @@ export interface Aircraft {
   isHelicopter: boolean;
   engineCount: number;
   propCount: number;
-  vneKts: number;
-  vnoKts: number;
+  vneKts: Knots;
+  vnoKts: Knots;
   previewImage: string | null;
   thumbnailImage: string | null;
   liveries: Livery[];

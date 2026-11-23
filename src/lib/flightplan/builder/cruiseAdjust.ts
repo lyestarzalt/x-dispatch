@@ -7,6 +7,7 @@
 import { trueToMagnetic } from '@/lib/magvar';
 import type { Degrees } from '@/lib/utils/geomath';
 import type { ResolvedProcedure } from '@/types/navigation';
+import type { Feet } from '@/types/units';
 import { type LatLon, bearingDeg, destinationPoint, greatCircleNm } from './geometry';
 import type { ProcedureParts } from './procedures';
 import type { LevelBand } from './types';
@@ -30,11 +31,11 @@ function constraintFloor(procedure: ResolvedProcedure | undefined): number | nul
 }
 
 /** The highest altitude a chosen procedure says to be at or above; the cruise cannot sit under it. */
-export function procedureFloorFt(parts: ProcedureParts): number | null {
+export function procedureFloorFt(parts: ProcedureParts): Feet | null {
   const floors = [parts.sid, parts.star, parts.approach]
     .map(constraintFloor)
     .filter((f): f is number => f !== null);
-  return floors.length > 0 ? Math.max(...floors) : null;
+  return (floors.length > 0 ? Math.max(...floors) : null) as Feet | null;
 }
 
 /** The airway band narrowed by the procedure floor. */
@@ -78,23 +79,23 @@ export function hasParity(feet: number, eastbound: boolean): boolean {
  * for the rule at all, the band wins and the clamped value is returned as is.
  */
 export function adjustCruiseAltitudeFt(
-  currentFt: number | null,
+  currentFt: Feet | null,
   band: LevelBand,
   eastbound: boolean
-): number {
+): Feet {
   const clamped = clamp(currentFt ?? band.minFt ?? 0, band);
   let up = Math.ceil(clamped / THOUSAND) * THOUSAND;
   if (!hasParity(up, eastbound)) up += THOUSAND;
-  if (band.maxFt === null || up <= band.maxFt) return up;
+  if (band.maxFt === null || up <= band.maxFt) return up as Feet;
   let down = Math.floor(band.maxFt / THOUSAND) * THOUSAND;
   if (!hasParity(down, eastbound)) down -= THOUSAND;
-  if (band.minFt !== null && down < band.minFt) return clamped;
-  return down;
+  if (band.minFt !== null && down < band.minFt) return clamped as Feet;
+  return down as Feet;
 }
 
 /** Why the current cruise is not where Adjust would put it, or null when it already is. */
 export function cruiseProblem(
-  currentFt: number | null,
+  currentFt: Feet | null,
   band: LevelBand,
   eastbound: boolean
 ): CruiseProblem | null {
@@ -105,7 +106,7 @@ export function cruiseProblem(
 }
 
 /** Whether the band has a floor above its ceiling: two airways that never share a level. */
-export function isConflict(band: LevelBand): band is { minFt: number; maxFt: number } {
+export function isConflict(band: LevelBand): band is { minFt: Feet; maxFt: Feet } {
   return band.minFt !== null && band.maxFt !== null && band.minFt > band.maxFt;
 }
 
@@ -113,8 +114,10 @@ export function isConflict(band: LevelBand): band is { minFt: number; maxFt: num
  * A suggested cruise moved inside what the route allows, on the right parity. A conflicting
  * band cannot be fitted, so the suggestion stands and the banner explains the route instead.
  */
-export function fitCruiseToBand(suggestedFt: number, band: LevelBand, eastbound: boolean): number {
-  return isConflict(band) ? suggestedFt : adjustCruiseAltitudeFt(suggestedFt, band, eastbound);
+export function fitCruiseToBand(suggestedFt: Feet, band: LevelBand, eastbound: boolean): Feet {
+  return (
+    isConflict(band) ? suggestedFt : adjustCruiseAltitudeFt(suggestedFt, band, eastbound)
+  ) as Feet;
 }
 
 /**
@@ -127,16 +130,16 @@ export type CruiseIssue =
   | {
       kind: 'conflict';
       low: string | null;
-      ceilingFt: number;
+      ceilingFt: Feet;
       high: string | null;
-      floorFt: number;
+      floorFt: Feet;
     }
-  | { kind: 'belowFloor'; airway: string | null; floorFt: number }
-  | { kind: 'aboveCeiling'; airway: string | null; ceilingFt: number }
+  | { kind: 'belowFloor'; airway: string | null; floorFt: Feet }
+  | { kind: 'aboveCeiling'; airway: string | null; ceilingFt: Feet }
   | { kind: 'parity'; eastbound: boolean };
 
 export function describeCruiseIssue(
-  currentFt: number | null,
+  currentFt: Feet | null,
   band: LevelBand,
   setters: { floor?: string; ceiling?: string },
   eastbound: boolean

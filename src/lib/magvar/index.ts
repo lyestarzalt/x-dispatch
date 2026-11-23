@@ -1,7 +1,7 @@
 import { magvar } from 'magvar';
 import type { Degrees } from '@/lib/utils/geomath';
-
-const normalize360 = (deg: number): number => ((deg % 360) + 360) % 360;
+import { normalize360 } from '@/lib/utils/math';
+import type { MagneticDegrees, TrueDegrees } from '@/types/units';
 
 /**
  * East-positive magnetic variation (declination) at a position, per the
@@ -13,11 +13,21 @@ export function magneticVariation(lat: number, lon: number, date?: Date): Degree
 }
 
 /** Magnetic = True − Variation (variation east-positive). */
-export function trueToMagnetic(trueDeg: Degrees, lat: number, lon: number, date?: Date): Degrees {
-  return normalize360(trueDeg - magneticVariation(lat, lon, date)) as Degrees;
+export function trueToMagnetic(
+  trueDeg: TrueDegrees,
+  lat: number,
+  lon: number,
+  date?: Date
+): MagneticDegrees {
+  return normalize360(trueDeg - magneticVariation(lat, lon, date)) as MagneticDegrees;
 }
 
 /** True = Magnetic + Variation (variation east-positive). */
-export function magneticToTrue(magDeg: Degrees, lat: number, lon: number, date?: Date): Degrees {
-  return normalize360(magDeg + magneticVariation(lat, lon, date)) as Degrees;
+export function magneticToTrue(
+  magDeg: MagneticDegrees,
+  lat: number,
+  lon: number,
+  date?: Date
+): TrueDegrees {
+  return normalize360(magDeg + magneticVariation(lat, lon, date)) as TrueDegrees;
 }

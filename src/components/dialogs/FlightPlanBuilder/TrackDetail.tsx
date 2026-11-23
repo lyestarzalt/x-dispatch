@@ -7,6 +7,7 @@ import type {
   OceanicTrackInfo,
   RouteIssue,
 } from '@/lib/flightplan/builder/types';
+import type { Feet } from '@/types/units';
 
 export function TrackDetail({
   track,
@@ -16,7 +17,7 @@ export function TrackDetail({
 }: {
   track: OceanicTrackInfo;
   status: NatMessageStatus;
-  cruiseAltitudeFt: number | null;
+  cruiseAltitudeFt: Feet | null;
   issues: RouteIssue[];
 }) {
   const { t } = useTranslation();

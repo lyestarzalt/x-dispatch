@@ -6,6 +6,9 @@
  */
 import type { LatLon } from '@/lib/flightplan/builder/geometry';
 import { bearingDeg, destinationPoint, greatCircleNm } from '@/lib/flightplan/builder/geometry';
+import { withTimeout } from '@/lib/utils/async';
+import { FEET_PER_METER } from '@/lib/utils/units/constants';
+import type { Feet, NauticalMiles } from '@/types/units';
 
 export interface DemTileLike {
   width: number;
@@ -17,8 +20,8 @@ export interface DemTileLike {
 export type TileFetcher = (z: number, x: number, y: number) => Promise<DemTileLike>;
 
 export interface TerrainSample extends LatLon {
-  distanceNm: number;
-  elevationFt: number;
+  distanceNm: NauticalMiles;
+  elevationFt: Feet;
 }
 
 export interface TerrainResult {
@@ -30,9 +33,9 @@ export interface TerrainResult {
 
 export interface SampleOptions {
   zoom?: number;
-  stepNm?: number;
+  stepNm?: NauticalMiles;
   /** Half-width of the corridor searched for the per-leg maximum, NM. 0 disables it. */
-  corridorNm?: number;
+  corridorNm?: NauticalMiles;
   maxSamples?: number;
   /** A tile slower than this counts as missing (sea level) rather than holding everything up. */
   tileTimeoutMs?: number;
@@ -42,7 +45,6 @@ export interface SampleOptions {
   onProgress?: (done: number, total: number) => void;
 }
 
-const FEET_PER_METRE = 3.28084;
 const MAX_LAT = 85.05112878;
 
 /** Standard XYZ tile for a position at `zoom`, plus the pixel inside a `size`-px tile. */
@@ -66,35 +68,23 @@ function elevationAt(tile: DemTileLike, px: number, py: number): number {
   const col = Math.min(tile.width - 1, Math.max(0, Math.floor(px)));
   const row = Math.min(tile.height - 1, Math.max(0, Math.floor(py)));
   const m = tile.data[row * tile.width + col];
-  return m === undefined || Number.isNaN(m) ? 0 : m * FEET_PER_METRE;
+  return m === undefined || Number.isNaN(m) ? 0 : m * FEET_PER_METER;
 }
 
 /** Positions at `stepNm` along the leg, start included, end included. */
-function pointsAlong(a: LatLon, b: LatLon, stepNm: number): { pos: LatLon; alongNm: number }[] {
+function pointsAlong(
+  a: LatLon,
+  b: LatLon,
+  stepNm: NauticalMiles
+): { pos: LatLon; alongNm: NauticalMiles }[] {
   const legNm = greatCircleNm(a, b);
-  const out: { pos: LatLon; alongNm: number }[] = [{ pos: a, alongNm: 0 }];
+  const out: { pos: LatLon; alongNm: NauticalMiles }[] = [{ pos: a, alongNm: 0 }];
   if (legNm < 1e-6) return out;
   const brg = bearingDeg(a, b);
   for (let d = stepNm; d < legNm; d += stepNm)
     out.push({ pos: destinationPoint(a, brg, d), alongNm: d });
   out.push({ pos: b, alongNm: legNm });
   return out;
-}
-
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-  return new Promise<T>((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error(`timeout after ${ms} ms`)), ms);
-    promise.then(
-      (v) => {
-        clearTimeout(timer);
-        resolve(v);
-      },
-      (e: unknown) => {
-        clearTimeout(timer);
-        reject(e instanceof Error ? e : new Error(String(e)));
-      }
-    );
-  });
 }
 
 export async function sampleTerrain(
@@ -113,7 +103,7 @@ export async function sampleTerrain(
   // Plan every sample first so each tile is fetched exactly once, then sample synchronously.
   interface Planned {
     pos: LatLon;
-    distanceNm: number;
+    distanceNm: NauticalMiles;
     leg: number;
     onTrack: boolean;
     tileX: number;
@@ -152,7 +142,7 @@ export async function sampleTerrain(
     tileKeys.map(async (key) => {
       const [x, y] = key.split('/').map(Number) as [number, number];
       try {
-        tiles.set(key, await withTimeout(fetchTile(zoom, x, y), tileTimeoutMs));
+        tiles.set(key, await withTimeout(fetchTile(zoom, x, y), tileTimeoutMs, 'Terrain tile'));
       } catch (reason) {
         options.onTileError?.(zoom, x, y, reason);
         tiles.set(key, null); // missing tile: treat as sea level

@@ -1,6 +1,7 @@
 import type { LandingRating } from '@/types/flightRecorder';
+import type { Seconds } from '@/types/units';
 
-export function formatDuration(totalSeconds: number): string {
+export function formatDuration(totalSeconds: Seconds): string {
   const s = Math.max(0, Math.round(totalSeconds));
   const h = Math.floor(s / 3600);
   const m = Math.floor((s % 3600) / 60);
@@ -8,7 +9,7 @@ export function formatDuration(totalSeconds: number): string {
   return `${h}h ${String(m).padStart(2, '0')}m`;
 }
 
-export function formatClock(totalSeconds: number): string {
+export function formatClock(totalSeconds: Seconds): string {
   const s = Math.max(0, Math.round(totalSeconds));
   const h = Math.floor(s / 3600);
   const m = Math.floor((s % 3600) / 60);

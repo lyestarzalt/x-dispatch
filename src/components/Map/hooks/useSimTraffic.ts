@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import type * as maplibregl from 'maplibre-gl';
+import { lerpHeading } from '@/lib/utils/math';
 import { useMapStore } from '@/stores/mapStore';
 import type { TrafficSnapshot, TrafficTarget } from '@/types/traffic';
 import {
@@ -12,11 +13,6 @@ import {
 type MapRef = React.MutableRefObject<maplibregl.Map | null>;
 
 const FRAME_MS = 1000 / 30;
-
-function lerpHeading(a: number, b: number, t: number): number {
-  const delta = ((b - a + 540) % 360) - 180;
-  return (a + delta * t + 360) % 360;
-}
 
 /**
  * Renders the frame between the two newest snapshots. With `t` past 1 the

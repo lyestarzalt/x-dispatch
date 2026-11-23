@@ -1,11 +1,13 @@
 import type { IMetar } from 'metar-taf-parser';
+import { KNOTS_PER_MPS } from '@/lib/utils/units/constants';
+import type { Degrees, Knots } from '@/types/units';
 
 export type Precipitation = 'none' | 'rain' | 'snow';
 
 export interface GroundWeather {
   /** True direction the wind blows from, null when calm or variable. */
-  windFromDeg: number | null;
-  windKt: number;
+  windFromDeg: Degrees | null;
+  windKt: Knots;
   precip: Precipitation;
   /** 0 clear, 1 dense fog, from prevailing visibility. */
   fog: number;
@@ -24,7 +26,7 @@ const FOG_CODES = new Set(['FG', 'BR', 'HZ', 'FU']);
 function toKnots(speed: number, unit: string | undefined): number {
   switch (unit) {
     case 'MPS':
-      return speed * 1.94384;
+      return speed * KNOTS_PER_MPS;
     case 'KM/H':
       return speed / 1.852;
     default:

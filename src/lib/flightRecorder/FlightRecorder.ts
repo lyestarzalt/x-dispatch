@@ -1,4 +1,5 @@
 import { haversineDistance } from '@/lib/utils/geomath';
+import { FEET_PER_METER, KNOTS_PER_MPS, METERS_PER_NM } from '@/lib/utils/units/constants';
 import type {
   AircraftHint,
   FlightAirport,
@@ -9,15 +10,14 @@ import type {
   LiveRecorderState,
   TrackPointTuple,
 } from '@/types/flightRecorder';
+import type { Meters } from '@/types/units';
 import type { FlightStore } from './flightStore';
 import { FrameAssembler, type SimFrame } from './frames';
 import { LandingDetector } from './landingDetector';
 import { FlightPhaseMachine } from './phaseMachine';
 import { type AirportRunways, matchRunway } from './runwayMatch';
 
-const M_TO_FT = 3.28084;
-const MS_TO_KT = 1.94384;
-const M_TO_NM = 1 / 1852;
+const M_TO_NM = 1 / METERS_PER_NM;
 const TRACK_INTERVAL_S = 1;
 const FLUSH_INTERVAL_MS = 1000;
 const PREVIEW_EVERY = 30;
@@ -27,8 +27,8 @@ const DISCONNECT_GRACE_MS = 60_000;
 export interface FlightRecorderDeps {
   store: FlightStore;
   emit: (event: FlightRecorderEvent) => void;
-  nearestAirport: (lat: number, lon: number, radiusM: number) => FlightAirport | null;
-  airportsNear: (lat: number, lon: number, radiusM: number) => AirportRunways[];
+  nearestAirport: (lat: number, lon: number, radiusM: Meters) => FlightAirport | null;
+  airportsNear: (lat: number, lon: number, radiusM: Meters) => AirportRunways[];
   /** Resolves the loaded aircraft over the REST API; null when unavailable. */
   readAircraft?: () => Promise<AircraftHint | null>;
   now?: () => number;
@@ -146,11 +146,11 @@ export class FlightRecorder {
       frame.wallT,
       round(frame.lat, 6),
       round(frame.lon, 6),
-      Math.round(frame.altM * M_TO_FT),
-      Math.round(frame.groundspeedMs * MS_TO_KT),
+      Math.round(frame.altM * FEET_PER_METER),
+      Math.round(frame.groundspeedMs * KNOTS_PER_MPS),
       Math.round(frame.headingDeg),
       Math.round(frame.vsFpm),
-      Math.round(frame.aglM * M_TO_FT),
+      Math.round(frame.aglM * FEET_PER_METER),
     ];
     const last = this.track[this.track.length - 1];
     if (last) {

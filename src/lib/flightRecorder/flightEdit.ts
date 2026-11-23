@@ -1,4 +1,5 @@
 import type { FlightSummary } from '@/types/flightRecorder';
+import type { FeetPerMinute, NauticalMiles, Seconds } from '@/types/units';
 
 /** The fields a pilot can change on a logged flight, or fill in for one added by hand. */
 export interface FlightEditInput {
@@ -10,9 +11,9 @@ export interface FlightEditInput {
   aircraftIcao: string;
   aircraftName: string;
   livery: string;
-  blockTimeSec: number;
-  airTimeSec: number;
-  distanceNm: number;
+  blockTimeSec: Seconds;
+  airTimeSec: Seconds;
+  distanceNm: NauticalMiles;
   landingCount: number;
 }
 
@@ -133,14 +134,14 @@ export function newManualFlight(input: unknown, id = manualFlightId()): FlightSu
 
 export interface LogbookTotals {
   flights: number;
-  blockTimeSec: number;
-  airTimeSec: number;
-  distanceNm: number;
+  blockTimeSec: Seconds;
+  airTimeSec: Seconds;
+  distanceNm: NauticalMiles;
   landings: number;
   /** Mean touchdown rate over flights with a landing report, fpm (negative is down). */
-  averageTouchdownRateFpm: number | null;
+  averageTouchdownRateFpm: FeetPerMinute | null;
   /** Gentlest touchdown on record, fpm. */
-  bestTouchdownRateFpm: number | null;
+  bestTouchdownRateFpm: FeetPerMinute | null;
 }
 
 /** Flights still being recorded are left out so the totals do not move while flying. */

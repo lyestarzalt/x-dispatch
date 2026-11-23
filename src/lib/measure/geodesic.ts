@@ -1,4 +1,5 @@
-import { type Degrees, calculateBearing } from '@/lib/utils/geomath';
+import { calculateBearing } from '@/lib/utils/geomath';
+import type { TrueDegrees } from '@/types/units';
 
 export type LonLatPair = [number, number];
 
@@ -50,9 +51,9 @@ export function greatCircleArc(from: LonLatPair, to: LonLatPair, numPoints = 100
 }
 
 /** Bearing on arrival at (lat2, lon2) when travelling the great circle from (lat1, lon1). */
-export function finalBearing(lat1: number, lon1: number, lat2: number, lon2: number): Degrees {
+export function finalBearing(lat1: number, lon1: number, lat2: number, lon2: number): TrueDegrees {
   const reverse = calculateBearing(lat2, lon2, lat1, lon1);
-  return ((((reverse + 180) % 360) + 360) % 360) as Degrees;
+  return ((((reverse + 180) % 360) + 360) % 360) as TrueDegrees;
 }
 
 /** Midpoint along the great circle, `[lon, lat]`. */

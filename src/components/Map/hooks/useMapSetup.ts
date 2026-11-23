@@ -5,6 +5,7 @@ import '@/lib/map/maplibreWorker';
 import { terrainShadingAllowed } from '@/lib/map/terrainShading';
 import { resolveMapStyleArg } from '@/lib/map/tileUrlToStyle';
 import { ATC_ROLE_COLORS, stationLabel } from '@/lib/networkTraffic/atcRoles';
+import { escapeHtml } from '@/lib/utils/escape';
 import type { DistanceUnit } from '@/lib/utils/units';
 import { Airport } from '@/lib/xplaneServices/dataService';
 import { useAppStore } from '@/stores/appStore';
@@ -355,13 +356,6 @@ export function useMapSetup({
     mapContainerRef: mapContainerRef as React.RefObject<HTMLDivElement>,
     airportPopupRef,
   };
-}
-
-function escapeHtml(value: string): string {
-  return value.replace(
-    /[&<>"]/g,
-    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c
-  );
 }
 
 /** The positions online at the airport, one line each, for the hover tooltip. */

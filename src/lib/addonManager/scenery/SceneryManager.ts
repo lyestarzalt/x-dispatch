@@ -1,6 +1,7 @@
 // src/lib/addonManager/scenery/SceneryManager.ts
 import * as fs from 'fs';
 import * as path from 'path';
+import { mapWithConcurrency } from '@/lib/utils/async';
 import { errorMessage } from '@/lib/utils/errors';
 import logger from '@/lib/utils/logger';
 import { resolveLnkSync } from '@/lib/utils/resolveLnk';
@@ -24,22 +25,6 @@ import { buildLibraryIndex, missingLibrariesFor, ownFileChecker } from './missin
 /** Folder scans are I/O bound; a small pool keeps a large Custom Scenery
  * rescan fast without flooding the libuv threadpool. */
 const SCAN_CONCURRENCY = 8;
-
-async function mapWithConcurrency<T, R>(
-  items: T[],
-  limit: number,
-  fn: (item: T) => Promise<R>
-): Promise<R[]> {
-  const results = new Array<R>(items.length);
-  let next = 0;
-  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
-    for (let i = next++; i < items.length; i = next++) {
-      results[i] = await fn(items[i]!);
-    }
-  });
-  await Promise.all(workers);
-  return results;
-}
 
 interface AnalyzeOptions {
   /**

@@ -25,6 +25,7 @@ import tzlookup from 'tz-lookup';
 import { Badge } from '@/components/ui/badge';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils/helpers';
+import { smoothstep } from '@/lib/utils/math';
 import { formatWind, skyCondition } from '@/lib/utils/metar';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import { WEATHER_OPTIONS } from '../types';
@@ -56,16 +57,11 @@ function mix(token: string, percent: number, base = 'var(--card)'): string {
   return `color-mix(in oklch, var(--${token}) ${Math.round(percent)}%, ${base})`;
 }
 
-function smoothstep(edge0: number, edge1: number, x: number): number {
-  const t = Math.max(0, Math.min(1, (x - edge0) / (edge1 - edge0)));
-  return t * t * (3 - 2 * t);
-}
-
 /** Daylight 0..1 and golden hour 0..1 for an hour of the day given sunrise and sunset hours. */
 export function daylight(hour: number, sunrise: number, sunset: number) {
   // Daylight ramps over an hour either side of sunrise and sunset.
   const day =
-    smoothstep(sunrise - 1, sunrise + 1, hour) * (1 - smoothstep(sunset - 1, sunset + 1, hour));
+    smoothstep(hour, sunrise - 1, sunrise + 1) * (1 - smoothstep(hour, sunset - 1, sunset + 1));
   // Golden light peaks at sunrise and sunset and fades within ninety minutes.
   const golden = Math.max(0, 1 - Math.abs(hour - sunrise) / 1.5, 1 - Math.abs(hour - sunset) / 1.5);
   return { day, golden };

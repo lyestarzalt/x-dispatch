@@ -5,6 +5,7 @@
 import { z } from 'zod';
 import type { Navaid, NavaidType } from '@/types/navigation';
 import { NavaidRowCode } from '@/types/navigation';
+import type { MagneticDegrees, TrueDegrees } from '@/types/units';
 import { latitude, longitude } from '../schemas';
 import { hasMinLength, recordSkip } from '../types';
 import type { ParseError, ParseResult } from '../types';
@@ -59,7 +60,7 @@ function extractMagneticCourse(encoded: number): number {
 }
 
 /** Degrees from true to magnetic, east positive, in (-180, 180]. */
-function variationBetween(trueDeg: number, magneticDeg: number): number {
+function variationBetween(trueDeg: TrueDegrees, magneticDeg: MagneticDegrees): number {
   const diff = (((trueDeg - magneticDeg) % 360) + 540) % 360;
   return Math.round((diff - 180) * 1000) / 1000;
 }

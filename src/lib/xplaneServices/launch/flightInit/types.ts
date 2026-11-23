@@ -2,6 +2,7 @@ import type { WeatherConfig } from '@/components/dialogs/LaunchDialog/weatherTyp
 import type { FlightInit } from '@/lib/xplaneServices/client/generated/xplaneApi';
 import type { Aircraft } from '@/types/aircraft';
 import type { StartPosition } from '@/types/position';
+import type { Kilograms } from '@/types/units';
 
 export interface BuildFlightInitParams {
   aircraft: Aircraft;
@@ -11,8 +12,8 @@ export interface BuildFlightInitParams {
   useRealWorldTime: boolean;
   dayOfYear: number;
   timeOfDay: number;
-  fuelTanksKg: number[];
-  payloadKg: number[];
+  fuelTanksKg: Kilograms[];
+  payloadKg: Kilograms[];
   enginesRunning: boolean;
 }
 

@@ -1,4 +1,5 @@
 import { type Feet, metersToFeet } from '@/lib/utils/geomath';
+import type { Meters } from '@/types/units';
 
 export type StandOperation = 'airline' | 'cargo' | 'general_aviation' | 'military' | 'none';
 
@@ -40,7 +41,7 @@ export function standSpanFeet(code: StandCode): Feet {
 }
 
 /** The narrowest code whose stands take this wingspan, or undefined beyond code F. */
-export function smallestStandCodeFor(wingspanM: number): StandCode | undefined {
+export function smallestStandCodeFor(wingspanM: Meters): StandCode | undefined {
   return STAND_CODES.find((code) => wingspanM <= WIDTH_CODE_WINGSPAN_M[code]);
 }
 

@@ -1,4 +1,5 @@
 import { Coordinates } from '@/types/geo';
+import type { Degrees, Feet, Knots } from '@/types/units';
 
 export interface VatsimPilot extends Coordinates {
   cid: number;
@@ -6,10 +7,10 @@ export interface VatsimPilot extends Coordinates {
   callsign: string;
   server: string;
   pilot_rating: number;
-  altitude: number;
-  groundspeed: number;
+  altitude: Feet;
+  groundspeed: Knots;
   transponder: string;
-  heading: number;
+  heading: Degrees;
   qnh_i_hg: number;
   qnh_mb: number;
   flight_plan: {

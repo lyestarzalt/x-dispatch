@@ -2,8 +2,9 @@
  * Renderer-side helpers for offering North Atlantic tracks: which track a route already files,
  * and whether a pair of airports crosses the track system at all.
  */
+import type { Feet } from '@/types/units';
 import { hasParity } from './cruiseAdjust';
-import type { LatLon } from './geometry';
+import { type LatLon, lonDeltaDeg } from './geometry';
 import { NAT_TRACK_RE, tokenizeRoute } from './routeTokens';
 import type { NatFeed, NatMessageInfo, OceanicTrackInfo } from './types';
 
@@ -23,11 +24,6 @@ const NAT_MIN_LAT = 20;
 
 export type NatDirection = 'eastbound' | 'westbound';
 
-/** Degrees east from one longitude to another, the short way round: -180 to 180. */
-function shortArcDeg(fromLon: number, toLon: number): number {
-  return ((toLon - fromLon + 540) % 360) - 180;
-}
-
 /**
  * Which way the flight crosses the North Atlantic, or null when it does not. A crossing is a
  * flight whose short way round passes the mid-ocean meridian: San Francisco to Hong Kong has
@@ -36,8 +32,8 @@ function shortArcDeg(fromLon: number, toLon: number): number {
  */
 export function natCrossing(departure: LatLon, arrival: LatLon): NatDirection | null {
   if (departure.latitude < NAT_MIN_LAT || arrival.latitude < NAT_MIN_LAT) return null;
-  const arc = shortArcDeg(departure.longitude, arrival.longitude);
-  const toMeridian = shortArcDeg(departure.longitude, NAT_MERIDIAN);
+  const arc = lonDeltaDeg(departure.longitude, arrival.longitude);
+  const toMeridian = lonDeltaDeg(departure.longitude, NAT_MERIDIAN);
   if (arc === 0 || toMeridian === 0) return null;
   const passes = arc > 0 ? toMeridian > 0 && toMeridian < arc : toMeridian < 0 && toMeridian > arc;
   if (!passes) return null;
@@ -85,24 +81,24 @@ const FL_TO_FT = 100;
  * nearest level offered at all. With no levels published the suggestion stands.
  */
 export function cruiseOnTracks(
-  suggestedFt: number,
+  suggestedFt: Feet,
   tracks: OceanicTrackInfo[],
   eastbound: boolean
-): number {
+): Feet {
   const levels = [...new Set(tracks.flatMap((t) => t.levels))]
     .map((fl) => fl * FL_TO_FT)
     .sort((a, b) => a - b);
-  if (levels.length === 0 || levels.includes(suggestedFt)) return suggestedFt;
+  if (levels.length === 0 || levels.includes(suggestedFt)) return suggestedFt as Feet;
   const legal = levels.filter((ft) => hasParity(ft, eastbound));
   const legalBelow = legal.filter((ft) => ft <= suggestedFt);
-  if (legalBelow.length > 0) return legalBelow[legalBelow.length - 1]!;
-  if (legal.length > 0) return legal[0]!;
+  if (legalBelow.length > 0) return legalBelow[legalBelow.length - 1]! as Feet;
+  if (legal.length > 0) return legal[0]! as Feet;
   const below = levels.filter((ft) => ft <= suggestedFt);
-  return below.length > 0 ? below[below.length - 1]! : levels[0]!;
+  return (below.length > 0 ? below[below.length - 1]! : levels[0]!) as Feet;
 }
 
 /** Whether the track publishes the cruise level; no cruise or no level list counts as a fit. */
-export function cruiseFitsTrack(track: OceanicTrackInfo, cruiseFt: number | null): boolean {
+export function cruiseFitsTrack(track: OceanicTrackInfo, cruiseFt: Feet | null): boolean {
   if (cruiseFt === null || track.levels.length === 0) return true;
   return track.levels.includes(Math.round(cruiseFt / 100));
 }

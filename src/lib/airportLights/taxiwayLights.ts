@@ -1,13 +1,14 @@
 import { calculateBearing, destinationPoint, haversineDistance } from '@/lib/utils/geomath';
 import { LineLightingType, type LinearFeature } from '@/types/apt';
+import type { Meters } from '@/types/units';
 
 export type LightColor = 'white' | 'amber' | 'green' | 'blue' | 'red';
 
 export interface LightRule {
   colors: LightColor[];
-  spacingM: number;
+  spacingM: Meters;
   /** Lateral offset from the painted line in metres, positive to the right. */
-  offsetM: number;
+  offsetM: Meters;
   pulse: boolean;
 }
 

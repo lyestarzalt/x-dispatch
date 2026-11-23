@@ -3,15 +3,7 @@ import * as path from 'path';
 import { errorMessage } from '@/lib/utils/errors';
 import type { BrowserError, Result } from '../../core/types';
 import { err, ok } from '../../core/types';
-
-/**
- * Validate path is within base directory (prevent traversal).
- */
-function validatePathWithin(basePath: string, targetPath: string): boolean {
-  const resolvedTarget = path.resolve(targetPath);
-  const resolvedBase = path.resolve(basePath);
-  return resolvedTarget.startsWith(resolvedBase + path.sep);
-}
+import { validatePathWithin } from './pathGuard';
 
 /**
  * Delete an aircraft folder.
