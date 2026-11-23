@@ -1,4 +1,5 @@
 import { METERS_PER_DEG_LAT } from '@/lib/utils/units/constants';
+import type { Degrees } from '@/types/units';
 import type { GuidancePoint } from './types';
 
 /**
@@ -74,17 +75,17 @@ export function routeBetween(g: RouteGeometry, from: number, to: number): Guidan
 }
 
 /** True bearing from `a` to `b`, 0 = north, clockwise, in [0, 360). */
-export function bearingOf(a: Vec, b: Vec): number {
+export function bearingOf(a: Vec, b: Vec): Degrees {
   const deg = (Math.atan2(b.x - a.x, b.y - a.y) * 180) / Math.PI;
-  return (deg + 360) % 360;
+  return ((deg + 360) % 360) as Degrees;
 }
 
 /** Signed change of heading from `inDeg` to `outDeg`, in (-180, 180]. Positive turns right. */
-export function signedTurn(inDeg: number, outDeg: number): number {
+export function signedTurn(inDeg: number, outDeg: number): Degrees {
   let d = (outDeg - inDeg) % 360;
   if (d <= -180) d += 360;
   if (d > 180) d -= 360;
-  return d;
+  return d as Degrees;
 }
 
 /** Closest point to `p` on segment `ab`, with how far along it (0..1) and how far away. */

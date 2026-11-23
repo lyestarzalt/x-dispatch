@@ -7,13 +7,7 @@
  * varies. See docs/superpowers/specs/2026-10-02-unit-system-design.md.
  */
 
-type Brand<Base, Label extends string> = Base & { readonly __brand: Label };
-
-/** Canonical speed unit. Branded so a raw number can't be passed where knots are expected. */
-export type Knots = Brand<number, 'knots'>;
-
-/** Canonical vertical-speed unit. */
-export type FeetPerMinute = Brand<number, 'feetPerMinute'>;
+export type { FeetPerMinute, Knots } from '@/types/units';
 
 export type DistanceUnit = 'nm' | 'km' | 'mi';
 export type AltitudeUnit = 'ft' | 'm';

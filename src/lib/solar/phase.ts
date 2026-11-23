@@ -9,6 +9,7 @@
 import * as SunCalc from 'suncalc';
 import { sunPosition } from '@/lib/map/solar/solarPosition';
 import { haversineDistance } from '@/lib/utils/geomath';
+import type { Degrees } from '@/types/units';
 
 export type LightPhase = 'day' | 'civil' | 'nautical' | 'astro' | 'night';
 
@@ -47,8 +48,8 @@ export function phaseForAltitude(altitudeDeg: number): LightPhase {
   return 'night';
 }
 
-export function sunAltitudeAt(timeMs: number, lat: number, lon: number): number {
-  return sunPosition(timeMs, lat, lon).altitude;
+export function sunAltitudeAt(timeMs: number, lat: number, lon: number): Degrees {
+  return sunPosition(timeMs, lat, lon).altitude as Degrees;
 }
 
 export function phaseAt(timeMs: number, lat: number, lon: number): LightPhase {

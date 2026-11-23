@@ -10,6 +10,7 @@ import type { LatLon } from '@/lib/flightplan/builder/geometry';
 import { bearingDeg, destinationPoint, greatCircleNm } from '@/lib/flightplan/builder/geometry';
 import type { RangeRingCategory } from '@/types/layers';
 import type { AltitudeConstraint } from '@/types/navigation';
+import type { Feet } from '@/types/units';
 
 export interface ProfileWaypointInput extends LatLon {
   id: string;
@@ -292,8 +293,9 @@ export function computeRouteProfile(
 }
 
 /** Highest terrain plus the ground buffer, rounded up to the next 500 ft. */
-export function safeAltitudeFt(maxElevationFt: number): number {
-  return Math.ceil((maxElevationFt + GROUND_BUFFER_FT) / ROUND_BUFFER_FT) * ROUND_BUFFER_FT;
+export function safeAltitudeFt(maxElevationFt: number): Feet {
+  return (Math.ceil((maxElevationFt + GROUND_BUFFER_FT) / ROUND_BUFFER_FT) *
+    ROUND_BUFFER_FT) as Feet;
 }
 
 /** Safe altitude per leg from the highest terrain under each, and the route's minimum. */

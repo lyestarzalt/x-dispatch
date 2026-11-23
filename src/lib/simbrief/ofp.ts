@@ -7,6 +7,7 @@ import type {
   SimBriefOFP,
   SimBriefSigmet,
 } from '@/types/simbrief';
+import type { Seconds } from '@/types/units';
 
 /**
  * SimBrief OFP fetching and normalisation, shared by the main process (which talks to
@@ -176,17 +177,17 @@ export function primaryAlternate(ofp: SimBriefOFP): SimBriefAlternate | undefine
  * Seconds from a SimBrief duration: `"13:17:31"` (v2), `"47851"` (legacy seconds) or a
  * number. `null` when the value is empty or unreadable.
  */
-export function parseDurationSeconds(value: string | number | undefined | null): number | null {
+export function parseDurationSeconds(value: string | number | undefined | null): Seconds | null {
   if (value === undefined || value === null || value === '') return null;
-  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+  if (typeof value === 'number') return (Number.isFinite(value) ? value : null) as Seconds | null;
   const clock = value.match(/^(-?)(\d+):(\d{1,2})(?::(\d{1,2}))?$/);
   if (clock) {
     const [, sign, h, m, s] = clock;
     const total = Number(h) * 3600 + Number(m) * 60 + Number(s ?? 0);
-    return sign === '-' ? -total : total;
+    return (sign === '-' ? -total : total) as Seconds;
   }
   const seconds = Number(value);
-  return Number.isFinite(seconds) ? seconds : null;
+  return (Number.isFinite(seconds) ? seconds : null) as Seconds | null;
 }
 
 /** A Date from a SimBrief timestamp: ISO 8601 (v2) or epoch seconds (legacy). */

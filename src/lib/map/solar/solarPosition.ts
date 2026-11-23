@@ -1,4 +1,5 @@
 import { smoothstep } from '@/lib/utils/math';
+import type { Degrees } from '@/types/units';
 
 /**
  * Sun geometry shared by the sky lighting and the city-light layers.
@@ -64,11 +65,11 @@ function sunCoords(timeMs: number): SunCoords {
   };
 }
 
-export function normalizeLongitude(lon: number): number {
+export function normalizeLongitude(lon: number): Degrees {
   const wrapped = ((((lon + 180) % 360) + 360) % 360) - 180;
   // Keep the antimeridian on the positive side so a polygon that starts
   // there does not flip between -180 and 180 on consecutive frames.
-  return wrapped === -180 ? 180 : wrapped;
+  return (wrapped === -180 ? 180 : wrapped) as Degrees;
 }
 
 /** Point on Earth where the sun is directly overhead. */

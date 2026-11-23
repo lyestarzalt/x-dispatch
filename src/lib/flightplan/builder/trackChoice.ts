@@ -2,6 +2,7 @@
  * Renderer-side helpers for offering North Atlantic tracks: which track a route already files,
  * and whether a pair of airports crosses the track system at all.
  */
+import type { Feet } from '@/types/units';
 import { hasParity } from './cruiseAdjust';
 import { type LatLon, lonDeltaDeg } from './geometry';
 import { NAT_TRACK_RE, tokenizeRoute } from './routeTokens';
@@ -83,17 +84,17 @@ export function cruiseOnTracks(
   suggestedFt: number,
   tracks: OceanicTrackInfo[],
   eastbound: boolean
-): number {
+): Feet {
   const levels = [...new Set(tracks.flatMap((t) => t.levels))]
     .map((fl) => fl * FL_TO_FT)
     .sort((a, b) => a - b);
-  if (levels.length === 0 || levels.includes(suggestedFt)) return suggestedFt;
+  if (levels.length === 0 || levels.includes(suggestedFt)) return suggestedFt as Feet;
   const legal = levels.filter((ft) => hasParity(ft, eastbound));
   const legalBelow = legal.filter((ft) => ft <= suggestedFt);
-  if (legalBelow.length > 0) return legalBelow[legalBelow.length - 1]!;
-  if (legal.length > 0) return legal[0]!;
+  if (legalBelow.length > 0) return legalBelow[legalBelow.length - 1]! as Feet;
+  if (legal.length > 0) return legal[0]! as Feet;
   const below = levels.filter((ft) => ft <= suggestedFt);
-  return below.length > 0 ? below[below.length - 1]! : levels[0]!;
+  return (below.length > 0 ? below[below.length - 1]! : levels[0]!) as Feet;
 }
 
 /** Whether the track publishes the cruise level; no cruise or no level list counts as a fit. */

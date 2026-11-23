@@ -3,12 +3,13 @@ import { EARTH_RADIUS_M, destinationRad, toDegrees, toRadians } from '@/lib/util
 import type { Runway, WaterRunway } from '@/types/apt';
 import { ShoulderSurfaceType } from '@/types/apt';
 import type { LonLat } from '@/types/geo';
+import type { Degrees } from '@/types/units';
 
 /** Width of a transverse threshold bar, the same stripe width as the threshold marking. */
 export const THRESHOLD_BAR_WIDTH_M = 1.8;
 
 /** True bearing from end 1 to end 2, from the end coordinates rather than the runway number. */
-export function getRunwayTrueHeading(runway: Runway | WaterRunway): number {
+export function getRunwayTrueHeading(runway: Runway | WaterRunway): Degrees {
   const [end1, end2] = runway.ends;
   return calculateBearing(end1.latitude, end1.longitude, end2.latitude, end2.longitude);
 }

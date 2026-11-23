@@ -5,6 +5,7 @@
  * per-quantity shape as the other five (convert/format/parse).
  */
 import { type WeightUnit, formatWeight, kgToLbs, lbsToKg } from '@/lib/utils/format';
+import type { Pounds } from '@/types/units';
 
 export { formatWeight };
 
@@ -23,6 +24,6 @@ export function convertWeight(lbs: number, unit: WeightUnit): number {
 }
 
 /** Display unit -> canonical lbs, for user-typed values. */
-export function parseWeightInput(value: number, unit: WeightUnit): number {
-  return unit === 'kg' ? kgToLbs(value) : value;
+export function parseWeightInput(value: number, unit: WeightUnit): Pounds {
+  return (unit === 'kg' ? kgToLbs(value) : value) as Pounds;
 }

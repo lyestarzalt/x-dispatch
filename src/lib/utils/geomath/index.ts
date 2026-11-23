@@ -1,5 +1,6 @@
 import { FEET_PER_METER, METERS_PER_NM } from '@/lib/utils/units/constants';
 import type { Coordinates } from '@/types/geo';
+import type { Degrees, Feet, Meters, NauticalMiles, Radians } from '@/types/units';
 import { EARTH_RADIUS_M, destinationRad, initialBearing, toDegrees, toRadians } from './sphere';
 
 // Re-export arc utilities
@@ -16,13 +17,9 @@ export { boundsAroundPoint, type GeoBounds } from './bounds';
 // Re-export course-intersection primitives
 export { crossTrackStatus, intersectRadials, lineCircleIntersection } from './intersections';
 
-type Brand<Base, Label extends string> = Base & { readonly __brand: Label };
-
-export type Degrees = Brand<number, 'degrees'>;
-export type Meters = Brand<number, 'meters'>;
-export type Feet = Brand<number, 'feet'>;
-export type NauticalMiles = Brand<number, 'nauticalMiles'>;
-type LatLon = Brand<[number, number], 'latlon'>;
+export type { Degrees, Feet, Meters, NauticalMiles, Radians };
+/** `[lat, lon]`, the order `calculateDestination` works in before it is flipped for GeoJSON. */
+type LatLon = [number, number];
 
 export function metersToFeet(meters: number): Feet {
   return (meters * FEET_PER_METER) as Feet;

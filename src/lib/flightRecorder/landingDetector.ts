@@ -1,5 +1,6 @@
 import { KNOTS_PER_MPS } from '@/lib/utils/units/constants';
 import { type FlareGrade, type LandingReport, landingRating } from '@/types/flightRecorder';
+import type { FeetPerMinute } from '@/types/units';
 import type { SimFrame } from './frames';
 
 /**
@@ -40,7 +41,7 @@ export function flareGrade(pitchRateDegSec: number): FlareGrade {
 }
 
 /** Least-squares slope of height over time, in feet per minute. */
-export function descentRateFpm(samples: readonly WindowSample[]): number | null {
+export function descentRateFpm(samples: readonly WindowSample[]): FeetPerMinute | null {
   if (samples.length < 2) return null;
   const n = samples.length;
   let sumT = 0;
@@ -59,7 +60,7 @@ export function descentRateFpm(samples: readonly WindowSample[]): number | null 
     den += dt * dt;
   }
   if (den === 0) return null;
-  return (num / den) * MS_TO_FPM;
+  return ((num / den) * MS_TO_FPM) as FeetPerMinute;
 }
 
 export class LandingDetector {

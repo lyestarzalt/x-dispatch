@@ -1,17 +1,18 @@
 import type { IvaoPilot } from '@/types/ivao';
 import type { NetworkFlightPlan, NetworkPilot } from '@/types/networkTraffic';
+import type { Feet } from '@/types/units';
 import type { VatsimPilot } from '@/types/vatsim';
 
 /** Below this ground speed a pilot with no ground flag is taken to be on the ground. */
 const GROUND_SPEED_KTS = 50;
 
 /** Filed altitudes come as "35000", "FL350", "F350" or "A050"; anything else is null. */
-export function parseFiledAltitudeFt(filed: string | null | undefined): number | null {
+export function parseFiledAltitudeFt(filed: string | null | undefined): Feet | null {
   if (!filed) return null;
   const value = filed.trim().toUpperCase();
   const level = value.match(/^(?:FL|F|A)(\d{2,3})$/);
-  if (level) return Number(level[1]) * 100;
-  if (/^\d+$/.test(value)) return Number(value);
+  if (level) return (Number(level[1]) * 100) as Feet;
+  if (/^\d+$/.test(value)) return Number(value) as Feet;
   return null;
 }
 

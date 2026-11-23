@@ -29,6 +29,7 @@ import { useFlightPlanStore } from '@/stores/flightPlanStore';
 import { usePlanBuilderStore } from '@/stores/planBuilderStore';
 import { usePlaneStore } from '@/stores/planeStore';
 import type { EnrichedFlightPlan } from '@/types/fms';
+import type { Feet } from '@/types/units';
 
 /** Sampling step along the route, NM; widened automatically on very long routes. */
 const TERRAIN_STEP_NM = 0.25;
@@ -90,14 +91,14 @@ export function thinTerrain(track: TerrainSample[], max: number): TerrainSample[
 }
 
 /** The cruise level for a plan: the stored one, else the highest enroute altitude it carries. */
-export function cruiseAltitudeFor(plan: EnrichedFlightPlan, stored: number | null): number | null {
-  if (stored && stored > 0) return stored;
+export function cruiseAltitudeFor(plan: EnrichedFlightPlan, stored: number | null): Feet | null {
+  if (stored && stored > 0) return stored as Feet;
   let max = 0;
   for (const wp of plan.waypoints) {
     if (wp.via === 'ADEP' || wp.via === 'ADES') continue;
     if (wp.altitude > max) max = wp.altitude;
   }
-  return max > 0 ? max : null;
+  return (max > 0 ? max : null) as Feet | null;
 }
 
 export function profileInputs(

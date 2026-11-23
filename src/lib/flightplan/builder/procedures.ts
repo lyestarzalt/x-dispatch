@@ -8,6 +8,7 @@ import type {
   ResolvedProcedure,
   ResolvedProcedureWaypoint,
 } from '@/types/navigation';
+import type { NauticalMiles } from '@/types/units';
 import type { ProcedureChoice, RouteJoin } from './types';
 
 export interface ProcedureParts {
@@ -192,7 +193,7 @@ const INTERCEPT_NM = 3;
 export function sidInitialClimbNm(
   sid: ResolvedProcedure | undefined,
   runwayLengthNm = 1.5
-): number | undefined {
+): NauticalMiles | undefined {
   if (!sid) return undefined;
   let total = 0;
   let found = false;
@@ -231,7 +232,7 @@ export function sidInitialClimbNm(
     }
   }
   if (!found) return undefined;
-  return Math.min(MAX_CLIMB_NM, Math.max(MIN_CLIMB_NM, total));
+  return Math.min(MAX_CLIMB_NM, Math.max(MIN_CLIMB_NM, total)) as NauticalMiles;
 }
 
 function procedureWaypoints(procedure: ResolvedProcedure): FMSWaypoint[] {

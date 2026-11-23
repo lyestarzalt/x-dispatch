@@ -25,6 +25,7 @@ import {
   getWaypointsInBounds,
 } from '@/lib/xplaneServices/dataService/navdata/navCache';
 import type { Airspace, AirwaySegment } from '@/types/navigation';
+import type { Feet, NauticalMiles } from '@/types/units';
 import { bandAllows } from './airwayRules';
 import { type LatLon, bearingDeg, greatCircleNm, greatCirclePoints } from './geometry';
 import { type OceanicTrack, getOceanicTracks, tracksForAutoRouting } from './oceanicTracks';
@@ -211,14 +212,14 @@ function fixKey(id: string, region: string): string {
 // ----------------------------------------------------------------------------
 
 /** "FL195", "5000ft", "GND", "UNL" and friends to feet; null when unreadable. */
-export function limitToFeet(text: string): number | null {
+export function limitToFeet(text: string): Feet | null {
   const s = text.trim().toUpperCase();
-  if (s === 'GND' || s === 'SFC' || s === 'MSL' || s === '0') return 0;
-  if (s === 'UNL' || s === 'UNLTD' || s === 'UNLIMITED') return Infinity;
+  if (s === 'GND' || s === 'SFC' || s === 'MSL' || s === '0') return 0 as Feet;
+  if (s === 'UNL' || s === 'UNLTD' || s === 'UNLIMITED') return Infinity as Feet;
   const fl = /^FL\s*(\d+)/.exec(s);
-  if (fl) return Number(fl[1]) * 100;
+  if (fl) return (Number(fl[1]) * 100) as Feet;
   const ft = /^(\d+)\s*(FT|F|')?/.exec(s);
-  if (ft) return Number(ft[1]);
+  if (ft) return Number(ft[1]) as Feet;
   return null;
 }
 
@@ -783,11 +784,12 @@ function searchViaTrack(
 }
 
 /** Perpendicular distance of p from the great circle through a and b, in nautical miles. */
-export function crossTrackNm(a: LatLon, b: LatLon, p: LatLon): number {
+export function crossTrackNm(a: LatLon, b: LatLon, p: LatLon): NauticalMiles {
   const d13 = greatCircleNm(a, p) / EARTH_RADIUS_NM;
   const t13 = (bearingDeg(a, p) * Math.PI) / 180;
   const t12 = (bearingDeg(a, b) * Math.PI) / 180;
-  return Math.abs(Math.asin(Math.sin(d13) * Math.sin(t13 - t12))) * EARTH_RADIUS_NM;
+  return (Math.abs(Math.asin(Math.sin(d13) * Math.sin(t13 - t12))) *
+    EARTH_RADIUS_NM) as NauticalMiles;
 }
 
 /**

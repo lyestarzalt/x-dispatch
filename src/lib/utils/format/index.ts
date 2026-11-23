@@ -3,6 +3,7 @@
  */
 import { normalize360 } from '@/lib/utils/math';
 import { KG_TO_LBS, LBS_TO_KG } from '@/lib/utils/units/constants';
+import type { Kilograms, Pounds } from '@/types/units';
 import type { WeightUnit } from './types';
 
 export * from './types';
@@ -71,12 +72,12 @@ export function formatFrequency(freq: number, decimals = 3): string {
   return freq.toFixed(decimals);
 }
 
-export function lbsToKg(lbs: number): number {
-  return lbs * LBS_TO_KG;
+export function lbsToKg(lbs: number): Kilograms {
+  return (lbs * LBS_TO_KG) as Kilograms;
 }
 
-export function kgToLbs(kg: number): number {
-  return kg * KG_TO_LBS;
+export function kgToLbs(kg: number): Pounds {
+  return (kg * KG_TO_LBS) as Pounds;
 }
 
 /**
