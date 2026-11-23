@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import { useAppStore } from '@/stores/appStore';
-import { safeAddGeoJSONSource } from '../layers/types';
+import { isMapRemoved, safeAddGeoJSONSource } from '../layers/types';
+import { runWhenStyleIsReady } from './styleReadiness';
 import type { MapRef } from './useMapSetup';
 
 const SOURCE_ID = 'pindrop-source';
@@ -68,7 +69,7 @@ function ensureImage(map: maplibregl.Map): Promise<void> {
   return new Promise((resolve) => {
     const img = new Image();
     img.onload = () => {
-      if (!map.hasImage(IMAGE_ID)) {
+      if (!isMapRemoved(map) && !map.hasImage(IMAGE_ID)) {
         map.addImage(IMAGE_ID, img, { sdf: false });
       }
       resolve();
@@ -96,6 +97,32 @@ function ensureSourceAndLayer(map: maplibregl.Map, lng: number, lat: number, hea
       paint: {},
     });
   }
+}
+
+interface PinPosition {
+  lng: number;
+  lat: number;
+  heading: number;
+}
+
+/**
+ * Draw the pin once the style can take a source: a pin dropped while the
+ * basemap loads waited for nothing and threw "Style is not done loading"
+ * (Sentry X-DISPATCH-4G). The position is read at draw time, so a pin moved
+ * or cleared meanwhile is drawn where it ended up, or not at all.
+ */
+export async function drawPin(
+  map: maplibregl.Map,
+  getPin: () => PinPosition | null
+): Promise<void> {
+  await ensureImage(map);
+  if (isMapRemoved(map)) return;
+  runWhenStyleIsReady(map, () => {
+    const pin = getPin();
+    if (!pin) return;
+    ensureSourceAndLayer(map, pin.lng, pin.lat, pin.heading);
+    updateSource(map, pin.lng, pin.lat, pin.heading);
+  });
 }
 
 function removeSourceAndLayer(map: maplibregl.Map) {
@@ -333,19 +360,7 @@ export function usePinDrop({ mapRef }: UsePinDropOptions) {
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !pinRef.current) return;
-
-    const reAdd = async () => {
-      await ensureImage(map);
-      const { lng, lat, heading } = pinRef.current!;
-      ensureSourceAndLayer(map, lng, lat, heading);
-      updateSource(map, lng, lat, heading);
-    };
-
-    if (map.isStyleLoaded()) {
-      reAdd();
-    } else {
-      map.once('style.load', reAdd);
-    }
+    void drawPin(map, () => pinRef.current);
   }, [mapRef]);
 
   // Main interactions (drag to reposition)
@@ -449,9 +464,7 @@ export function usePinDrop({ mapRef }: UsePinDropOptions) {
     const heading = 0;
     pinRef.current = { lng: center.lng, lat: center.lat, heading };
 
-    await ensureImage(map);
-    ensureSourceAndLayer(map, center.lng, center.lat, heading);
-    updateSource(map, center.lng, center.lat, heading);
+    await drawPin(map, () => pinRef.current);
     setStartPositionFromPin(center.lng, center.lat, heading);
     showHandleAt(map, center.lng, center.lat, heading);
   }, [mapRef, showHandleAt]);
@@ -471,9 +484,7 @@ export function usePinDrop({ mapRef }: UsePinDropOptions) {
       const heading = 0;
       pinRef.current = { lng: lon, lat, heading };
 
-      await ensureImage(map);
-      ensureSourceAndLayer(map, lon, lat, heading);
-      updateSource(map, lon, lat, heading);
+      await drawPin(map, () => pinRef.current);
       setStartPositionFromPin(lon, lat, heading);
       showHandleAt(map, lon, lat, heading);
 

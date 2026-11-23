@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **The flight strip shows 000 just before north.** It read 360 there while the compass read 000.
 - **A delete or switch that fails on an open file names that file.** Close it and try again; a failed scenery delete no longer blames scenery_packs.ini.
 - **Changing flight on a slow PC waits for X-Plane to finish loading.** It reported a lost connection after 45 seconds while X-Plane was still loading.
+- **Dropping a start pin while the map loads no longer fails.** The pin appears once the map is ready.
 - **Companion apps start the way Windows starts them.** An app that needs administrator rights gets the usual Windows prompt, batch files and shortcuts work, and X-Dispatch no longer needs to run as administrator.
 
 ## [2.17.0] - 2026-11-22
