@@ -46,6 +46,7 @@ import { importFmsFile } from '@/lib/flightplan/importFms';
 import { quickFade } from '@/lib/motionPresets';
 import { cn } from '@/lib/utils/helpers';
 import { toastError } from '@/lib/utils/toastError';
+import { METERS_PER_FOOT } from '@/lib/utils/units/constants';
 import type { Airport } from '@/lib/xplaneServices/dataService';
 import { trackEvent, useNavDataCounts } from '@/queries';
 import { useIvaoQuery } from '@/queries/useIvaoQuery';
@@ -160,7 +161,7 @@ function PinOptionsPopover({
     });
   };
 
-  const airAltFt = Math.round((startPosition?.airAltitudeM ?? 914.4) / 0.3048);
+  const airAltFt = Math.round((startPosition?.airAltitudeM ?? 914.4) / METERS_PER_FOOT);
   const isBoatMode = currentMode === 'carrier' || currentMode === 'frigate';
 
   return (
@@ -222,7 +223,7 @@ function PinOptionsPopover({
                 step={500}
                 value={[airAltFt]}
                 onValueChange={([v]) => {
-                  if (v !== undefined) updatePos({ airAltitudeM: v * 0.3048 });
+                  if (v !== undefined) updatePos({ airAltitudeM: v * METERS_PER_FOOT });
                 }}
               />
             </div>

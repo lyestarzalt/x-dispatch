@@ -4,10 +4,11 @@
  * Tracks file modification times to invalidate cache when data files change.
  */
 import { type AnyColumn, type SQL, count, eq, sql } from 'drizzle-orm';
-import * as fs from 'fs';
 import { airspaces, airways, getDb, navFileMeta, navaids, waypoints } from '@/lib/db';
+import { getFileMtime } from '@/lib/utils/fsEntries';
 import { boundsAroundPoint } from '@/lib/utils/geomath';
 import logger from '@/lib/utils/logger';
+import { signedAngleDelta } from '@/lib/utils/math';
 import { yieldToEventLoop } from '@/lib/utils/yieldToEventLoop';
 import type { Coordinates } from '@/types/geo';
 import type {
@@ -84,18 +85,6 @@ export function detectSourceType(filePath: string): NavSourceType {
 // ============================================================================
 // File Metadata Operations
 // ============================================================================
-
-/**
- * Get file modification time in milliseconds
- */
-export function getFileMtime(filePath: string): number | null {
-  try {
-    const stat = fs.statSync(filePath);
-    return Math.floor(stat.mtimeMs);
-  } catch {
-    return null;
-  }
-}
 
 /**
  * Get stored file metadata for a specific data type
@@ -383,12 +372,7 @@ export function getNavaidNearestById(
 ): { id: string; latitude: number; longitude: number; type: string; region: string } | null {
   const db = getDb();
 
-  // Approximate bounding box (1 degree ≈ 60nm); a degree of longitude shrinks with latitude.
-  const degBuffer = maxDistNm / 60;
-  // Near a pole a degree of longitude is tiny, so the box widens to the whole circle.
-  const lonBuffer = Math.min(180, degBuffer / Math.max(1e-6, Math.cos((lat * Math.PI) / 180)));
-  const minLat = lat - degBuffer;
-  const maxLat = lat + degBuffer;
+  const { minLat, maxLat, lonBuffer } = searchBox(lat, maxDistNm);
   const minLon = lon - lonBuffer;
   const maxLon = lon + lonBuffer;
 
@@ -410,21 +394,8 @@ export function getNavaidNearestById(
 
   if (results.length === 0) return null;
 
-  // Find nearest (simple distance calculation)
-  let nearest = results[0];
-  let nearestDist = Infinity;
-
-  for (const r of results) {
-    const dLat = (r.lat - lat) * 60;
-    const dLon = lonDeltaDeg(lon, r.lon) * 60 * Math.cos((lat * Math.PI) / 180);
-    const dist = Math.sqrt(dLat * dLat + dLon * dLon);
-    if (dist < nearestDist) {
-      nearestDist = dist;
-      nearest = r;
-    }
-  }
-
-  if (!nearest || nearestDist > maxDistNm) return null;
+  const nearest = nearestWithin(results, lat, lon, maxDistNm);
+  if (!nearest) return null;
 
   return {
     id: nearest.navaidId,
@@ -433,6 +404,48 @@ export function getNavaidNearestById(
     type: nearest.type,
     region: nearest.region ?? '',
   };
+}
+
+/**
+ * The latitude band and longitude half-width, in degrees, of a box that contains a circle
+ * of `maxDistNm` around a latitude. A degree is about 60 NM; a degree of longitude shrinks
+ * with latitude, and near a pole it is tiny, so there the box widens to the whole circle.
+ */
+function searchBox(
+  lat: number,
+  maxDistNm: number
+): { minLat: number; maxLat: number; lonBuffer: number } {
+  const degBuffer = maxDistNm / 60;
+  const lonBuffer = Math.min(180, degBuffer / Math.max(1e-6, Math.cos((lat * Math.PI) / 180)));
+  return { minLat: lat - degBuffer, maxLat: lat + degBuffer, lonBuffer };
+}
+
+/**
+ * The row closest to a point, or null when none is within `maxDistNm`. Distance is the
+ * flat approximation (a degree is 60 NM, longitude scaled by the cosine of the latitude),
+ * which is enough to choose between same-named fixes and far cheaper than a great circle.
+ */
+function nearestWithin<T extends { lat: number; lon: number }>(
+  rows: T[],
+  lat: number,
+  lon: number,
+  maxDistNm: number
+): T | null {
+  let nearest = rows[0];
+  let nearestDist = Infinity;
+
+  for (const r of rows) {
+    const dLat = (r.lat - lat) * 60;
+    const dLon = signedAngleDelta(lon, r.lon) * 60 * Math.cos((lat * Math.PI) / 180);
+    const dist = Math.sqrt(dLat * dLat + dLon * dLon);
+    if (dist < nearestDist) {
+      nearestDist = dist;
+      nearest = r;
+    }
+  }
+
+  if (!nearest || nearestDist > maxDistNm) return null;
+  return nearest;
 }
 
 /**
@@ -456,11 +469,6 @@ export function lonSpans(lon: number, lonBuffer: number): [number, number][] {
     ];
   }
   return [[min, max]];
-}
-
-/** Degrees of longitude between two points the short way round: -180 to 180. */
-function lonDeltaDeg(fromLon: number, toLon: number): number {
-  return ((toLon - fromLon + 540) % 360) - 180;
 }
 
 function lonSpansSql(column: AnyColumn, spans: [number, number][]): SQL {
@@ -488,12 +496,7 @@ export function getNavaidEnrichedById(
 } | null {
   const db = getDb();
 
-  // Approximate bounding box (1 degree ≈ 60nm); a degree of longitude shrinks with latitude.
-  const degBuffer = maxDistNm / 60;
-  // Near a pole a degree of longitude is tiny, so the box widens to the whole circle.
-  const lonBuffer = Math.min(180, degBuffer / Math.max(1e-6, Math.cos((lat * Math.PI) / 180)));
-  const minLat = lat - degBuffer;
-  const maxLat = lat + degBuffer;
+  const { minLat, maxLat, lonBuffer } = searchBox(lat, maxDistNm);
 
   const results = db
     .select({
@@ -515,21 +518,8 @@ export function getNavaidEnrichedById(
 
   if (results.length === 0) return null;
 
-  // Find nearest (simple distance calculation)
-  let nearest = results[0];
-  let nearestDist = Infinity;
-
-  for (const r of results) {
-    const dLat = (r.lat - lat) * 60;
-    const dLon = lonDeltaDeg(lon, r.lon) * 60 * Math.cos((lat * Math.PI) / 180);
-    const dist = Math.sqrt(dLat * dLat + dLon * dLon);
-    if (dist < nearestDist) {
-      nearestDist = dist;
-      nearest = r;
-    }
-  }
-
-  if (!nearest || nearestDist > maxDistNm) return null;
+  const nearest = nearestWithin(results, lat, lon, maxDistNm);
+  if (!nearest) return null;
 
   return {
     id: nearest.navaidId,
@@ -855,12 +845,7 @@ export function getWaypointNearestById(
 ): { id: string; latitude: number; longitude: number; region: string } | null {
   const db = getDb();
 
-  // Approximate bounding box (1 degree ≈ 60nm); a degree of longitude shrinks with latitude.
-  const degBuffer = maxDistNm / 60;
-  // Near a pole a degree of longitude is tiny, so the box widens to the whole circle.
-  const lonBuffer = Math.min(180, degBuffer / Math.max(1e-6, Math.cos((lat * Math.PI) / 180)));
-  const minLat = lat - degBuffer;
-  const maxLat = lat + degBuffer;
+  const { minLat, maxLat, lonBuffer } = searchBox(lat, maxDistNm);
 
   const results = db
     .select({
@@ -879,21 +864,8 @@ export function getWaypointNearestById(
 
   if (results.length === 0) return null;
 
-  // Find nearest (simple distance calculation)
-  let nearest = results[0];
-  let nearestDist = Infinity;
-
-  for (const r of results) {
-    const dLat = (r.lat - lat) * 60;
-    const dLon = lonDeltaDeg(lon, r.lon) * 60 * Math.cos((lat * Math.PI) / 180);
-    const dist = Math.sqrt(dLat * dLat + dLon * dLon);
-    if (dist < nearestDist) {
-      nearestDist = dist;
-      nearest = r;
-    }
-  }
-
-  if (!nearest || nearestDist > maxDistNm) return null;
+  const nearest = nearestWithin(results, lat, lon, maxDistNm);
+  if (!nearest) return null;
 
   return {
     id: nearest.waypointId,

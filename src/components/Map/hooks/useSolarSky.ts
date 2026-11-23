@@ -10,6 +10,7 @@ import {
   solarAppearance,
 } from '@/lib/map/solar/skyPresets';
 import { sunPosition } from '@/lib/map/solar/solarPosition';
+import { signedAngleDelta } from '@/lib/utils/math';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useSolarStore } from '@/stores/solarStore';
 import { BASE_SKY, GLOBE_TO_MERCATOR_ZOOM, HILLSHADE_LAYER_ID } from '../utils/globeUtils';
@@ -139,7 +140,7 @@ export function useSolarSky(mapRef: MapRef, enabled: boolean): void {
       );
       const unchanged =
         Math.abs(altitude - lastAltitude) < MIN_ALTITUDE_STEP &&
-        Math.abs(((azimuth - lastAzimuth + 540) % 360) - 180) < MIN_AZIMUTH_STEP;
+        Math.abs(signedAngleDelta(lastAzimuth, azimuth)) < MIN_AZIMUTH_STEP;
       if (!force && unchanged) return;
       lastAltitude = altitude;
       lastAzimuth = azimuth;

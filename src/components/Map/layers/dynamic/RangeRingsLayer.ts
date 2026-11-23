@@ -8,6 +8,7 @@
 import * as maplibregl from 'maplibre-gl';
 import { labelFont } from '@/lib/map/labelFonts';
 import { destinationPoint, haversineDistance, nauticalMilesToMeters } from '@/lib/utils/geomath';
+import { METERS_PER_NM } from '@/lib/utils/units/constants';
 import type { RangeRingCategory } from '@/types/layers';
 import { safeAddGeoJSONSource } from '../types';
 
@@ -135,8 +136,6 @@ function createRingsGeoJSON(config: RangeRingsConfig, scale = 1): GeoJSON.Featur
 // ============================================================================
 // Interactive Ring Drag
 // ============================================================================
-
-const METERS_PER_NM = 1852;
 
 // Stored references to clean up all listeners
 let dragState: {

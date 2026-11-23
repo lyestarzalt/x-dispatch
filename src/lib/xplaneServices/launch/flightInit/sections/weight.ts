@@ -1,7 +1,6 @@
+import { LBS_TO_KG } from '@/lib/utils/units/constants';
 import type { FlightInit } from '@/lib/xplaneServices/client/generated/xplaneApi';
 import type { Aircraft } from '@/types/aircraft';
-
-const LBS_TO_KG = 0.453592;
 
 export function buildWeightSection(
   fuelTanksKg: number[],

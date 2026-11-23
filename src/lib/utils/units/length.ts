@@ -1,7 +1,6 @@
 import type { Feet } from '@/lib/utils/geomath';
+import { METERS_PER_FOOT } from './constants';
 import type { LengthUnit, Translate } from './types';
-
-const METERS_PER_FOOT = 0.3048;
 
 const SUFFIX_KEY: Record<LengthUnit, string> = {
   ft: 'units.ft',

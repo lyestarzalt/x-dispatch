@@ -1,4 +1,5 @@
 import type { IMetar } from 'metar-taf-parser';
+import { KNOTS_PER_MPS } from '@/lib/utils/units/constants';
 
 export type Precipitation = 'none' | 'rain' | 'snow';
 
@@ -24,7 +25,7 @@ const FOG_CODES = new Set(['FG', 'BR', 'HZ', 'FU']);
 function toKnots(speed: number, unit: string | undefined): number {
   switch (unit) {
     case 'MPS':
-      return speed * 1.94384;
+      return speed * KNOTS_PER_MPS;
     case 'KM/H':
       return speed / 1.852;
     default:

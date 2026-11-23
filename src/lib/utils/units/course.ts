@@ -1,10 +1,9 @@
 import { magneticVariation } from '@/lib/magvar';
 import type { Degrees } from '@/lib/utils/geomath';
+import { normalize360 } from '@/lib/utils/math';
 import type { Translate } from './types';
 
 export type CourseMode = 'magnetic' | 'true' | 'both';
-
-const normalize360 = (deg: number): number => ((deg % 360) + 360) % 360;
 
 function pad3(deg: number): string {
   return Math.round(deg).toString().padStart(3, '0');

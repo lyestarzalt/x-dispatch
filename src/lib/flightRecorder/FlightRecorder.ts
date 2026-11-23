@@ -1,4 +1,5 @@
 import { haversineDistance } from '@/lib/utils/geomath';
+import { FEET_PER_METER, KNOTS_PER_MPS, METERS_PER_NM } from '@/lib/utils/units/constants';
 import type {
   AircraftHint,
   FlightAirport,
@@ -15,9 +16,7 @@ import { LandingDetector } from './landingDetector';
 import { FlightPhaseMachine } from './phaseMachine';
 import { type AirportRunways, matchRunway } from './runwayMatch';
 
-const M_TO_FT = 3.28084;
-const MS_TO_KT = 1.94384;
-const M_TO_NM = 1 / 1852;
+const M_TO_NM = 1 / METERS_PER_NM;
 const TRACK_INTERVAL_S = 1;
 const FLUSH_INTERVAL_MS = 1000;
 const PREVIEW_EVERY = 30;
@@ -146,11 +145,11 @@ export class FlightRecorder {
       frame.wallT,
       round(frame.lat, 6),
       round(frame.lon, 6),
-      Math.round(frame.altM * M_TO_FT),
-      Math.round(frame.groundspeedMs * MS_TO_KT),
+      Math.round(frame.altM * FEET_PER_METER),
+      Math.round(frame.groundspeedMs * KNOTS_PER_MPS),
       Math.round(frame.headingDeg),
       Math.round(frame.vsFpm),
-      Math.round(frame.aglM * M_TO_FT),
+      Math.round(frame.aglM * FEET_PER_METER),
     ];
     const last = this.track[this.track.length - 1];
     if (last) {

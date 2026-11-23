@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type * as maplibregl from 'maplibre-gl';
 import { type GroundWeather, groundWeatherFrom } from '@/lib/groundWeather/groundWeather';
+import { backingScale } from '@/lib/map/backingScale';
 import { useVatsimMetarQuery } from '@/queries/useVatsimMetarQuery';
 import { useAppStore } from '@/stores/appStore';
 import { useSettingsStore } from '@/stores/settingsStore';
@@ -11,8 +12,6 @@ const MIN_ZOOM = 12;
 const MIN_WIND_KT = 4;
 const FRAME_MS = 1000 / 60;
 const MAX_DT_S = 0.05;
-/** Soft effects do not need retina pixels; 1x quarters the fill cost on 2x screens. */
-const MAX_BACKING_SCALE = 1;
 /** Fraction of the previous frame erased each frame; lower keeps longer trails. */
 const TRAIL_FADE = 0.09;
 const WIND_PARTICLES_PER_MEGAPIXEL = 140;
@@ -51,10 +50,6 @@ interface Blob {
   y: number;
   r: number;
   drift: number;
-}
-
-function backingScale(): number {
-  return Math.min(window.devicePixelRatio || 1, MAX_BACKING_SCALE);
 }
 
 function spawn(w: number, h: number): Particle {

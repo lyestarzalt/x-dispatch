@@ -20,6 +20,7 @@ import {
 } from '@/lib/analytics/launchChoices';
 import { writeFtgRoute } from '@/lib/taxiGraph/ftgExport';
 import { isValidAirStartSpeed } from '@/lib/utils/airStartSpeed';
+import { sleep } from '@/lib/utils/async';
 import { cn } from '@/lib/utils/helpers';
 import { toastError } from '@/lib/utils/toastError';
 import { uuid } from '@/lib/utils/uuid';
@@ -353,7 +354,7 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
       }
 
       if (maxDelaySec > 0) {
-        await new Promise((resolve) => setTimeout(resolve, maxDelaySec * 1000));
+        await sleep(maxDelaySec * 1000);
       }
 
       // Resolve the preview image path: livery image → aircraft preview → aircraft thumbnail

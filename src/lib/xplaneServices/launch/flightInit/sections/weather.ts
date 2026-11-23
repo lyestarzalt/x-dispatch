@@ -1,9 +1,8 @@
 import type { WeatherConfig } from '@/components/dialogs/LaunchDialog/weatherTypes';
+import { METERS_PER_FOOT } from '@/lib/utils/units/constants';
 import type { FlightInit } from '@/lib/xplaneServices/client/generated/xplaneApi';
 import type { StartPosition } from '@/types/position';
 import type { WeatherDefinition } from '../types';
-
-const FT_TO_M = 0.3048;
 
 /**
  * Hardcoded preset weather definitions. These use X-Plane preset definition
@@ -111,7 +110,7 @@ export function buildWeatherValue(
     definition: {
       latitude_in_degrees: pos.latitude,
       longitude_in_degrees: pos.longitude,
-      elevation_in_meters: (pos.elevationFt ?? 0) * FT_TO_M,
+      elevation_in_meters: (pos.elevationFt ?? 0) * METERS_PER_FOOT,
       visibility_in_kilometers: c.visibility_km,
       precipitation_ratio: c.precipitation,
       temperature_in_degrees_celsius: c.temperature_c,

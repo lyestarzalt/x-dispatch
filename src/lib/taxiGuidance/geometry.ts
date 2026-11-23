@@ -1,3 +1,4 @@
+import { METERS_PER_DEG_LAT } from '@/lib/utils/units/constants';
 import type { GuidancePoint } from './types';
 
 /**
@@ -5,7 +6,6 @@ import type { GuidancePoint } from './types';
  * kilometres across, so an equirectangular projection is well inside the
  * accuracy the guidance needs.
  */
-const METRES_PER_DEG_LAT = 111_320;
 
 export interface Vec {
   x: number;
@@ -26,10 +26,10 @@ export interface RouteGeometry {
 export function buildGeometry(points: GuidancePoint[]): RouteGeometry {
   const lat0 = points[0]?.lat ?? 0;
   const lon0 = points[0]?.lon ?? 0;
-  const kx = METRES_PER_DEG_LAT * Math.cos((lat0 * Math.PI) / 180);
+  const kx = METERS_PER_DEG_LAT * Math.cos((lat0 * Math.PI) / 180);
   const xy = points.map((p) => ({
     x: (p.lon - lon0) * kx,
-    y: (p.lat - lat0) * METRES_PER_DEG_LAT,
+    y: (p.lat - lat0) * METERS_PER_DEG_LAT,
   }));
   const cum: number[] = [];
   let total = 0;
@@ -41,11 +41,11 @@ export function buildGeometry(points: GuidancePoint[]): RouteGeometry {
 }
 
 export function toLocal(g: RouteGeometry, lat: number, lon: number): Vec {
-  return { x: (lon - g.lon0) * g.kx, y: (lat - g.lat0) * METRES_PER_DEG_LAT };
+  return { x: (lon - g.lon0) * g.kx, y: (lat - g.lat0) * METERS_PER_DEG_LAT };
 }
 
 export function toLatLon(g: RouteGeometry, v: Vec): GuidancePoint {
-  return { lat: g.lat0 + v.y / METRES_PER_DEG_LAT, lon: g.lon0 + v.x / g.kx };
+  return { lat: g.lat0 + v.y / METERS_PER_DEG_LAT, lon: g.lon0 + v.x / g.kx };
 }
 
 /** The point `s` metres along the route, clamped to its ends. */

@@ -1,3 +1,4 @@
+import { KNOTS_PER_MPS } from '@/lib/utils/units/constants';
 import { type FlareGrade, type LandingReport, landingRating } from '@/types/flightRecorder';
 import type { SimFrame } from './frames';
 
@@ -22,7 +23,6 @@ const PEAK_G_WINDOW_S = 1;
 const BOUNCE_WINDOW_S = 2;
 const CLOSE_AFTER_S = 3;
 const MS_TO_FPM = 196.8504;
-const MS_TO_KT = 1.94384;
 
 type DetectorState = 'standby' | 'armed' | 'contact' | 'rollout';
 
@@ -180,7 +180,7 @@ export class LandingDetector {
       lat: frame.lat,
       lon: frame.lon,
       headingDeg: frame.headingDeg,
-      groundspeedKt: frame.groundspeedMs * MS_TO_KT,
+      groundspeedKt: frame.groundspeedMs * KNOTS_PER_MPS,
       touchdownRateFpm,
       indicatedRateFpm: Math.round(lastAirborne?.vsFpm ?? frame.vsFpm),
       peakG: frame.gNormal,

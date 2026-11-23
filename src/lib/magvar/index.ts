@@ -1,7 +1,6 @@
 import { magvar } from 'magvar';
 import type { Degrees } from '@/lib/utils/geomath';
-
-const normalize360 = (deg: number): number => ((deg % 360) + 360) % 360;
+import { normalize360 } from '@/lib/utils/math';
 
 /**
  * East-positive magnetic variation (declination) at a position, per the

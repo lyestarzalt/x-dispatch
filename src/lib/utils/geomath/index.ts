@@ -1,3 +1,4 @@
+import { FEET_PER_METER, METERS_PER_NM } from '@/lib/utils/units/constants';
 import type { Coordinates } from '@/types/geo';
 
 // Re-export arc utilities
@@ -23,8 +24,6 @@ export type NauticalMiles = Brand<number, 'nauticalMiles'>;
 type LatLon = Brand<[number, number], 'latlon'>;
 
 const EARTH_RADIUS_M = 6371000;
-const FEET_PER_METER = 3.28084;
-const METERS_PER_NM = 1852;
 
 export function metersToFeet(meters: number): Feet {
   return (meters * FEET_PER_METER) as Feet;

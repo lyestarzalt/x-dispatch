@@ -1,3 +1,5 @@
+import { METERS_PER_DEG_LAT } from '@/lib/utils/units/constants';
+
 /** Haversine distance between two lat/lon points in metres */
 export function haversineMetres(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6_371_000;
@@ -28,12 +30,10 @@ export function turnDeg(inDeg: number, outDeg: number): number {
   return d > 180 ? 360 - d : d;
 }
 
-const METRES_PER_DEG_LAT = 111_320;
-
 /** Local flat metres around `origin`, for projecting points onto segments. */
 export function toLocalMetres(origin: LatLon, p: LatLon): { x: number; y: number } {
   return {
-    x: (p.lon - origin.lon) * METRES_PER_DEG_LAT * Math.cos((origin.lat * Math.PI) / 180),
-    y: (p.lat - origin.lat) * METRES_PER_DEG_LAT,
+    x: (p.lon - origin.lon) * METERS_PER_DEG_LAT * Math.cos((origin.lat * Math.PI) / 180),
+    y: (p.lat - origin.lat) * METERS_PER_DEG_LAT,
   };
 }

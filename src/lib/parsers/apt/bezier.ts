@@ -1,3 +1,4 @@
+import { METERS_PER_DEG_LAT } from '@/lib/utils/units/constants';
 import type { LonLat } from '@/types/geo';
 
 /**
@@ -9,8 +10,6 @@ export const DEFAULT_CHORD_TOLERANCE_M = 0.1;
 
 /** Guard against malformed control points producing runaway sampling. */
 const MAX_SEGMENTS = 128;
-
-const METRES_PER_DEG_LAT = 111320;
 
 let chordToleranceM = DEFAULT_CHORD_TOLERANCE_M;
 
@@ -25,8 +24,8 @@ export function getBezierChordTolerance(): number {
 
 /** Length in metres of a lon/lat delta, on a flat earth at the given latitude. */
 function deltaMetres(dLon: number, dLat: number, lat: number): number {
-  const mPerDegLon = METRES_PER_DEG_LAT * Math.cos((lat * Math.PI) / 180);
-  return Math.hypot(dLon * mPerDegLon, dLat * METRES_PER_DEG_LAT);
+  const mPerDegLon = METERS_PER_DEG_LAT * Math.cos((lat * Math.PI) / 180);
+  return Math.hypot(dLon * mPerDegLon, dLat * METERS_PER_DEG_LAT);
 }
 
 function clampSegments(n: number): number {

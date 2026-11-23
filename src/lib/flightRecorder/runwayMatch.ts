@@ -1,4 +1,5 @@
 import { calculateBearing, haversineDistance } from '@/lib/utils/geomath';
+import { signedAngleDelta } from '@/lib/utils/math';
 import type { LandingRunway } from '@/types/flightRecorder';
 
 export interface RunwayEndGeometry {
@@ -30,7 +31,7 @@ const ALONG_TRACK_SLACK_M = 400;
 const EARTH_RADIUS_M = 6_371_000;
 
 function headingDiff(a: number, b: number): number {
-  const d = Math.abs(((a - b + 540) % 360) - 180);
+  const d = Math.abs(signedAngleDelta(b, a));
   return d;
 }
 

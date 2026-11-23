@@ -21,19 +21,7 @@ import type {
 // File Metadata Operations
 // ============================================================================
 
-/**
- * Get file modification time in milliseconds
- */
-export function getFileMtime(filePath: string): number | null {
-  try {
-    const stat = fs.statSync(filePath);
-    return Math.floor(stat.mtimeMs);
-  } catch {
-    return null;
-  }
-}
-
-/** {@link getFileMtime} without blocking the main process on the stat. */
+/** `getFileMtime` without blocking the main process on the stat. */
 export async function readFileMtime(filePath: string): Promise<number | null> {
   try {
     const stat = await fs.promises.stat(filePath);

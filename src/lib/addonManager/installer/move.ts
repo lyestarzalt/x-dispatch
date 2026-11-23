@@ -6,6 +6,7 @@
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
+import { sleep } from '@/lib/utils/async';
 import logger from '@/lib/utils/logger';
 import { INSTALLER_CONSTANTS } from './types';
 import { treeSummary } from './verify';
@@ -38,7 +39,7 @@ export async function renameWithRetry(src: string, dst: string): Promise<void> {
   const waits = INSTALLER_CONSTANTS.RENAME_BACKOFF_MS;
   for (let attempt = 0; attempt < waits.length; attempt++) {
     const wait = waits[attempt] ?? 0;
-    if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait));
+    if (wait > 0) await sleep(wait);
     if (attempt > 0) await clearReadonly(src);
     try {
       await fs.promises.rename(src, dst);
