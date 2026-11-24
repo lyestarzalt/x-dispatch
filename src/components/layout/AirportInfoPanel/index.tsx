@@ -358,6 +358,11 @@ function AirportInfoPanel({
             onValueChange={handleTabChange}
             className="flex min-h-0 flex-1 flex-col"
           >
+            {/* Above the tabs, so the network switches stay in reach on Start and Proc (GitHub #415). */}
+            <div className="border-border/30 border-b px-4 py-2">
+              <NetworkBar icao={icao} />
+            </div>
+
             <TabsList variant="line" className="border-border/30">
               {TABS.map((tab) => (
                 <TabsTrigger key={tab.id} value={tab.id} className="min-w-0 flex-1 gap-1.5 text-xs">
@@ -366,12 +371,6 @@ function AirportInfoPanel({
                 </TabsTrigger>
               ))}
             </TabsList>
-
-            {activeTab === 'info' && (
-              <div className="border-border/30 border-b px-4 py-2">
-                <NetworkBar icao={icao} />
-              </div>
-            )}
 
             <ScrollArea className="flex-1">
               <div className="p-4">

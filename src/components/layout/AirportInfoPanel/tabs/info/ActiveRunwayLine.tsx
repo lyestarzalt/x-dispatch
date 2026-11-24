@@ -40,7 +40,8 @@ export function ActiveRunwayLine({
   if (!activeRunway) return null;
 
   // Landing and takeoff on different runways: one row each, in the weather rows' shape,
-  // each with the letter of the broadcast that named it.
+  // each with the letter of the broadcast that named it. Arrivals first, as in the
+  // frequency list, and the runways in the runway list's green (GitHub #415).
   if (activeRunway.source === 'atis' && activeRunway.split) {
     const { arrivalLetter, departureLetter } = activeRunway;
     const row = (name: string, ends: string[], letter: string | null) => (
@@ -48,14 +49,14 @@ export function ActiveRunwayLine({
         <span className="xp-label min-w-0 truncate">{name}</span>
         <span className="flex shrink-0 items-baseline gap-2">
           {letter && <AtisBadge letter={letter} />}
-          <span className="xp-value text-cat-emerald font-medium">{ends.join(', ')}</span>
+          <span className="text-cat-emerald font-mono text-sm font-medium">{ends.join(', ')}</span>
         </span>
       </div>
     );
     return (
       <div className="mt-1.5 px-3 text-sm">
-        {row(t('airportInfo.conditions.departures'), activeRunway.departures, departureLetter)}
         {row(t('airportInfo.conditions.arrivals'), activeRunway.arrivals, arrivalLetter)}
+        {row(t('airportInfo.conditions.departures'), activeRunway.departures, departureLetter)}
       </div>
     );
   }

@@ -6,8 +6,8 @@ import { useNetworkTraffic } from '@/queries/useNetworkTraffic';
 
 /**
  * The network switches and the online traffic for the airport, so comparing VATSIM and
- * IVAO here needs no trip to Layers. Sits above the Info tab's scroll area, where
- * scrolling the card never takes it away.
+ * IVAO here needs no trip to Layers. Sits above the card's tabs, where neither a tab
+ * change nor scrolling takes it away.
  */
 export function NetworkBar({ icao }: { icao: string | null }) {
   const { t } = useTranslation();
@@ -20,18 +20,18 @@ export function NetworkBar({ icao }: { icao: string | null }) {
       {showTraffic && (
         <span className="text-muted-foreground flex items-center gap-2 text-xs">
           <span
-            className="text-cat-emerald flex items-center gap-1"
-            aria-label={`${traffic.departures} ${t('airportInfo.conditions.departures')}`}
-          >
-            <PlaneTakeoff className="h-3 w-3" />
-            <span className="font-mono tabular-nums">{traffic.departures}</span>
-          </span>
-          <span
             className="text-cat-amber flex items-center gap-1"
             aria-label={`${traffic.arrivals} ${t('airportInfo.conditions.arrivals')}`}
           >
             <PlaneLanding className="h-3 w-3" />
             <span className="font-mono tabular-nums">{traffic.arrivals}</span>
+          </span>
+          <span
+            className="text-cat-emerald flex items-center gap-1"
+            aria-label={`${traffic.departures} ${t('airportInfo.conditions.departures')}`}
+          >
+            <PlaneTakeoff className="h-3 w-3" />
+            <span className="font-mono tabular-nums">{traffic.departures}</span>
           </span>
         </span>
       )}

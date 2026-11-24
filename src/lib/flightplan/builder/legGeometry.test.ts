@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { magneticToTrue, trueToMagnetic } from '@/lib/magvar';
+import { parseCIFP } from '@/lib/parsers/nav/cifpParser';
 import type { Degrees } from '@/lib/utils/geomath';
 import { crossTrackStatus } from '@/lib/utils/geomath';
 import type { ResolvedProcedureWaypoint } from '@/types/navigation';
@@ -977,5 +978,75 @@ describe('an intercept leg that starts just past the course it is to intercept',
     expect(greatCircleNm(last, fix)).toBeLessThan(0.05);
     // Nothing is drawn on the far side of the fix or back along its inbound course.
     expect(Math.max(...path.map((p) => p.latitude))).toBeLessThan(fix.latitude + 0.01);
+  });
+});
+
+// KMIA LOC RWY 8L (GitHub #418), as coded in the CIFP: climb on 092 to 800, then a climbing
+// LEFT turn to heading 270 to intercept the DHP R-335 to BRBRA and hold. A left turn from 092
+// to 270 leaves the aircraft north of the runway; the heading line drawn straight back from the
+// end of the climb ran over the runway and across the final approach course instead.
+describe('a heading-to-intercept leg after a published course reversal', () => {
+  const KMIA_L08L = [
+    'APPCH:010,L,L08L, ,PABOY,K7,P,C,E  I, ,   ,IF, ,IROY,K7,P,I,      ,2724,0111,    ,    ,+,03000,     ,18000, ,   ,    ,   , , , , , ,0,D,S;',
+    'APPCH:020,L,L08L, ,LICEY,K7,P,C,E  F, ,   ,CF, ,IROY,K7,P,I,      ,2724,0061,0920,0050,+,01500,     ,     , ,   ,    ,   ,DHP,K7,D, , ,0,D,S;',
+    'APPCH:030,L,L08L, ,FEMSO,K7,P,C,E  M, ,   ,CF, ,IROY,K7,P,I,      ,2724,0016,0920,0044, ,00071,     ,     , ,   ,-304,   , , , , , ,0,D,S;',
+    'APPCH:040,L,L08L, , , , , ,  M , ,   ,CA, , , , , ,      ,    ,    ,0920,    ,+,00800,     ,     , ,   ,    ,   , , , , , ,0,D,S;',
+    'APPCH:050,L,L08L, , , , , ,    ,L,   ,VI,Y, , , , ,      ,    ,    ,2700,    , ,     ,     ,     , ,   ,    ,   , , , , , ,0,D,S;',
+    'APPCH:060,L,L08L, ,BRBRA,K7,E,A,E   , ,   ,CF, ,DHP,K7,D, ,      ,3347,0115,3350,0080,+,03000,     ,     , ,   ,    ,   , , , , , ,0,D,S;',
+    'APPCH:070,L,L08L, ,BRBRA,K7,E,A,EE H,R,   ,HM, , , , , ,      ,    ,    ,1550,T010, ,     ,     ,     , ,   ,    ,   , , , , , ,0,D,S;',
+  ].join('\n');
+  // Fix and navaid positions from the X-Plane 12 nav data (AIRAC 2610).
+  const fixes: Record<string, { latitude: number; longitude: number }> = {
+    PABOY: { latitude: 25.795572222, longitude: -80.475866667 },
+    LICEY: { latitude: 25.799486111, longitude: -80.383297222 },
+    FEMSO: { latitude: 25.802897222, longitude: -80.301541667 },
+    BRBRA: { latitude: 25.967286111, longitude: -80.453019444 },
+  };
+  const dhp = { latitude: 25.799963889, longitude: -80.349036111 };
+  const legs = (): ResolvedProcedureWaypoint[] => {
+    const approach = parseCIFP(KMIA_L08L, 'KMIA').approaches.find((p) => p.name === 'L08L');
+    return approach!.waypoints.map((w) => {
+      const at = fixes[w.fixId];
+      return {
+        ...w,
+        ...(at ?? {}),
+        ...(w.recNavaid === 'DHP' && {
+          recNavaidLatitude: dhp.latitude,
+          recNavaidLongitude: dhp.longitude,
+        }),
+        resolved: !!at,
+      };
+    });
+  };
+  const finalCourseTrue = magneticToTrue(
+    92 as Degrees,
+    fixes.FEMSO!.latitude,
+    fixes.FEMSO!.longitude
+  );
+
+  it('turns left and flies 270 north of the final approach course', () => {
+    const { missedPath } = procedureGeometry(legs());
+    // West of the missed approach point, the missed approach stays well north of the inbound
+    // course line through FEMSO; it never crosses it.
+    const west = missedPath.filter((p) => p.longitude < fixes.FEMSO!.longitude - 0.005);
+    expect(west.length).toBeGreaterThan(0);
+    for (const p of west) {
+      const side = crossTrackStatus(p, fixes.FEMSO!, finalCourseTrue as Degrees).crossTrackNm;
+      expect(side).toBeLessThan(-0.5);
+    }
+  });
+
+  it('follows the DHP R-335 to BRBRA', () => {
+    const { missedPath } = procedureGeometry(legs());
+    // The leg as coded: course 335 into BRBRA, which sits on the R-335 at 11.5 DME.
+    const inbound = magneticToTrue(335 as Degrees, fixes.BRBRA!.latitude, fixes.BRBRA!.longitude);
+    const last = missedPath[missedPath.length - 1]!;
+    const intercept = missedPath[missedPath.length - 2]!;
+    expect(greatCircleNm(last, fixes.BRBRA!)).toBeLessThan(0.05);
+    // A long final stretch on the radial, joined north of DHP rather than over the runway.
+    expect(greatCircleNm(intercept, fixes.BRBRA!)).toBeGreaterThan(5);
+    const side = crossTrackStatus(intercept, fixes.BRBRA!, (inbound + 180) as Degrees);
+    expect(Math.abs(side.crossTrackNm)).toBeLessThan(0.05);
+    expect(intercept.latitude).toBeGreaterThan(dhp.latitude + 0.02);
   });
 });
