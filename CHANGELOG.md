@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **FAA charts for US airports.** The airport card lists the airport diagram, departures, arrivals, approaches and minimums; a click opens the chart's PDF in your browser.
 - **US approach charts on the map.** The layers button next to an approach in the airport card's Charts list lays the chart over the map where the FAA placed it, with a slider for how see-through it is.
+- **A one-time notice that X-Dispatch is for flight simulation only.** It appears once at launch, before the usage-data question.
 
 ### Changed
 

@@ -8,8 +8,8 @@ import { SectionErrorBoundary } from './components/SectionErrorBoundary';
 import { TitleBar } from './components/TitleBar';
 import { UpdateAvailableToast } from './components/UpdateAvailableToast';
 import { ZoomIndicator } from './components/ZoomIndicator';
-import { AnalyticsConsentDialog } from './components/dialogs/AnalyticsConsentDialog';
 import { AppActionConfirmDialog } from './components/dialogs/AppActionConfirmDialog';
+import { FirstLaunchNotices } from './components/dialogs/FirstLaunchNotices';
 import { KeyboardShortcutsDialog } from './components/dialogs/KeyboardShortcutsDialog';
 import { RemoteConnectionBanner } from './components/remote/RemoteConnectionBanner';
 import ErrorScreen from './components/screens/ErrorScreen';
@@ -153,7 +153,7 @@ function AppContent() {
     content = (
       <SectionErrorBoundary name="Map">
         <Map airports={airports} />
-        <AnalyticsConsentDialog />
+        <FirstLaunchNotices />
         <AppActionConfirmDialog />
       </SectionErrorBoundary>
     );

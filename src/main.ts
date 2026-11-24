@@ -129,6 +129,7 @@ import { getXPlaneDataManager, isSetupComplete } from './lib/xplaneServices/data
 import { resyncCustomScenery } from './lib/xplaneServices/dataService/airports';
 import { getAirportScenery } from './lib/xplaneServices/dataService/airports/airportCache';
 import {
+  acknowledgeSimulationNotice,
   addInstallation,
   getActiveInstallation,
   getActiveInstallationName,
@@ -139,6 +140,7 @@ import {
   getFaaChartPdfCachePath,
   getInstallations,
   getSendCrashReports,
+  getSimulationNoticeAcknowledged,
   getStoredXPlaneVersion,
   removeInstallation,
   renameInstallation,
@@ -1687,6 +1689,11 @@ function registerIpcHandlers() {
       remote: (event as { remote?: boolean }).remote === true,
     })
   );
+  // Shown once, to everyone, until acknowledged. Never in the e2e runs: it would cover the app.
+  handle('app:getSimulationNotice', () => ({
+    shouldShow: !getSimulationNoticeAcknowledged() && !process.env.E2E_USER_DATA_DIR,
+  }));
+  handle('app:acknowledgeSimulationNotice', () => acknowledgeSimulationNotice());
   handle('app:getSendCrashReports', () => getSendCrashReports());
   handle('app:getCrashReportId', () => getCrashReportId());
   handle('app:setSendCrashReports', (_, enabled: boolean) => {

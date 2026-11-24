@@ -2644,6 +2644,11 @@
       "wait": "继续等待"
     }
   },
+  "simulationNotice": {
+    "title": "仅供飞行模拟使用",
+    "body": "X-Dispatch 专为飞行模拟器设计。切勿将它、它显示的航图或其数据用于真实航空或导航：这些内容可能不完整、不准确或已过期。",
+    "accept": "我明白了"
+  },
   "chartOverlay": {
     "title": "地图上的航图",
     "heading": "{{icao}} 航图",

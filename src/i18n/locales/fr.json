@@ -2644,6 +2644,11 @@
       "wait": "Continuer d'attendre"
     }
   },
+  "simulationNotice": {
+    "title": "Pour la simulation de vol uniquement",
+    "body": "X-Dispatch est conçu pour les simulateurs de vol. Ne l'utilisez jamais, ni les cartes qu'il affiche ni ses données, pour l'aviation ou la navigation réelles : elles peuvent être incomplètes, inexactes ou périmées.",
+    "accept": "J'ai compris"
+  },
   "chartOverlay": {
     "title": "Carte d'approche sur la carte",
     "heading": "Carte {{icao}}",

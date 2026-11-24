@@ -50,6 +50,8 @@ interface XPlaneConfig {
   remoteAccess?: RemoteAccessConfig;
   /** Download the FAA's chart list for US procedure labels; absent means on */
   faaChartDownload?: boolean;
+  /** The pilot has read that the app is for flight simulation only; absent means not yet */
+  simulationNoticeAcknowledged?: boolean;
 }
 
 export interface RemoteAccessConfig {
@@ -191,6 +193,8 @@ function saveConfig(config: Partial<XPlaneConfig>): boolean {
           : existing?.analyticsPendingEvents,
       remoteAccess: config.remoteAccess ?? existing?.remoteAccess,
       faaChartDownload: config.faaChartDownload ?? existing?.faaChartDownload,
+      simulationNoticeAcknowledged:
+        config.simulationNoticeAcknowledged ?? existing?.simulationNoticeAcknowledged,
     };
 
     writeConfigFile(newConfig);
@@ -270,6 +274,15 @@ export function getFaaChartDownload(): boolean {
 
 export function setFaaChartDownload(enabled: boolean): boolean {
   return saveConfig({ faaChartDownload: enabled });
+}
+
+/** True once the pilot has acknowledged the simulation-only notice shown at first launch. */
+export function getSimulationNoticeAcknowledged(): boolean {
+  return loadConfig()?.simulationNoticeAcknowledged === true;
+}
+
+export function acknowledgeSimulationNotice(): boolean {
+  return saveConfig({ simulationNoticeAcknowledged: true });
 }
 
 /** Where the downloaded FAA chart list is kept, reduced to what the app reads. */

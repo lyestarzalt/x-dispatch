@@ -157,6 +157,9 @@ declare global {
       clipboardWrite: (text: string) => Promise<void>;
       clipboardWriteImage: (dataUrl: string) => Promise<boolean>;
       openExternal: (url: string) => Promise<{ success: boolean; error?: string }>;
+      /** The one-time notice that the app is for flight simulation only. */
+      getSimulationNotice: () => Promise<{ shouldShow: boolean }>;
+      acknowledgeSimulationNotice: () => Promise<boolean>;
       getSendCrashReports: () => Promise<boolean>;
       getCrashReportId: () => Promise<string | null>;
       setSendCrashReports: (enabled: boolean) => Promise<boolean>;
