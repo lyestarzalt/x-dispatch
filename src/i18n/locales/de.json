@@ -607,7 +607,7 @@
       "crashReports": "Absturzberichte senden",
       "crashReportsDescription": "Helfen Sie, X-Dispatch zu verbessern, indem Sie automatisch Absturzberichte senden",
       "crashReportsNote": "Neustart erforderlich. Es werden keine persönlichen Daten erfasst.",
-      "independenceNotice": "X-Dispatch ist ein unabhängiges Community-Projekt. Es ist nicht mit X-Plane, SimBrief, Navigraph, VATSIM oder IVAO verbunden und wird von ihnen weder unterstützt noch empfohlen.",
+      "independenceNotice": "X-Dispatch ist ein unabhängiges Community-Projekt. Es ist nicht mit X-Plane, SimBrief, Navigraph, VATSIM, IVAO oder der FAA verbunden und wird von ihnen weder unterstützt noch empfohlen.",
       "debugOverlay": "Debug-Overlay",
       "debugOverlayDescription": "Entwickler-Debug-Werkzeugleiste anzeigen",
       "toggleDebug": "Umschalten",

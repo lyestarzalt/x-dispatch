@@ -607,7 +607,7 @@
       "crashReports": "クラッシュレポートを送信",
       "crashReportsDescription": "クラッシュレポートを自動送信して X-Dispatch の改善に協力",
       "crashReportsNote": "再起動が必要です。個人データは収集されません。",
-      "independenceNotice": "X-Dispatch は独立したコミュニティプロジェクトであり、X-Plane、SimBrief、Navigraph、VATSIM、IVAO とは提携しておらず、承認や支援も受けていません。",
+      "independenceNotice": "X-Dispatch は独立したコミュニティプロジェクトであり、X-Plane、SimBrief、Navigraph、VATSIM、IVAO、FAA とは提携しておらず、承認や支援も受けていません。",
       "debugOverlay": "デバッグオーバーレイ",
       "debugOverlayDescription": "開発者向けデバッグツールバーを表示",
       "toggleDebug": "切り替え",

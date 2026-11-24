@@ -607,7 +607,7 @@
       "crashReports": "Envoyer les rapports de plantage",
       "crashReportsDescription": "Aidez à améliorer X-Dispatch en envoyant automatiquement les rapports de plantage",
       "crashReportsNote": "Redémarrage requis. Aucune donnée personnelle n'est collectée.",
-      "independenceNotice": "X-Dispatch est un projet communautaire indépendant. Il n'est affilié à X-Plane, SimBrief, Navigraph, VATSIM ou IVAO, et n'est ni approuvé ni soutenu par eux.",
+      "independenceNotice": "X-Dispatch est un projet communautaire indépendant. Il n'est affilié à X-Plane, SimBrief, Navigraph, VATSIM, IVAO ou la FAA, et n'est ni approuvé ni soutenu par eux.",
       "debugOverlay": "Superposition de débogage",
       "debugOverlayDescription": "Afficher la barre d'outils de débogage pour développeurs",
       "toggleDebug": "Activer/Désactiver",

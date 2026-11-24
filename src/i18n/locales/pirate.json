@@ -607,7 +607,7 @@
       "crashReports": "Send wreck reports",
       "crashReportsDescription": "Help improve X-Dispatch by sendin' wreck reports automatically",
       "crashReportsNote": "Restart required fer changes ta take effect. No personal data is collected.",
-      "independenceNotice": "X-Dispatch be an independent community project, with no affiliation or endorsement from X-Plane, SimBrief, Navigraph, VATSIM, or IVAO.",
+      "independenceNotice": "X-Dispatch be an independent community project, with no affiliation or endorsement from X-Plane, SimBrief, Navigraph, VATSIM, IVAO, or the FAA.",
       "debugOverlay": "Debug Spyglass",
       "debugOverlayDescription": "Show the shipwright's debug toolbar",
       "toggleDebug": "Toggle Spyglass",

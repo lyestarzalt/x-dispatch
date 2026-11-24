@@ -607,7 +607,7 @@
       "crashReports": "发送崩溃报告",
       "crashReportsDescription": "通过自动发送崩溃报告帮助改进 X-Dispatch",
       "crashReportsNote": "需要重启。不收集任何个人数据。",
-      "independenceNotice": "X-Dispatch 是独立社区项目，与 X-Plane、SimBrief、Navigraph、VATSIM 或 IVAO 无隶属关系，也未获得其认可或支持。",
+      "independenceNotice": "X-Dispatch 是独立社区项目，与 X-Plane、SimBrief、Navigraph、VATSIM、IVAO 或 FAA 无隶属关系，也未获得其认可或支持。",
       "debugOverlay": "调试覆盖层",
       "debugOverlayDescription": "显示开发者调试工具栏",
       "toggleDebug": "切换",
