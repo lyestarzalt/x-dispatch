@@ -1195,7 +1195,8 @@
       },
       "showOnMap": "在地图上显示",
       "hideFromMap": "从地图上移除",
-      "expired": "此航图列表来自已过期的 AIRAC 周期，链接可能无法打开。"
+      "expired": "此航图列表来自已过期的 AIRAC 周期，链接可能无法打开。",
+      "simulationOnly": "航图来自 FAA。仅供飞行模拟使用，不得用于真实导航。"
     },
     "rawMetar": "原始 METAR",
     "routeTab": {

@@ -1195,7 +1195,8 @@
       },
       "showOnMap": "Mostrar en el mapa",
       "hideFromMap": "Quitar del mapa",
-      "expired": "Esta lista de cartas es de un ciclo AIRAC pasado. Puede que sus enlaces ya no se abran."
+      "expired": "Esta lista de cartas es de un ciclo AIRAC pasado. Puede que sus enlaces ya no se abran.",
+      "simulationOnly": "Cartas de la FAA. Solo para simulación de vuelo, no para la navegación real."
     },
     "rawMetar": "METAR sin procesar",
     "routeTab": {

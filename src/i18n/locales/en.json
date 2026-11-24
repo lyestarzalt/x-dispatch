@@ -1195,7 +1195,8 @@
       },
       "showOnMap": "Show on the map",
       "hideFromMap": "Remove from the map",
-      "expired": "This chart list is from a past AIRAC cycle. Its links may no longer open."
+      "expired": "This chart list is from a past AIRAC cycle. Its links may no longer open.",
+      "simulationOnly": "Charts from the FAA. For flight simulation only, not for real-world navigation."
     },
     "rawMetar": "Raw METAR",
     "routeTab": {

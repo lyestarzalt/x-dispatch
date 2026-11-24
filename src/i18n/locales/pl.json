@@ -1195,7 +1195,8 @@
       },
       "showOnMap": "Pokaż na mapie",
       "hideFromMap": "Usuń z mapy",
-      "expired": "Ta lista map pochodzi z minionego cyklu AIRAC. Jej linki mogą już się nie otwierać."
+      "expired": "Ta lista map pochodzi z minionego cyklu AIRAC. Jej linki mogą już się nie otwierać.",
+      "simulationOnly": "Mapy FAA. Tylko do symulacji lotu, nie do rzeczywistej nawigacji."
     },
     "rawMetar": "Oryginalny METAR",
     "routeTab": {

@@ -1195,7 +1195,8 @@
       },
       "showOnMap": "Auf der Karte anzeigen",
       "hideFromMap": "Von der Karte entfernen",
-      "expired": "Dieses Kartenverzeichnis stammt aus einem abgelaufenen AIRAC-Zyklus. Die Links öffnen sich möglicherweise nicht mehr."
+      "expired": "Dieses Kartenverzeichnis stammt aus einem abgelaufenen AIRAC-Zyklus. Die Links öffnen sich möglicherweise nicht mehr.",
+      "simulationOnly": "Karten der FAA. Nur für die Flugsimulation, nicht für die reale Navigation."
     },
     "rawMetar": "Original-METAR",
     "routeTab": {

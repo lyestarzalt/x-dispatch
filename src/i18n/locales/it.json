@@ -1195,7 +1195,8 @@
       },
       "showOnMap": "Mostra sulla mappa",
       "hideFromMap": "Rimuovi dalla mappa",
-      "expired": "Questo elenco di carte è di un ciclo AIRAC passato. I collegamenti potrebbero non aprirsi più."
+      "expired": "Questo elenco di carte è di un ciclo AIRAC passato. I collegamenti potrebbero non aprirsi più.",
+      "simulationOnly": "Carte della FAA. Solo per la simulazione di volo, non per la navigazione reale."
     },
     "rawMetar": "METAR originale",
     "routeTab": {

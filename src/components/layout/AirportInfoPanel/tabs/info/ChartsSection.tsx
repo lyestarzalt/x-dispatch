@@ -129,6 +129,9 @@ export function ChartsSection({ icao }: { icao: string }) {
           );
         })}
       </div>
+      <p className="text-muted-foreground/70 text-2xs mt-1.5 px-1">
+        {t('airportInfo.charts.simulationOnly')}
+      </p>
     </section>
   );
 }
