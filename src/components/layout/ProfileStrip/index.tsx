@@ -82,7 +82,7 @@ function ProfileStrip({ airports }: ProfileStripProps) {
       )}
       style={!isDefault ? { left: position.x, top: position.y } : undefined}
     >
-      <div className="border-border/50 bg-card/90 @container rounded-lg border p-2 backdrop-blur-xl">
+      <div className="border-border/50 bg-card/95 @container rounded-lg border p-2">
         <div
           className="mb-1 flex min-w-0 cursor-grab items-center gap-2 px-1 active:cursor-grabbing"
           onMouseDown={handleMouseDown}

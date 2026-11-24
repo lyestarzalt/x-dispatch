@@ -2573,7 +2573,10 @@
     "tod": "T/D",
     "safeAltitude": "最低安全高度",
     "legSafe": "レグ安全高度",
-    "total": "合計"
+    "total": "合計",
+    "zoomIn": "拡大",
+    "zoomOut": "縮小",
+    "seek": "ルートに沿って移動"
   },
   "thirdPartyNotices": {
     "title": "サードパーティライセンス",
