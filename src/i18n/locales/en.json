@@ -2647,7 +2647,8 @@
   "simulationNotice": {
     "title": "For flight simulation only",
     "body": "X-Dispatch is made for flight simulators. Never use it, the charts it shows or its data for real-world aviation or navigation: they may be incomplete, inaccurate or out of date.",
-    "accept": "I understand"
+    "accept": "I understand",
+    "version": "X-Dispatch v{{version}}"
   },
   "chartOverlay": {
     "title": "Chart on the map",

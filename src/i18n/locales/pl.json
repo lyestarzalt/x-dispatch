@@ -2647,7 +2647,8 @@
   "simulationNotice": {
     "title": "Tylko do symulacji lotu",
     "body": "X-Dispatch jest przeznaczony dla symulatorów lotu. Nigdy nie używaj go, wyświetlanych map ani jego danych w rzeczywistym lotnictwie lub nawigacji: mogą być niepełne, niedokładne lub nieaktualne.",
-    "accept": "Rozumiem"
+    "accept": "Rozumiem",
+    "version": "X-Dispatch v{{version}}"
   },
   "chartOverlay": {
     "title": "Mapa podejścia na mapie",

@@ -1,46 +1,62 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TriangleAlert } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { AppLogo } from '@/components/ui/AppLogo';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { useAcknowledgeSimulationNotice } from '@/queries';
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { useAcknowledgeSimulationNotice, useAppVersion } from '@/queries';
 
 /**
  * Shown once to every pilot: the app, its charts and its data are for flight simulation only.
- * Closing it without the button asks again at the next launch.
+ * It is the first thing a new pilot reads, so it carries the app's mark and version in the
+ * same centred arrangement as the setup screen. Escape closes it without acknowledging, and
+ * it asks again at the next launch.
  */
 export function SimulationNoticeDialog() {
   const { t } = useTranslation();
+  const { data: version } = useAppVersion();
   const acknowledge = useAcknowledgeSimulationNotice();
   const [dismissed, setDismissed] = useState(false);
 
   return (
-    <Dialog open={!dismissed} onOpenChange={(open) => !open && setDismissed(true)}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <div className="bg-warning/10 mb-2 flex h-10 w-10 items-center justify-center rounded-lg">
-            <TriangleAlert className="text-warning h-5 w-5" />
-          </div>
-          <DialogTitle>{t('simulationNotice.title')}</DialogTitle>
-          <DialogDescription>{t('simulationNotice.body')}</DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button
-            className="min-w-0"
-            disabled={acknowledge.isPending}
-            onClick={() => acknowledge.mutate()}
-          >
-            <span className="truncate">{t('simulationNotice.accept')}</span>
+    <AlertDialog open={!dismissed} onOpenChange={(open) => !open && setDismissed(true)}>
+      <AlertDialogContent className="max-w-md gap-5 p-8">
+        <AlertDialogHeader className="items-center space-y-3 sm:text-center">
+          <AppLogo size="md" />
+          <AlertDialogTitle className="xp-page-heading leading-tight">
+            {t('simulationNotice.title')}
+          </AlertDialogTitle>
+          <AlertDialogDescription className="text-center leading-relaxed">
+            {t('simulationNotice.body')}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+
+        <Separator />
+
+        <p className="text-muted-foreground text-center text-xs leading-relaxed">
+          {t('settings.about.independenceNotice')}
+        </p>
+
+        <AlertDialogFooter className="sm:justify-center sm:space-x-0">
+          {/* The primary button, not the stock action: that one is styled for a destructive confirm. */}
+          <Button className="w-full" onClick={() => acknowledge.mutate()}>
+            <span className="min-w-0 truncate">{t('simulationNotice.accept')}</span>
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </AlertDialogFooter>
+
+        {version && (
+          <p className="text-muted-foreground/50 text-center font-mono text-xs">
+            {t('simulationNotice.version', { version })}
+          </p>
+        )}
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

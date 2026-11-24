@@ -2647,7 +2647,8 @@
   "simulationNotice": {
     "title": "フライトシミュレーション専用",
     "body": "X-Dispatch はフライトシミュレーター用に作られています。本アプリ、表示されるチャート、データを実際の航空や航法に使用しないでください。不完全、不正確、または古い場合があります。",
-    "accept": "理解しました"
+    "accept": "理解しました",
+    "version": "X-Dispatch v{{version}}"
   },
   "chartOverlay": {
     "title": "地図上のチャート",

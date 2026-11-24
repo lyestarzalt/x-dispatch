@@ -2647,7 +2647,8 @@
   "simulationNotice": {
     "title": "Nur für die Flugsimulation",
     "body": "X-Dispatch ist für Flugsimulatoren gemacht. Verwenden Sie es, die angezeigten Karten und seine Daten niemals für die reale Luftfahrt oder Navigation: Sie können unvollständig, fehlerhaft oder veraltet sein.",
-    "accept": "Verstanden"
+    "accept": "Verstanden",
+    "version": "X-Dispatch v{{version}}"
   },
   "chartOverlay": {
     "title": "Anflugkarte auf der Karte",

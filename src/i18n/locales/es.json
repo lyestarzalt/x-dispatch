@@ -2647,7 +2647,8 @@
   "simulationNotice": {
     "title": "Solo para simulación de vuelo",
     "body": "X-Dispatch está hecho para simuladores de vuelo. Nunca lo uses, ni sus cartas ni sus datos, para la aviación o la navegación reales: pueden estar incompletos, ser inexactos o estar desactualizados.",
-    "accept": "Entendido"
+    "accept": "Entendido",
+    "version": "X-Dispatch v{{version}}"
   },
   "chartOverlay": {
     "title": "Carta en el mapa",

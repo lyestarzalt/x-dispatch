@@ -2647,7 +2647,8 @@
   "simulationNotice": {
     "title": "Fer flight simulation only",
     "body": "X-Dispatch be made fer flight simulators. Never use it, the charts it shows or its data fer real-world flyin' or navigation: they may be incomplete, wrong or out o' date.",
-    "accept": "Aye, understood"
+    "accept": "Aye, understood",
+    "version": "X-Dispatch v{{version}}"
   },
   "chartOverlay": {
     "title": "Chart on the map",
