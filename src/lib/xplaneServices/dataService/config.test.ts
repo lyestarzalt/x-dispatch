@@ -15,11 +15,13 @@ vi.mock('@/lib/utils/logger', () => ({
 const {
   getAnalyticsConsent,
   getCrashReportId,
+  getFaaChartDownload,
   getInstallations,
   getStoredXPlaneVersion,
   isSetupComplete,
   saveAnalyticsPendingSession,
   setActiveInstallation,
+  setFaaChartDownload,
   setSendCrashReports,
 } = await import('./config');
 
@@ -69,6 +71,17 @@ describe('config persistence', () => {
     expect(saved.activeInstallationId).toBe('a');
     expect(saved.analyticsConsent).toBe('granted');
     expect(saved.analyticsPendingSession).toEqual(SESSION);
+  });
+
+  // Switching the FAA download off in Settings did not stick: saveConfig dropped the field.
+  it('keeps the FAA download switch, and later saves do not drop it', () => {
+    expect(getFaaChartDownload()).toBe(true);
+    setFaaChartDownload(false);
+    expect(getFaaChartDownload()).toBe(false);
+    saveAnalyticsPendingSession(SESSION);
+    expect(getFaaChartDownload()).toBe(false);
+    setFaaChartDownload(true);
+    expect(getFaaChartDownload()).toBe(true);
   });
 
   it('still reads stored settings while the X-Plane folder is missing', () => {

@@ -48,6 +48,8 @@ interface XPlaneConfig {
   }[];
   /** Tablet access: the LAN server that serves the UI to other devices */
   remoteAccess?: RemoteAccessConfig;
+  /** Download the FAA's chart list for US procedure labels; absent means on */
+  faaChartDownload?: boolean;
 }
 
 export interface RemoteAccessConfig {
@@ -188,6 +190,7 @@ function saveConfig(config: Partial<XPlaneConfig>): boolean {
           ? config.analyticsPendingEvents
           : existing?.analyticsPendingEvents,
       remoteAccess: config.remoteAccess ?? existing?.remoteAccess,
+      faaChartDownload: config.faaChartDownload ?? existing?.faaChartDownload,
     };
 
     writeConfigFile(newConfig);
@@ -258,6 +261,20 @@ export function getCrashReportId(): string | null {
   if (config?.crashReportId) return config.crashReportId;
   const id = crypto.randomUUID();
   return saveConfig({ crashReportId: id }) ? id : null;
+}
+
+/** Whether the FAA chart list may be downloaded (on unless the user turned it off). */
+export function getFaaChartDownload(): boolean {
+  return loadConfig()?.faaChartDownload ?? true;
+}
+
+export function setFaaChartDownload(enabled: boolean): boolean {
+  return saveConfig({ faaChartDownload: enabled });
+}
+
+/** Where the downloaded FAA chart list is kept, reduced to what the app reads. */
+export function getFaaChartCachePath(): string {
+  return path.join(app.getPath('userData'), 'faa-charts.json');
 }
 
 export function getAnalyticsConsent(): 'granted' | 'denied' | null {

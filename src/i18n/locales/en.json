@@ -899,6 +899,20 @@
         "aboutDescription": "Pilots are displayed as icons on the map. Select a pilot to see flight details, including callsign, aircraft, departure, and destination.",
         "refreshInterval": "Refresh Interval",
         "refreshHelp": "How often to refresh VATSIM data (recommended: 15s)"
+      },
+      "faaCharts": {
+        "title": "US procedure labels",
+        "description": "OBSTACLE, RNAV and ILS OR LOC on US procedures, as FAA charts name them. Works with any nav data.",
+        "toggle": "Download from the FAA",
+        "toggleDescription": "Procedure names only, no charts. About 16 MB per AIRAC cycle.",
+        "faaLabel": "FAA",
+        "customDataTooltip": "Your d-tpp_Metafile.xml in Custom Data is used instead of the download.",
+        "downloadedTooltip": "Downloaded {{date}}",
+        "notYet": "Downloads when you open a US airport",
+        "downloading": "Downloading",
+        "downloadNow": "Download now",
+        "errorNetwork": "Couldn't reach the FAA",
+        "errorInvalid": "The FAA sent no valid index"
       }
     },
     "companionApps": {

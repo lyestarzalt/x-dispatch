@@ -899,6 +899,20 @@
         "aboutDescription": "Piloten werden als Symbole auf der Karte angezeigt. Klicken Sie auf einen Piloten, um die Flugdetails einschließlich Rufzeichen, Flugzeug, Abflug und Ziel anzuzeigen.",
         "refreshInterval": "Aktualisierungsintervall",
         "refreshHelp": "Wie oft VATSIM-Daten aktualisiert werden (empfohlen: 15 s)"
+      },
+      "faaCharts": {
+        "title": "US-Verfahrensbezeichnungen",
+        "description": "OBSTACLE, RNAV und ILS OR LOC bei US-Verfahren, wie die FAA-Karten sie benennen. Funktioniert mit allen Navigationsdaten.",
+        "toggle": "Von der FAA laden",
+        "toggleDescription": "Nur Verfahrensnamen, keine Karten. Etwa 16 MB pro AIRAC-Zyklus.",
+        "faaLabel": "FAA",
+        "customDataTooltip": "Ihre d-tpp_Metafile.xml in Custom Data wird anstelle des Downloads verwendet.",
+        "downloadedTooltip": "Geladen am {{date}}",
+        "notYet": "Wird beim Öffnen eines US-Flughafens geladen",
+        "downloading": "Wird geladen",
+        "downloadNow": "Jetzt laden",
+        "errorNetwork": "FAA nicht erreichbar",
+        "errorInvalid": "Kein gültiges Verzeichnis von der FAA"
       }
     },
     "companionApps": {

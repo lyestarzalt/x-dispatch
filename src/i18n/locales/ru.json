@@ -899,6 +899,20 @@
         "aboutDescription": "Пилоты отображаются значками на карте. Нажмите на пилота, чтобы увидеть детали полёта, включая позывной, тип ВС, вылет и пункт назначения.",
         "refreshInterval": "Интервал обновления",
         "refreshHelp": "Как часто обновлять данные VATSIM (рекомендуется: 15с)"
+      },
+      "faaCharts": {
+        "title": "Метки процедур США",
+        "description": "OBSTACLE, RNAV и ILS OR LOC у процедур США, как их называют карты FAA. Работает с любыми навигационными данными.",
+        "toggle": "Загружать из FAA",
+        "toggleDescription": "Только названия процедур, без карт. Около 16 МБ за цикл AIRAC.",
+        "faaLabel": "FAA",
+        "customDataTooltip": "Вместо загрузки используется ваш d-tpp_Metafile.xml из Custom Data.",
+        "downloadedTooltip": "Загружено {{date}}",
+        "notYet": "Загрузится при открытии аэропорта США",
+        "downloading": "Загрузка",
+        "downloadNow": "Загрузить сейчас",
+        "errorNetwork": "Нет связи с FAA",
+        "errorInvalid": "FAA не прислала корректный указатель"
       }
     },
     "companionApps": {

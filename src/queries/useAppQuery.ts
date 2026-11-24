@@ -1,4 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ATCController, ResolvedAirportProcedures } from '@/types/navigation';
 
 export const appKeys = {
@@ -13,6 +14,7 @@ export const appKeys = {
   cliFlags: ['app', 'cliFlags'] as const,
   airportMetadata: (icao: string) => ['app', 'airportMetadata', icao] as const,
   atcControllers: (icao: string) => ['app', 'atcControllers', icao] as const,
+  allProcedures: ['app', 'procedures'] as const,
   procedures: (icao: string) => ['app', 'procedures', icao] as const,
 };
 
@@ -90,6 +92,15 @@ export function useAirportATC(icao: string | null, lat: number | null, lon: numb
 }
 
 export function useAirportProcedures(icao: string | null) {
+  const queryClient = useQueryClient();
+  // The first US airport of a cycle starts the FAA chart download; its labels arrive after.
+  useEffect(
+    () =>
+      window.navAPI.onFaaChartsUpdated(() => {
+        void queryClient.invalidateQueries({ queryKey: appKeys.allProcedures });
+      }),
+    [queryClient]
+  );
   return useQuery({
     queryKey: appKeys.procedures(icao ?? ''),
     queryFn: (): Promise<ResolvedAirportProcedures | null> => {

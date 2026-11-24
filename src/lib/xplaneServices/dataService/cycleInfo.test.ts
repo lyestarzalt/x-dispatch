@@ -14,6 +14,7 @@ import * as os from 'os';
 import * as path from 'path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
+  airacCycleAt,
   detectAllDataSources,
   getAiracCycleDates,
   parseDataCycleHeader,
@@ -123,6 +124,28 @@ describe('getAiracCycleDates', () => {
     expect(getAiracCycleDates('abcd')).toBeNull();
     expect(getAiracCycleDates('2600')).toBeNull();
     expect(getAiracCycleDates('2615')).toBeNull();
+  });
+});
+
+describe('airacCycleAt', () => {
+  it('names the cycle in force on a date', () => {
+    // 2610 ran 1 to 29 October 2026, as the FAA's chart list for it says.
+    expect(airacCycleAt(new Date(Date.UTC(2026, 9, 1)))).toBe('2610');
+    expect(airacCycleAt(new Date(Date.UTC(2026, 9, 28, 23)))).toBe('2610');
+    expect(airacCycleAt(new Date(Date.UTC(2026, 9, 29)))).toBe('2611');
+    expect(airacCycleAt(new Date(Date.UTC(2026, 10, 23)))).toBe('2611');
+  });
+
+  it('counts from the first cycle of the year', () => {
+    expect(airacCycleAt(new Date(Date.UTC(2026, 0, 21)))).toBe('2513');
+    expect(airacCycleAt(new Date(Date.UTC(2026, 0, 22)))).toBe('2601');
+  });
+
+  it('agrees with getAiracCycleDates', () => {
+    const date = new Date(Date.UTC(2027, 5, 15));
+    const dates = getAiracCycleDates(airacCycleAt(date))!;
+    expect(dates.effectiveDate.getTime()).toBeLessThanOrEqual(date.getTime());
+    expect(dates.expirationDate.getTime()).toBeGreaterThan(date.getTime());
   });
 });
 
