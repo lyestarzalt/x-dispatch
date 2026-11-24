@@ -36,6 +36,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { usePageHide } from '@/hooks/usePageHide';
 import { useUnits } from '@/hooks/useUnits';
 import { type PlanVisit, planVisitSummary } from '@/lib/analytics/planVisit';
 import { formatDuration } from '@/lib/flightRecorder/format';
@@ -225,6 +226,15 @@ function FlightPlanBuilder({
   const markVisit = (update: Partial<PlanVisit>) => {
     if (visitRef.current) Object.assign(visitRef.current, update);
   };
+  const reportVisit = useCallback(() => {
+    const visit = visitRef.current;
+    visitRef.current = null;
+    if (!visit) return;
+    const plan = usePlanBuilderStore.getState();
+    const planClass =
+      plan.aircraftClass ?? planningClass(usePlaneStore.getState().state?.aircraftCategory);
+    trackEvent('flight_plan_closed', planVisitSummary(plan, visit, planClass, performance.now()));
+  }, []);
   useEffect(() => {
     if (isOpen) {
       visitRef.current = {
@@ -236,14 +246,10 @@ function FlightPlanBuilder({
       };
       return;
     }
-    const visit = visitRef.current;
-    visitRef.current = null;
-    if (!visit) return;
-    const plan = usePlanBuilderStore.getState();
-    const planClass =
-      plan.aircraftClass ?? planningClass(usePlaneStore.getState().state?.aircraftCategory);
-    trackEvent('flight_plan_closed', planVisitSummary(plan, visit, planClass, performance.now()));
-  }, [isOpen]);
+    reportVisit();
+  }, [isOpen, reportVisit]);
+  // The planner is often still open when the app quits; that visit counts too.
+  usePageHide(reportVisit);
 
   const { data: depProcedures, isLoading: depLoading } = useAirportProcedures(
     isOpen ? (departure?.icao ?? null) : null

@@ -1,8 +1,18 @@
 import { describe, expect, it, vi } from 'vitest';
-import { type AnalyticsClient, type PendingSession, createAnalytics } from './analytics';
+import {
+  type AnalyticsClient,
+  type PendingEvent,
+  type PendingSession,
+  createAnalytics,
+} from './analytics';
 
 function setup(
-  opts: { enabled?: boolean; installId?: string | null; pending?: PendingSession } = {}
+  opts: {
+    enabled?: boolean;
+    installId?: string | null;
+    pending?: PendingSession;
+    pendingEvents?: PendingEvent[];
+  } = {}
 ) {
   let installId: string | null = opts.installId === undefined ? 'install-1' : opts.installId;
   let time = 1_000_000;
@@ -12,7 +22,14 @@ function setup(
   };
   const createClient = vi.fn(() => client);
   let pending: PendingSession | null = opts.pending ?? null;
+  let pendingEvents: PendingEvent[] = opts.pendingEvents ?? [];
   const analytics = createAnalytics({
+    takePendingEvents: () => {
+      const e = pendingEvents;
+      pendingEvents = [];
+      return e;
+    },
+    savePendingEvents: (events) => (pendingEvents = events),
     takePendingSession: () => {
       const p = pending;
       pending = null;
@@ -33,6 +50,7 @@ function setup(
     setInstallId: (id: string | null) => (installId = id),
     advance: (ms: number) => (time += ms),
     pending: () => pending,
+    pendingEvents: () => pendingEvents,
     events: () => vi.mocked(client.capture).mock.calls.map(([m]) => m),
   };
 }
@@ -170,5 +188,52 @@ describe('tablet access', () => {
     next.analytics.startSession();
     const ended = next.events().find((e) => e.event === 'session_ended');
     expect(ended?.properties.tablet_clients).toBe(3);
+  });
+});
+
+describe('events tracked while quitting', () => {
+  // On quit, main's before-quit stops the client before the renderer unloads, so
+  // what the renderer reports then (an open planner, an open Launch dialog) used
+  // to be dropped. It is kept on disk and sent on the next launch instead.
+  it('keeps an event tracked after the session ended and sends it next launch with its time', () => {
+    const first = setup();
+    first.analytics.startSession();
+    first.analytics.endSession();
+    first.advance(500);
+    first.analytics.track('flight_plan_saved', {});
+    expect(first.events().map((e) => e.event)).toEqual(['app_started']);
+    expect(first.createClient).toHaveBeenCalledTimes(1);
+    expect(first.pendingEvents()).toEqual([
+      {
+        event: 'flight_plan_saved',
+        properties: expect.objectContaining({ $app_version: '2.2.0', remote: false }),
+        timestamp: new Date(1_000_500).toISOString(),
+      },
+    ]);
+
+    const next = setup({ pendingEvents: first.pendingEvents() });
+    next.analytics.startSession();
+    expect(next.events().at(-1)).toMatchObject({
+      event: 'flight_plan_saved',
+      properties: { $app_version: '2.2.0' },
+      timestamp: new Date(1_000_500),
+    });
+    expect(next.pendingEvents()).toEqual([]);
+  });
+
+  it('keeps nothing without consent', () => {
+    const { analytics, pendingEvents } = setup({ installId: null });
+    analytics.startSession();
+    analytics.endSession();
+    analytics.track('flight_plan_saved', {});
+    expect(pendingEvents()).toEqual([]);
+  });
+
+  it('keeps at most the last 20, so a stuck renderer cannot grow the file', () => {
+    const { analytics, pendingEvents } = setup();
+    analytics.startSession();
+    analytics.endSession();
+    for (let i = 0; i < 25; i++) analytics.track('flight_plan_saved', {});
+    expect(pendingEvents()).toHaveLength(20);
   });
 });

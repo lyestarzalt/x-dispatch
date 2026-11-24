@@ -40,6 +40,12 @@ interface XPlaneConfig {
     appVersion: string;
     tabletClientsPeak?: number;
   };
+  /** Events tracked while quitting, sent on the next launch with their own time */
+  analyticsPendingEvents?: {
+    event: string;
+    properties: Record<string, string | number | boolean | null>;
+    timestamp: string;
+  }[];
   /** Tablet access: the LAN server that serves the UI to other devices */
   remoteAccess?: RemoteAccessConfig;
 }
@@ -177,6 +183,10 @@ function saveConfig(config: Partial<XPlaneConfig>): boolean {
         'analyticsPendingSession' in config
           ? config.analyticsPendingSession
           : existing?.analyticsPendingSession,
+      analyticsPendingEvents:
+        'analyticsPendingEvents' in config
+          ? config.analyticsPendingEvents
+          : existing?.analyticsPendingEvents,
       remoteAccess: config.remoteAccess ?? existing?.remoteAccess,
     };
 
@@ -264,6 +274,7 @@ export function setAnalyticsConsent(granted: boolean): boolean {
       analyticsConsent: 'denied',
       analyticsInstallId: undefined,
       analyticsPendingSession: undefined,
+      analyticsPendingEvents: undefined,
     });
   }
   const installId = loadConfig()?.analyticsInstallId ?? crypto.randomUUID();
@@ -282,6 +293,20 @@ export function takeAnalyticsPendingSession(): AnalyticsPendingSession | null {
 /** Synchronous write, so it is safe during `before-quit`. */
 export function saveAnalyticsPendingSession(session: AnalyticsPendingSession): void {
   saveConfig({ analyticsPendingSession: session });
+}
+
+export type AnalyticsPendingEvent = NonNullable<XPlaneConfig['analyticsPendingEvents']>[number];
+
+/** Returns and clears the events held back by the last quit. */
+export function takeAnalyticsPendingEvents(): AnalyticsPendingEvent[] {
+  const pending = loadConfig()?.analyticsPendingEvents ?? [];
+  if (pending.length > 0) saveConfig({ analyticsPendingEvents: undefined });
+  return pending;
+}
+
+/** Synchronous write, so it is safe while the app quits. */
+export function saveAnalyticsPendingEvents(events: AnalyticsPendingEvent[]): void {
+  saveConfig({ analyticsPendingEvents: events });
 }
 
 /** The anonymous install ID, or null unless consent is granted. */

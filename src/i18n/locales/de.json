@@ -925,13 +925,11 @@
       "delayInline": "{{seconds}} s Verzögerung",
       "add": "Hinzufügen",
       "unknownError": "Unbekannter Fehler",
-      "notElevatedTitle": "X-Dispatch läuft nicht als Administrator",
-      "notElevatedHint": "Begleit-Apps können nicht gestartet werden. Klicken Sie mit der rechten Maustaste auf X-Dispatch und wählen Sie 'Als Administrator ausführen' (Windows) oder starten Sie über ein Terminal mit sudo (macOS/Linux).",
       "error": {
-        "needsAdmin": "X-Dispatch benötigt Administratorrechte, um diese App zu starten",
         "fileMissing": "Die ausführbare Datei wurde unter dem konfigurierten Pfad nicht gefunden",
-        "fileNotExecutable": "Die Datei ist nicht ausführbar",
-        "batchNotSupported": "Batchdateien (.bat, .cmd) können nicht direkt gestartet werden. Geben Sie unter „Pfad zur ausführbaren Datei“ das Programm selbst an, etwa javaw.exe, tragen Sie den Rest unter „Argumente“ ein und setzen Sie „Arbeitsverzeichnis“ auf den Ordner der Anwendung.",
+        "accessDenied": "Windows hat den Start dieser App verweigert. Prüfen Sie Antivirus und die Ordnerberechtigungen.",
+        "cancelled": "Die Berechtigungsabfrage wurde geschlossen, die App wurde nicht gestartet",
+        "timedOut": "Die App ist nicht innerhalb von zwei Minuten gestartet",
         "spawnFailed": "Prozess konnte nicht gestartet werden"
       }
     },
@@ -1846,6 +1844,7 @@
         "TOGGLE_FAILED": "Umschalten fehlgeschlagen: {{reason}}",
         "DELETE_FAILED": "Löschen fehlgeschlagen: {{reason}}",
         "PLUGIN_IN_USE": "X-Plane verwendet dieses Plugin. X-Plane beenden und erneut versuchen.",
+        "FILE_IN_USE": "{{fileName}} ist in einem anderen Programm geöffnet. Schließen und erneut versuchen.",
         "PERMISSION_DENIED": "Zugriff verweigert. Der X-Plane-Ordner liegt an einem geschützten Ort. X-Dispatch als Administrator ausführen.",
         "PATH_TRAVERSAL": "Unsicherer Pfad abgelehnt: {{path}}",
         "INVALID_INPUT": "Ungültige Eingabe: {{field}}"
@@ -1885,6 +1884,8 @@
         "DSF_INVALID": "Ungültige DSF-Datei: {{reason}}",
         "DSF_COMPRESSED": "Komprimierte DSF wird noch nicht unterstützt: {{path}}",
         "WRITE_FAILED": "scenery_packs.ini konnte nicht geschrieben werden: {{reason}}",
+        "DELETE_FAILED": "Löschen fehlgeschlagen: {{reason}}",
+        "FILE_IN_USE": "{{fileName}} ist in einem anderen Programm geöffnet. Schließen und erneut versuchen.",
         "BACKUP_FAILED": "Sicherung fehlgeschlagen: {{reason}}"
       },
       "loading": "Szenerie-Ordner werden durchsucht...",

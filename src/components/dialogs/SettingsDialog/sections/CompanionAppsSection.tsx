@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Boxes, Pencil, Play, Plus, ShieldAlert, Trash2 } from 'lucide-react';
+import { Boxes, Pencil, Play, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import type { SpawnErrorCode } from '@/lib/companionApps/spawn';
 import { SUGGESTED_COMPANION_APPS } from '@/lib/companionApps/suggested';
 import { cn } from '@/lib/utils/helpers';
 import { toastError } from '@/lib/utils/toastError';
-import { useElevationQuery } from '@/queries/useElevationQuery';
 import { type CompanionApp, useCompanionAppsStore } from '@/stores/companionAppsStore';
 import { SettingsEmptyState, SettingsHeader } from '../primitives';
 import type { SettingsSectionProps } from '../types';
@@ -16,14 +15,14 @@ import { CompanionAppEditDialog } from './CompanionAppEditDialog';
 /** Map a spawn error code to a localized i18n key under settings.companionApps.error.* */
 function errorKeyFor(code: SpawnErrorCode | undefined): string {
   switch (code) {
-    case 'NEEDS_ADMIN':
-      return 'settings.companionApps.error.needsAdmin';
     case 'FILE_MISSING':
       return 'settings.companionApps.error.fileMissing';
-    case 'FILE_NOT_EXECUTABLE':
-      return 'settings.companionApps.error.fileNotExecutable';
-    case 'BATCH_NOT_SUPPORTED':
-      return 'settings.companionApps.error.batchNotSupported';
+    case 'ACCESS_DENIED':
+      return 'settings.companionApps.error.accessDenied';
+    case 'CANCELLED':
+      return 'settings.companionApps.error.cancelled';
+    case 'TIMED_OUT':
+      return 'settings.companionApps.error.timedOut';
     default:
       return 'settings.companionApps.error.spawnFailed';
   }
@@ -40,7 +39,6 @@ export function CompanionAppsSection({ className }: SettingsSectionProps = {}) {
   const addTool = useCompanionAppsStore((s) => s.addTool);
   const updateTool = useCompanionAppsStore((s) => s.updateTool);
   const removeTool = useCompanionAppsStore((s) => s.removeTool);
-  const elevation = useElevationQuery();
 
   const [edit, setEdit] = useState<EditState>({ open: false });
 
@@ -94,10 +92,6 @@ export function CompanionAppsSection({ className }: SettingsSectionProps = {}) {
     }
   };
 
-  // Banner is Windows-only: on macOS/Linux normal user apps don't need root
-  // to launch peer apps, so the warning would just confuse non-Windows users.
-  const showAdminBanner = elevation.data === false && window.appAPI.platform === 'win32';
-
   return (
     <div className={cn('space-y-6', className)}>
       <SettingsHeader
@@ -105,19 +99,6 @@ export function CompanionAppsSection({ className }: SettingsSectionProps = {}) {
         title={t('settings.companionApps.title')}
         description={t('settings.companionApps.description')}
       />
-
-      {/* Admin banner — flat inline alert */}
-      {showAdminBanner && (
-        <div className="border-warning/40 bg-warning/5 flex items-start gap-3 rounded-lg border p-3">
-          <ShieldAlert className="text-warning mt-0.5 h-4 w-4 shrink-0" />
-          <div className="space-y-1 text-sm">
-            <p className="text-foreground font-medium">
-              {t('settings.companionApps.notElevatedTitle')}
-            </p>
-            <p className="text-muted-foreground">{t('settings.companionApps.notElevatedHint')}</p>
-          </div>
-        </div>
-      )}
 
       {/* Configured tools */}
       {tools.length === 0 ? (

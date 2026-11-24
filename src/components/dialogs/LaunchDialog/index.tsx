@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { X } from 'lucide-react';
@@ -10,6 +10,7 @@ import {
 } from '@/components/dialogs/fullScreenDialog';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogPanel, DialogTitle } from '@/components/ui/dialog';
+import { usePageHide } from '@/hooks/usePageHide';
 import { dialogTimeBucket } from '@/lib/analytics/buckets';
 import {
   type LaunchFailureProps,
@@ -137,6 +138,16 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
     failed: boolean;
     attempts: number;
   } | null>(null);
+  const reportAbandoned = useCallback(() => {
+    const visit = visitRef.current;
+    visitRef.current = null;
+    if (!visit || visit.launched) return;
+    trackEvent('launch_abandoned', {
+      aircraft_selected: useLaunchStore.getState().selectedAircraft !== null,
+      launch_failed: visit.failed,
+      time_open: dialogTimeBucket(performance.now() - visit.openedAt),
+    });
+  }, []);
   useEffect(() => {
     if (open) {
       visitRef.current = {
@@ -147,15 +158,10 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
       };
       return;
     }
-    const visit = visitRef.current;
-    visitRef.current = null;
-    if (!visit || visit.launched) return;
-    trackEvent('launch_abandoned', {
-      aircraft_selected: useLaunchStore.getState().selectedAircraft !== null,
-      launch_failed: visit.failed,
-      time_open: dialogTimeBucket(performance.now() - visit.openedAt),
-    });
-  }, [open]);
+    reportAbandoned();
+  }, [open, reportAbandoned]);
+  // Quitting with the dialog open abandons the launch too.
+  usePageHide(reportAbandoned);
 
   // Reset transient UI state when dialog closes
   useEffect(() => {
@@ -299,14 +305,14 @@ export default function LaunchPanel({ open, onClose, startPosition }: LaunchPane
 
       const errorKeyFor = (code: string | undefined): string => {
         switch (code) {
-          case 'NEEDS_ADMIN':
-            return 'settings.companionApps.error.needsAdmin';
           case 'FILE_MISSING':
             return 'settings.companionApps.error.fileMissing';
-          case 'FILE_NOT_EXECUTABLE':
-            return 'settings.companionApps.error.fileNotExecutable';
-          case 'BATCH_NOT_SUPPORTED':
-            return 'settings.companionApps.error.batchNotSupported';
+          case 'ACCESS_DENIED':
+            return 'settings.companionApps.error.accessDenied';
+          case 'CANCELLED':
+            return 'settings.companionApps.error.cancelled';
+          case 'TIMED_OUT':
+            return 'settings.companionApps.error.timedOut';
           default:
             return 'settings.companionApps.error.spawnFailed';
         }

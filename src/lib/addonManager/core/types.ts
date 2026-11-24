@@ -1,3 +1,5 @@
+import type { FileInUseError } from './fileErrors';
+
 /**
  * Result type for operations that can fail.
  * Use instead of throwing exceptions for expected failures.
@@ -101,6 +103,8 @@ export type SceneryError =
   | { code: 'DSF_INVALID'; path: string; reason: string }
   | { code: 'DSF_COMPRESSED'; path: string }
   | { code: 'WRITE_FAILED'; path: string; reason: string }
+  | { code: 'DELETE_FAILED'; path: string; reason: string }
+  | FileInUseError
   | { code: 'BACKUP_FAILED'; reason: string };
 
 /**
@@ -138,6 +142,10 @@ export function getSceneryErrorMessage(error: SceneryError): string {
       return `Compressed DSF not yet supported: ${error.path}`;
     case 'WRITE_FAILED':
       return `Failed to write: ${error.reason}`;
+    case 'DELETE_FAILED':
+      return `Delete failed: ${error.reason}`;
+    case 'FILE_IN_USE':
+      return `${error.fileName} is open in another program: ${error.reason}`;
     case 'BACKUP_FAILED':
       return `Backup failed: ${error.reason}`;
   }
@@ -151,6 +159,7 @@ export type BrowserError =
   | { code: 'SCAN_FAILED'; path: string; reason: string }
   | { code: 'TOGGLE_FAILED'; path: string; reason: string }
   | { code: 'DELETE_FAILED'; path: string; reason: string }
+  | FileInUseError
   | { code: 'PATH_TRAVERSAL'; path: string }
   | { code: 'INVALID_INPUT'; field: string };
 
@@ -176,8 +185,11 @@ export function sceneryErrorText(error: SceneryError): AddonErrorText {
       return { key, params: { folderName: error.folderName } };
     case 'DSF_INVALID':
     case 'WRITE_FAILED':
+    case 'DELETE_FAILED':
     case 'BACKUP_FAILED':
       return { key, params: { reason: error.reason } };
+    case 'FILE_IN_USE':
+      return { key, params: { fileName: error.fileName } };
   }
 }
 
@@ -192,8 +204,11 @@ export function browserErrorText(error: BrowserError): AddonErrorText {
       return { key: `${family}.INVALID_INPUT`, params: { field: error.field } };
     case 'SCAN_FAILED':
       return { key: `${family}.SCAN_FAILED`, params: { reason: error.reason } };
+    case 'FILE_IN_USE':
+      // X-Plane is the program holding a plugin; saying so is more use than the file name.
+      if (isPluginFile(error.fileName)) return { key: `${family}.PLUGIN_IN_USE`, params: {} };
+      return { key: `${family}.FILE_IN_USE`, params: { fileName: error.fileName } };
     case 'TOGGLE_FAILED':
-      if (isPluginInUse(error.reason)) return { key: `${family}.PLUGIN_IN_USE`, params: {} };
       if (isPermissionDenied(error.reason))
         return { key: `${family}.PERMISSION_DENIED`, params: {} };
       return { key: `${family}.TOGGLE_FAILED`, params: { reason: error.reason } };
@@ -209,12 +224,9 @@ function isPermissionDenied(reason: string): boolean {
   return /\b(EPERM|EACCES)\b/.test(reason);
 }
 
-/**
- * Windows refuses to rename a plugin's .xpl while X-Plane has it loaded, and
- * reports that as EPERM (or EBUSY), the same code as a protected folder.
- */
-export function isPluginInUse(reason: string | undefined): boolean {
-  return /EPERM|EBUSY/.test(reason ?? '') && /\.(xpl|xfmp)\b/i.test(reason ?? '');
+/** A plugin binary, enabled (.xpl) or switched off (.xfmp). */
+function isPluginFile(fileName: string): boolean {
+  return /\.(xpl|xfmp)$/i.test(fileName);
 }
 
 /**
@@ -226,10 +238,9 @@ export function getBrowserErrorMessage(error: BrowserError): string {
       return `Not found: ${error.path}`;
     case 'SCAN_FAILED':
       return `Scan failed: ${error.reason}`;
+    case 'FILE_IN_USE':
+      return `${error.fileName} is open in another program: ${error.reason}`;
     case 'TOGGLE_FAILED':
-      if (isPluginInUse(error.reason)) {
-        return `X-Plane is using this plugin. Close X-Plane and try again.`;
-      }
       if (error.reason?.includes('EPERM')) {
         return `Permission denied. Your X-Plane folder is in a protected location that requires administrator access to modify. Try running X-Dispatch as administrator.`;
       }

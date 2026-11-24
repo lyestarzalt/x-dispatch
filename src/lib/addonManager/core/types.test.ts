@@ -5,26 +5,49 @@ import {
   type SceneryError,
   browserErrorText,
   getBrowserErrorMessage,
-  isPluginInUse,
   sceneryErrorText,
 } from './types';
 
-describe('plugin toggle errors', () => {
-  const locked =
-    "EPERM: operation not permitted, rename 'D:\\X-Plane 12\\Resources\\plugins\\Foo\\win_x64\\Foo.xpl' -> 'D:\\X-Plane 12\\Resources\\plugins\\Foo\\win_x64\\Foo.xfmp'";
-
-  it('tells a loaded plugin apart from a protected folder', () => {
-    expect(isPluginInUse(locked)).toBe(true);
-    expect(isPluginInUse("EPERM: operation not permitted, mkdir 'C:\\Program Files\\X'")).toBe(
-      false
-    );
-    expect(isPluginInUse(undefined)).toBe(false);
+describe('a file another program holds open', () => {
+  it('says to close X-Plane when the file is a plugin binary', () => {
+    const error: BrowserError = {
+      code: 'FILE_IN_USE',
+      path: 'D:\\X-Plane 12\\Resources\\plugins\\Foo\\64\\win.xpl',
+      fileName: 'win.xpl',
+      reason: 'EPERM',
+    };
+    expect(browserErrorText(error)).toEqual({
+      key: 'addonManager.browser.errors.PLUGIN_IN_USE',
+      params: {},
+    });
   });
 
-  it('says to close X-Plane when its plugin cannot be renamed', () => {
-    const message = getBrowserErrorMessage({ code: 'TOGGLE_FAILED', path: 'Foo', reason: locked });
-    expect(message).toContain('Close X-Plane');
-    expect(message).not.toContain('administrator');
+  it('names any other file', () => {
+    const error: BrowserError = {
+      code: 'FILE_IN_USE',
+      path: 'D:\\X-Plane 12\\Aircraft\\A\\manual.pdf',
+      fileName: 'manual.pdf',
+      reason: 'EPERM',
+    };
+    expect(browserErrorText(error)).toEqual({
+      key: 'addonManager.browser.errors.FILE_IN_USE',
+      params: { fileName: 'manual.pdf' },
+    });
+    expect(
+      sceneryErrorText({ code: 'FILE_IN_USE', path: 'x', fileName: 'KLGA_CHARTS.pdf', reason: 'r' })
+    ).toEqual({
+      key: 'addonManager.scenery.errors.FILE_IN_USE',
+      params: { fileName: 'KLGA_CHARTS.pdf' },
+    });
+  });
+
+  it('keeps the administrator advice for a protected folder', () => {
+    const message = getBrowserErrorMessage({
+      code: 'TOGGLE_FAILED',
+      path: 'Foo',
+      reason: "EPERM: operation not permitted, rename 'C:\\Program Files\\X-Plane 12\\a.xpl'",
+    });
+    expect(message).toContain('administrator');
   });
 });
 
@@ -43,7 +66,8 @@ describe('add-on error texts', () => {
       { code: 'NOT_FOUND', path: 'x' },
       { code: 'SCAN_FAILED', path: 'x', reason: 'r' },
       { code: 'TOGGLE_FAILED', path: 'x', reason: 'r' },
-      { code: 'TOGGLE_FAILED', path: 'x', reason: "EPERM rename 'a.xpl'" },
+      { code: 'FILE_IN_USE', path: 'x', fileName: 'a.xpl', reason: 'r' },
+      { code: 'FILE_IN_USE', path: 'x', fileName: 'a.pdf', reason: 'r' },
       { code: 'TOGGLE_FAILED', path: 'x', reason: 'EPERM mkdir' },
       { code: 'DELETE_FAILED', path: 'x', reason: 'r' },
       { code: 'DELETE_FAILED', path: 'x', reason: 'EPERM' },
@@ -56,9 +80,6 @@ describe('add-on error texts', () => {
         en.addonManager.browser.errors[key.replace('addonManager.browser.errors.', '')]
       ).toBeTypeOf('string');
     }
-    expect(
-      browserErrorText({ code: 'TOGGLE_FAILED', path: 'x', reason: "EPERM rename 'a.xpl'" }).key
-    ).toBe('addonManager.browser.errors.PLUGIN_IN_USE');
   });
 
   it('maps every scenery failure to a translated key', () => {
@@ -69,6 +90,8 @@ describe('add-on error texts', () => {
       { code: 'DSF_INVALID', path: 'x', reason: 'r' },
       { code: 'DSF_COMPRESSED', path: 'x' },
       { code: 'WRITE_FAILED', path: 'x', reason: 'r' },
+      { code: 'DELETE_FAILED', path: 'x', reason: 'r' },
+      { code: 'FILE_IN_USE', path: 'x', fileName: 'f', reason: 'r' },
       { code: 'BACKUP_FAILED', reason: 'r' },
     ];
     for (const error of cases) {

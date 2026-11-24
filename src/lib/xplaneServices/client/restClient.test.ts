@@ -153,7 +153,13 @@ describe('startFlight when the connection breaks during the load', () => {
     aircraft: { path: 'Aircraft/test.acf' },
     ramp_start: { airport_id: 'LFLS', ramp: 'Gate 9' },
   };
-  const timing = { requestTimeoutMs: 30, recoveryWindowMs: 200, recoveryProbeMs: 5 };
+  const timing = {
+    requestTimeoutMs: 30,
+    recoveryWindowMs: 200,
+    slowLoadWindowMs: 200,
+    recoveryProbeMs: 5,
+  };
+  const xplaneClosed = async () => false;
   const reset = (xplaneBack: boolean) => {
     const dropped = Object.assign(new TypeError('fetch failed'), {
       cause: Object.assign(new Error('socket hang up'), { code: 'ECONNRESET' }),
@@ -177,7 +183,7 @@ describe('startFlight when the connection breaks during the load', () => {
 
   it('fails with the real reason when X-Plane never comes back', async () => {
     const fetch = reset(false);
-    const result = await new XPlaneRestClient(8086, timing).startFlight(payload);
+    const result = await new XPlaneRestClient(8086, timing, xplaneClosed).startFlight(payload);
     expect(result).toEqual({
       success: false,
       reason: 'connection_lost',
@@ -201,5 +207,62 @@ describe('startFlight when the connection breaks during the load', () => {
     vi.stubGlobal('fetch', fetch);
     const result = await new XPlaneRestClient(8086, timing).startFlight(payload);
     expect(result).toEqual({ success: true, connectionDropped: 'no answer within 30 ms' });
+  });
+});
+
+// X-DISPATCH-6N: on a slow machine X-Plane is still loading the flight, its web server
+// silent, long after the usual recovery window. Its process is alive the whole time.
+describe('startFlight on a machine that loads slowly', () => {
+  const payload = {
+    aircraft: { path: 'Aircraft/Laminar Research/McDonnell Douglas MD-82/MD80.acf' },
+    runway_start: { airport_id: 'CYYZ', runway: '06R' },
+  };
+  const timing = {
+    requestTimeoutMs: 20,
+    recoveryWindowMs: 40,
+    slowLoadWindowMs: 1_000,
+    recoveryProbeMs: 5,
+  };
+  /** X-Plane's web server stays silent for `silentMs` after the request, then answers. */
+  const silentFor = (silentMs: number) => {
+    const sent = Date.now();
+    const fetch = vi.fn((url: string, init?: RequestInit) => {
+      if (url.endsWith('/flight')) {
+        return new Promise((_, reject) =>
+          init?.signal?.addEventListener('abort', () =>
+            reject(Object.assign(new Error('This operation was aborted'), { name: 'AbortError' }))
+          )
+        );
+      }
+      return Date.now() - sent >= silentMs
+        ? Promise.resolve({ ok: true })
+        : Promise.reject(new TypeError('fetch failed'));
+    });
+    vi.stubGlobal('fetch', fetch);
+    return fetch;
+  };
+
+  it('keeps waiting past the usual window while X-Plane is still running', async () => {
+    silentFor(200);
+    const result = await new XPlaneRestClient(8086, timing, async () => true).startFlight(payload);
+    expect(result).toEqual({ success: true, connectionDropped: 'no answer within 20 ms' });
+  });
+
+  it('stops at the usual window once X-Plane has closed', async () => {
+    silentFor(10_000);
+    const started = Date.now();
+    const result = await new XPlaneRestClient(8086, timing, async () => false).startFlight(payload);
+    expect(result).toMatchObject({ success: false, reason: 'connection_lost' });
+    expect(Date.now() - started).toBeLessThan(500);
+  });
+
+  it('gives up at the long window even if X-Plane never answers', async () => {
+    silentFor(10_000);
+    const result = await new XPlaneRestClient(
+      8086,
+      { ...timing, slowLoadWindowMs: 150 },
+      async () => true
+    ).startFlight(payload);
+    expect(result).toMatchObject({ success: false, reason: 'connection_lost' });
   });
 });

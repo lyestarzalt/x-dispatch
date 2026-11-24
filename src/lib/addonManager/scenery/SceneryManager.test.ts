@@ -229,6 +229,71 @@ describe('SceneryManager \u2014 one write at a time', () => {
   });
 });
 
+describe('SceneryManager — delete', () => {
+  const ini = () => path.join(customScenery, 'scenery_packs.ini');
+  const twoPacks = () => {
+    for (const name of ['Alpha', 'Bravo']) fs.mkdirSync(path.join(customScenery, name));
+    fs.writeFileSync(
+      ini(),
+      [
+        'I',
+        '1000 Version',
+        'SCENERY',
+        '',
+        'SCENERY_PACK Custom Scenery/Alpha/',
+        'SCENERY_PACK Custom Scenery/Bravo/',
+        '',
+      ].join('\n')
+    );
+  };
+
+  afterEach(() => vi.restoreAllMocks());
+
+  // X-DISPATCH-9S: the delete stopped on a PDF open in a viewer, and the user read
+  // "Couldn't write scenery_packs.ini".
+  it('names the file another program holds open', async () => {
+    twoPacks();
+    const pdf = path.join(customScenery, 'Alpha', 'KLGA_CHARTS.pdf');
+    vi.spyOn(fs.promises, 'rm').mockRejectedValueOnce(
+      Object.assign(new Error(`EBUSY: resource busy or locked, unlink '${pdf}'`), {
+        code: 'EBUSY',
+        syscall: 'unlink',
+        path: pdf,
+      })
+    );
+
+    const result = await new SceneryManager(xpRoot).deleteScenery('Alpha');
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toMatchObject({ code: 'FILE_IN_USE', fileName: 'KLGA_CHARTS.pdf' });
+    }
+    expect(fs.readFileSync(ini(), 'utf-8')).toContain('Custom Scenery/Alpha/');
+  });
+
+  it('calls any other failure a failed delete, not a failed write of the list', async () => {
+    twoPacks();
+    vi.spyOn(fs.promises, 'rm').mockRejectedValueOnce(new Error('ENOTEMPTY'));
+
+    const result = await new SceneryManager(xpRoot).deleteScenery('Alpha');
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error.code).toBe('DELETE_FAILED');
+  });
+
+  it('reports a list that could not be written after the folder went', async () => {
+    twoPacks();
+    fs.chmodSync(ini(), 0o444);
+
+    const result = await new SceneryManager(xpRoot).deleteScenery('Alpha');
+
+    fs.chmodSync(ini(), 0o644);
+    expect(fs.existsSync(path.join(customScenery, 'Alpha'))).toBe(false);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error.code).toBe('WRITE_FAILED');
+  });
+});
+
 describe('SceneryManager — batch enable and tier overrides', () => {
   function airport(name: string) {
     const dir = path.join(customScenery, name, 'Earth nav data');

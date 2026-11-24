@@ -12,7 +12,9 @@ export function startupBucket(ms: number): AnalyticsStartupBucket {
   if (ms < 2_000) return 'under_2s';
   if (ms < 5_000) return '2_5s';
   if (ms < 10_000) return '5_10s';
-  return 'over_10s';
+  if (ms < 30_000) return '10_30s';
+  if (ms < 60_000) return '30_60s';
+  return 'over_60s';
 }
 
 /** Window width in DIPs (CSS pixels). */

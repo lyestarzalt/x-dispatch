@@ -1,4 +1,5 @@
 import * as maplibregl from 'maplibre-gl';
+import { isMapRemoved } from '../types';
 
 const ICON_SIZE = 48;
 const ICON_PREFIX = 'ac-';
@@ -195,7 +196,7 @@ async function loadIcon(map: maplibregl.Map, icaoCode: string): Promise<boolean>
     if (iconData) break;
   }
 
-  if (!iconData) return false;
+  if (!iconData || isMapRemoved(map)) return false;
 
   if (!map.hasImage(imageId)) {
     map.addImage(imageId, iconData, { sdf: true });
@@ -211,7 +212,7 @@ export async function ensureFallbackIcon(map: maplibregl.Map): Promise<void> {
   if (map.hasImage(FALLBACK_ID)) return;
 
   const iconData = await fetchSvgIcon('Unidentified');
-  if (iconData && !map.hasImage(FALLBACK_ID)) {
+  if (iconData && !isMapRemoved(map) && !map.hasImage(FALLBACK_ID)) {
     map.addImage(FALLBACK_ID, iconData, { sdf: true });
   }
 }
