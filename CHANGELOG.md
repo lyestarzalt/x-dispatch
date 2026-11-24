@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.18.0] - 2026-11-24
+
 ### Added
 
 - **Zoom into the vertical profile.** The mouse wheel zooms, dragging moves along the route, and the bar under the chart jumps to any part of it; a double-click zooms back out.
@@ -563,7 +565,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Releases up to 2.2.0 are listed on the [website changelog](https://x-dispatch.app/changelog/).
 
-[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.17.0...HEAD
+[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.18.0...HEAD
+[2.18.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.17.0...v2.18.0
 [2.17.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.16.0...v2.17.0
 [2.16.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.15.0...v2.16.0
 [2.15.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.14.0...v2.15.0
