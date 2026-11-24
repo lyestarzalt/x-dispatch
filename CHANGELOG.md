@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **US RNAV SIDs and STARs are marked RNAV.** It reads the same `d-tpp_Metafile.xml` in Custom Data that marks obstacle departures.
 - **Your last ten flight plans are kept.** The clock in the planner lists them, whole, and a click loads one back; it replaces the list of flown routes there.
+- **VATSIM and IVAO traffic sits at its altitude when the map is tilted.** Aircraft on the ground stay on the ground.
 - **Show or hide the flight plan strip.** A button next to Profile in the planner, and in the SimBrief panel; it also draws the plan again after it was cleared.
 
 ### Changed
