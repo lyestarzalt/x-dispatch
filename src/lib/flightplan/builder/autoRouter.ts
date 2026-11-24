@@ -557,6 +557,59 @@ function addTrackEdges(
 }
 
 /**
+ * A lookup of the `keys` lying between `minNm` (exclusive) and `maxNm` of one of them, through a
+ * 1° grid instead of a pass over every key. It returns exactly the keys such a pass would, in
+ * the same order: the cells searched cover every point within `maxNm`, including near a pole
+ * (all longitudes) and across the antimeridian, and the distance test is the same.
+ */
+export function nodesWithinNm(
+  keys: readonly string[],
+  positions: ReadonlyMap<string, LatLon>
+): (from: string, minNm: number, maxNm: number) => string[] {
+  const lonCell = (lon: number) => ((((Math.floor(lon) + 180) % 360) + 360) % 360) - 180;
+  const cellKey = (lat: number, lon: number) => (lat + 100) * 1000 + lon + 500;
+  const cells = new Map<number, number[]>();
+  keys.forEach((key, index) => {
+    const p = positions.get(key)!;
+    const c = cellKey(Math.floor(p.latitude), lonCell(p.longitude));
+    if (!cells.has(c)) cells.set(c, []);
+    cells.get(c)!.push(index);
+  });
+  return (from, minNm, maxNm) => {
+    const p = positions.get(from)!;
+    const radiusRad = maxNm / EARTH_RADIUS_NM;
+    const radiusDeg = (radiusRad * 180) / Math.PI;
+    const latRad = (p.latitude * Math.PI) / 180;
+    // Within an angular radius r of a point at latitude φ, longitude differs by at most
+    // asin(sin r / cos φ); when the circle reaches a pole every longitude is in range.
+    const reachesPole = Math.cos(latRad) <= Math.sin(radiusRad);
+    const lonHalf = reachesPole
+      ? 180
+      : (Math.asin(Math.sin(radiusRad) / Math.cos(latRad)) * 180) / Math.PI;
+    const lonFrom = Math.floor(p.longitude - lonHalf) - 1;
+    const lonTo = Math.floor(p.longitude + lonHalf) + 1;
+    const lonCells =
+      lonTo - lonFrom >= 359
+        ? Array.from({ length: 360 }, (_, i) => i - 180)
+        : [...new Set(Array.from({ length: lonTo - lonFrom + 1 }, (_, i) => lonCell(lonFrom + i)))];
+    const found: number[] = [];
+    const latFrom = Math.floor(p.latitude - radiusDeg) - 1;
+    const latTo = Math.floor(p.latitude + radiusDeg) + 1;
+    for (let lat = latFrom; lat <= latTo; lat++) {
+      for (const lon of lonCells) {
+        for (const index of cells.get(cellKey(lat, lon)) ?? []) {
+          const key = keys[index]!;
+          if (key === from) continue;
+          const nm = greatCircleNm(p, positions.get(key)!);
+          if (nm > minNm && nm <= maxNm) found.push(index);
+        }
+      }
+    }
+    return found.sort((a, b) => a - b).map((index) => keys[index]!);
+  };
+}
+
+/**
  * Relaxed pass only: direct legs between fixes that sit on an airway, found
  * through a degree grid. Terminal and approach fixes are not airway nodes, so
  * they never become shortcuts. Every en-route fix counts, not only those with an
@@ -574,12 +627,15 @@ function addDirectLegs(graph: Graph, oceanic: boolean): void {
       if (!graph.edges.has(key) && REPORTING_POINT_RE.test(key.split('/')[0]!)) nodes.push(key);
     }
   }
-  const cells = new Map<string, string[]>();
-  const cellOf = (p: LatLon) => `${Math.floor(p.latitude)}:${Math.floor(p.longitude)}`;
+  // Whole-degree cells under a numeric key: the lookups below run 25 times per fix.
+  const cellKey = (lat: number, lon: number) => (lat + 100) * 1000 + lon + 500;
+  // Each cell keeps its fixes' positions too, sparing a lookup by name per pair.
+  const cells = new Map<number, { key: string; at: LatLon }[]>();
   for (const key of nodes) {
-    const c = cellOf(graph.positions.get(key)!);
+    const at = graph.positions.get(key)!;
+    const c = cellKey(Math.floor(at.latitude), Math.floor(at.longitude));
     if (!cells.has(c)) cells.set(c, []);
-    cells.get(c)!.push(key);
+    cells.get(c)!.push({ key, at });
   }
   const sparse: string[] = [];
   for (const key of nodes) {
@@ -589,10 +645,10 @@ function addDirectLegs(graph: Graph, oceanic: boolean): void {
     const near: { key: string; nm: number }[] = [];
     for (let dl = -2; dl <= 2; dl++) {
       for (let dn = -2; dn <= 2; dn++) {
-        for (const other of cells.get(`${lat + dl}:${lon + dn}`) ?? []) {
-          if (other === key) continue;
-          const nm = greatCircleNm(p, graph.positions.get(other)!);
-          if (nm <= DIRECT_LEG_NM) near.push({ key: other, nm });
+        for (const other of cells.get(cellKey(lat + dl, lon + dn)) ?? []) {
+          if (other.key === key) continue;
+          const nm = greatCircleNm(p, other.at);
+          if (nm <= DIRECT_LEG_NM) near.push({ key: other.key, nm });
         }
       }
     }
@@ -604,14 +660,13 @@ function addDirectLegs(graph: Graph, oceanic: boolean): void {
   }
   if (!oceanic) return;
 
+  const within = nodesWithinNm(nodes, graph.positions);
   for (const key of sparse) {
     const p = graph.positions.get(key)!;
-    const far: { key: string; nm: number }[] = [];
-    for (const other of nodes) {
-      if (other === key) continue;
-      const nm = greatCircleNm(p, graph.positions.get(other)!);
-      if (nm > DIRECT_LEG_NM && nm <= OCEANIC_LEG_NM) far.push({ key: other, nm });
-    }
+    const far = within(key, DIRECT_LEG_NM, OCEANIC_LEG_NM).map((other) => ({
+      key: other,
+      nm: greatCircleNm(p, graph.positions.get(other)!),
+    }));
     far.sort((x, y) => x.nm - y.nm);
     for (const n of far.slice(0, OCEANIC_NEIGHBOURS)) {
       addEdge(graph, key, n.key, n.nm * OCEANIC_PENALTY, null);
@@ -645,9 +700,12 @@ function connectByRadius(graph: Graph, point: LatLon, node: string, reverse: boo
     if (key.startsWith('@')) continue;
     ranked.push({ key, nm: greatCircleNm(point, graph.positions.get(key)!) });
   }
-  ranked.sort((x, y) => x.nm - y.nm);
-  let candidates = ranked.filter((c) => c.nm <= JOIN_RADIUS_NM);
-  if (candidates.length === 0) candidates = ranked.slice(0, JOIN_FALLBACK_COUNT);
+  // Only the few within reach are sorted; the sort is stable, so the order is the one a sort of
+  // every node gives.
+  let candidates = ranked.filter((c) => c.nm <= JOIN_RADIUS_NM).sort((x, y) => x.nm - y.nm);
+  if (candidates.length === 0) {
+    candidates = ranked.sort((x, y) => x.nm - y.nm).slice(0, JOIN_FALLBACK_COUNT);
+  }
   for (const c of candidates) {
     if (reverse) addEdge(graph, c.key, node, c.nm * JOIN_PENALTY, null);
     else addEdge(graph, node, c.key, c.nm * JOIN_PENALTY, null);
