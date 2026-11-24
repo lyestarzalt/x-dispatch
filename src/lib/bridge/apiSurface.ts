@@ -249,6 +249,8 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
       // New API methods
       getDataSources: () => t.invoke('nav:getDataSources'),
       getFaaChartStatus: () => t.invoke('nav:getFaaChartStatus'),
+      getFaaCharts: (icao: string) => t.invoke('nav:getFaaCharts', icao),
+      getFaaChartPdf: (url: string) => t.invoke('nav:getFaaChartPdf', url),
       setFaaChartDownload: (enabled: boolean) => t.invoke('nav:setFaaChartDownload', enabled),
       downloadFaaCharts: () => t.invoke('nav:downloadFaaCharts'),
       onFaaChartsUpdated: (callback: () => void) => t.on('nav:faaChartsUpdated', callback),

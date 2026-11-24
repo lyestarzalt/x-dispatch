@@ -549,6 +549,15 @@ const EVENT_SCHEMA = {
   procedure_selected: { type: oneOf(['sid', 'star', 'app']), source: oneOf(['manual', 'auto']) },
   /** An item picked in the map's right-click menu. */
   context_menu_used: { action: oneOf(ANALYTICS_CONTEXT_MENU_ACTIONS) },
+  /**
+   * An FAA chart opened from the airport panel: its PDF in the browser, or laid over the map.
+   * The chart's name is never sent. Since 2.19.
+   */
+  faa_chart_opened: {
+    action: oneOf(['pdf', 'map']),
+    group: oneOf(['airport', 'departures', 'arrivals', 'approaches', 'minimums']),
+    airport: { kind: 'code' },
+  },
   /** A frequency sent to an X-Plane radio from the airport panel. */
   frequency_tuned: {},
   /** A taxi route reached two points: routed from a runway pick, clicked node by node, or drawn. */

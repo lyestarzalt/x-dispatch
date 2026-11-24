@@ -1,21 +1,25 @@
 import { describe, expect, it } from 'vitest';
 import {
+  chartCarriesMapPosition,
   chartTitleTags,
   faaChartIndexFromJson,
   faaChartIndexToJson,
+  faaChartUrl,
+  groupFaaCharts,
   ilsOrLocIdentifier,
   markFaaChartNames,
   parseFaaChartIndex,
 } from './faaChartIndex';
 
-const record = (code: string, name: string, ident: string) => `
+const record = (code: string, name: string, ident: string, pdf = 'X.PDF', civil = 'C') => `
         <record>
           <chartseq>90100</chartseq>
           <chart_code>${code}</chart_code>
           <chart_name>${name}</chart_name>
-          <pdf_name>X.PDF</pdf_name>
+          <pdf_name>${pdf}</pdf_name>
           <procuid>1</procuid>
           ${ident ? `<faanfd18>${ident}</faanfd18>` : '<faanfd18/>'}
+          <civil>${civil}</civil>
           <copter/>
         </record>`;
 
@@ -180,5 +184,89 @@ describe('chartTitleTags', () => {
     expect(chartTitleTags({ rnav: true, obstacle: true })).toEqual(['obstacle', 'rnav']);
     expect(chartTitleTags({ rnav: true })).toEqual(['rnav']);
     expect(chartTitleTags({})).toEqual([]);
+  });
+});
+
+// KSEA as the FAA lists it in cycle 2612, one chart of each kind and a continuation page.
+const kseaCharts = `<digital_tpp cycle="2612">
+      <airport_name ID="SEATTLE-TACOMA INTL" military="N" apt_ident="SEA" icao_ident="KSEA" alnum="582">
+${record('MIN', 'TAKEOFF MINIMUMS', '', 'NW1TO.PDF')}
+${record('MIN', 'DIVERSE VECTOR AREA', '', 'NW1TO.PDF')}
+${record('HOT', 'HOT SPOT', '', 'NW1HOTSPOT.PDF')}
+${record('STR', 'CHINS FIVE', 'BTG.CHINS5', '00582CHINS.PDF')}
+${record('STR', 'CHINS FIVE, CONT.1', 'BTG.CHINS5', '00582CHINS_C.PDF')}
+${record('IAP', 'ILS OR LOC RWY 16C', '', '00582IL16C.PDF')}
+${record('APD', 'AIRPORT DIAGRAM', '', '00582AD.PDF')}
+${record('DP', 'BANGR NINE (RNAV)', 'BANGR9.BANGR', '00582BANGR.PDF')}
+${record('IAP', 'NOT A CHART', '', '../../evil.exe')}
+      </airport_name>
+</digital_tpp>`;
+
+describe('airport charts', () => {
+  it('keeps every chart of an airport with its title and PDF, in the FAA order', () => {
+    const charts = parseFaaChartIndex(kseaCharts).charts.get('KSEA')!;
+    expect(charts.map((c) => `${c.code} ${c.name} ${c.pdf}`)).toEqual([
+      'MIN TAKEOFF MINIMUMS NW1TO.PDF',
+      'MIN DIVERSE VECTOR AREA NW1TO.PDF',
+      'HOT HOT SPOT NW1HOTSPOT.PDF',
+      'STR CHINS FIVE 00582CHINS.PDF',
+      'STR CHINS FIVE, CONT.1 00582CHINS_C.PDF',
+      'IAP ILS OR LOC RWY 16C 00582IL16C.PDF',
+      'APD AIRPORT DIAGRAM 00582AD.PDF',
+      'DP BANGR NINE (RNAV) 00582BANGR.PDF',
+    ]);
+  });
+
+  it('leaves out a record whose PDF name is not a plain file name', () => {
+    const charts = parseFaaChartIndex(kseaCharts).charts.get('KSEA')!;
+    expect(charts.some((c) => c.name === 'NOT A CHART')).toBe(false);
+  });
+
+  it('survives the download cache', () => {
+    const index = parseFaaChartIndex(kseaCharts);
+    const back = faaChartIndexFromJson(JSON.parse(JSON.stringify(faaChartIndexToJson(index))));
+    expect(back!.charts.get('KSEA')).toEqual(index.charts.get('KSEA'));
+  });
+
+  it('rejects a cache written before charts were kept, so it is downloaded again', () => {
+    const { charts: _charts, ...old } = faaChartIndexToJson(parseFaaChartIndex(kseaCharts));
+    expect(faaChartIndexFromJson(old)).toBeNull();
+  });
+
+  it('marks the approach chart as carrying its map position, and nothing else at KSEA', () => {
+    const charts = parseFaaChartIndex(kseaCharts).charts.get('KSEA')!;
+    expect(charts.filter((c) => c.mapPosition).map((c) => c.name)).toEqual(['ILS OR LOC RWY 16C']);
+  });
+
+  it('knows which charts carry a map position from how the FAA lists them', () => {
+    // Checked against the PDFs of cycle 2612.
+    expect(chartCarriesMapPosition('IAP', 'ILS OR LOC RWY 16C', 'C')).toBe(true);
+    // Joint-use field (KCHS): an FAA chart.
+    expect(chartCarriesMapPosition('IAP', 'VOR/DME OR TACAN RWY 33', 'D')).toBe(true);
+    // Military field (KNUW TACAN Y RWY 25) and high-altitude charts: Department of Defense.
+    expect(chartCarriesMapPosition('IAP', 'TACAN Y RWY 25', 'N')).toBe(false);
+    expect(chartCarriesMapPosition('IAP', 'HI-TACAN Z RWY 07', 'H')).toBe(false);
+    // A charted visual (KJFK) and a continuation page have no plan view to place.
+    expect(chartCarriesMapPosition('IAP', 'BELMONT VISUAL RWY 22L', 'C')).toBe(false);
+    expect(chartCarriesMapPosition('IAP', 'ILS OR LOC RWY 16C, CONT.1', 'C')).toBe(false);
+    expect(chartCarriesMapPosition('APD', 'AIRPORT DIAGRAM', 'C')).toBe(false);
+    expect(chartCarriesMapPosition('DP', 'BANGR NINE (RNAV)', 'C')).toBe(false);
+  });
+
+  it('builds the PDF address in the cycle folder', () => {
+    expect(faaChartUrl('2612', '00582IL16C.PDF')).toBe(
+      'https://aeronav.faa.gov/d-tpp/2612/00582IL16C.PDF'
+    );
+  });
+
+  it('groups charts the way a pilot looks for them', () => {
+    const groups = groupFaaCharts(parseFaaChartIndex(kseaCharts).charts.get('KSEA')!);
+    expect(groups.map((g) => [g.group, g.charts.map((c) => c.name)])).toEqual([
+      ['airport', ['AIRPORT DIAGRAM', 'HOT SPOT']],
+      ['departures', ['BANGR NINE (RNAV)']],
+      ['arrivals', ['CHINS FIVE', 'CHINS FIVE, CONT.1']],
+      ['approaches', ['ILS OR LOC RWY 16C']],
+      ['minimums', ['TAKEOFF MINIMUMS', 'DIVERSE VECTOR AREA']],
+    ]);
   });
 });

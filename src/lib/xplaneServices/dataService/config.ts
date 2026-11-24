@@ -277,6 +277,11 @@ export function getFaaChartCachePath(): string {
   return path.join(app.getPath('userData'), 'faa-charts.json');
 }
 
+/** Where the chart PDFs shown on the map are kept, one folder per cycle. */
+export function getFaaChartPdfCachePath(): string {
+  return path.join(app.getPath('userData'), 'faa-chart-pdfs');
+}
+
 export function getAnalyticsConsent(): 'granted' | 'denied' | null {
   return loadConfig()?.analyticsConsent ?? null;
 }

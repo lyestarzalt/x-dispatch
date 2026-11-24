@@ -901,12 +901,11 @@
         "refreshHelp": "Ogni quanto aggiornare i dati VATSIM (consigliato: 15s)"
       },
       "faaCharts": {
-        "title": "Etichette delle procedure USA",
-        "description": "OBSTACLE, RNAV e ILS OR LOC sulle procedure USA, come le chiamano le carte della FAA. Funziona con qualsiasi dato di navigazione.",
+        "title": "Carte ed etichette delle procedure USA",
+        "description": "OBSTACLE, RNAV e ILS OR LOC sulle procedure USA, come le chiamano le carte della FAA. Funziona con qualsiasi dato di navigazione. Elenca anche le carte FAA di ogni aeroporto USA.",
         "toggle": "Scarica dalla FAA",
-        "toggleDescription": "Solo nomi delle procedure, nessuna carta. Circa 16 MB per ciclo AIRAC.",
+        "toggleDescription": "Solo l'elenco delle carte, circa 16 MB per ciclo AIRAC. Il PDF di una carta viene scaricato quando la mostri sulla mappa.",
         "faaLabel": "FAA",
-        "customDataTooltip": "Viene usato il tuo d-tpp_Metafile.xml in Custom Data al posto del download.",
         "downloadedTooltip": "Scaricato il {{date}}",
         "notYet": "Si scarica quando apri un aeroporto USA",
         "downloading": "Download in corso",
@@ -1183,6 +1182,20 @@
     "displacedThreshold": {
       "lda": "LDA {{length}}",
       "tooltip": "Soglia spostata di {{displaced}}, distanza di atterraggio disponibile {{lda}}"
+    },
+    "charts": {
+      "title": "Carte",
+      "cycle": "FAA {{cycle}}",
+      "groups": {
+        "airport": "Aeroporto",
+        "departures": "Partenze",
+        "arrivals": "Arrivi",
+        "approaches": "Avvicinamenti",
+        "minimums": "Minime"
+      },
+      "showOnMap": "Mostra sulla mappa",
+      "hideFromMap": "Rimuovi dalla mappa",
+      "expired": "Questo elenco di carte è di un ciclo AIRAC passato. I collegamenti potrebbero non aprirsi più."
     },
     "rawMetar": "METAR originale",
     "routeTab": {
@@ -2628,6 +2641,19 @@
       "title": "X-Dispatch non risponde",
       "message": "La finestra non risponde più. Puoi ricaricarla, continuare ad attendere o uscire.",
       "wait": "Continua ad attendere"
+    }
+  },
+  "chartOverlay": {
+    "title": "Carta sulla mappa",
+    "heading": "Carta {{icao}}",
+    "hide": "Rimuovi la carta",
+    "loading": "Caricamento della carta",
+    "opacity": "Opacità",
+    "opacityValue": "{{percent}}%",
+    "errors": {
+      "network": "Impossibile scaricare la carta dalla FAA.",
+      "unavailable": "La FAA non ha questa carta per questo ciclo.",
+      "unplaceable": "Questa carta non può essere posizionata sulla mappa."
     }
   },
   "weatherRadar": {

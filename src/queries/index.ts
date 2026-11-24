@@ -31,6 +31,9 @@ export { useNavDataQuery, useNavDataCounts, getNavDataCounts } from './useNavDat
 // US procedure labels from the FAA chart list
 export {
   useFaaChartStatus,
+  useFaaAirportCharts,
+  useFaaChartPdf,
+  useRetryFaaChartPdf,
   useSetFaaChartDownload,
   useDownloadFaaCharts,
   faaChartKeys,

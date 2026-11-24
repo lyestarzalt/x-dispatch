@@ -136,6 +136,7 @@ import {
   getCrashReportId,
   getFaaChartCachePath,
   getFaaChartDownload,
+  getFaaChartPdfCachePath,
   getInstallations,
   getSendCrashReports,
   getStoredXPlaneVersion,
@@ -151,11 +152,17 @@ import {
   configureFaaChartDownload,
   downloadFaaCharts,
   onFaaChartsUpdated,
+  requestFaaCharts,
 } from './lib/xplaneServices/dataService/navdata/faaChartDownload';
 import {
   type FaaChartSettings,
   faaChartStatus,
+  faaChartsForAirport,
 } from './lib/xplaneServices/dataService/navdata/faaChartIndexLoader';
+import {
+  configureFaaChartPdf,
+  loadFaaChartPdf,
+} from './lib/xplaneServices/dataService/navdata/faaChartPdf';
 import { loadRequiredStartupData } from './lib/xplaneServices/dataService/startupLoader';
 import type { AirportSource } from './lib/xplaneServices/dataService/types';
 import type { LaunchFailure, LaunchResult } from './lib/xplaneServices/launch';
@@ -1402,6 +1409,10 @@ function registerIpcHandlers() {
     isEnabled: getFaaChartDownload,
   });
   onFaaChartsUpdated(() => broadcast('nav:faaChartsUpdated'));
+  configureFaaChartPdf({
+    download: (url) => proxyDownload(url, { timeoutMs: 60_000 }),
+    cacheDir: getFaaChartPdfCachePath(),
+  });
 
   handle('app:isSetupComplete', () => isSetupComplete());
   handle('app:getVersion', () => app.getVersion());
@@ -2207,9 +2218,16 @@ function registerIpcHandlers() {
 
   const faaChartSettings = (): FaaChartSettings => ({
     enabled: getFaaChartDownload(),
-    ...faaChartStatus(dataManager.getXPlanePath()),
+    ...faaChartStatus(),
   });
   handle('nav:getFaaChartStatus', () => faaChartSettings());
+  handle('nav:getFaaCharts', (_, icao: string) => {
+    if (typeof icao !== 'string') return null;
+    // The first US airport of a cycle starts the download; the charts follow once it is in.
+    requestFaaCharts(icao);
+    return faaChartsForAirport(icao);
+  });
+  handle('nav:getFaaChartPdf', (_, url: string) => loadFaaChartPdf(url));
   handle('nav:setFaaChartDownload', (_, enabled: boolean) => {
     setFaaChartDownload(enabled === true);
     if (enabled !== true) clearDownloadedFaaCharts();

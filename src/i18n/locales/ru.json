@@ -901,12 +901,11 @@
         "refreshHelp": "Как часто обновлять данные VATSIM (рекомендуется: 15с)"
       },
       "faaCharts": {
-        "title": "Метки процедур США",
-        "description": "OBSTACLE, RNAV и ILS OR LOC у процедур США, как их называют карты FAA. Работает с любыми навигационными данными.",
+        "title": "Схемы и метки процедур США",
+        "description": "OBSTACLE, RNAV и ILS OR LOC у процедур США, как их называют карты FAA. Работает с любыми навигационными данными. Также показывает список схем FAA для каждого аэропорта США.",
         "toggle": "Загружать из FAA",
-        "toggleDescription": "Только названия процедур, без карт. Около 16 МБ за цикл AIRAC.",
+        "toggleDescription": "Только список схем, около 16 МБ за цикл AIRAC. PDF схемы загружается, когда вы показываете её на карте.",
         "faaLabel": "FAA",
-        "customDataTooltip": "Вместо загрузки используется ваш d-tpp_Metafile.xml из Custom Data.",
         "downloadedTooltip": "Загружено {{date}}",
         "notYet": "Загрузится при открытии аэропорта США",
         "downloading": "Загрузка",
@@ -1183,6 +1182,20 @@
     "displacedThreshold": {
       "lda": "LDA {{length}}",
       "tooltip": "Порог смещён на {{displaced}}, располагаемая посадочная дистанция {{lda}}"
+    },
+    "charts": {
+      "title": "Схемы",
+      "cycle": "FAA {{cycle}}",
+      "groups": {
+        "airport": "Аэропорт",
+        "departures": "Вылет",
+        "arrivals": "Прибытие",
+        "approaches": "Заходы",
+        "minimums": "Минимумы"
+      },
+      "showOnMap": "Показать на карте",
+      "hideFromMap": "Убрать с карты",
+      "expired": "Этот список схем относится к прошедшему циклу AIRAC. Ссылки могут больше не открываться."
     },
     "rawMetar": "Исходный METAR",
     "routeTab": {
@@ -2628,6 +2641,19 @@
       "title": "X-Dispatch не отвечает",
       "message": "Окно перестало отвечать. Можно перезагрузить его, подождать ещё или выйти.",
       "wait": "Подождать"
+    }
+  },
+  "chartOverlay": {
+    "title": "Схема на карте",
+    "heading": "Схема {{icao}}",
+    "hide": "Убрать схему",
+    "loading": "Загрузка схемы",
+    "opacity": "Непрозрачность",
+    "opacityValue": "{{percent}}%",
+    "errors": {
+      "network": "Не удалось загрузить схему с сайта FAA.",
+      "unavailable": "У FAA нет этой схемы для этого цикла.",
+      "unplaceable": "Эту схему нельзя разместить на карте."
     }
   },
   "weatherRadar": {

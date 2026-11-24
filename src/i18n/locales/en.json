@@ -901,12 +901,11 @@
         "refreshHelp": "How often to refresh VATSIM data (recommended: 15s)"
       },
       "faaCharts": {
-        "title": "US procedure labels",
-        "description": "OBSTACLE, RNAV and ILS OR LOC on US procedures, as FAA charts name them. Works with any nav data.",
+        "title": "US charts and procedure labels",
+        "description": "OBSTACLE, RNAV and ILS OR LOC on US procedures, as FAA charts name them. Works with any nav data. Also lists each US airport's FAA charts.",
         "toggle": "Download from the FAA",
-        "toggleDescription": "Procedure names only, no charts. About 16 MB per AIRAC cycle.",
+        "toggleDescription": "The chart list only, about 16 MB per AIRAC cycle. A chart's PDF is fetched when you show it on the map.",
         "faaLabel": "FAA",
-        "customDataTooltip": "Your d-tpp_Metafile.xml in Custom Data is used instead of the download.",
         "downloadedTooltip": "Downloaded {{date}}",
         "notYet": "Downloads when you open a US airport",
         "downloading": "Downloading",
@@ -1183,6 +1182,20 @@
     "displacedThreshold": {
       "lda": "LDA {{length}}",
       "tooltip": "Threshold displaced {{displaced}}, landing distance available {{lda}}"
+    },
+    "charts": {
+      "title": "Charts",
+      "cycle": "FAA {{cycle}}",
+      "groups": {
+        "airport": "Airport",
+        "departures": "Departures",
+        "arrivals": "Arrivals",
+        "approaches": "Approaches",
+        "minimums": "Minimums"
+      },
+      "showOnMap": "Show on the map",
+      "hideFromMap": "Remove from the map",
+      "expired": "This chart list is from a past AIRAC cycle. Its links may no longer open."
     },
     "rawMetar": "Raw METAR",
     "routeTab": {
@@ -2628,6 +2641,19 @@
       "title": "X-Dispatch is not responding",
       "message": "The window has stopped responding. You can reload it, keep waiting, or quit.",
       "wait": "Keep Waiting"
+    }
+  },
+  "chartOverlay": {
+    "title": "Chart on the map",
+    "heading": "{{icao}} chart",
+    "hide": "Remove the chart",
+    "loading": "Loading the chart",
+    "opacity": "Opacity",
+    "opacityValue": "{{percent}}%",
+    "errors": {
+      "network": "The chart could not be downloaded from the FAA.",
+      "unavailable": "The FAA does not have this chart for this cycle.",
+      "unplaceable": "This chart cannot be placed on the map."
     }
   },
   "weatherRadar": {

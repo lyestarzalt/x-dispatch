@@ -75,6 +75,8 @@ export const REMOTE_ALLOWED_CHANNELS: readonly string[] = [
   'nav:getDMEsInRadius',
   'nav:getDataSources',
   'nav:getFaaChartStatus',
+  'nav:getFaaChartPdf',
+  'nav:getFaaCharts',
   'nav:getGlideSlopesInRadius',
   'nav:getHoldingPatterns',
   'nav:getILSComponentsInRadius',

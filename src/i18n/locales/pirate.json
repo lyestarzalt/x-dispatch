@@ -901,12 +901,11 @@
         "refreshHelp": "How often ta refresh VATSIM data (recommended: 15s)"
       },
       "faaCharts": {
-        "title": "US procedure labels",
-        "description": "OBSTACLE, RNAV and ILS OR LOC on US procedures, as FAA charts name 'em. Works with any nav data.",
+        "title": "US charts an' procedure labels",
+        "description": "OBSTACLE, RNAV and ILS OR LOC on US procedures, as FAA charts name 'em. Works with any nav data. Also lists each US port's FAA charts.",
         "toggle": "Fetch from the FAA",
-        "toggleDescription": "Procedure names only, no charts. About 16 MB per AIRAC cycle.",
+        "toggleDescription": "The chart list only, about 16 MB per AIRAC cycle. A chart's PDF be fetched when ye lay it on the map.",
         "faaLabel": "FAA",
-        "customDataTooltip": "Yer d-tpp_Metafile.xml in Custom Data be used instead o' the download.",
         "downloadedTooltip": "Fetched {{date}}",
         "notYet": "Fetched when ye open a US port",
         "downloading": "Fetchin'",
@@ -1183,6 +1182,20 @@
     "displacedThreshold": {
       "lda": "LDA {{length}}",
       "tooltip": "Threshold shoved back {{displaced}}, {{lda}} o' deck left to land"
+    },
+    "charts": {
+      "title": "Charts",
+      "cycle": "FAA {{cycle}}",
+      "groups": {
+        "airport": "Port",
+        "departures": "Departures",
+        "arrivals": "Arrivals",
+        "approaches": "Approaches",
+        "minimums": "Minimums"
+      },
+      "showOnMap": "Lay it on the map",
+      "hideFromMap": "Haul it off the map",
+      "expired": "This chart list be from a past AIRAC cycle. Its links may open no more."
     },
     "rawMetar": "Raw METAR scroll",
     "routeTab": {
@@ -2628,6 +2641,19 @@
       "title": "X-Dispatch be becalmed",
       "message": "The porthole's stopped answerin' the helm. Hoist it again, hold fast, or abandon ship?",
       "wait": "Hold Fast"
+    }
+  },
+  "chartOverlay": {
+    "title": "Chart on the map",
+    "heading": "{{icao}} chart",
+    "hide": "Stow the chart",
+    "loading": "Fetchin' the chart",
+    "opacity": "Opacity",
+    "opacityValue": "{{percent}}%",
+    "errors": {
+      "network": "The chart could not be hauled in from the FAA.",
+      "unavailable": "The FAA has no such chart for this cycle.",
+      "unplaceable": "This chart cannot be laid on the map."
     }
   },
   "weatherRadar": {

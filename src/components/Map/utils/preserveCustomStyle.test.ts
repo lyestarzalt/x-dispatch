@@ -1,6 +1,10 @@
 import type { Map as MaplibreMap, StyleSpecification } from 'maplibre-gl';
 import { describe, expect, it } from 'vitest';
-import { captureBasemapSnapshot, makePreserveCustomStyle } from './preserveCustomStyle';
+import {
+  captureBasemapSnapshot,
+  lowestAppLayer,
+  makePreserveCustomStyle,
+} from './preserveCustomStyle';
 
 /**
  * Build a minimal `StyleSpecification` with given source/layer ids.
@@ -196,5 +200,86 @@ describe('preserveCustomStyle', () => {
     expect(layerIds).not.toContain('leaked-from-ofm');
     expect(layerIds).not.toContain('leaked-from-carto');
     expect(layerIds).toContain('airports');
+  });
+});
+
+describe('canvas sources', () => {
+  it('does not carry a canvas source or its layer: the element is not in the style', () => {
+    const basemap = makeStyle({
+      sources: { openmaptiles: 'x' },
+      layers: [{ id: 'water', type: 'fill', source: 'openmaptiles' }],
+    });
+    const map = makeFakeMap(basemap);
+    captureBasemapSnapshot(map);
+    const previous = {
+      ...basemap,
+      sources: {
+        ...basemap.sources,
+        'chart-overlay-source': { type: 'canvas', coordinates: [] },
+        'nav-vors-source': { type: 'geojson', data: { type: 'FeatureCollection', features: [] } },
+      },
+      layers: [
+        ...basemap.layers,
+        { id: 'chart-overlay', type: 'raster', source: 'chart-overlay-source' },
+        { id: 'nav-vors', type: 'circle', source: 'nav-vors-source' },
+      ],
+    } as unknown as StyleSpecification;
+
+    const result = makePreserveCustomStyle(map, [], 'starfield')(previous, basemap);
+
+    expect(Object.keys(result.sources)).toEqual(['openmaptiles', 'nav-vors-source']);
+    expect(result.layers.map((l) => l.id)).toEqual(['water', 'nav-vors']);
+  });
+});
+
+describe('lowestAppLayer', () => {
+  it('names the lowest app layer, past the relief shading slipped under the labels', () => {
+    const basemap = makeStyle({
+      sources: { openmaptiles: 'x' },
+      layers: [
+        { id: 'water', type: 'fill', source: 'openmaptiles' },
+        { id: 'place_city', type: 'symbol', source: 'openmaptiles' },
+      ],
+    });
+    const map = makeFakeMap(basemap);
+    captureBasemapSnapshot(map);
+    const running = makeStyle({
+      layers: [
+        { id: 'water', type: 'fill' },
+        { id: 'terrain-hillshade', type: 'hillshade' },
+        { id: 'place_city', type: 'symbol' },
+        { id: 'airport-runways', type: 'fill' },
+        { id: 'nav-vors', type: 'circle' },
+      ],
+    });
+    (map as unknown as { getStyle: () => StyleSpecification }).getStyle = () => running;
+    expect(lowestAppLayer(map, new Set(['terrain-hillshade']))).toBe('airport-runways');
+  });
+
+  it('puts a layer under the airport on imagery, where labels and relief sit above it', () => {
+    // The order on the satellite basemap with KSEA drawn (2026-11-24).
+    const basemap = makeStyle({ layers: [{ id: 'raster', type: 'raster' }] });
+    const map = makeFakeMap(basemap);
+    captureBasemapSnapshot(map);
+    const running = makeStyle({
+      layers: [
+        { id: 'raster', type: 'raster' },
+        { id: 'nav-airspaces-fill', type: 'fill' },
+        { id: 'airport-pavements', type: 'fill' },
+        { id: 'airport-runways', type: 'fill' },
+        { id: 'terrain-hillshade', type: 'hillshade' },
+        { id: 'ref-place_city', type: 'symbol' },
+        { id: 'airports', type: 'circle' },
+      ],
+    });
+    (map as unknown as { getStyle: () => StyleSpecification }).getStyle = () => running;
+    expect(lowestAppLayer(map, new Set(['terrain-hillshade']))).toBe('nav-airspaces-fill');
+  });
+
+  it('is undefined when the app has added nothing, so a layer goes on top', () => {
+    const basemap = makeStyle({ layers: [{ id: 'water', type: 'fill' }] });
+    const map = makeFakeMap(basemap);
+    captureBasemapSnapshot(map);
+    expect(lowestAppLayer(map, new Set())).toBeUndefined();
   });
 });

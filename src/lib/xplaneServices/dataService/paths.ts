@@ -42,7 +42,6 @@ export const XPLANE_PATHS = {
   userFix: 'Custom Data/user_fix.dat',
 
   // The FAA's CIFP procedure index, placed here by US pilots who want ILS OR LOC names
-  faaChartIndex: 'Custom Data/d-tpp_Metafile.xml',
 } as const;
 
 function resolveDataPath(xplanePath: string, relativePath: string, checkCustom = true): string {
@@ -88,10 +87,6 @@ export function getAirspaceDataPath(xplanePath: string): string {
 
 export function getAptDataPath(xplanePath: string): string {
   return path.join(xplanePath, XPLANE_PATHS.globalAirports);
-}
-
-export function getFaaChartIndexPath(xplanePath: string): string {
-  return path.join(xplanePath, XPLANE_PATHS.faaChartIndex);
 }
 
 export function getCifpPath(xplanePath: string, icao: string): string {
