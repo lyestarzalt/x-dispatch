@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { errorMessage } from '@/lib/utils/errors';
+import { fileInUseError } from '../core/fileErrors';
 import {
   type ParsedIniEntry,
   type Result,
@@ -146,8 +147,9 @@ export function writeSceneryPacksIni(
     fs.writeFileSync(iniPath, lines.join('\n') + '\n', 'utf-8');
     return ok(undefined);
   } catch (e) {
-    const message = errorMessage(e);
-    return err({ code: 'WRITE_FAILED', path: iniPath, reason: message });
+    return err(
+      fileInUseError(e) ?? { code: 'WRITE_FAILED', path: iniPath, reason: errorMessage(e) }
+    );
   }
 }
 

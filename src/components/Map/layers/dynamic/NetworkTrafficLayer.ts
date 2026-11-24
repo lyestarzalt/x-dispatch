@@ -5,6 +5,7 @@
  */
 import * as maplibregl from 'maplibre-gl';
 import { labelFont } from '@/lib/map/labelFonts';
+import { METERS_PER_FOOT } from '@/lib/utils/units/constants';
 import { useMapStore } from '@/stores/mapStore';
 import type { NetworkId, NetworkPilot } from '@/types/networkTraffic';
 import { moveLayersToTop, safeAddGeoJSONSource, setLayersVisibility } from '../types';
@@ -49,6 +50,8 @@ export function createNetworkPilotGeoJSON(pilots: NetworkPilot[]): GeoJSON.Featu
         heading: p.headingDeg,
         acIcon: p.flightPlan?.aircraft ? normalizeIcao(p.flightPlan.aircraft) : '',
         onGround: p.onGround,
+        // Metres above sea level the symbol is drawn at; it shows when the map is tilted (#136).
+        heightM: p.onGround ? 0 : Math.max(0, p.altitudeFt * METERS_PER_FOOT),
         label: p.onGround
           ? p.callsign
           : `${p.callsign}\nFL${String(Math.max(0, Math.round(p.altitudeFt / 100))).padStart(3, '0')}`,
@@ -88,6 +91,8 @@ export async function addNetworkTrafficLayer(
       'icon-rotation-alignment': 'map',
       'icon-allow-overlap': true,
       'icon-ignore-placement': true,
+      'symbol-height-offset': ['get', 'heightM'],
+      'symbol-height-anchor': 'absolute',
     },
     paint: { 'icon-color': color },
   });
@@ -106,6 +111,8 @@ export async function addNetworkTrafficLayer(
       'text-justify': 'left',
       'text-line-height': 1.1,
       'text-optional': true,
+      'symbol-height-offset': ['get', 'heightM'],
+      'symbol-height-anchor': 'absolute',
     },
     paint: {
       'text-color': color,

@@ -27,6 +27,7 @@ import { registerAddonManagerIPC } from './lib/addonManager/ipc';
 import { scaleBucket, widthBucket } from './lib/analytics/buckets';
 import { ANALYTICS_SHORTCUTS, type AnalyticsConsentState } from './lib/analytics/events';
 import { initMainAnalytics, setAnalyticsUpdateContext } from './lib/analytics/mainAnalytics';
+import { recordWindowShown, withStartupTiming } from './lib/analytics/startupTiming';
 import { getCliFlags, parseAndApply, printHelpAndExit, printVersionAndExit } from './lib/cli';
 import { registerCompanionAppsIPC } from './lib/companionApps/ipc';
 import { getDbPath, getSqlite, initDb, recoverFromCorruption } from './lib/db';
@@ -1063,6 +1064,11 @@ function createWindow(): BrowserWindow {
   // macOS: closing the window keeps the app in the Dock, like every single-window
   // Mac app; the next Dock click shows the same window with its state intact.
   window.on('close', (event) => {
+    // Windows and Linux quit with the window. The session ends here, before the
+    // renderer unloads, so what it reports then (an open planner, an open Launch
+    // dialog) is kept for the next launch instead of queued in a client the quit
+    // is about to drop. On macOS the quit itself ends the session first.
+    if (!isMac) analytics.endSession();
     if (!isMac || isQuitting || !desktopPrefs.keepRunningOnClose) return;
     event.preventDefault();
     if (window.isFullScreen()) {
@@ -1666,7 +1672,7 @@ function registerIpcHandlers() {
   });
   // Renderer input is untrusted: track() validates it against the allowlist.
   on('analytics:track', (event, name: unknown, properties: unknown) =>
-    analytics.track(name, properties, {
+    analytics.track(name, withStartupTiming(name, properties), {
       remote: (event as { remote?: boolean }).remote === true,
     })
   );
@@ -3091,6 +3097,7 @@ app.on('open-file', (event, filePath) => {
 function reportDisplay(win: BrowserWindow): void {
   win.once('ready-to-show', () => {
     if (win.isDestroyed()) return;
+    recordWindowShown(performance.now());
     const bounds = win.getBounds();
     analytics.track('display', {
       window_width: widthBucket(bounds.width),

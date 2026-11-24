@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/electron/main';
 import { scrubUserPaths } from '@/lib/sentry/scrubPaths';
 import logger from '@/lib/utils/logger';
+import { isWindowsProgramFiles } from './core/fileErrors';
 import type { AddonType, ArchiveFormat } from './installer/types';
 
 /** What the installer knew about the archive when it failed. */
@@ -46,6 +47,8 @@ const USER_SIDE_CODES = new Set([
   'PATH_TRAVERSAL',
   // X-Plane has not run yet, so it has not written the file.
   'INI_NOT_FOUND',
+  // Another program has the file open; the user is told which file to close.
+  'FILE_IN_USE',
 ]);
 
 /** A file that is not an archive was dropped: it says nothing about the app, so it is only logged. */
@@ -67,7 +70,7 @@ export function xplaneFolderKind(
   if (!xplanePath) return 'unknown';
   const p = xplanePath.replace(/\//g, '\\');
   if (platform === 'win32') {
-    if (/^[A-Za-z]:\\Program Files( \(x86\))?\\/i.test(p)) return 'program-files';
+    if (isWindowsProgramFiles(p)) return 'program-files';
     if (/^[A-Za-z]:\\Users\\/i.test(p)) return 'home';
     if (/^C:\\/i.test(p)) return 'system-drive';
     if (/^[A-Za-z]:\\/.test(p)) return 'other-drive';

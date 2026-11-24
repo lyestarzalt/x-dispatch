@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **US procedure labels without a manual download.** OBSTACLE, RNAV and ILS OR LOC come from the FAA's procedure index (names only, no charts), fetched once per cycle when you open a US airport; Settings, Navigation Data turns it off.
 - **US RNAV SIDs and STARs are marked RNAV.**
 - **Your last ten flight plans are kept.** The clock in the planner lists them, whole, and a click loads one back; it replaces the list of flown routes there.
+- **VATSIM and IVAO traffic sits at its altitude when the map is tilted.** Aircraft on the ground stay on the ground.
 - **Show or hide the flight plan strip.** A button next to Profile in the planner, and in the SimBrief panel; it also draws the plan again after it was cleared.
 
 ### Changed
@@ -24,6 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **A departure that turns to intercept a radial is drawn the right way.** KDVT's DVT3 off runway 07R ran straight to the VOR instead of north along the radial first.
 - **The flight strip shows 000 just before north.** It read 360 there while the compass read 000.
+- **A delete or switch that fails on an open file names that file.** Close it and try again; a failed scenery delete no longer blames scenery_packs.ini.
+- **Changing flight on a slow PC waits for X-Plane to finish loading.** It reported a lost connection after 45 seconds while X-Plane was still loading.
+- **Dropping a start pin while the map loads no longer fails.** The pin appears once the map is ready.
+- **Companion apps start the way Windows starts them.** An app that needs administrator rights gets the usual Windows prompt, batch files and shortcuts work, and X-Dispatch no longer needs to run as administrator.
 
 ## [2.17.0] - 2026-11-22
 

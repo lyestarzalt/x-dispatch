@@ -42,6 +42,14 @@ describe('createNetworkPilotGeoJSON', () => {
     const fc = createNetworkPilotGeoJSON([{ ...pilot, onGround: true, altitudeFt: 364 }]);
     expect(fc.features[0]?.properties?.label).toBe('DLH400');
   });
+  it('gives an airborne pilot its altitude in metres as the drawing height', () => {
+    const fc = createNetworkPilotGeoJSON([pilot]);
+    expect(fc.features[0]?.properties?.heightM).toBeCloseTo(11292.84, 2);
+  });
+  it('keeps a pilot on the ground at height zero', () => {
+    const fc = createNetworkPilotGeoJSON([{ ...pilot, onGround: true, altitudeFt: 364 }]);
+    expect(fc.features[0]?.properties?.heightM).toBe(0);
+  });
   it('keeps the network prefix in its layer ids', () => {
     expect(networkTrafficLayerIds('vatsim')).toEqual(['vatsim-pilots', 'vatsim-labels']);
   });

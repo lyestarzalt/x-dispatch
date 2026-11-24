@@ -11,6 +11,7 @@ import { errorMessage } from '@/lib/utils/errors';
 import { validateNewFlight } from '../launch/flightInit/schema';
 import type { FlightInit } from './generated/xplaneApi';
 import { XPLANE_WEB_API_PORT } from './port';
+import { isXPlaneProcessRunning } from './processCheck';
 
 const CONNECTION_TIMEOUT = 2000;
 
@@ -22,12 +23,18 @@ const CONNECTION_TIMEOUT = 2000;
 export interface FlightRequestTiming {
   requestTimeoutMs: number;
   recoveryWindowMs: number;
+  /**
+   * How long to keep asking while X-Plane's process is still running. A slow
+   * machine can take minutes to load a large airport, its web server silent throughout.
+   */
+  slowLoadWindowMs: number;
   recoveryProbeMs: number;
 }
 
 const DEFAULT_FLIGHT_TIMING: FlightRequestTiming = {
   requestTimeoutMs: 15_000,
   recoveryWindowMs: 30_000,
+  slowLoadWindowMs: 180_000,
   recoveryProbeMs: 1_000,
 };
 
@@ -131,15 +138,21 @@ function rejectionFromBody(
 export class XPlaneRestClient {
   private port: number;
   private flightTiming: FlightRequestTiming;
+  private isProcessAlive: () => Promise<boolean>;
   // Per X-Plane local web API docs: dataref id is stable within a session
   // (even across aircraft load/unload). Caching skips the name→id lookup
   // roundtrip on every setDataref/getDataref call after the first.
   private datarefIdCache = new Map<string, number>();
   private commandIdCache = new Map<string, string>();
 
-  constructor(port: number = XPLANE_WEB_API_PORT, flightTiming: Partial<FlightRequestTiming> = {}) {
+  constructor(
+    port: number = XPLANE_WEB_API_PORT,
+    flightTiming: Partial<FlightRequestTiming> = {},
+    isProcessAlive: () => Promise<boolean> = isXPlaneProcessRunning
+  ) {
     this.port = port;
     this.flightTiming = { ...DEFAULT_FLIGHT_TIMING, ...flightTiming };
+    this.isProcessAlive = isProcessAlive;
   }
 
   private get baseUrl(): string {
@@ -251,14 +264,21 @@ export class XPlaneRestClient {
     }
   }
 
-  /** Probes until X-Plane answers again or the recovery window runs out. */
+  /**
+   * Probes until X-Plane answers again. Past the recovery window it keeps going
+   * only while X-Plane's process is alive, up to the slow-load window: a closed
+   * X-Plane fails at once, a slow one gets the time it needs.
+   */
   private async afterConnectionDropped(reason: string): Promise<StartFlightResult> {
-    const { recoveryWindowMs, recoveryProbeMs } = this.flightTiming;
-    const deadline = Date.now() + recoveryWindowMs;
-    do {
+    const { recoveryWindowMs, slowLoadWindowMs, recoveryProbeMs } = this.flightTiming;
+    const started = Date.now();
+    for (;;) {
       await sleep(recoveryProbeMs);
       if (await this.isRunning()) return { success: true, connectionDropped: reason };
-    } while (Date.now() < deadline);
+      const waited = Date.now() - started;
+      if (waited >= Math.max(recoveryWindowMs, slowLoadWindowMs)) break;
+      if (waited >= recoveryWindowMs && !(await this.isProcessAlive())) break;
+    }
     return {
       success: false,
       reason: 'connection_lost',

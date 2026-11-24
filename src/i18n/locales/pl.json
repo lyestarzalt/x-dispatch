@@ -939,13 +939,11 @@
       "delayInline": "opóźnienie {{seconds}} s",
       "add": "Dodaj",
       "unknownError": "Nieznany błąd",
-      "notElevatedTitle": "X-Dispatch nie jest uruchomiony jako administrator",
-      "notElevatedHint": "Aplikacje towarzyszące nie zostaną uruchomione. Kliknij prawym przyciskiem myszy X-Dispatch i wybierz Uruchom jako administrator (Windows) albo uruchom z terminala z sudo (macOS/Linux).",
       "error": {
-        "needsAdmin": "X-Dispatch potrzebuje uprawnień administratora do uruchomienia tej aplikacji",
         "fileMissing": "Nie znaleziono pliku wykonywalnego pod skonfigurowaną ścieżką",
-        "fileNotExecutable": "Plik nie jest wykonywalny",
-        "batchNotSupported": "Plików wsadowych (.bat, .cmd) nie można uruchomić bezpośrednio. W polu „Ścieżka do pliku wykonywalnego” wskaż sam program, na przykład javaw.exe, resztę wpisz w „Argumenty”, a w „Katalog roboczy” podaj folder aplikacji.",
+        "accessDenied": "Windows odmówił uruchomienia tej aplikacji. Sprawdź antywirus i uprawnienia folderu.",
+        "cancelled": "Okno uprawnień zostało zamknięte, aplikacja nie została uruchomiona",
+        "timedOut": "Aplikacja nie uruchomiła się w ciągu dwóch minut",
         "spawnFailed": "Nie udało się uruchomić procesu"
       }
     },
@@ -1860,6 +1858,7 @@
         "TOGGLE_FAILED": "Nie udało się przełączyć: {{reason}}",
         "DELETE_FAILED": "Nie udało się usunąć: {{reason}}",
         "PLUGIN_IN_USE": "X-Plane używa tej wtyczki. Zamknij X-Plane i spróbuj ponownie.",
+        "FILE_IN_USE": "Plik {{fileName}} jest otwarty w innym programie. Zamknij go i spróbuj ponownie.",
         "PERMISSION_DENIED": "Brak uprawnień. Folder X-Plane znajduje się w chronionej lokalizacji. Uruchom X-Dispatch jako administrator.",
         "PATH_TRAVERSAL": "Odrzucono niebezpieczną ścieżkę: {{path}}",
         "INVALID_INPUT": "Nieprawidłowe dane: {{field}}"
@@ -1899,6 +1898,8 @@
         "DSF_INVALID": "Nieprawidłowy plik DSF: {{reason}}",
         "DSF_COMPRESSED": "Skompresowane DSF nie są jeszcze obsługiwane: {{path}}",
         "WRITE_FAILED": "Nie można zapisać scenery_packs.ini: {{reason}}",
+        "DELETE_FAILED": "Nie udało się usunąć: {{reason}}",
+        "FILE_IN_USE": "Plik {{fileName}} jest otwarty w innym programie. Zamknij go i spróbuj ponownie.",
         "BACKUP_FAILED": "Kopia zapasowa nie powiodła się: {{reason}}"
       },
       "loading": "Skanowanie folderów scenerii...",

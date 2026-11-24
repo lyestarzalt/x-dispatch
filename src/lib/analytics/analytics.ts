@@ -23,6 +23,13 @@ export interface PendingSession {
   tabletClientsPeak?: number;
 }
 
+/** An event tracked while the app was quitting, stored and sent on the next launch. */
+export interface PendingEvent {
+  event: string;
+  properties: Properties;
+  timestamp: string;
+}
+
 export interface TrackOptions {
   /** The event was sent by the UI running on another device (tablet access). */
   remote?: boolean;
@@ -39,44 +46,61 @@ export interface AnalyticsDeps {
   takePendingSession: () => PendingSession | null;
   /** Synchronously persists the session that just ended. */
   savePendingSession: (session: PendingSession) => void;
+  /** Returns and clears the events held back by the previous quit. */
+  takePendingEvents: () => PendingEvent[];
+  /** Synchronously persists the events held back while quitting. */
+  savePendingEvents: (events: PendingEvent[]) => void;
   appVersion: () => string;
   now?: () => number;
 }
 
 const SHUTDOWN_TIMEOUT_MS = 1_000;
+/** Bounds the config file; a quit reports a handful of events at most. */
+const MAX_PENDING_EVENTS = 20;
 
 /**
  * Usage analytics core. Every capture re-checks consent, so withdrawing it in
  * Settings takes effect immediately without restarting. Nothing here ever
- * blocks app quit: the session length is saved to disk and sent next launch.
+ * blocks app quit: the session length is saved to disk and sent next launch,
+ * and so is anything tracked once the quit has begun (the renderer reports what
+ * it had open while it unloads, after `before-quit` has stopped the client).
  */
 export function createAnalytics(deps: AnalyticsDeps) {
   const now = deps.now ?? Date.now;
   let client: AnalyticsClient | null = null;
   let sessionStartedAt: number | null = null;
   let tabletClientsPeak = 0;
+  let quitting = false;
+  let heldAtQuit: PendingEvent[] = [];
 
   function capture(event: string, properties: Properties = {}, timestamp?: Date): void {
     if (!deps.enabled) return;
     const distinctId = deps.getInstallId();
     if (!distinctId) return;
+    const merged: Properties = {
+      ...deps.baseProperties(),
+      ...properties,
+      // Anonymous events: no person profile is created for the install ID.
+      $process_person_profile: false,
+    };
+    if (quitting) {
+      // The process may exit before a request completes; the next launch sends it.
+      heldAtQuit = [
+        ...heldAtQuit,
+        { event, properties: merged, timestamp: (timestamp ?? new Date(now())).toISOString() },
+      ].slice(-MAX_PENDING_EVENTS);
+      deps.savePendingEvents(heldAtQuit);
+      return;
+    }
     client ??= deps.createClient();
-    client.capture({
-      distinctId,
-      event,
-      properties: {
-        ...deps.baseProperties(),
-        ...properties,
-        // Anonymous events: no person profile is created for the install ID.
-        $process_person_profile: false,
-      },
-      ...(timestamp && { timestamp }),
-    });
+    client.capture({ distinctId, event, properties: merged, ...(timestamp && { timestamp }) });
   }
 
   function startSession(): void {
     if (sessionStartedAt !== null) return;
     if (!deps.enabled || !deps.getInstallId()) return;
+    quitting = false;
+    heldAtQuit = [];
     sessionStartedAt = now();
     capture('app_started');
     const previous = deps.takePendingSession();
@@ -94,6 +118,9 @@ export function createAnalytics(deps: AnalyticsDeps) {
         },
         new Date(previous.endedAt)
       );
+    }
+    for (const held of deps.takePendingEvents()) {
+      capture(held.event, held.properties, new Date(held.timestamp));
     }
   }
 
@@ -141,6 +168,7 @@ export function createAnalytics(deps: AnalyticsDeps) {
       }
       sessionStartedAt = null;
       tabletClientsPeak = 0;
+      quitting = true;
       // Best effort for queued events; the process may exit before it finishes.
       stopClient();
     },

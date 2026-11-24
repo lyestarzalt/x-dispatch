@@ -5,6 +5,7 @@ import { mapWithConcurrency } from '@/lib/utils/async';
 import { errorMessage } from '@/lib/utils/errors';
 import logger from '@/lib/utils/logger';
 import { resolveLnkSync } from '@/lib/utils/resolveLnk';
+import { fileInUseError } from '../core/fileErrors';
 import {
   type ParsedIniEntry,
   type Result,
@@ -416,25 +417,28 @@ export class SceneryManager {
       return err({ code: 'FOLDER_NOT_FOUND', folderName });
     }
 
+    let wasSymlink: boolean;
     try {
-      const stat = await fs.promises.lstat(entry.fullPath);
-      const wasSymlink = stat.isSymbolicLink();
-
+      wasSymlink = (await fs.promises.lstat(entry.fullPath)).isSymbolicLink();
       if (wasSymlink) {
         await fs.promises.unlink(entry.fullPath);
       } else {
         await fs.promises.rm(entry.fullPath, { recursive: true, force: true });
       }
-
-      // Remove deleted entry from INI
-      const remaining = entries.filter((e) => e.folderName !== folderName);
-      await this.save(remaining);
-
-      return ok({ wasSymlink });
     } catch (e) {
-      const message = errorMessage(e);
-      return err({ code: 'WRITE_FAILED', path: entry.fullPath, reason: message });
+      return err(
+        fileInUseError(e) ?? {
+          code: 'DELETE_FAILED',
+          path: entry.fullPath,
+          reason: errorMessage(e),
+        }
+      );
     }
+
+    // The folder is gone; a failed write of the list is its own failure, not a silent success.
+    const saved = await this.save(entries.filter((e) => e.folderName !== folderName));
+    if (!saved.ok) return saved;
+    return ok({ wasSymlink });
   }
 
   /**

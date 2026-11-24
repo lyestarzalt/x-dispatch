@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { errorMessage } from '@/lib/utils/errors';
+import { fileInUseError } from '../../core/fileErrors';
 import type { BrowserError, Result } from '../../core/types';
 import { err, ok } from '../../core/types';
 import { validatePathWithin } from './pathGuard';
@@ -57,8 +58,9 @@ export function toggleAircraft(
   try {
     entries = fs.readdirSync(folder, { withFileTypes: true }).filter((e) => e.isFile());
   } catch (e) {
-    const message = errorMessage(e);
-    return err({ code: 'TOGGLE_FAILED', path: folder, reason: message });
+    return err(
+      fileInUseError(e) ?? { code: 'TOGGLE_FAILED', path: folder, reason: errorMessage(e) }
+    );
   }
 
   const acfFiles = entries.filter((e) => path.extname(e.name).toLowerCase() === '.acf');
@@ -85,8 +87,9 @@ export function toggleAircraft(
       return ok(true); // Now enabled
     }
   } catch (e) {
-    const message = errorMessage(e);
-    return err({ code: 'TOGGLE_FAILED', path: folder, reason: message });
+    return err(
+      fileInUseError(e) ?? { code: 'TOGGLE_FAILED', path: folder, reason: errorMessage(e) }
+    );
   }
 
   return err({ code: 'NOT_FOUND', path: folder });
@@ -156,8 +159,9 @@ export function togglePlugin(
       return ok(true);
     }
   } catch (e) {
-    const message = errorMessage(e);
-    return err({ code: 'TOGGLE_FAILED', path: folder, reason: message });
+    return err(
+      fileInUseError(e) ?? { code: 'TOGGLE_FAILED', path: folder, reason: errorMessage(e) }
+    );
   }
 
   return err({ code: 'NOT_FOUND', path: folder });
@@ -200,8 +204,9 @@ export function toggleLuaScript(
       return ok(true); // Now enabled
     }
   } catch (e) {
-    const message = errorMessage(e);
-    return err({ code: 'TOGGLE_FAILED', path: filePath, reason: message });
+    return err(
+      fileInUseError(e) ?? { code: 'TOGGLE_FAILED', path: filePath, reason: errorMessage(e) }
+    );
   }
 
   return err({ code: 'INVALID_INPUT', field: 'fileName' });

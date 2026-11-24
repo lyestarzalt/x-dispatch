@@ -939,13 +939,11 @@
       "delayInline": "wait {{seconds}}s",
       "add": "Recruit",
       "unknownError": "Unknown squall",
-      "notElevatedTitle": "X-Dispatch ain't sailin' under the captain's flag",
-      "notElevatedHint": "Companion apps won't start. Right-click X-Dispatch and choose Run as administrator (Windows), or relaunch from a terminal with sudo (macOS/Linux), ye scallywag.",
       "error": {
-        "needsAdmin": "X-Dispatch needs the captain's flag to start this app",
         "fileMissing": "Couldn't find the executable at the configured path",
-        "fileNotExecutable": "File ain't executable, matey",
-        "batchNotSupported": "Batch files (.bat, .cmd) can’t be launched directly, matey. Point \"Path to ye executable\" at th’ program itself, say javaw.exe, stow th’ rest in \"Launch orders\", and set yer \"Workin’ hold\" to th’ app’s folder.",
+        "accessDenied": "Windows refused to launch this vessel. Check yer antivirus and the folder's permissions, matey.",
+        "cancelled": "The permission parley was closed, so the app never set sail",
+        "timedOut": "The app never set sail within two minutes",
         "spawnFailed": "Couldn't fire up the process"
       }
     },
@@ -1860,6 +1858,7 @@
         "TOGGLE_FAILED": "Couldn't flip it: {{reason}}",
         "DELETE_FAILED": "Couldn't scuttle it: {{reason}}",
         "PLUGIN_IN_USE": "X-Plane be usin' this plugin. Close X-Plane an' try again.",
+        "FILE_IN_USE": "{{fileName}} be open in another program. Close it an' try again.",
         "PERMISSION_DENIED": "Access denied, matey. The X-Plane hold be in protected waters. Run X-Dispatch as the admiral.",
         "PATH_TRAVERSAL": "Treacherous path refused: {{path}}",
         "INVALID_INPUT": "Bad input: {{field}}"
@@ -1899,6 +1898,8 @@
         "DSF_INVALID": "Rotten DSF file: {{reason}}",
         "DSF_COMPRESSED": "Compressed DSF ain't supported yet: {{path}}",
         "WRITE_FAILED": "Couldn't write scenery_packs.ini: {{reason}}",
+        "DELETE_FAILED": "Couldn't scuttle it: {{reason}}",
+        "FILE_IN_USE": "{{fileName}} be open in another program. Close it an' try again.",
         "BACKUP_FAILED": "Backup failed: {{reason}}"
       },
       "loading": "Scannin' scenery folders...",

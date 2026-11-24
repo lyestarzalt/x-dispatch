@@ -1,7 +1,6 @@
 import { type BrowserWindow, dialog } from 'electron';
 import path from 'path';
 import { handle } from '@/lib/remote/handlerRegistry';
-import { isElevated } from '@/lib/utils/isElevated';
 import logger from '@/lib/utils/logger';
 import { type SpawnInput, type SpawnResult, launchCompanionApp } from './spawn';
 
@@ -11,10 +10,6 @@ export function registerCompanionAppsIPC(getMainWindow: () => BrowserWindow | nu
   handle('companion-apps:launch', async (_, input: SpawnInput): Promise<SpawnResult> => {
     logger.main.info(`companion-apps:launch ${input.exePath}`);
     return launchCompanionApp(input);
-  });
-
-  handle('companion-apps:isElevated', async (): Promise<boolean> => {
-    return isElevated();
   });
 
   handle(

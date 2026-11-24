@@ -9,6 +9,15 @@ import * as maplibregl from 'maplibre-gl';
 // (add, update, remove, setVisibility) for all layer types.
 
 /**
+ * True once `map.remove()` has run: MapLibre drops the style, and every image,
+ * source or layer call after that throws. Check it after any `await` that ends
+ * in a map call (Sentry X-DISPATCH-9T).
+ */
+export function isMapRemoved(map: maplibregl.Map): boolean {
+  return !map.style;
+}
+
+/**
  * Run a map mutation (layer/source removal etc.) safely.
  * Bails out if the map style has been destroyed; otherwise runs synchronously.
  * If the style isn't fully loaded, defers to the next idle event.

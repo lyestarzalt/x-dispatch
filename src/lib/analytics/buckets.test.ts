@@ -14,7 +14,10 @@ describe('analytics buckets', () => {
     expect(startupBucket(1_200)).toBe('under_2s');
     expect(startupBucket(2_000)).toBe('2_5s');
     expect(startupBucket(7_500)).toBe('5_10s');
-    expect(startupBucket(42_000)).toBe('over_10s');
+    // Past 10 s the wait is split further, so a 12 s start and a 60 s one stay apart.
+    expect(startupBucket(12_000)).toBe('10_30s');
+    expect(startupBucket(42_000)).toBe('30_60s');
+    expect(startupBucket(95_000)).toBe('over_60s');
   });
 
   it('buckets window width', () => {
@@ -43,6 +46,9 @@ describe('analytics buckets', () => {
   it('produces values the event allowlist accepts', () => {
     expect(
       sanitizeEvent('app_ready', { startup: startupBucket(3_000), from_cache: true })
+    ).not.toBeNull();
+    expect(
+      sanitizeEvent('app_ready', { startup: startupBucket(95_000), from_cache: true })
     ).not.toBeNull();
     expect(
       sanitizeEvent('display', {

@@ -939,13 +939,11 @@
       "delayInline": "délai {{seconds}} s",
       "add": "Ajouter",
       "unknownError": "Erreur inconnue",
-      "notElevatedTitle": "X-Dispatch n'est pas exécuté en tant qu'administrateur",
-      "notElevatedHint": "Les applications compagnons ne pourront pas démarrer. Faites un clic droit sur X-Dispatch et choisissez Exécuter en tant qu'administrateur (Windows), ou relancez depuis un terminal avec sudo (macOS/Linux).",
       "error": {
-        "needsAdmin": "X-Dispatch a besoin des privilèges administrateur pour lancer cette application",
         "fileMissing": "Exécutable introuvable au chemin configuré",
-        "fileNotExecutable": "Le fichier n'est pas exécutable",
-        "batchNotSupported": "Les fichiers de commandes (.bat, .cmd) ne peuvent pas être lancés directement. Indiquez le programme lui-même dans « Chemin de l’exécutable », par exemple javaw.exe, mettez le reste dans « Arguments » et réglez « Répertoire de travail » sur le dossier de l’application.",
+        "accessDenied": "Windows a refusé de démarrer cette application. Vérifiez l'antivirus et les permissions du dossier.",
+        "cancelled": "La demande d'autorisation a été fermée, l'application n'a pas démarré",
+        "timedOut": "L'application n'a pas démarré en deux minutes",
         "spawnFailed": "Impossible de démarrer le processus"
       }
     },
@@ -1860,6 +1858,7 @@
         "TOGGLE_FAILED": "Impossible de basculer : {{reason}}",
         "DELETE_FAILED": "Impossible de supprimer : {{reason}}",
         "PLUGIN_IN_USE": "X-Plane utilise ce plugin. Fermez X-Plane et réessayez.",
+        "FILE_IN_USE": "{{fileName}} est ouvert dans un autre programme. Fermez-le et réessayez.",
         "PERMISSION_DENIED": "Accès refusé. Le dossier X-Plane est dans un emplacement protégé. Lancez X-Dispatch en tant qu'administrateur.",
         "PATH_TRAVERSAL": "Chemin non sûr refusé : {{path}}",
         "INVALID_INPUT": "Saisie invalide : {{field}}"
@@ -1899,6 +1898,8 @@
         "DSF_INVALID": "Fichier DSF invalide : {{reason}}",
         "DSF_COMPRESSED": "Les DSF compressés ne sont pas encore pris en charge : {{path}}",
         "WRITE_FAILED": "Écriture de scenery_packs.ini impossible : {{reason}}",
+        "DELETE_FAILED": "Impossible de supprimer : {{reason}}",
+        "FILE_IN_USE": "{{fileName}} est ouvert dans un autre programme. Fermez-le et réessayez.",
         "BACKUP_FAILED": "Sauvegarde échouée : {{reason}}"
       },
       "loading": "Analyse des dossiers de scènes...",

@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  type MapLayerSnapshot,
   type PlanProcedureSnapshot,
   type TaxiRouteSnapshot,
   builtTaxiRoute,
   isNewStartPosition,
+  layerToggles,
   pickedProcedures,
 } from './mapActions';
 
@@ -75,5 +77,39 @@ describe('pickedProcedures', () => {
     expect(pickedProcedures({ departure: null, arrival: null, autoRouting: false }, none)).toEqual(
       []
     );
+  });
+});
+
+describe('layerToggles', () => {
+  const off: MapLayerSnapshot = {
+    vatsimEnabled: false,
+    ivaoEnabled: false,
+    simTrafficEnabled: false,
+    weatherRadarEnabled: false,
+    cloudLayerEnabled: false,
+    flightTrailEnabled: false,
+    rangeRingsEnabled: false,
+    terrain3dEnabled: false,
+    terrainShadingEnabled: false,
+    isNightMode: false,
+    navVisibility: { navaids: false, ils: false, airspaces: false, airwaysMode: 'off' },
+  };
+
+  it('reports a layer switched on and off', () => {
+    const on = { ...off, vatsimEnabled: true };
+    expect(layerToggles(on, off)).toEqual([{ event: 'layer_enabled', layer: 'vatsim' }]);
+    expect(layerToggles(off, on)).toEqual([{ event: 'layer_disabled', layer: 'vatsim' }]);
+  });
+
+  it('reads any airways mode but off as on', () => {
+    const high = { ...off, navVisibility: { ...off.navVisibility, airwaysMode: 'high' } };
+    expect(layerToggles(high, off)).toEqual([{ event: 'layer_enabled', layer: 'airways' }]);
+  });
+
+  it('leaves follow-plane to its button, since a map drag also switches it off', () => {
+    const following: MapLayerSnapshot & { followPlane: boolean } = { ...off, followPlane: true };
+    const notFollowing = { ...off, followPlane: false };
+    expect(layerToggles(notFollowing, following)).toEqual([]);
+    expect(layerToggles(following, notFollowing)).toEqual([]);
   });
 });

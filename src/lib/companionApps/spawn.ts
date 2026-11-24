@@ -1,9 +1,15 @@
-import { spawn } from 'child_process';
-import * as path from 'path';
-import { canExecute } from '@/lib/utils/canExecute';
+import { type ChildProcess, spawn } from 'child_process';
+import * as fs from 'fs';
 import { errorMessage } from '@/lib/utils/errors';
-import { isElevated } from '@/lib/utils/isElevated';
 import logger from '@/lib/utils/logger';
+import {
+  POWERSHELL_FLAGS,
+  buildStartProcessScript,
+  classifyStartProcessFailure,
+  encodePowerShellCommand,
+  splitArguments,
+  windowsPowerShellPath,
+} from './startProcess';
 
 export interface SpawnInput {
   exePath: string;
@@ -16,20 +22,7 @@ export interface SpawnInput {
  * with the i18n keys under `settings.companionApps.error.*`.
  */
 export type SpawnErrorCode =
-  'NEEDS_ADMIN' | 'FILE_MISSING' | 'FILE_NOT_EXECUTABLE' | 'BATCH_NOT_SUPPORTED' | 'SPAWN_FAILED';
-
-/**
- * Batch files are interpreted by the shell, not executed, so `spawn` cannot
- * start them: since the CVE-2024-27980 hardening (Node 18.20.2 / 20.12.2) it
- * throws `EINVAL` for `.cmd`/`.bat` unless `shell: true` is passed. We don't
- * pass it — running a user-supplied path through a shell is a bigger change
- * than this is worth — so the useful thing is to say so plainly.
- */
-const BATCH_EXTENSIONS = ['.cmd', '.bat'];
-
-function isBatchFile(exePath: string): boolean {
-  return BATCH_EXTENSIONS.includes(path.extname(exePath).toLowerCase());
-}
+  'FILE_MISSING' | 'ACCESS_DENIED' | 'CANCELLED' | 'TIMED_OUT' | 'SPAWN_FAILED';
 
 export interface SpawnResult {
   success: boolean;
@@ -37,71 +30,152 @@ export interface SpawnResult {
   code?: SpawnErrorCode;
 }
 
-/**
- * Pre-flight + spawn. Runs the access guard (and on Windows, the elevation
- * guard) before touching `child_process.spawn`, since both checks fail
- * synchronously with clear codes — unlike spawn, which fires async errors
- * that we'd drop.
- *
- * Elevation only matters on Windows — that's where companion apps with
- * `requireAdministrator` manifests (vPilot, hardware drivers, etc.) refuse
- * to spawn from a non-elevated parent. On macOS/Linux, normal user apps
- * don't need root to launch peer apps; checking euid would just block users
- * for no reason.
- */
-export function launchCompanionApp(input: SpawnInput): SpawnResult {
-  // Checked ahead of elevation deliberately. A batch file fails the same way
-  // as administrator, so leading with NEEDS_ADMIN sends people down a blind
-  // alley — which is what happens today: the reported case had users trying
-  // admin rights for a .cmd that was never going to start either way.
-  if (isBatchFile(input.exePath)) {
-    logger.main.warn(`companionApps refused launch: batch file (exe=${input.exePath})`);
-    return {
-      success: false,
-      code: 'BATCH_NOT_SUPPORTED',
-      error: `${path.extname(input.exePath)} files cannot be launched directly`,
-    };
-  }
-
-  if (process.platform === 'win32' && !isElevated()) {
-    logger.main.warn(`companionApps refused launch: not elevated (exe=${input.exePath})`);
-    return {
-      success: false,
-      code: 'NEEDS_ADMIN',
-      error: 'X-Dispatch is not running as administrator',
-    };
-  }
-
-  const access = canExecute(input.exePath);
-  if (!access.ok) {
-    const code: SpawnErrorCode =
-      access.reason === 'missing' ? 'FILE_MISSING' : 'FILE_NOT_EXECUTABLE';
-    logger.main.warn(
-      `companionApps refused launch: ${access.reason} (exe=${input.exePath}, ${access.error})`
-    );
-    return { success: false, code, error: access.error };
-  }
-
-  return spawnDetached(input);
+export interface LaunchDeps {
+  /** Where Windows PowerShell is; the default is its fixed place under SystemRoot. */
+  powerShellPath?: string;
+  /** How long to wait for Windows to start the app, UAC prompt included. */
+  timeoutMs?: number;
 }
 
-export function spawnDetached(input: SpawnInput): SpawnResult {
+/** A UAC prompt waits for the user; two minutes covers a slow answer without hanging a launch. */
+const WINDOWS_LAUNCH_TIMEOUT_MS = 120_000;
+
+/**
+ * Starts a companion app and resolves once the OS has started it or refused it.
+ *
+ * On Windows the app is started through PowerShell's `Start-Process`, which is
+ * `ShellExecute`: the call Explorer makes on a double click. Windows then shows
+ * its own UAC prompt for an app whose manifest asks for administrator rights
+ * (vPilot, some hardware drivers), and batch files and shortcuts open as they
+ * do from Explorer. Node's `spawn` is `CreateProcess`, which refuses all three.
+ * Heroic Games Launcher and the `open` package launch the same way.
+ *
+ * On macOS and Linux a user app can start another user app directly, so the
+ * app is spawned detached, the way GitHub Desktop starts an editor.
+ */
+export async function launchCompanionApp(
+  input: SpawnInput,
+  deps: LaunchDeps = {}
+): Promise<SpawnResult> {
+  if (!isFile(input.exePath)) {
+    logger.main.warn(`companionApps refused launch: no file at ${input.exePath}`);
+    return { success: false, code: 'FILE_MISSING', error: `No file at ${input.exePath}` };
+  }
+  if (process.platform !== 'win32') return spawnDetached(input);
+
+  const powerShell = deps.powerShellPath ?? windowsPowerShellPath();
+  if (!isFile(powerShell)) {
+    // Windows PowerShell 5.1 is part of Windows; a machine without it is one
+    // where policy removed it. Starting the app directly still covers every app
+    // that does not need administrator rights.
+    logger.main.warn(`companionApps: no PowerShell at ${powerShell}, spawning directly`);
+    return spawnDetached(input);
+  }
+  return startProcess(input, powerShell, deps.timeoutMs ?? WINDOWS_LAUNCH_TIMEOUT_MS);
+}
+
+function isFile(filePath: string): boolean {
   try {
-    const argv = input.args?.trim() ? input.args.trim().split(/\s+/) : [];
-    const child = spawn(input.exePath, argv, {
+    return fs.statSync(filePath).isFile();
+  } catch {
+    return false;
+  }
+}
+
+/** Runs the `Start-Process` script and reads its exit code and stderr. */
+function startProcess(
+  input: SpawnInput,
+  powerShell: string,
+  timeoutMs: number
+): Promise<SpawnResult> {
+  const script = buildStartProcessScript(input);
+  let child: ChildProcess;
+  try {
+    child = spawn(
+      powerShell,
+      [...POWERSHELL_FLAGS, '-EncodedCommand', encodePowerShellCommand(script)],
+      { stdio: ['ignore', 'ignore', 'pipe'], windowsHide: true }
+    );
+  } catch (err) {
+    const msg = errorMessage(err);
+    logger.main.warn(`companionApps: PowerShell did not start: ${msg}`);
+    return Promise.resolve({ success: false, error: msg, code: 'SPAWN_FAILED' });
+  }
+
+  return new Promise<SpawnResult>((resolve) => {
+    let stderr = '';
+    let settled = false;
+    const settle = (result: SpawnResult): void => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(result);
+    };
+    const timer = setTimeout(() => {
+      child.kill();
+      logger.main.warn(
+        `companionApps: Windows did not start ${input.exePath} within ${timeoutMs} ms`
+      );
+      settle({ success: false, code: 'TIMED_OUT', error: `No answer within ${timeoutMs} ms` });
+    }, timeoutMs);
+
+    child.stderr?.on('data', (chunk: Buffer) => {
+      stderr += chunk.toString();
+    });
+    child.once('error', (err) => {
+      const msg = errorMessage(err);
+      logger.main.warn(`companionApps: PowerShell failed: ${msg}`);
+      settle({ success: false, error: msg, code: 'SPAWN_FAILED' });
+    });
+    child.once('close', (code) => {
+      if (code === 0) {
+        logger.main.info(`companionApps started: ${input.exePath}`);
+        settle({ success: true });
+        return;
+      }
+      const reason = stderr.trim();
+      const failure = classifyStartProcessFailure(reason);
+      logger.main.warn(`companionApps: Windows refused ${input.exePath} (${failure}): ${reason}`);
+      // Drop the leading Win32 code; the message is what the toast shows.
+      settle({ success: false, code: failure, error: reason.replace(/^-?\d+\s*/, '') });
+    });
+  });
+}
+
+/**
+ * Starts the process detached and resolves once the OS has started it or
+ * refused it. Node emits exactly one of `spawn` and `error` for a launch, and
+ * a refusal only ever arrives as the async `error`, never as a throw.
+ */
+export function spawnDetached(input: SpawnInput): Promise<SpawnResult> {
+  let child: ChildProcess;
+  try {
+    child = spawn(input.exePath, splitArguments(input.args), {
       detached: true,
       stdio: 'ignore',
       cwd: input.cwd,
     });
-    child.on('error', (err) => {
-      logger.main.warn(`companionApps spawn error after launch: ${err.message}`);
-    });
-    child.unref();
-    logger.main.info(`companionApps spawned: ${input.exePath}`);
-    return { success: true };
   } catch (err) {
     const msg = errorMessage(err);
     logger.main.warn(`companionApps spawn threw: ${msg}`);
-    return { success: false, error: msg, code: 'SPAWN_FAILED' };
+    return Promise.resolve({ success: false, error: msg, code: 'SPAWN_FAILED' });
   }
+
+  return new Promise<SpawnResult>((resolve) => {
+    child.once('spawn', () => {
+      child.unref();
+      logger.main.info(`companionApps spawned: ${input.exePath}`);
+      resolve({ success: true });
+    });
+    child.once('error', (err: NodeJS.ErrnoException) => {
+      const code: SpawnErrorCode =
+        err.code === 'ENOENT'
+          ? 'FILE_MISSING'
+          : err.code === 'EACCES' || err.code === 'EPERM'
+            ? 'ACCESS_DENIED'
+            : 'SPAWN_FAILED';
+      logger.main.warn(`companionApps spawn refused (${code}): ${err.message}`);
+      resolve({ success: false, error: err.message, code });
+    });
+  });
 }
