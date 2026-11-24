@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { type AtisMemory, carryOverAtis } from '@/lib/networkTraffic/atisCarryOver';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type {
   VatsimATIS,
@@ -15,16 +16,26 @@ const vatsimKeys = {
   data: ['vatsim', 'data'] as const,
 };
 
+// The feed drops an ATIS for a poll or lists it blank while it reconnects; the last broadcast
+// bridges the gap so the airport card's runways do not blink out (GitHub #415).
+let atisMemory: AtisMemory = new Map();
+
 async function fetchVatsimData(): Promise<VatsimData> {
   const response = await window.airportAPI.fetchVatsimData();
   if (!response.data || response.error) {
     throw new Error(response.error || 'Failed to fetch VATSIM data');
   }
+  const carried = carryOverAtis(
+    atisMemory,
+    (response.data.atis || []) as unknown as VatsimATIS[],
+    Date.now()
+  );
+  atisMemory = carried.memory;
   return {
     general: response.data.general,
     pilots: (response.data.pilots || []) as unknown as VatsimPilot[],
     controllers: (response.data.controllers || []) as unknown as VatsimController[],
-    atis: (response.data.atis || []) as unknown as VatsimATIS[],
+    atis: carried.atis,
     prefiles: (response.data.prefiles || []) as unknown as VatsimPrefile[],
     lastUpdate: new Date(),
   };

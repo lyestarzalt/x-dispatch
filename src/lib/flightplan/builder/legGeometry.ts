@@ -39,7 +39,11 @@ const FALLBACK_LEG_NM = 3;
 const TURN_HINT_STEPS = 8;
 /** Samples drawn for the bezier bow that joins two legs whose lines don't connect. */
 const BOW_STEPS = 12;
-/** LNM starts the CR/VR course line 2 NM to the side a published turn would leave the aircraft. */
+/**
+ * LNM starts the CR/VR course line 2 NM to the side a published turn would leave the aircraft.
+ * A CI/VI whose published turn reverses the course starts there too: the reference draws that one
+ * from the previous leg's end, which ran back over the runway (KMIA LOC 8L, GitHub #418).
+ */
 const RADIAL_TURN_OFFSET_NM = 2;
 /** LNM considers a CF course more than this far round from the inbound track a reversal (bow, no intercept). */
 const REVERSAL_DEG = 150;
@@ -694,9 +698,37 @@ export function procedureGeometry(
             : normalize360(nextCourseTrue)
           : null;
 
+      // A published turn that reverses the course leaves the aircraft to that side before the
+      // new heading is flown, as for a course to a radial: the heading line starts 2 NM over
+      // (left of the old track for a left turn). A smaller turn keeps the line from here, as the
+      // reference draws it. Used only when it meets the next course.
+      const reversal =
+        !Number.isNaN(state.trackDeg) &&
+        Math.abs(normalize180(heading - state.trackDeg)) > REVERSAL_DEG;
+      const turnSide = !reversal
+        ? null
+        : wp.turnDirection === 'L'
+          ? 90
+          : wp.turnDirection === 'R'
+            ? -90
+            : null;
+      const turnStart =
+        turnSide === null
+          ? null
+          : destinationPoint(from, heading + turnSide, RADIAL_TURN_OFFSET_NM);
+
       let target: LatLon | null = null;
+      let legStart: LatLon | undefined;
       if (nextAnchor && nextRayDeg !== null) {
-        target = intersectRadials(from, heading as Degrees, nextAnchor, nextRayDeg as Degrees);
+        const fromTurn = turnStart
+          ? intersectRadials(turnStart, heading as Degrees, nextAnchor, nextRayDeg as Degrees)
+          : null;
+        if (fromTurn) {
+          target = fromTurn;
+          legStart = turnStart!;
+        } else {
+          target = intersectRadials(from, heading as Degrees, nextAnchor, nextRayDeg as Degrees);
+        }
       }
 
       let resultTrackDeg = heading;
@@ -763,7 +795,8 @@ export function procedureGeometry(
 
       if (!target) target = destinationPoint(from, heading, FALLBACK_LEG_NM);
 
-      arriveAtTarget(target, resultTrackDeg, wp);
+      if (legStart && state) runTo(target, wp, resultTrackDeg, legStart);
+      else arriveAtTarget(target, resultTrackDeg, wp);
       if (consumedNextIndex >= 0) i = consumedNextIndex;
       continue;
     }

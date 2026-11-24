@@ -8,8 +8,10 @@ import {
   legCrossesArea,
   limitToFeet,
   longitudeRanges,
+  nodesWithinNm,
   resetAutoRouterCacheForTests,
 } from './autoRouter';
+import { greatCircleNm } from './geometry';
 import {
   type NatMessage,
   parseNatMessage,
@@ -72,6 +74,43 @@ beforeEach(() => {
   navdata.boxes = [];
   resetAutoRouterCacheForTests();
   resetOceanicTracksForTests();
+});
+
+// The oceanic pass looked at every fix for each fix with few neighbours: about 11 s of the
+// 13 s OTHH to KMIA took with a NAT track chosen. The grid must find exactly the same fixes.
+describe('nodesWithinNm', () => {
+  const seeded = (seed: number) => () => {
+    seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+    return seed / 4294967296;
+  };
+  const r = seeded(20261124);
+  const positions = new Map<string, { latitude: number; longitude: number }>();
+  for (let i = 0; i < 4000; i++) {
+    positions.set(`F${i}`, { latitude: r() * 178 - 89, longitude: r() * 360 - 180 });
+  }
+  // Crowd the hard places: near both poles and on both sides of the antimeridian.
+  for (let i = 0; i < 600; i++) {
+    positions.set(`P${i}`, { latitude: 80 + r() * 9.9, longitude: r() * 360 - 180 });
+    positions.set(`S${i}`, { latitude: -80 - r() * 9.9, longitude: r() * 360 - 180 });
+    positions.set(`A${i}`, {
+      latitude: r() * 120 - 60,
+      longitude: (r() < 0.5 ? 175 : -180) + r() * 5,
+    });
+  }
+  const keys = [...positions.keys()];
+  const scan = (from: string, minNm: number, maxNm: number) =>
+    keys.filter((k) => {
+      if (k === from) return false;
+      const nm = greatCircleNm(positions.get(from)!, positions.get(k)!);
+      return nm > minNm && nm <= maxNm;
+    });
+
+  it('finds the same fixes, in the same order, as looking at every fix', () => {
+    const grid = nodesWithinNm(keys, positions);
+    for (const from of keys.filter((_, i) => i % 7 === 0)) {
+      expect(grid(from, 100, 700)).toEqual(scan(from, 100, 700));
+    }
+  });
 });
 
 describe('longitudeRanges', () => {

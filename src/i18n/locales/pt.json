@@ -2573,7 +2573,10 @@
     "tod": "T/D",
     "safeAltitude": "Mín. segura",
     "legSafe": "Segura por perna",
-    "total": "Total"
+    "total": "Total",
+    "zoomIn": "Aproximar",
+    "zoomOut": "Afastar",
+    "seek": "Mover ao longo da rota"
   },
   "thirdPartyNotices": {
     "title": "Licenças de terceiros",

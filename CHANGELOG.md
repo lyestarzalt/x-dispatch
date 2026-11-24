@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Zoom into the vertical profile.** The mouse wheel zooms, dragging moves along the route, and the bar under the chart jumps to any part of it; a double-click zooms back out.
 - **US procedure labels without a manual download.** OBSTACLE, RNAV and ILS OR LOC come from the FAA's procedure index (names only, no charts), fetched once per cycle when you open a US airport; Settings, Navigation Data turns it off.
 - **US RNAV SIDs and STARs are marked RNAV.**
 - **Your last ten flight plans are kept.** The clock in the planner lists them, whole, and a click loads one back; it replaces the list of flown routes there.
@@ -20,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Zoomed in, each airway leg shows its airway.** The label reads "Q167 20 nm 223°", and a direct leg shows distance and course only.
 - **Clearing the flight plan from the strip can be undone.**
 - **ILS OR LOC no longer needs IN_CIFP.txt.** The FAA's procedure index marks the approaches it missed and drops the few it named wrongly.
+- **The vertical profile is smooth to hover and drag.** It no longer stutters on long routes.
+- **Finding a route across an ocean is several times faster.** Doha to Miami on a North Atlantic track took 13 seconds; it takes 3.
+- **The airport card keeps the VATSIM/IVAO switches above its tabs, and lists arrivals before departures.**
 
 ### Fixed
 
@@ -28,6 +32,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **A delete or switch that fails on an open file names that file.** Close it and try again; a failed scenery delete no longer blames scenery_packs.ini.
 - **Changing flight on a slow PC waits for X-Plane to finish loading.** It reported a lost connection after 45 seconds while X-Plane was still loading.
 - **Dropping a start pin while the map loads no longer fails.** The pin appears once the map is ready.
+- **The vertical profile and the flight strip can't be dragged under the toolbar.** One already stuck there comes back on the next start.
+- **A missed approach that reverses course turns to the side the chart shows.** KMIA's LOC 8L ran back across the final approach instead of turning north first.
+- **The airport card's active runways no longer blink out when a VATSIM ATIS drops for a moment.** Split arrival and departure runways also show in green.
 - **Companion apps start the way Windows starts them.** An app that needs administrator rights gets the usual Windows prompt, batch files and shortcuts work, and X-Dispatch no longer needs to run as administrator.
 
 ## [2.17.0] - 2026-11-22
