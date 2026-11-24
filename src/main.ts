@@ -133,6 +133,8 @@ import {
   getActiveInstallationName,
   getAnalyticsConsent,
   getCrashReportId,
+  getFaaChartCachePath,
+  getFaaChartDownload,
   getInstallations,
   getSendCrashReports,
   getStoredXPlaneVersion,
@@ -140,8 +142,19 @@ import {
   renameInstallation,
   setActiveInstallation,
   setAnalyticsConsent,
+  setFaaChartDownload,
   setSendCrashReports,
 } from './lib/xplaneServices/dataService/config';
+import {
+  clearDownloadedFaaCharts,
+  configureFaaChartDownload,
+  downloadFaaCharts,
+  onFaaChartsUpdated,
+} from './lib/xplaneServices/dataService/navdata/faaChartDownload';
+import {
+  type FaaChartSettings,
+  faaChartStatus,
+} from './lib/xplaneServices/dataService/navdata/faaChartIndexLoader';
 import { loadRequiredStartupData } from './lib/xplaneServices/dataService/startupLoader';
 import type { AirportSource } from './lib/xplaneServices/dataService/types';
 import type { LaunchFailure, LaunchResult } from './lib/xplaneServices/launch';
@@ -1376,6 +1389,14 @@ function registerIpcHandlers() {
     broadcast('vatsim-sectors:updated');
   });
 
+  // The FAA's chart list is about 16 MB: a slow line needs well over the default timeout.
+  configureFaaChartDownload({
+    fetchText: (url) => proxyFetch(url, { timeoutMs: 180_000, maxBytes: 64 * 1024 * 1024 }),
+    cachePath: getFaaChartCachePath(),
+    isEnabled: getFaaChartDownload,
+  });
+  onFaaChartsUpdated(() => broadcast('nav:faaChartsUpdated'));
+
   handle('app:isSetupComplete', () => isSetupComplete());
   handle('app:getVersion', () => app.getVersion());
   handle('app:getThirdPartyNotices', async () => {
@@ -2177,6 +2198,21 @@ function registerIpcHandlers() {
 
   // New navigation data handlers
   handle('nav:getDataSources', () => dataManager.getDataSources());
+
+  const faaChartSettings = (): FaaChartSettings => ({
+    enabled: getFaaChartDownload(),
+    ...faaChartStatus(dataManager.getXPlanePath()),
+  });
+  handle('nav:getFaaChartStatus', () => faaChartSettings());
+  handle('nav:setFaaChartDownload', (_, enabled: boolean) => {
+    setFaaChartDownload(enabled === true);
+    if (enabled !== true) clearDownloadedFaaCharts();
+    return faaChartSettings();
+  });
+  handle('nav:downloadFaaCharts', async () => {
+    if (getFaaChartDownload()) await downloadFaaCharts();
+    return faaChartSettings();
+  });
 
   handle('nav:getATCForAirport', (_, icao: string, lat: number, lon: number) => {
     const c = validateCoordinates(lat, lon, 1);

@@ -366,9 +366,9 @@ export interface Procedure {
   approachType?: string;
   /** Approaches: ARINC 424 route qualifier 2 of the final approach ('P' marks an RNP AR). */
   approachQualifier2?: string;
-  /** Approaches: an ILS the FAA charts as ILS OR LOC, from the user's IN_CIFP.txt. */
+  /** Approaches: an ILS the FAA charts as ILS OR LOC, from its chart list (d-tpp_Metafile.xml). */
   orLocalizer?: boolean;
-  /** SIDs: one the FAA charts as an obstacle departure, from the user's d-tpp_Metafile.xml. */
+  /** SIDs: one the FAA charts as an obstacle departure, from its chart list (d-tpp_Metafile.xml). */
   obstacle?: boolean;
   /** SIDs and STARs: one the FAA's chart title marks (RNAV), from the same file. */
   rnav?: boolean;

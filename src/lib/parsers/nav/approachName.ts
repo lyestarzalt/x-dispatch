@@ -60,7 +60,7 @@ const CIRCLING_FORM = /^([A-Z]{3})([A-Z0-9]?)$/;
  * `routeQualifier2` is the record's ARINC 424 route qualifier 2: an RNAV approach whose qualifier
  * is `P` is an RNP AR procedure, charted as RNAV (RNP), while `J`/`W`/`U` stay RNAV (GPS).
  *
- * `orLocalizer` marks an ILS the FAA charts as ILS OR LOC (see `faaProcedureIndex`); it has no
+ * `orLocalizer` marks an ILS the FAA charts as ILS OR LOC (see `faaChartIndex`); it has no
  * effect on any other type.
  */
 export function formatApproachName(

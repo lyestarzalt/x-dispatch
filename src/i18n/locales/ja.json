@@ -899,6 +899,20 @@
         "aboutDescription": "パイロットはマップ上にアイコンで表示されます。パイロットをクリックすると、コールサイン、機体、出発地、目的地などのフライト詳細が表示されます。",
         "refreshInterval": "更新間隔",
         "refreshHelp": "VATSIM データの更新頻度（推奨：15 秒）"
+      },
+      "faaCharts": {
+        "title": "米国の手順ラベル",
+        "description": "米国の手順に、FAA のチャートと同じ OBSTACLE、RNAV、ILS OR LOC を表示します。どのナビデータでも動作します。",
+        "toggle": "FAA からダウンロード",
+        "toggleDescription": "手順名のみ、チャートは含みません。AIRAC サイクルごとに約 16 MB。",
+        "faaLabel": "FAA",
+        "customDataTooltip": "Custom Data の d-tpp_Metafile.xml をダウンロードの代わりに使用しています。",
+        "downloadedTooltip": "{{date}} にダウンロード",
+        "notYet": "米国の空港を開くとダウンロードされます",
+        "downloading": "ダウンロード中",
+        "downloadNow": "今すぐダウンロード",
+        "errorNetwork": "FAA に接続できません",
+        "errorInvalid": "FAA から有効な索引を受信できませんでした"
       }
     },
     "companionApps": {

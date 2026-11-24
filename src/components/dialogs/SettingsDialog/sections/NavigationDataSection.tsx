@@ -30,6 +30,7 @@ import navigraphLogo from '../../../../../assets/navigraph-small.png';
 import xpnavdataLogo from '../../../../../assets/xpnavdata-icon.png';
 import { SettingsHeader, SettingsSectionBlock } from '../primitives';
 import type { SettingsSectionProps } from '../types';
+import FaaChartLabelsSection from './FaaChartLabelsSection';
 
 type SourceType = 'navigraph' | 'custom' | 'xplane-default' | 'custom-scenery' | 'unknown';
 
@@ -226,6 +227,8 @@ export default function NavigationDataSection({ className }: SettingsSectionProp
           </div>
         )}
       </SettingsSectionBlock>
+
+      <FaaChartLabelsSection />
 
       {/* Navigation Data Table */}
       {dataStatus && (

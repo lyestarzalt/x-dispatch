@@ -85,6 +85,16 @@ export function getAiracCycleDates(cycle: string | null): AiracCycleDates | null
   return { effectiveDate, expirationDate: new Date(effectiveMs + CYCLE_MS) };
 }
 
+/** The AIRAC cycle ("2611") in force at `date`, numbered from the first cycle of its year. */
+export function airacCycleAt(date: Date): string {
+  const step = Math.floor((date.getTime() - AIRAC_EPOCH_UTC) / CYCLE_MS);
+  const effective = new Date(AIRAC_EPOCH_UTC + step * CYCLE_MS);
+  const year = effective.getUTCFullYear();
+  const firstStep = Math.ceil((Date.UTC(year, 0, 1) - AIRAC_EPOCH_UTC) / CYCLE_MS);
+  const ordinal = step - firstStep + 1;
+  return `${String(year % 100).padStart(2, '0')}${String(ordinal).padStart(2, '0')}`;
+}
+
 function buildCycleValidity(cycle: string | null): {
   effectiveDate: Date | null;
   expirationDate: Date | null;

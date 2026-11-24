@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **US RNAV SIDs and STARs are marked RNAV.** It reads the same `d-tpp_Metafile.xml` in Custom Data that marks obstacle departures.
+- **US procedure labels without a manual download.** OBSTACLE, RNAV and ILS OR LOC come from the FAA's procedure index (names only, no charts), fetched once per cycle when you open a US airport; Settings, Navigation Data turns it off.
+- **US RNAV SIDs and STARs are marked RNAV.**
 - **Your last ten flight plans are kept.** The clock in the planner lists them, whole, and a click loads one back; it replaces the list of flown routes there.
 - **Show or hide the flight plan strip.** A button next to Profile in the planner, and in the SimBrief panel; it also draws the plan again after it was cleared.
 
@@ -17,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Zoomed in, each airway leg shows its airway.** The label reads "Q167 20 nm 223°", and a direct leg shows distance and course only.
 - **Clearing the flight plan from the strip can be undone.**
+- **ILS OR LOC no longer needs IN_CIFP.txt.** The FAA's procedure index marks the approaches it missed and drops the few it named wrongly.
 
 ### Fixed
 

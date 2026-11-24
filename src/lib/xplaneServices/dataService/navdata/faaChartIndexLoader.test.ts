@@ -7,7 +7,7 @@ vi.mock('@/lib/utils/logger', () => ({
   default: { data: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() } },
 }));
 
-const { loadFaaChartIndex } = await import('./faaChartIndexLoader');
+const { faaChartStatus, loadFaaChartIndex } = await import('./faaChartIndexLoader');
 
 const airport = (code: string) =>
   `<airport_name ID="X" apt_ident="GJT" icao_ident="KGJT"><record><chart_code>ODP</chart_code>` +
@@ -38,5 +38,22 @@ describe('loadFaaChartIndex', () => {
 
     fs.rmSync(metafile());
     expect(loadFaaChartIndex(xplane)).toBeNull();
+  });
+});
+
+describe('faaChartStatus', () => {
+  it('names the copy in Custom Data, with the cycle it is for and whether it ran out', () => {
+    fs.writeFileSync(metafile(), `<digital_tpp cycle="2610">${airport('MONMT3')}</digital_tpp>`);
+    expect(faaChartStatus(xplane, new Date(Date.UTC(2026, 10, 23)))).toMatchObject({
+      source: 'customData',
+      cycle: '2610',
+      validUntil: '2026-10-29T00:00:00.000Z',
+      expired: true,
+      fetchedAt: null,
+    });
+  });
+
+  it('says there is no list when neither a copy nor a download is there', () => {
+    expect(faaChartStatus(xplane)).toMatchObject({ source: 'none', cycle: null, expired: false });
   });
 });

@@ -21,6 +21,7 @@ import type { StartupFailureReport } from '@/lib/startup/startupFallback';
 import type { FlightInit } from '@/lib/xplaneServices/client/generated/xplaneApi';
 import type { Airport, DataLoadStatus } from '@/lib/xplaneServices/dataService/XPlaneDataManager';
 import type { NavDataSources } from '@/lib/xplaneServices/dataService/cycleInfo';
+import type { FaaChartSettings } from '@/lib/xplaneServices/dataService/navdata/faaChartIndexLoader';
 import type {
   XPLogReadResult,
   openXPlaneLogExternally as openXPlaneLogExternallyFn,
@@ -265,6 +266,11 @@ declare global {
       getAirportProcedures: (icao: string) => Promise<ResolvedAirportProcedures | null>;
       // New data queries
       getDataSources: () => Promise<NavDataSources | null>;
+      /** US procedure labels: where the FAA chart list comes from and the download switch. */
+      getFaaChartStatus: () => Promise<FaaChartSettings>;
+      setFaaChartDownload: (enabled: boolean) => Promise<FaaChartSettings>;
+      downloadFaaCharts: () => Promise<FaaChartSettings>;
+      onFaaChartsUpdated: (callback: () => void) => () => void;
       getATCByFacility: (facilityId: string) => Promise<ATCController | null>;
       getAllATCControllers: () => Promise<ATCController[]>;
       getATCForAirport: (icao: string, lat: number, lon: number) => Promise<ATCController[]>;

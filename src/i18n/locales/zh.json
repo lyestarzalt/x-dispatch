@@ -899,6 +899,20 @@
         "aboutDescription": "飞行员在地图上显示为图标。点击飞行员可查看航班详情，包括呼号、机型、出发地和目的地。",
         "refreshInterval": "刷新间隔",
         "refreshHelp": "VATSIM 数据的刷新频率（推荐：15秒）"
+      },
+      "faaCharts": {
+        "title": "美国程序标签",
+        "description": "在美国程序上显示与 FAA 航图一致的 OBSTACLE、RNAV 和 ILS OR LOC。适用于任何导航数据。",
+        "toggle": "从 FAA 下载",
+        "toggleDescription": "仅程序名称，不含航图。每个 AIRAC 周期约 16 MB。",
+        "faaLabel": "FAA",
+        "customDataTooltip": "正在使用 Custom Data 中的 d-tpp_Metafile.xml，而不是下载的索引。",
+        "downloadedTooltip": "{{date}} 下载",
+        "notYet": "打开美国机场时下载",
+        "downloading": "正在下载",
+        "downloadNow": "立即下载",
+        "errorNetwork": "无法连接 FAA",
+        "errorInvalid": "FAA 未返回有效索引"
       }
     },
     "companionApps": {

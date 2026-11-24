@@ -248,6 +248,10 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
       getAirportProcedures: (icao: string) => t.invoke('nav:getAirportProcedures', icao),
       // New API methods
       getDataSources: () => t.invoke('nav:getDataSources'),
+      getFaaChartStatus: () => t.invoke('nav:getFaaChartStatus'),
+      setFaaChartDownload: (enabled: boolean) => t.invoke('nav:setFaaChartDownload', enabled),
+      downloadFaaCharts: () => t.invoke('nav:downloadFaaCharts'),
+      onFaaChartsUpdated: (callback: () => void) => t.on('nav:faaChartsUpdated', callback),
       getATCByFacility: (facilityId: string) => t.invoke('nav:getATCByFacility', facilityId),
       getAllATCControllers: () => t.invoke('nav:getAllATCControllers'),
       getATCForAirport: (icao: string, lat: number, lon: number) =>

@@ -899,6 +899,20 @@
         "aboutDescription": "I piloti sono visualizzati come icone sulla mappa. Fai clic su un pilota per vedere i dettagli del volo, inclusi nominativo, aereo, partenza e destinazione.",
         "refreshInterval": "Intervallo di aggiornamento",
         "refreshHelp": "Ogni quanto aggiornare i dati VATSIM (consigliato: 15s)"
+      },
+      "faaCharts": {
+        "title": "Etichette delle procedure USA",
+        "description": "OBSTACLE, RNAV e ILS OR LOC sulle procedure USA, come le chiamano le carte della FAA. Funziona con qualsiasi dato di navigazione.",
+        "toggle": "Scarica dalla FAA",
+        "toggleDescription": "Solo nomi delle procedure, nessuna carta. Circa 16 MB per ciclo AIRAC.",
+        "faaLabel": "FAA",
+        "customDataTooltip": "Viene usato il tuo d-tpp_Metafile.xml in Custom Data al posto del download.",
+        "downloadedTooltip": "Scaricato il {{date}}",
+        "notYet": "Si scarica quando apri un aeroporto USA",
+        "downloading": "Download in corso",
+        "downloadNow": "Scarica ora",
+        "errorNetwork": "FAA non raggiungibile",
+        "errorInvalid": "La FAA non ha inviato un indice valido"
       }
     },
     "companionApps": {
