@@ -114,6 +114,7 @@ vi.mock('@/stores/mapStore', () => ({
 vi.mock('@/queries', () => ({
   useNavDataQuery: () => navState,
   useAirportATC: () => ({ data: undefined }),
+  useFaaAirportCharts: () => ({ data: null }),
 }));
 
 vi.mock('@/queries/useGatewayQuery', () => ({

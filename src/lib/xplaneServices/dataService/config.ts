@@ -50,6 +50,8 @@ interface XPlaneConfig {
   remoteAccess?: RemoteAccessConfig;
   /** Download the FAA's chart list for US procedure labels; absent means on */
   faaChartDownload?: boolean;
+  /** The pilot has read that the app is for flight simulation only; absent means not yet */
+  simulationNoticeAcknowledged?: boolean;
 }
 
 export interface RemoteAccessConfig {
@@ -191,6 +193,8 @@ function saveConfig(config: Partial<XPlaneConfig>): boolean {
           : existing?.analyticsPendingEvents,
       remoteAccess: config.remoteAccess ?? existing?.remoteAccess,
       faaChartDownload: config.faaChartDownload ?? existing?.faaChartDownload,
+      simulationNoticeAcknowledged:
+        config.simulationNoticeAcknowledged ?? existing?.simulationNoticeAcknowledged,
     };
 
     writeConfigFile(newConfig);
@@ -272,9 +276,23 @@ export function setFaaChartDownload(enabled: boolean): boolean {
   return saveConfig({ faaChartDownload: enabled });
 }
 
+/** True once the pilot has acknowledged the simulation-only notice shown at first launch. */
+export function getSimulationNoticeAcknowledged(): boolean {
+  return loadConfig()?.simulationNoticeAcknowledged === true;
+}
+
+export function acknowledgeSimulationNotice(): boolean {
+  return saveConfig({ simulationNoticeAcknowledged: true });
+}
+
 /** Where the downloaded FAA chart list is kept, reduced to what the app reads. */
 export function getFaaChartCachePath(): string {
   return path.join(app.getPath('userData'), 'faa-charts.json');
+}
+
+/** Where the chart PDFs shown on the map are kept, one folder per cycle. */
+export function getFaaChartPdfCachePath(): string {
+  return path.join(app.getPath('userData'), 'faa-chart-pdfs');
 }
 
 export function getAnalyticsConsent(): 'granted' | 'denied' | null {

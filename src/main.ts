@@ -129,6 +129,7 @@ import { getXPlaneDataManager, isSetupComplete } from './lib/xplaneServices/data
 import { resyncCustomScenery } from './lib/xplaneServices/dataService/airports';
 import { getAirportScenery } from './lib/xplaneServices/dataService/airports/airportCache';
 import {
+  acknowledgeSimulationNotice,
   addInstallation,
   getActiveInstallation,
   getActiveInstallationName,
@@ -136,8 +137,10 @@ import {
   getCrashReportId,
   getFaaChartCachePath,
   getFaaChartDownload,
+  getFaaChartPdfCachePath,
   getInstallations,
   getSendCrashReports,
+  getSimulationNoticeAcknowledged,
   getStoredXPlaneVersion,
   removeInstallation,
   renameInstallation,
@@ -151,11 +154,17 @@ import {
   configureFaaChartDownload,
   downloadFaaCharts,
   onFaaChartsUpdated,
+  requestFaaCharts,
 } from './lib/xplaneServices/dataService/navdata/faaChartDownload';
 import {
   type FaaChartSettings,
   faaChartStatus,
+  faaChartsForAirport,
 } from './lib/xplaneServices/dataService/navdata/faaChartIndexLoader';
+import {
+  configureFaaChartPdf,
+  loadFaaChartPdf,
+} from './lib/xplaneServices/dataService/navdata/faaChartPdf';
 import { loadRequiredStartupData } from './lib/xplaneServices/dataService/startupLoader';
 import type { AirportSource } from './lib/xplaneServices/dataService/types';
 import type { LaunchFailure, LaunchResult } from './lib/xplaneServices/launch';
@@ -1402,6 +1411,10 @@ function registerIpcHandlers() {
     isEnabled: getFaaChartDownload,
   });
   onFaaChartsUpdated(() => broadcast('nav:faaChartsUpdated'));
+  configureFaaChartPdf({
+    download: (url) => proxyDownload(url, { timeoutMs: 60_000 }),
+    cacheDir: getFaaChartPdfCachePath(),
+  });
 
   handle('app:isSetupComplete', () => isSetupComplete());
   handle('app:getVersion', () => app.getVersion());
@@ -1676,6 +1689,11 @@ function registerIpcHandlers() {
       remote: (event as { remote?: boolean }).remote === true,
     })
   );
+  // Shown once, to everyone, until acknowledged. Never in the e2e runs: it would cover the app.
+  handle('app:getSimulationNotice', () => ({
+    shouldShow: !getSimulationNoticeAcknowledged() && !process.env.E2E_USER_DATA_DIR,
+  }));
+  handle('app:acknowledgeSimulationNotice', () => acknowledgeSimulationNotice());
   handle('app:getSendCrashReports', () => getSendCrashReports());
   handle('app:getCrashReportId', () => getCrashReportId());
   handle('app:setSendCrashReports', (_, enabled: boolean) => {
@@ -2207,9 +2225,16 @@ function registerIpcHandlers() {
 
   const faaChartSettings = (): FaaChartSettings => ({
     enabled: getFaaChartDownload(),
-    ...faaChartStatus(dataManager.getXPlanePath()),
+    ...faaChartStatus(),
   });
   handle('nav:getFaaChartStatus', () => faaChartSettings());
+  handle('nav:getFaaCharts', (_, icao: string) => {
+    if (typeof icao !== 'string') return null;
+    // The first US airport of a cycle starts the download; the charts follow once it is in.
+    requestFaaCharts(icao);
+    return faaChartsForAirport(icao);
+  });
+  handle('nav:getFaaChartPdf', (_, url: string) => loadFaaChartPdf(url));
   handle('nav:setFaaChartDownload', (_, enabled: boolean) => {
     setFaaChartDownload(enabled === true);
     if (enabled !== true) clearDownloadedFaaCharts();

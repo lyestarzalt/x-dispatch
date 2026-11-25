@@ -607,7 +607,7 @@
       "crashReports": "Envoyer les rapports de plantage",
       "crashReportsDescription": "Aidez à améliorer X-Dispatch en envoyant automatiquement les rapports de plantage",
       "crashReportsNote": "Redémarrage requis. Aucune donnée personnelle n'est collectée.",
-      "independenceNotice": "X-Dispatch est un projet communautaire indépendant. Il n'est affilié à X-Plane, SimBrief, Navigraph, VATSIM ou IVAO, et n'est ni approuvé ni soutenu par eux.",
+      "independenceNotice": "X-Dispatch est un projet communautaire indépendant. Il n'est affilié à X-Plane, SimBrief, Navigraph, VATSIM, IVAO ou la FAA, et n'est ni approuvé ni soutenu par eux.",
       "debugOverlay": "Superposition de débogage",
       "debugOverlayDescription": "Afficher la barre d'outils de débogage pour développeurs",
       "toggleDebug": "Activer/Désactiver",
@@ -901,12 +901,11 @@
         "refreshHelp": "Fréquence d'actualisation des données VATSIM (recommandé : 15 s)"
       },
       "faaCharts": {
-        "title": "Libellés des procédures américaines",
-        "description": "OBSTACLE, RNAV et ILS OR LOC sur les procédures américaines, comme les nomment les cartes de la FAA. Fonctionne avec toutes les données de navigation.",
+        "title": "Cartes et libellés des procédures américaines",
+        "description": "OBSTACLE, RNAV et ILS OR LOC sur les procédures américaines, comme les nomment les cartes de la FAA. Fonctionne avec toutes les données de navigation. Liste aussi les cartes FAA de chaque aéroport américain.",
         "toggle": "Télécharger depuis la FAA",
-        "toggleDescription": "Noms de procédures uniquement, sans cartes. Environ 16 Mo par cycle AIRAC.",
+        "toggleDescription": "La liste des cartes uniquement, environ 16 Mo par cycle AIRAC. Le PDF d'une carte est téléchargé quand vous l'affichez sur la carte.",
         "faaLabel": "FAA",
-        "customDataTooltip": "Votre d-tpp_Metafile.xml dans Custom Data est utilisé à la place du téléchargement.",
         "downloadedTooltip": "Téléchargé le {{date}}",
         "notYet": "Se télécharge à l'ouverture d'un aéroport américain",
         "downloading": "Téléchargement",
@@ -1183,6 +1182,21 @@
     "displacedThreshold": {
       "lda": "LDA {{length}}",
       "tooltip": "Seuil décalé de {{displaced}}, distance d'atterrissage utilisable {{lda}}"
+    },
+    "charts": {
+      "title": "Cartes",
+      "cycle": "FAA {{cycle}}",
+      "groups": {
+        "airport": "Aéroport",
+        "departures": "Départs",
+        "arrivals": "Arrivées",
+        "approaches": "Approches",
+        "minimums": "Minimums"
+      },
+      "showOnMap": "Afficher sur la carte",
+      "hideFromMap": "Retirer de la carte",
+      "expired": "Cette liste de cartes date d'un cycle AIRAC passé. Ses liens peuvent ne plus s'ouvrir.",
+      "simulationOnly": "Cartes de la FAA. Pour la simulation de vol uniquement, pas pour la navigation réelle."
     },
     "rawMetar": "METAR original",
     "routeTab": {
@@ -2628,6 +2642,25 @@
       "title": "X-Dispatch ne répond pas",
       "message": "La fenêtre ne répond plus. Vous pouvez la recharger, continuer d'attendre ou quitter.",
       "wait": "Continuer d'attendre"
+    }
+  },
+  "simulationNotice": {
+    "title": "Pour la simulation de vol uniquement",
+    "body": "X-Dispatch est conçu pour les simulateurs de vol. Ne l'utilisez jamais, ni les cartes qu'il affiche ni ses données, pour l'aviation ou la navigation réelles : elles peuvent être incomplètes, inexactes ou périmées.",
+    "accept": "J'ai compris",
+    "version": "X-Dispatch v{{version}}"
+  },
+  "chartOverlay": {
+    "title": "Carte d'approche sur la carte",
+    "heading": "Carte {{icao}}",
+    "hide": "Retirer la carte",
+    "loading": "Chargement de la carte",
+    "opacity": "Opacité",
+    "opacityValue": "{{percent}}%",
+    "errors": {
+      "network": "La carte n'a pas pu être téléchargée depuis la FAA.",
+      "unavailable": "La FAA n'a pas cette carte pour ce cycle.",
+      "unplaceable": "Cette carte ne peut pas être placée sur la carte."
     }
   },
   "weatherRadar": {

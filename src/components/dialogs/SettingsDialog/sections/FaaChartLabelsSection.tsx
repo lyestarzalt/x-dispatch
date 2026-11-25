@@ -24,8 +24,7 @@ export default function FaaChartLabelsSection({ className }: SettingsSectionProp
   const remote = useIsRemoteClient();
 
   const downloading = !!status?.downloading || downloadNow.isPending;
-  const fromCustomData = status?.source === 'customData';
-  const showLine = !!status && (status.enabled || fromCustomData);
+  const showLine = !!status && status.enabled;
 
   return (
     <SettingsSectionBlock
@@ -53,18 +52,14 @@ export default function FaaChartLabelsSection({ className }: SettingsSectionProp
             <Tooltip>
               <TooltipTrigger asChild>
                 <Badge variant="secondary" className="shrink-0 cursor-help">
-                  {fromCustomData
-                    ? t('settings.navigation.customDataLabel')
-                    : t('settings.navigation.faaCharts.faaLabel')}
+                  {t('settings.navigation.faaCharts.faaLabel')}
                 </Badge>
               </TooltipTrigger>
               <TooltipContent side="top" className="max-w-xs">
                 <p className="text-xs">
-                  {fromCustomData
-                    ? t('settings.navigation.faaCharts.customDataTooltip')
-                    : t('settings.navigation.faaCharts.downloadedTooltip', {
-                        date: formatDate(status.fetchedAt),
-                      })}
+                  {t('settings.navigation.faaCharts.downloadedTooltip', {
+                    date: formatDate(status.fetchedAt),
+                  })}
                 </p>
               </TooltipContent>
             </Tooltip>
@@ -102,7 +97,7 @@ export default function FaaChartLabelsSection({ className }: SettingsSectionProp
           >
             {downloading
               ? t('settings.navigation.faaCharts.downloading')
-              : status.error && !fromCustomData
+              : status.error
                 ? t(
                     status.error === 'network'
                       ? 'settings.navigation.faaCharts.errorNetwork'
@@ -112,7 +107,7 @@ export default function FaaChartLabelsSection({ className }: SettingsSectionProp
                   ? t('settings.navigation.faaCharts.notYet')
                   : null}
           </span>
-          {status.enabled && !fromCustomData && !remote && (
+          {status.enabled && !remote && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button

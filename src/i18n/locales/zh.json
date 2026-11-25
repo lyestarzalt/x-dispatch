@@ -607,7 +607,7 @@
       "crashReports": "发送崩溃报告",
       "crashReportsDescription": "通过自动发送崩溃报告帮助改进 X-Dispatch",
       "crashReportsNote": "需要重启。不收集任何个人数据。",
-      "independenceNotice": "X-Dispatch 是独立社区项目，与 X-Plane、SimBrief、Navigraph、VATSIM 或 IVAO 无隶属关系，也未获得其认可或支持。",
+      "independenceNotice": "X-Dispatch 是独立社区项目，与 X-Plane、SimBrief、Navigraph、VATSIM、IVAO 或 FAA 无隶属关系，也未获得其认可或支持。",
       "debugOverlay": "调试覆盖层",
       "debugOverlayDescription": "显示开发者调试工具栏",
       "toggleDebug": "切换",
@@ -901,12 +901,11 @@
         "refreshHelp": "VATSIM 数据的刷新频率（推荐：15秒）"
       },
       "faaCharts": {
-        "title": "美国程序标签",
-        "description": "在美国程序上显示与 FAA 航图一致的 OBSTACLE、RNAV 和 ILS OR LOC。适用于任何导航数据。",
+        "title": "美国航图和程序标签",
+        "description": "在美国程序上显示与 FAA 航图一致的 OBSTACLE、RNAV 和 ILS OR LOC。适用于任何导航数据。同时列出每个美国机场的 FAA 航图。",
         "toggle": "从 FAA 下载",
-        "toggleDescription": "仅程序名称，不含航图。每个 AIRAC 周期约 16 MB。",
+        "toggleDescription": "仅航图列表，每个 AIRAC 周期约 16 MB。在地图上显示航图时才会下载其 PDF。",
         "faaLabel": "FAA",
-        "customDataTooltip": "正在使用 Custom Data 中的 d-tpp_Metafile.xml，而不是下载的索引。",
         "downloadedTooltip": "{{date}} 下载",
         "notYet": "打开美国机场时下载",
         "downloading": "正在下载",
@@ -1183,6 +1182,21 @@
     "displacedThreshold": {
       "lda": "LDA {{length}}",
       "tooltip": "跑道入口内移 {{displaced}}，可用着陆距离 {{lda}}"
+    },
+    "charts": {
+      "title": "航图",
+      "cycle": "FAA {{cycle}}",
+      "groups": {
+        "airport": "机场",
+        "departures": "离场",
+        "arrivals": "进场",
+        "approaches": "进近",
+        "minimums": "最低标准"
+      },
+      "showOnMap": "在地图上显示",
+      "hideFromMap": "从地图上移除",
+      "expired": "此航图列表来自已过期的 AIRAC 周期，链接可能无法打开。",
+      "simulationOnly": "航图来自 FAA。仅供飞行模拟使用，不得用于真实导航。"
     },
     "rawMetar": "原始 METAR",
     "routeTab": {
@@ -2628,6 +2642,25 @@
       "title": "X-Dispatch 未响应",
       "message": "窗口已停止响应。你可以重新加载、继续等待或退出。",
       "wait": "继续等待"
+    }
+  },
+  "simulationNotice": {
+    "title": "仅供飞行模拟使用",
+    "body": "X-Dispatch 专为飞行模拟器设计。切勿将它、它显示的航图或其数据用于真实航空或导航：这些内容可能不完整、不准确或已过期。",
+    "accept": "我明白了",
+    "version": "X-Dispatch v{{version}}"
+  },
+  "chartOverlay": {
+    "title": "地图上的航图",
+    "heading": "{{icao}} 航图",
+    "hide": "移除航图",
+    "loading": "正在加载航图",
+    "opacity": "不透明度",
+    "opacityValue": "{{percent}}%",
+    "errors": {
+      "network": "无法从 FAA 下载航图。",
+      "unavailable": "FAA 没有此周期的这张航图。",
+      "unplaceable": "此航图无法放置在地图上。"
     }
   },
   "weatherRadar": {

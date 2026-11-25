@@ -13,10 +13,12 @@ vi.mock('@/lib/utils/logger', () => ({
 }));
 
 const {
+  acknowledgeSimulationNotice,
   getAnalyticsConsent,
   getCrashReportId,
   getFaaChartDownload,
   getInstallations,
+  getSimulationNoticeAcknowledged,
   getStoredXPlaneVersion,
   isSetupComplete,
   saveAnalyticsPendingSession,
@@ -82,6 +84,15 @@ describe('config persistence', () => {
     expect(getFaaChartDownload()).toBe(false);
     setFaaChartDownload(true);
     expect(getFaaChartDownload()).toBe(true);
+  });
+
+  it('remembers that the simulation-only notice was read, and later saves do not drop it', () => {
+    writeConfig({ version: 1 });
+    expect(getSimulationNoticeAcknowledged()).toBe(false);
+    acknowledgeSimulationNotice();
+    expect(getSimulationNoticeAcknowledged()).toBe(true);
+    setFaaChartDownload(false);
+    expect(readConfig().simulationNoticeAcknowledged).toBe(true);
   });
 
   it('still reads stored settings while the X-Plane folder is missing', () => {

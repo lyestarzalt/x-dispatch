@@ -10,7 +10,10 @@ import { terrainActive } from '@/lib/map/terrainActive';
 import { useMapStore } from '@/stores/mapStore';
 import { usePlaneStore } from '@/stores/planeStore';
 import { lowestOf } from '../layers/world/layerOrder';
-import { makePreserveCustomStyle as makePreserveCustomStyleInternal } from './preserveCustomStyle';
+import {
+  lowestAppLayer,
+  makePreserveCustomStyle as makePreserveCustomStyleInternal,
+} from './preserveCustomStyle';
 
 const TERRAIN_SOURCE_ID = 'terrain-dem';
 const HILLSHADE_SOURCE_ID = 'terrain-hillshade-dem';
@@ -339,4 +342,17 @@ const BELOW_LABEL_LAYER_IDS = [...TERRAIN_SHADING_LAYER_IDS, ...CITY_LIGHTS_PLAC
  */
 export function makePreserveCustomStyle(map: maplibregl.Map) {
   return makePreserveCustomStyleInternal(map, BELOW_LABEL_LAYER_IDS, STARFIELD_LAYER_ID);
+}
+
+const INSIDE_BASEMAP_LAYER_IDS: ReadonlySet<string> = new Set([
+  ...BELOW_LABEL_LAYER_IDS,
+  STARFIELD_LAYER_ID,
+]);
+
+/**
+ * The layer a ground overlay (an approach chart) goes under: the lowest one the app has added
+ * over the basemap, so the airport, navaids, routes and traffic all stay above it.
+ */
+export function groundOverlayBeforeId(map: maplibregl.Map): string | undefined {
+  return lowestAppLayer(map, INSIDE_BASEMAP_LAYER_IDS);
 }

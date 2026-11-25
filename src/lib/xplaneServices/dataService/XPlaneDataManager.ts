@@ -670,7 +670,7 @@ export class XPlaneDataManager {
       // US procedure labels from the FAA's chart list: OBSTACLE, RNAV, ILS OR LOC. The first US
       // airport of a cycle starts the download; its procedures get the labels once it is in.
       requestFaaCharts(icao);
-      const chartIndex = loadFaaChartIndex(xplanePath);
+      const chartIndex = loadFaaChartIndex();
       if (chartIndex) markFaaChartNames(enriched, chartIndex, icao);
 
       // Log resolution stats for debugging

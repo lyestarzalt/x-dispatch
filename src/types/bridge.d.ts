@@ -21,7 +21,11 @@ import type { StartupFailureReport } from '@/lib/startup/startupFallback';
 import type { FlightInit } from '@/lib/xplaneServices/client/generated/xplaneApi';
 import type { Airport, DataLoadStatus } from '@/lib/xplaneServices/dataService/XPlaneDataManager';
 import type { NavDataSources } from '@/lib/xplaneServices/dataService/cycleInfo';
-import type { FaaChartSettings } from '@/lib/xplaneServices/dataService/navdata/faaChartIndexLoader';
+import type {
+  FaaAirportCharts,
+  FaaChartSettings,
+} from '@/lib/xplaneServices/dataService/navdata/faaChartIndexLoader';
+import type { FaaChartPdfResult } from '@/lib/xplaneServices/dataService/navdata/faaChartPdf';
 import type {
   XPLogReadResult,
   openXPlaneLogExternally as openXPlaneLogExternallyFn,
@@ -153,6 +157,9 @@ declare global {
       clipboardWrite: (text: string) => Promise<void>;
       clipboardWriteImage: (dataUrl: string) => Promise<boolean>;
       openExternal: (url: string) => Promise<{ success: boolean; error?: string }>;
+      /** The one-time notice that the app is for flight simulation only. */
+      getSimulationNotice: () => Promise<{ shouldShow: boolean }>;
+      acknowledgeSimulationNotice: () => Promise<boolean>;
       getSendCrashReports: () => Promise<boolean>;
       getCrashReportId: () => Promise<string | null>;
       setSendCrashReports: (enabled: boolean) => Promise<boolean>;
@@ -268,6 +275,10 @@ declare global {
       getDataSources: () => Promise<NavDataSources | null>;
       /** US procedure labels: where the FAA chart list comes from and the download switch. */
       getFaaChartStatus: () => Promise<FaaChartSettings>;
+      /** A US airport's charts with their PDF links; null when the FAA lists none. */
+      getFaaCharts: (icao: string) => Promise<FaaAirportCharts | null>;
+      /** One chart's PDF as base64, kept on disk for the cycle after the first download. */
+      getFaaChartPdf: (url: string) => Promise<FaaChartPdfResult>;
       setFaaChartDownload: (enabled: boolean) => Promise<FaaChartSettings>;
       downloadFaaCharts: () => Promise<FaaChartSettings>;
       onFaaChartsUpdated: (callback: () => void) => () => void;

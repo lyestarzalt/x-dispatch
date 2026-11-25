@@ -76,6 +76,7 @@ import {
   useTrackControl,
   useVatsimSectorSync,
 } from './hooks';
+import { useChartOverlaySync } from './hooks/useChartOverlaySync';
 import { useMapPadding } from './hooks/useMapPadding';
 import { useMapPanelLayout } from './hooks/useMapPanelLayout';
 import { useProfileControl } from './hooks/useProfileControl';
@@ -100,6 +101,7 @@ import {
 import { applyNavLayerTheme } from './layers/navigation/navTheme';
 import './map-animations.css';
 import { makePreserveCustomStyle } from './utils/globeUtils';
+import ChartOverlayCard from './widgets/ChartOverlayCard';
 import CompassWidget from './widgets/CompassWidget';
 import DevDebugOverlay from './widgets/DevDebugOverlay';
 import FlightStrip from './widgets/FlightStrip';
@@ -419,6 +421,9 @@ export default function Map({ airports }: MapProps) {
 
   // North Atlantic tracks offered to the planner, pickable on the map
   useNatTracksSync({ mapRef });
+
+  // The FAA approach chart the pilot laid over the map
+  useChartOverlaySync({ mapRef, theme: basemapTheme });
 
   // Range rings sync - renders reach circles from selected airport
   useRangeRingsSync({ mapRef, navDataLocation });
@@ -1026,6 +1031,7 @@ export default function Map({ airports }: MapProps) {
       </div>
       {landingReportEnabled && <LandingReportCard onShowOnMap={handleShowLanding} />}
       <StandHoverCard />
+      <ChartOverlayCard />
       <NavInfoPopup mapRef={mapRef} airports={airports} />
       {activeNetwork && <NetworkPopup mapRef={mapRef} airports={airports} pilots={networkPilots} />}
       <MapContextMenu mapRef={mapRef} onStartHere={handleStartHere} />

@@ -150,7 +150,7 @@ X-Dispatch started as a passion project for the X-Plane community and continues 
 
 ## Disclaimer
 
-References to X-Plane, SimBrief, Navigraph, VATSIM, and IVAO are for compatibility and identification purposes only. X-Dispatch is an independent community project and is not affiliated with, endorsed by, or sponsored by their respective owners.
+References to X-Plane, SimBrief, Navigraph, VATSIM, IVAO, and the FAA are for compatibility and identification purposes only. X-Dispatch is an independent community project and is not affiliated with, endorsed by, or sponsored by their respective owners.
 
 ## License
 

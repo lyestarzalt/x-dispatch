@@ -11,9 +11,9 @@ import { airacCycleAt } from '../cycleInfo';
 
 /**
  * Downloads the FAA's chart list (d-tpp_Metafile.xml) once per AIRAC cycle, the first time a
- * US airport's procedures open, and keeps only the names the app reads (about 100 KB of the
- * 16 MB). The data is the FAA's own public-domain publication; the user can turn the download
- * off in Settings, and a copy in Custom Data wins over it (`faaChartIndexLoader.ts`).
+ * US airport's procedures open, and keeps only what the app reads: the procedure names and each
+ * chart's title and PDF name (under 2 MB of the 16 MB). The data is the FAA's own public-domain publication; the user can turn the download
+ * off in Settings. It is the app's only source of the list.
  */
 
 export function faaMetafileUrl(cycle: string): string {

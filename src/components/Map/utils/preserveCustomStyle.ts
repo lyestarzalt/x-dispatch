@@ -47,6 +47,23 @@ export function captureBasemapSnapshot(map: maplibregl.Map): void {
 }
 
 /**
+ * The lowest layer the app has added over the basemap: adding a layer before it puts that
+ * layer over the basemap and under the airport, navaids, routes and traffic. `skipIds` are the
+ * app layers that live inside the basemap on purpose (relief shading, city lights, the
+ * starfield). Undefined when the app has added nothing yet, or no snapshot was taken, so the
+ * layer simply goes on top.
+ */
+export function lowestAppLayer(
+  map: maplibregl.Map,
+  skipIds: ReadonlySet<string>
+): string | undefined {
+  const basemap = basemapSnapshots.get(map);
+  const layers = map.getStyle()?.layers;
+  if (!basemap || !layers) return undefined;
+  return layers.find((layer) => !basemap.layers.has(layer.id) && !skipIds.has(layer.id))?.id;
+}
+
+/**
  * Build a transformStyle callback bound to a specific map instance. The
  * callback distinguishes app-added custom layers/sources (which it carries
  * forward) from leftovers of the previous basemap (which it drops).
@@ -83,13 +100,22 @@ export function makePreserveCustomStyle(
     for (const [id, source] of Object.entries(previous.sources ?? {})) {
       if (previousBasemap.sources.has(id)) continue;
       if (KNOWN_BASEMAP_SOURCE_IDS.has(id)) continue;
+      // A canvas source is its canvas element, which the style JSON does not hold: carried
+      // over it would be rebuilt without one. Its owner adds it again after the change.
+      if ((source as { type?: string }).type === 'canvas') continue;
       customSources[id] = source as maplibregl.SourceSpecification;
     }
+    const canvasSources = new Set(
+      Object.entries(previous.sources ?? {})
+        .filter(([, source]) => (source as { type?: string }).type === 'canvas')
+        .map(([id]) => id)
+    );
 
     const customLayers = (previous.layers ?? []).filter((l) => {
       if (previousBasemap.layers.has(l.id)) return false;
       const src = (l as { source?: string }).source;
       if (src && KNOWN_BASEMAP_SOURCE_IDS.has(src)) return false;
+      if (src && canvasSources.has(src)) return false;
       // The `background` layer type is always a basemap concept (the
       // bottommost flat fill that fills space where no tiles render).
       // Vendor styles all define one; the app never adds its own. Dropping

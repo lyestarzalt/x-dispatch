@@ -607,7 +607,7 @@
       "crashReports": "クラッシュレポートを送信",
       "crashReportsDescription": "クラッシュレポートを自動送信して X-Dispatch の改善に協力",
       "crashReportsNote": "再起動が必要です。個人データは収集されません。",
-      "independenceNotice": "X-Dispatch は独立したコミュニティプロジェクトであり、X-Plane、SimBrief、Navigraph、VATSIM、IVAO とは提携しておらず、承認や支援も受けていません。",
+      "independenceNotice": "X-Dispatch は独立したコミュニティプロジェクトであり、X-Plane、SimBrief、Navigraph、VATSIM、IVAO、FAA とは提携しておらず、承認や支援も受けていません。",
       "debugOverlay": "デバッグオーバーレイ",
       "debugOverlayDescription": "開発者向けデバッグツールバーを表示",
       "toggleDebug": "切り替え",
@@ -901,12 +901,11 @@
         "refreshHelp": "VATSIM データの更新頻度（推奨：15 秒）"
       },
       "faaCharts": {
-        "title": "米国の手順ラベル",
-        "description": "米国の手順に、FAA のチャートと同じ OBSTACLE、RNAV、ILS OR LOC を表示します。どのナビデータでも動作します。",
+        "title": "米国のチャートと手順ラベル",
+        "description": "米国の手順に、FAA のチャートと同じ OBSTACLE、RNAV、ILS OR LOC を表示します。どのナビデータでも動作します。米国の各空港の FAA チャートも一覧表示します。",
         "toggle": "FAA からダウンロード",
-        "toggleDescription": "手順名のみ、チャートは含みません。AIRAC サイクルごとに約 16 MB。",
+        "toggleDescription": "チャートの一覧のみ、AIRAC サイクルごとに約 16 MB。チャートの PDF は地図に表示するときに取得します。",
         "faaLabel": "FAA",
-        "customDataTooltip": "Custom Data の d-tpp_Metafile.xml をダウンロードの代わりに使用しています。",
         "downloadedTooltip": "{{date}} にダウンロード",
         "notYet": "米国の空港を開くとダウンロードされます",
         "downloading": "ダウンロード中",
@@ -1183,6 +1182,21 @@
     "displacedThreshold": {
       "lda": "LDA {{length}}",
       "tooltip": "スレッショルド {{displaced}} 移設、着陸可能距離 {{lda}}"
+    },
+    "charts": {
+      "title": "チャート",
+      "cycle": "FAA {{cycle}}",
+      "groups": {
+        "airport": "空港",
+        "departures": "出発",
+        "arrivals": "到着",
+        "approaches": "進入",
+        "minimums": "最低気象条件"
+      },
+      "showOnMap": "地図に表示",
+      "hideFromMap": "地図から外す",
+      "expired": "このチャート一覧は過去の AIRAC サイクルのものです。リンクが開かない場合があります。",
+      "simulationOnly": "FAA のチャートです。フライトシミュレーション専用で、実際の航法には使用できません。"
     },
     "rawMetar": "元の METAR",
     "routeTab": {
@@ -2628,6 +2642,25 @@
       "title": "X-Dispatch が応答していません",
       "message": "ウインドウが応答しなくなりました。再読み込み、待機の継続、または終了を選べます。",
       "wait": "待機を続ける"
+    }
+  },
+  "simulationNotice": {
+    "title": "フライトシミュレーション専用",
+    "body": "X-Dispatch はフライトシミュレーター用に作られています。本アプリ、表示されるチャート、データを実際の航空や航法に使用しないでください。不完全、不正確、または古い場合があります。",
+    "accept": "理解しました",
+    "version": "X-Dispatch v{{version}}"
+  },
+  "chartOverlay": {
+    "title": "地図上のチャート",
+    "heading": "{{icao}} のチャート",
+    "hide": "チャートを外す",
+    "loading": "チャートを読み込み中",
+    "opacity": "不透明度",
+    "opacityValue": "{{percent}}%",
+    "errors": {
+      "network": "FAA からチャートをダウンロードできませんでした。",
+      "unavailable": "FAA にはこのサイクルのこのチャートがありません。",
+      "unplaceable": "このチャートは地図に配置できません。"
     }
   },
   "weatherRadar": {

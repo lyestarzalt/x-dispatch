@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **FAA charts for US airports.** The airport card lists the airport diagram, departures, arrivals, approaches and minimums; a click opens the chart's PDF in your browser.
+- **US approach charts on the map.** The layers button next to an approach in the airport card's Charts list lays the chart over the map where the FAA placed it, with a slider for how see-through it is.
+- **A one-time notice that X-Dispatch is for flight simulation only.** It appears once at launch, before the usage-data question.
+
+### Changed
+
+- **The FAA chart list comes only from the app's own download.** A `d-tpp_Metafile.xml` in Custom Data is no longer read, so an old copy cannot keep you on an expired cycle.
+
 ## [2.18.0] - 2026-11-24
 
 ### Added

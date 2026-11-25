@@ -159,6 +159,8 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
       clipboardWrite: (text: string) => t.invoke('app:clipboardWrite', text),
       clipboardWriteImage: (dataUrl: string) => t.invoke('app:clipboardWriteImage', dataUrl),
       openExternal: (url: string) => t.invoke('app:openExternal', url),
+      getSimulationNotice: () => t.invoke('app:getSimulationNotice'),
+      acknowledgeSimulationNotice: () => t.invoke('app:acknowledgeSimulationNotice'),
       getSendCrashReports: () => t.invoke('app:getSendCrashReports'),
       getCrashReportId: () => t.invoke('app:getCrashReportId'),
       setSendCrashReports: (enabled: boolean) => t.invoke('app:setSendCrashReports', enabled),
@@ -249,6 +251,8 @@ export function buildBridgeApis(t: BridgeTransport, x: BridgeExtras): BridgeApis
       // New API methods
       getDataSources: () => t.invoke('nav:getDataSources'),
       getFaaChartStatus: () => t.invoke('nav:getFaaChartStatus'),
+      getFaaCharts: (icao: string) => t.invoke('nav:getFaaCharts', icao),
+      getFaaChartPdf: (url: string) => t.invoke('nav:getFaaChartPdf', url),
       setFaaChartDownload: (enabled: boolean) => t.invoke('nav:setFaaChartDownload', enabled),
       downloadFaaCharts: () => t.invoke('nav:downloadFaaCharts'),
       onFaaChartsUpdated: (callback: () => void) => t.on('nav:faaChartsUpdated', callback),

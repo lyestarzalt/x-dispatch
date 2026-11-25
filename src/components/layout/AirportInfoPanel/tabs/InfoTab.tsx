@@ -44,6 +44,7 @@ import type { Degrees } from '@/types/units';
 // @ts-ignore - Vite handles this import
 import gatewayLogo from '../../../../../assets/gateway-logo.svg';
 import { type ActiveRunway, activeEndUse } from './info/ActiveRunwayLine';
+import { ChartsSection } from './info/ChartsSection';
 import { ConditionsCard } from './info/ConditionsCard';
 import { DetailsSection } from './info/DetailsSection';
 import { FREQ_VISIBLE_DEFAULT, FrequenciesSection } from './info/FrequenciesSection';
@@ -453,6 +454,8 @@ export default function InfoTab() {
           onToggleCompact={() => setCompactFreqList((v) => !v)}
         />
       )}
+
+      {icao && <ChartsSection key={icao} icao={icao} />}
 
       {rawMetar && (
         <DetailsSection

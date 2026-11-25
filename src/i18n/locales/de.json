@@ -607,7 +607,7 @@
       "crashReports": "Absturzberichte senden",
       "crashReportsDescription": "Helfen Sie, X-Dispatch zu verbessern, indem Sie automatisch Absturzberichte senden",
       "crashReportsNote": "Neustart erforderlich. Es werden keine persönlichen Daten erfasst.",
-      "independenceNotice": "X-Dispatch ist ein unabhängiges Community-Projekt. Es ist nicht mit X-Plane, SimBrief, Navigraph, VATSIM oder IVAO verbunden und wird von ihnen weder unterstützt noch empfohlen.",
+      "independenceNotice": "X-Dispatch ist ein unabhängiges Community-Projekt. Es ist nicht mit X-Plane, SimBrief, Navigraph, VATSIM, IVAO oder der FAA verbunden und wird von ihnen weder unterstützt noch empfohlen.",
       "debugOverlay": "Debug-Overlay",
       "debugOverlayDescription": "Entwickler-Debug-Werkzeugleiste anzeigen",
       "toggleDebug": "Umschalten",
@@ -901,12 +901,11 @@
         "refreshHelp": "Wie oft VATSIM-Daten aktualisiert werden (empfohlen: 15 s)"
       },
       "faaCharts": {
-        "title": "US-Verfahrensbezeichnungen",
-        "description": "OBSTACLE, RNAV und ILS OR LOC bei US-Verfahren, wie die FAA-Karten sie benennen. Funktioniert mit allen Navigationsdaten.",
+        "title": "US-Karten und Verfahrensbezeichnungen",
+        "description": "OBSTACLE, RNAV und ILS OR LOC bei US-Verfahren, wie die FAA-Karten sie benennen. Funktioniert mit allen Navigationsdaten. Listet außerdem die FAA-Karten jedes US-Flughafens auf.",
         "toggle": "Von der FAA laden",
-        "toggleDescription": "Nur Verfahrensnamen, keine Karten. Etwa 16 MB pro AIRAC-Zyklus.",
+        "toggleDescription": "Nur das Kartenverzeichnis, etwa 16 MB pro AIRAC-Zyklus. Die PDF einer Karte wird geladen, wenn Sie sie auf der Karte anzeigen.",
         "faaLabel": "FAA",
-        "customDataTooltip": "Ihre d-tpp_Metafile.xml in Custom Data wird anstelle des Downloads verwendet.",
         "downloadedTooltip": "Geladen am {{date}}",
         "notYet": "Wird beim Öffnen eines US-Flughafens geladen",
         "downloading": "Wird geladen",
@@ -1183,6 +1182,21 @@
     "displacedThreshold": {
       "lda": "LDA {{length}}",
       "tooltip": "Schwelle um {{displaced}} versetzt, verfügbare Landestrecke {{lda}}"
+    },
+    "charts": {
+      "title": "Karten",
+      "cycle": "FAA {{cycle}}",
+      "groups": {
+        "airport": "Flughafen",
+        "departures": "Abflüge",
+        "arrivals": "Anflugrouten",
+        "approaches": "Anflüge",
+        "minimums": "Minima"
+      },
+      "showOnMap": "Auf der Karte anzeigen",
+      "hideFromMap": "Von der Karte entfernen",
+      "expired": "Dieses Kartenverzeichnis stammt aus einem abgelaufenen AIRAC-Zyklus. Die Links öffnen sich möglicherweise nicht mehr.",
+      "simulationOnly": "Karten der FAA. Nur für die Flugsimulation, nicht für die reale Navigation."
     },
     "rawMetar": "Original-METAR",
     "routeTab": {
@@ -2628,6 +2642,25 @@
       "title": "X-Dispatch reagiert nicht",
       "message": "Das Fenster reagiert nicht mehr. Sie können es neu laden, weiter warten oder beenden.",
       "wait": "Weiter warten"
+    }
+  },
+  "simulationNotice": {
+    "title": "Nur für die Flugsimulation",
+    "body": "X-Dispatch ist für Flugsimulatoren gemacht. Verwenden Sie es, die angezeigten Karten und seine Daten niemals für die reale Luftfahrt oder Navigation: Sie können unvollständig, fehlerhaft oder veraltet sein.",
+    "accept": "Verstanden",
+    "version": "X-Dispatch v{{version}}"
+  },
+  "chartOverlay": {
+    "title": "Anflugkarte auf der Karte",
+    "heading": "Karte {{icao}}",
+    "hide": "Karte entfernen",
+    "loading": "Karte wird geladen",
+    "opacity": "Deckkraft",
+    "opacityValue": "{{percent}}%",
+    "errors": {
+      "network": "Die Karte konnte nicht von der FAA geladen werden.",
+      "unavailable": "Die FAA hat diese Karte für diesen Zyklus nicht.",
+      "unplaceable": "Diese Karte kann nicht auf der Karte platziert werden."
     }
   },
   "weatherRadar": {

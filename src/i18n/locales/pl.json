@@ -607,7 +607,7 @@
       "crashReports": "Wysyłaj raporty o awariach",
       "crashReportsDescription": "Pomóż ulepszyć X-Dispatch, automatycznie wysyłając raporty o awariach",
       "crashReportsNote": "Wymagany restart. Żadne dane osobowe nie są zbierane.",
-      "independenceNotice": "X-Dispatch to niezależny projekt społeczności i nie jest powiązany, wspierany ani rekomendowany przez X-Plane, SimBrief, Navigraph, VATSIM ani IVAO.",
+      "independenceNotice": "X-Dispatch to niezależny projekt społeczności i nie jest powiązany, wspierany ani rekomendowany przez X-Plane, SimBrief, Navigraph, VATSIM, IVAO ani FAA.",
       "debugOverlay": "Nakładka debugowania",
       "debugOverlayDescription": "Pokaż pasek narzędzi debugowania dla twórców",
       "toggleDebug": "Przełącz",
@@ -901,12 +901,11 @@
         "refreshHelp": "Jak często odświeżać dane VATSIM (zalecane: 15s)"
       },
       "faaCharts": {
-        "title": "Oznaczenia procedur w USA",
-        "description": "OBSTACLE, RNAV i ILS OR LOC przy procedurach w USA, tak jak nazywają je mapy FAA. Działa z dowolnymi danymi nawigacyjnymi.",
+        "title": "Mapy i oznaczenia procedur w USA",
+        "description": "OBSTACLE, RNAV i ILS OR LOC przy procedurach w USA, tak jak nazywają je mapy FAA. Działa z dowolnymi danymi nawigacyjnymi. Wyświetla też mapy FAA każdego lotniska w USA.",
         "toggle": "Pobieraj z FAA",
-        "toggleDescription": "Tylko nazwy procedur, bez map. Około 16 MB na cykl AIRAC.",
+        "toggleDescription": "Tylko lista map, około 16 MB na cykl AIRAC. Plik PDF mapy jest pobierany, gdy pokazujesz ją na mapie.",
         "faaLabel": "FAA",
-        "customDataTooltip": "Zamiast pobranego indeksu używany jest Twój d-tpp_Metafile.xml z Custom Data.",
         "downloadedTooltip": "Pobrano {{date}}",
         "notYet": "Pobiera się po otwarciu lotniska w USA",
         "downloading": "Pobieranie",
@@ -1183,6 +1182,21 @@
     "displacedThreshold": {
       "lda": "LDA {{length}}",
       "tooltip": "Próg przesunięty o {{displaced}}, dostępna długość lądowania {{lda}}"
+    },
+    "charts": {
+      "title": "Mapy",
+      "cycle": "FAA {{cycle}}",
+      "groups": {
+        "airport": "Lotnisko",
+        "departures": "Odloty",
+        "arrivals": "Przyloty",
+        "approaches": "Podejścia",
+        "minimums": "Minima"
+      },
+      "showOnMap": "Pokaż na mapie",
+      "hideFromMap": "Usuń z mapy",
+      "expired": "Ta lista map pochodzi z minionego cyklu AIRAC. Jej linki mogą już się nie otwierać.",
+      "simulationOnly": "Mapy FAA. Tylko do symulacji lotu, nie do rzeczywistej nawigacji."
     },
     "rawMetar": "Oryginalny METAR",
     "routeTab": {
@@ -2628,6 +2642,25 @@
       "title": "X-Dispatch nie odpowiada",
       "message": "Okno przestało odpowiadać. Możesz je przeładować, poczekać dalej lub zakończyć.",
       "wait": "Czekaj dalej"
+    }
+  },
+  "simulationNotice": {
+    "title": "Tylko do symulacji lotu",
+    "body": "X-Dispatch jest przeznaczony dla symulatorów lotu. Nigdy nie używaj go, wyświetlanych map ani jego danych w rzeczywistym lotnictwie lub nawigacji: mogą być niepełne, niedokładne lub nieaktualne.",
+    "accept": "Rozumiem",
+    "version": "X-Dispatch v{{version}}"
+  },
+  "chartOverlay": {
+    "title": "Mapa podejścia na mapie",
+    "heading": "Mapa {{icao}}",
+    "hide": "Usuń mapę podejścia",
+    "loading": "Wczytywanie mapy podejścia",
+    "opacity": "Krycie",
+    "opacityValue": "{{percent}}%",
+    "errors": {
+      "network": "Nie udało się pobrać mapy z FAA.",
+      "unavailable": "FAA nie ma tej mapy dla tego cyklu.",
+      "unplaceable": "Tej mapy nie można umieścić na mapie."
     }
   },
   "weatherRadar": {
