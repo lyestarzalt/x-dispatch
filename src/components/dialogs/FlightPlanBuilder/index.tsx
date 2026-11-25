@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import {
   AlertTriangle,
   ArrowLeftRight,
-  ArrowRight,
   ArrowUpDown,
   CheckCircle2,
   ChevronLeft,
@@ -27,10 +26,10 @@ import {
   X,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useSendWidgetsBack } from '@/components/Map/hooks/useFrontWidget';
 import { StripToggle } from '@/components/layout/FlightPlanBar/StripToggle';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { IcaoCode } from '@/components/ui/icao-code';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
@@ -100,6 +99,7 @@ import { EndpointLabel } from './EndpointLabel';
 import { Field } from './Field';
 import { LightSection } from './LightSection';
 import { ProcedureSelect } from './ProcedureSelect';
+import { RailEnd } from './RailEnd';
 import { RouteEnd } from './RouteEnd';
 import { RouteProblem } from './RouteProblem';
 import { RunwaySelect } from './RunwaySelect';
@@ -140,6 +140,7 @@ function FlightPlanBuilder({
   onActivate,
 }: FlightPlanBuilderProps) {
   const { t } = useTranslation();
+  const sendWidgetsBack = useSendWidgetsBack();
   // A SID or STAR says what its chart title does (OBSTACLE, RNAV) in the picker; the chosen value
   // stays the raw identifier.
   const chartLabel = useCallback(
@@ -797,6 +798,7 @@ function FlightPlanBuilder({
       data-map-dock="left"
       data-map-profile-inset={!folded && panel === 'full' ? '' : undefined}
       data-testid="planner-dock"
+      onPointerDownCapture={sendWidgetsBack}
       className={cn(
         'absolute top-[var(--map-panel-top,4rem)] left-4 z-30 flex max-h-[calc(100%-var(--map-panel-top,4rem)-1rem)] flex-col',
         folded ? 'w-12' : 'w-[26rem] max-w-[calc(75%-5rem)] max-sm:max-w-[calc(100%-6rem)]',
@@ -819,13 +821,24 @@ function FlightPlanBuilder({
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
+          {/* Each end opens its airport; the arrows between them swap the two (GitHub #428). */}
           <span
             className="text-muted-foreground flex items-center gap-1 text-sm"
             style={{ writingMode: 'vertical-rl' }}
           >
-            <IcaoCode>{departure?.icao ?? '----'}</IcaoCode>
-            <ArrowRight className="h-3 w-3 rotate-90" />
-            <IcaoCode>{arrival?.icao ?? '----'}</IcaoCode>
+            <RailEnd icao={departure?.icao} />
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              className="text-muted-foreground hover:text-foreground"
+              onClick={swapEndpoints}
+              disabled={!departure && !arrival}
+              aria-label={t('planBuilder.swap')}
+              title={t('planBuilder.swap')}
+            >
+              <ArrowUpDown className="h-3.5 w-3.5" />
+            </Button>
+            <RailEnd icao={arrival?.icao} />
           </span>
         </div>
         <header

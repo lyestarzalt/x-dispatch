@@ -16,6 +16,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **The FAA chart list comes only from the app's own download.** A `d-tpp_Metafile.xml` in Custom Data is no longer read, so an old copy cannot keep you on an expired cycle.
+- **A click brings the vertical profile or the flight strip above the planner and the airport card.** A click on a card puts it back on top.
+- **The folded planner opens an airport and swaps the route.** Click either airport code, or the arrows between them.
+- **Explore, Online: the VATSIM/IVAO switches sit above the wingspan filter.**
+- **The strip's close button says "Clear flight plan from the map".**
+
+### Fixed
+
+- **A vertical profile or flight strip stuck under the toolbar comes back.** The 2.18 fix only ran while the profile was already on screen at startup.
+- **A procedure turn no longer runs across the inbound course.** Its return leg stopped on the far side (Unalaska NDB-A).
 
 ## [2.18.0] - 2026-11-24
 

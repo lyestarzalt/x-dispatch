@@ -52,6 +52,8 @@ const HOLD_NM_PER_MINUTE = 3.5;
 const DEFAULT_HOLD_LEG_NM = 3.5;
 /** LNM's procedure-turn symbol: a 3 NM straight segment, 180-degree turn of half that diameter. */
 const PT_SEGMENT_NM = 3;
+/** LNM stops the symbol's return leg at this share of the way back to the outbound line. */
+const PT_RETURN_FRACTION = 0.8;
 
 /** Legs that end at their fix with no special termination math of their own. */
 const PLAIN_FLY_TO = new Set<PathTerminator>(['IF', 'TF', 'CF', 'DF']);
@@ -277,7 +279,11 @@ export function holdLabelPoint(wp: ResolvedProcedureWaypoint): LatLon | null {
  * LNM's procedure-turn symbol (processLegs PROCEDURE_TURN + paintProcedureTurnWithText): from the
  * fix along course-45 (left) / course+45 (right) for max(distance - 3.5, 1) NM, then 3 NM
  * parallel to the published course, a 180-degree turn of 1.5 NM diameter towards the turn side,
- * and a return leg 0.8 x 3 NM back. Returns the symbol points starting at the fix.
+ * and a return leg that stops 0.8 of the way back to the line the aircraft flew out on. That line
+ * is 45 degrees off the return leg, so the two meet one turn diameter short of abeam the turn
+ * point: 0.8 x (3 - 1.5) = 1.2 NM. Drawn the full 0.8 x 3, the leg ran across the inbound course
+ * and ended on its far side (PADU NDB-A, GitHub #431). Returns the symbol points starting at
+ * the fix.
  */
 function procedureTurnShape(
   fix: LatLon,
@@ -298,7 +304,11 @@ function procedureTurnShape(
     arc.push(destinationPoint(centre, outboundTrue - side * 90 + side * 20 * i, radiusNm));
   }
   const arcEnd = arc[arc.length - 1]!;
-  const returnEnd = destinationPoint(arcEnd, outboundTrue + 180, PT_SEGMENT_NM * 0.8);
+  const returnEnd = destinationPoint(
+    arcEnd,
+    outboundTrue + 180,
+    (PT_SEGMENT_NM - 2 * radiusNm) * PT_RETURN_FRACTION
+  );
   return { points: [fix, turnPoint, segmentEnd, ...arc, returnEnd], turnPoint, course45 };
 }
 

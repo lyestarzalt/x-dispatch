@@ -13,6 +13,7 @@ import {
   X,
 } from 'lucide-react';
 import { AirportLocalClock } from '@/components/AirportLocalClock';
+import { useSendWidgetsBack } from '@/components/Map/hooks/useFrontWidget';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -74,6 +75,7 @@ function AirportInfoPanel({
   onActivate,
 }: AirportInfoPanelProps) {
   const { t } = useTranslation();
+  const sendWidgetsBack = useSendWidgetsBack();
   const units = useUnits();
   const airport = useAppStore((s) => s.selectedAirportData);
   const icao = useAppStore((s) => s.selectedICAO);
@@ -139,6 +141,7 @@ function AirportInfoPanel({
       data-map-dock="right"
       data-map-profile-inset=""
       data-testid="airport-dock"
+      onPointerDownCapture={sendWidgetsBack}
       className={cn(
         'absolute top-[var(--map-panel-top,4rem)] right-4 z-20',
         // Folded, the rail is as tall as its content, like the folded flight plan.

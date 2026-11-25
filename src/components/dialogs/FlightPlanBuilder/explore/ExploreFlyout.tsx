@@ -124,6 +124,12 @@ export function ExploreFlyout({
           <X className="h-4 w-4" />
         </Button>
       </header>
+      {/* First under the header, as in the airport card, and fixed while the online airports scroll. */}
+      {tab === 'online' && (
+        <div className="border-border/30 border-b px-4 py-2">
+          <NetworkPicker />
+        </div>
+      )}
       <div className="border-border/30 flex items-center gap-2 border-b px-4 py-2">
         <span className="xp-label shrink-0">{t('explore.gateFilter.label')}</span>
         <Select value={minStand} onValueChange={(v) => setMinStand(v as ExploreStandFilter)}>
@@ -145,12 +151,6 @@ export function ExploreFlyout({
           </SelectContent>
         </Select>
       </div>
-      {/* Above the list, so the switches stay put while the online airports scroll. */}
-      {tab === 'online' && (
-        <div className="border-border/30 border-b px-4 py-2">
-          <NetworkPicker />
-        </div>
-      )}
       <ScrollArea className="min-h-0 flex-1">
         <div className="p-4">
           {tab === 'random' && (
