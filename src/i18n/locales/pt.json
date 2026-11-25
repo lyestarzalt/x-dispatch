@@ -799,6 +799,10 @@
     },
     "graphics": {
       "title": "Gráficos",
+      "trafficColor": "Cor do tráfego online",
+      "trafficColorNetwork": "Por rede",
+      "trafficColorGreen": "Verde",
+      "trafficColorBlue": "Azul",
       "description": "Controle os efeitos visuais e as animações",
       "mapStyle": "Estilo do mapa",
       "mapStyleDescription": "Escolha um estilo de mapa para o fundo",
@@ -1265,6 +1269,7 @@
     },
     "noStartPositions": "Nenhuma posição de partida disponível",
     "searchPlaceholder": "Pesquisar...",
+    "gateSearchPlaceholder": "Porta, tamanho ou companhia",
     "noMatchingGates": "Nenhum portão encontrado para \"{{query}}\"",
     "runway": {
       "threshold": "Cabeceira",

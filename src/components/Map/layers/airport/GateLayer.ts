@@ -89,9 +89,55 @@ const GATE_ICONS: Record<string, string> = {
   </svg>`,
 };
 
+export const GATE_SOURCE_ID = 'airport-gates';
+
+/** A gate the airport card's search does not match (feature state `dimmed`). */
+const DIMMED: maplibregl.ExpressionSpecification = ['boolean', ['feature-state', 'dimmed'], false];
+const SELECTED: maplibregl.ExpressionSpecification = [
+  'boolean',
+  ['feature-state', 'selected'],
+  false,
+];
+/** How far a gate fades when the search does not match it; the chosen gate never fades. */
+const DIM_OPACITY = 0.2;
+const dimOr = (opacity: number): maplibregl.ExpressionSpecification => [
+  'case',
+  SELECTED,
+  opacity,
+  DIMMED,
+  DIM_OPACITY,
+  opacity,
+];
+
+/** Which of an airport's gates fade for a search: all but `matches`; none without a search. */
+export function gateDimStates(
+  gateCount: number,
+  matches: ReadonlySet<number> | null
+): { id: number; dimmed: boolean }[] {
+  return Array.from({ length: gateCount }, (_, id) => ({
+    id,
+    dimmed: matches !== null && !matches.has(id),
+  }));
+}
+
+/**
+ * Fades the gates a search in the airport card does not match and keeps the rest bright, so
+ * "heavy" or an airline shows on the map where those stands are. `null` clears it.
+ */
+export function setGateSearchMatches(
+  map: maplibregl.Map,
+  gateCount: number,
+  matches: ReadonlySet<number> | null
+): void {
+  if (!map.getStyle() || !map.getSource(GATE_SOURCE_ID)) return;
+  for (const { id, dimmed } of gateDimStates(gateCount, matches)) {
+    map.setFeatureState({ source: GATE_SOURCE_ID, id }, { dimmed });
+  }
+}
+
 export class GateLayer extends BaseLayerRenderer {
   layerId = 'airport-gates';
-  sourceId = 'airport-gates';
+  sourceId = GATE_SOURCE_ID;
   additionalLayerIds = ['airport-gate-labels', 'airport-gates-ring', 'airport-gates-helipad-bg'];
 
   hasData(airport: ParsedAirport): boolean {
@@ -153,10 +199,13 @@ export class GateLayer extends BaseLayerRenderer {
           'case',
           ['boolean', ['feature-state', 'selected'], false],
           0.95,
+          DIMMED,
+          DIM_OPACITY,
           ['boolean', ['feature-state', 'hover'], false],
           0.85,
           0.7,
         ],
+        'circle-stroke-opacity': dimOr(1),
         'circle-stroke-width': [
           'case',
           ['boolean', ['feature-state', 'selected'], false],
@@ -247,7 +296,7 @@ export class GateLayer extends BaseLayerRenderer {
       },
       paint: {
         'icon-color': '#ffffff',
-        'icon-opacity': 1,
+        'icon-opacity': dimOr(1),
       },
     });
 
@@ -274,6 +323,7 @@ export class GateLayer extends BaseLayerRenderer {
         ],
         'text-halo-color': '#0f172a',
         'text-halo-width': 1.5,
+        'text-opacity': dimOr(1),
       },
     });
   }

@@ -7,7 +7,7 @@ import type * as maplibregl from 'maplibre-gl';
 import { type LatLon, greatCirclePoints } from '@/lib/flightplan/builder/geometry';
 import type { NetworkId, NetworkPilot } from '@/types/networkTraffic';
 import { moveLayersToTop, safeAddGeoJSONSource } from '../types';
-import { NETWORK_COLORS } from './NetworkTrafficLayer';
+import { networkColor } from './NetworkTrafficLayer';
 
 const SOURCE_ID = 'network-route-source';
 const FLOWN_LAYER_ID = 'network-route-flown';
@@ -45,13 +45,22 @@ export function createNetworkRouteGeoJSON(
   return { type: 'FeatureCollection', features };
 }
 
-const colorByNetwork: maplibregl.ExpressionSpecification = [
+/** Built when asked for: the traffic colour is the pilot's choice and can change. */
+const colorByNetwork = (): maplibregl.ExpressionSpecification => [
   'match',
   ['get', 'network'],
   'ivao',
-  NETWORK_COLORS.ivao,
-  NETWORK_COLORS.vatsim,
+  networkColor('ivao'),
+  networkColor('vatsim'),
 ];
+
+/** Repaints the route already on the map after the traffic colour changed. */
+export function applyNetworkRouteColors(map: maplibregl.Map): void {
+  if (!map.getStyle()) return;
+  for (const id of NETWORK_ROUTE_LAYER_IDS) {
+    if (map.getLayer(id)) map.setPaintProperty(id, 'line-color', colorByNetwork());
+  }
+}
 
 export function updateNetworkRouteLayer(
   map: maplibregl.Map,
@@ -70,7 +79,7 @@ export function updateNetworkRouteLayer(
     filter: ['==', ['get', 'part'], 'flown'],
     layout: { 'line-cap': 'round', 'line-join': 'round' },
     paint: {
-      'line-color': colorByNetwork,
+      'line-color': colorByNetwork(),
       'line-width': 1.5,
       'line-opacity': 0.5,
       'line-dasharray': [2, 3],
@@ -83,7 +92,7 @@ export function updateNetworkRouteLayer(
     filter: ['==', ['get', 'part'], 'remaining'],
     layout: { 'line-cap': 'round', 'line-join': 'round' },
     paint: {
-      'line-color': colorByNetwork,
+      'line-color': colorByNetwork(),
       'line-width': 2,
       'line-opacity': 0.9,
     },

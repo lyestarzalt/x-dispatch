@@ -682,6 +682,14 @@ describe('flight strip settings', () => {
   });
 });
 
+describe('online traffic colour at v46', () => {
+  it('keeps a colour per network for existing installs', () => {
+    const result = migrateSettings({ map: { userMapStyles: [], vatsimRefreshInterval: 30 } }, 45);
+    expect(result.map.onlineTrafficColor).toBe('network');
+    expect(result.map.vatsimRefreshInterval).toBe(30);
+  });
+});
+
 describe('ground length unit at v45', () => {
   it('starts the new length unit from the altitude unit so nothing changes on screen', () => {
     const units = { distance: 'nm', altitude: 'm', speed: 'kts', weight: 'kg' };

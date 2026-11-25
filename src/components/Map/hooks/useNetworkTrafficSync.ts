@@ -1,8 +1,11 @@
 import { useEffect } from 'react';
 import { pilotsInBounds } from '@/lib/networkTraffic/normalize';
+import { useSettingsStore } from '@/stores/settingsStore';
 import type { NetworkId, NetworkPilot } from '@/types/networkTraffic';
 import {
+  applyNetworkRouteColors,
   removeNetworkTrafficLayer,
+  setOnlineTrafficColor,
   setupNetworkTrafficClickHandler,
   updateNetworkTrafficLayer,
 } from '../layers';
@@ -23,6 +26,15 @@ interface UseNetworkTrafficSyncOptions {
  * refresh queued behind a style reload cannot bring it back.
  */
 export function useNetworkTrafficSync({ mapRef, network, pilots }: UseNetworkTrafficSyncOptions) {
+  // The pilot's colour for online traffic (Settings, Graphics). Declared before the effect that
+  // draws the traffic, so the first aircraft already come out in it.
+  const onlineTrafficColor = useSettingsStore((s) => s.map.onlineTrafficColor);
+  useEffect(() => {
+    const map = mapRef.current;
+    setOnlineTrafficColor(map, onlineTrafficColor);
+    if (map) applyNetworkRouteColors(map);
+  }, [mapRef, onlineTrafficColor]);
+
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;

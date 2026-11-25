@@ -111,7 +111,12 @@ export default function StartTab({
           <Search className="text-muted-foreground absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2" />
           <Input
             type="text"
-            placeholder={t('airportInfo.searchPlaceholder')}
+            // The gate search also takes a size ("heavy") or an airline, and the map follows it.
+            placeholder={
+              viewType === 'gates'
+                ? t('airportInfo.gateSearchPlaceholder')
+                : t('airportInfo.searchPlaceholder')
+            }
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="border-border/50 bg-muted/30 h-8 pr-8 pl-8"

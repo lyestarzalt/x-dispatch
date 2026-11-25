@@ -35,6 +35,7 @@ const LABEL_SOURCE_ID = 'vatsim-sector-label-source';
 
 const INACTIVE_LAYER_ID = 'vatsim-sectors-inactive';
 const ACTIVE_LAYER_ID = 'vatsim-sectors-active';
+const ACTIVE_FILL_LAYER_ID = 'vatsim-sectors-active-fill';
 const LABEL_LAYER_ID = 'vatsim-sectors-labels';
 const TRACON_FILL_LAYER_ID = 'vatsim-tracon-active-fill';
 const TRACON_OUTLINE_LAYER_ID = 'vatsim-tracon-active-outline';
@@ -44,6 +45,8 @@ const TRACON_OUTLINE_LAYER_ID = 'vatsim-tracon-active-outline';
 const SECTOR_STYLE = {
   inactiveLine: '#717880',
   activeLine: ATC_ROLE_COLORS.CTR,
+  /** A staffed centre is washed in its colour: the outline alone was easy to miss. */
+  activeFillOpacity: 0.1,
   labelBg: '#0d131a',
   traconFill: 'rgba(139, 92, 246, 0.10)',
   traconOutline: ATC_ROLE_COLORS.APP,
@@ -304,6 +307,18 @@ export function updateVatsimSectorLayer(
     });
   }
 
+  if (!map.getLayer(ACTIVE_FILL_LAYER_ID)) {
+    map.addLayer({
+      id: ACTIVE_FILL_LAYER_ID,
+      type: 'fill',
+      source: ACTIVE_SOURCE_ID,
+      paint: {
+        'fill-color': SECTOR_STYLE.activeLine,
+        'fill-opacity': SECTOR_STYLE.activeFillOpacity,
+      },
+    });
+  }
+
   if (!map.getLayer(ACTIVE_LAYER_ID)) {
     map.addLayer({
       id: ACTIVE_LAYER_ID,
@@ -366,6 +381,7 @@ export function removeVatsimSectorLayer(map: maplibregl.Map): void {
   if (map.getLayer(TRACON_OUTLINE_LAYER_ID)) map.removeLayer(TRACON_OUTLINE_LAYER_ID);
   if (map.getLayer(TRACON_FILL_LAYER_ID)) map.removeLayer(TRACON_FILL_LAYER_ID);
   if (map.getLayer(ACTIVE_LAYER_ID)) map.removeLayer(ACTIVE_LAYER_ID);
+  if (map.getLayer(ACTIVE_FILL_LAYER_ID)) map.removeLayer(ACTIVE_FILL_LAYER_ID);
   if (map.getLayer(INACTIVE_LAYER_ID)) map.removeLayer(INACTIVE_LAYER_ID);
 
   if (map.getSource(LABEL_SOURCE_ID)) map.removeSource(LABEL_SOURCE_ID);
@@ -377,6 +393,7 @@ export function removeVatsimSectorLayer(map: maplibregl.Map): void {
 export function bringVatsimSectorLayersToTop(map: maplibregl.Map): void {
   moveLayersToTop(map, [
     INACTIVE_LAYER_ID,
+    ACTIVE_FILL_LAYER_ID,
     ACTIVE_LAYER_ID,
     TRACON_FILL_LAYER_ID,
     TRACON_OUTLINE_LAYER_ID,
@@ -386,6 +403,7 @@ export function bringVatsimSectorLayersToTop(map: maplibregl.Map): void {
 
 export const VATSIM_SECTOR_LAYER_IDS = [
   INACTIVE_LAYER_ID,
+  ACTIVE_FILL_LAYER_ID,
   ACTIVE_LAYER_ID,
   LABEL_LAYER_ID,
   TRACON_FILL_LAYER_ID,

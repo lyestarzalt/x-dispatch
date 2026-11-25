@@ -799,6 +799,10 @@
     },
     "graphics": {
       "title": "Grafica",
+      "trafficColor": "Colore del traffico online",
+      "trafficColorNetwork": "Per rete",
+      "trafficColorGreen": "Verde",
+      "trafficColorBlue": "Blu",
       "description": "Controlla effetti visivi e animazioni",
       "mapStyle": "Stile mappa",
       "mapStyleDescription": "Seleziona uno stile di mappa per lo sfondo",
@@ -1265,6 +1269,7 @@
     },
     "noStartPositions": "Nessuna posizione di partenza disponibile",
     "searchPlaceholder": "Cerca...",
+    "gateSearchPlaceholder": "Gate, dimensione o compagnia",
     "noMatchingGates": "Nessun gate trovato per \"{{query}}\"",
     "runway": {
       "threshold": "Soglia",

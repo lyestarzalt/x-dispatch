@@ -799,6 +799,10 @@
     },
     "graphics": {
       "title": "图形",
+      "trafficColor": "在线流量颜色",
+      "trafficColorNetwork": "按网络",
+      "trafficColorGreen": "绿色",
+      "trafficColorBlue": "蓝色",
       "description": "控制视觉效果与动画",
       "mapStyle": "地图样式",
       "mapStyleDescription": "选择背景地图样式",
@@ -1265,6 +1269,7 @@
     },
     "noStartPositions": "没有可用的出发位置",
     "searchPlaceholder": "搜索...",
+    "gateSearchPlaceholder": "机位、尺寸或航空公司",
     "noMatchingGates": "未找到与 \"{{query}}\" 匹配的机位",
     "runway": {
       "threshold": "跑道入口",

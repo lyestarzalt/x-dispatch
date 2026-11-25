@@ -1,10 +1,11 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useUnits } from '@/hooks/useUnits';
 import { type Degrees } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
+import { useMapStore } from '@/stores/mapStore';
 import type { StartupLocation } from '@/types/apt';
 import { NamedPosition } from '@/types/geo';
 import TaxiRouteInline from '../TaxiRouteInline';
@@ -78,6 +79,14 @@ export function GateList({ gates, searchQuery, onSelect, selectedIndex }: GateLi
         );
       });
   }, [gates, searchQuery, t]);
+
+  // The map follows the search: the gates listed here stay bright there and the rest fade.
+  const setGateSearchMatches = useMapStore((s) => s.setGateSearchMatches);
+  const searching = searchQuery.trim() !== '';
+  useEffect(() => {
+    setGateSearchMatches(searching ? filteredGates.map((g) => g.originalIndex) : null);
+    return () => setGateSearchMatches(null);
+  }, [searching, filteredGates, setGateSearchMatches]);
 
   if (gates.length === 0) {
     return (

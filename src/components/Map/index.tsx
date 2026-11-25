@@ -77,6 +77,7 @@ import {
   useVatsimSectorSync,
 } from './hooks';
 import { useChartOverlaySync } from './hooks/useChartOverlaySync';
+import { useGateSearchHighlight } from './hooks/useGateSearchHighlight';
 import { useMapPadding } from './hooks/useMapPadding';
 import { useMapPanelLayout } from './hooks/useMapPanelLayout';
 import { useProfileControl } from './hooks/useProfileControl';
@@ -889,6 +890,7 @@ export default function Map({ airports }: MapProps) {
   useTrackControl({ mapRef, onToggle: handleTogglePlaneTracker, isConnected: isXPlaneConnected });
   // Vertical profile show/hide button, next to it
   useProfileControl(mapRef);
+  useGateSearchHighlight(mapRef);
   // The ball on the map that follows the cursor on the vertical profile
   useProfileHoverSync(mapRef);
   // Start fetching terrain under the plan as soon as there is one, so the profile opens ready

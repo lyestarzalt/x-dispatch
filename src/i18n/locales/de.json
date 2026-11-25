@@ -799,6 +799,10 @@
     },
     "graphics": {
       "title": "Grafik",
+      "trafficColor": "Farbe des Online-Verkehrs",
+      "trafficColorNetwork": "Nach Netzwerk",
+      "trafficColorGreen": "Grün",
+      "trafficColorBlue": "Blau",
       "description": "Visuelle Effekte und Animationen steuern",
       "mapStyle": "Kartenstil",
       "mapStyleDescription": "Wählen Sie einen Kartenstil für den Hintergrund",
@@ -1265,6 +1269,7 @@
     },
     "noStartPositions": "Keine Startpositionen verfügbar",
     "searchPlaceholder": "Suchen...",
+    "gateSearchPlaceholder": "Gate, Größe oder Airline",
     "noMatchingGates": "Keine Gates für \"{{query}}\" gefunden",
     "runway": {
       "threshold": "Schwelle",

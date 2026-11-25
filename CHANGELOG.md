@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **A gate search shows on the map.** Type "heavy", an airline or a gate name in the airport card's Start tab: the matching gates stay bright and the rest fade.
+- **Pick the colour of VATSIM and IVAO traffic.** Settings, Graphics: green or blue for whichever network is on, where each had a fixed colour.
+
+### Changed
+
+- **A staffed VATSIM centre is filled, not just outlined.**
+
 ## [2.19.0] - 2026-11-25
 
 ### Added

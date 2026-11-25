@@ -147,6 +147,11 @@ interface MapState {
    * those is clicked (GitHub #424). Not kept across restarts.
    */
   frontWidget: FrontWidget | null;
+  /**
+   * Gates the airport card's search matches, by their index in the airport's list; the map
+   * fades the others. Null without a search. Not kept across restarts.
+   */
+  gateSearchMatches: number[] | null;
   /** The route position under the cursor on the vertical profile, mirrored on the map. */
   profileHover: {
     latitude: number;
@@ -199,6 +204,7 @@ interface MapState {
   setProfileStripOpen: (open: boolean) => void;
   setProfileStripPosition: (pos: { x: number; y: number } | null) => void;
   setFrontWidget: (widget: FrontWidget | null) => void;
+  setGateSearchMatches: (matches: number[] | null) => void;
   setProfileHover: (
     hover: {
       latitude: number;
@@ -269,6 +275,7 @@ export const useMapStore = create<MapState>()(
       profileStripOpen: true,
       profileStripPosition: null as { x: number; y: number } | null,
       frontWidget: null as FrontWidget | null,
+      gateSearchMatches: null as number[] | null,
       profileHover: null as {
         latitude: number;
         longitude: number;
@@ -377,6 +384,7 @@ export const useMapStore = create<MapState>()(
       setProfileStripOpen: (open) => set({ profileStripOpen: open }),
       setProfileStripPosition: (pos) => set({ profileStripPosition: pos }),
       setFrontWidget: (widget) => set({ frontWidget: widget }),
+      setGateSearchMatches: (matches) => set({ gateSearchMatches: matches }),
       setProfileHover: (hover) => set({ profileHover: hover }),
       setTerrainShadingEnabled: (enabled) => set({ terrainShadingEnabled: enabled }),
       setTerrain3dEnabled: (enabled) => set({ terrain3dEnabled: enabled }),

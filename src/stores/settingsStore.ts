@@ -39,6 +39,7 @@ import type {
 import { uuid } from '@/lib/utils/uuid';
 import { XPLANE_WEB_API_PORT } from '@/lib/xplaneServices/client/port';
 import type { LaunchEnvVar } from '@/lib/xplaneServices/launch/launchEnv';
+import type { OnlineTrafficColor } from '@/types/networkTraffic';
 import type { NauticalMiles } from '@/types/units';
 
 export type FontSize = 'small' | 'medium' | 'large';
@@ -88,6 +89,8 @@ const DEFAULT_MAP_STYLE_URL =
 export interface MapSettings {
   navDataRadiusNm: NauticalMiles;
   vatsimRefreshInterval: number;
+  /** Colour of VATSIM and IVAO traffic on the map: one per network, or one picked for both. */
+  onlineTrafficColor: OnlineTrafficColor;
   mapStyleUrl: string;
   /** User-added custom map styles, rendered alongside MAP_STYLE_PRESETS in the picker. */
   userMapStyles: MapStyle[];
@@ -267,6 +270,7 @@ interface SettingsState {
 const DEFAULT_MAP_SETTINGS: MapSettings = {
   navDataRadiusNm: 100,
   vatsimRefreshInterval: 15,
+  onlineTrafficColor: 'network',
   mapStyleUrl: DEFAULT_MAP_STYLE_URL,
   userMapStyles: [],
   idleOrbitEnabled: false,
@@ -569,7 +573,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'xplane-viz-settings',
-      version: 45,
+      version: 46,
       migrate: (persistedState, version) => migrateSettings(persistedState, version),
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -889,6 +893,13 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
         map: { ...state.map!, units: { ...units, length: units.altitude ?? 'ft' } },
       };
     }
+  }
+  if (version < 46) {
+    // Online traffic keeps its colour per network; one colour for both is a choice in Settings.
+    state = {
+      ...state,
+      map: { ...state.map!, onlineTrafficColor: 'network' },
+    };
   }
 
   return state as SettingsState;

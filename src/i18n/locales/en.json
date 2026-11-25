@@ -799,6 +799,10 @@
     },
     "graphics": {
       "title": "Graphics",
+      "trafficColor": "Online traffic colour",
+      "trafficColorNetwork": "By network",
+      "trafficColorGreen": "Green",
+      "trafficColorBlue": "Blue",
       "description": "Control visual effects and animations",
       "mapStyle": "Map Style",
       "mapStyleDescription": "Select a map style for the background",
@@ -1265,6 +1269,7 @@
     },
     "noStartPositions": "No starting positions available",
     "searchPlaceholder": "Search...",
+    "gateSearchPlaceholder": "Gate, size or airline",
     "noMatchingGates": "No gates matching \"{{query}}\"",
     "runway": {
       "threshold": "Threshold",

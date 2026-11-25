@@ -799,6 +799,10 @@
     },
     "graphics": {
       "title": "Visual Rigging",
+      "trafficColor": "Colour o' ships on the wire",
+      "trafficColorNetwork": "By fleet",
+      "trafficColorGreen": "Green",
+      "trafficColorBlue": "Blue",
       "description": "Control visual tricks an' animations",
       "mapStyle": "Chart Style",
       "mapStyleDescription": "Choose a map style fer the background",
@@ -1265,6 +1269,7 @@
     },
     "noStartPositions": "No starting berths available",
     "searchPlaceholder": "Search fer...",
+    "gateSearchPlaceholder": "Berth, size or fleet",
     "noMatchingGates": "No gates match \"{{query}}\"",
     "runway": {
       "threshold": "Runway lip",

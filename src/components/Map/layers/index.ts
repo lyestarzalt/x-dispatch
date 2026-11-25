@@ -64,7 +64,8 @@ export {
   MEASURE_LAYER_IDS,
 } from './dynamic/MeasureLayer';
 export {
-  NETWORK_COLORS,
+  networkColor,
+  setOnlineTrafficColor,
   addNetworkTrafficLayer,
   bringNetworkTrafficLayersToTop,
   networkTrafficLayerIds,
@@ -75,6 +76,7 @@ export {
 } from './dynamic/NetworkTrafficLayer';
 export {
   NETWORK_ROUTE_LAYER_IDS,
+  applyNetworkRouteColors,
   bringNetworkRouteLayersToTop,
   removeNetworkRouteLayer,
   updateNetworkRouteLayer,

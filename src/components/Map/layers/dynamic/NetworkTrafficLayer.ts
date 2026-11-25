@@ -7,15 +7,38 @@ import * as maplibregl from 'maplibre-gl';
 import { labelFont } from '@/lib/map/labelFonts';
 import { METERS_PER_FOOT } from '@/lib/utils/units/constants';
 import { useMapStore } from '@/stores/mapStore';
-import type { NetworkId, NetworkPilot } from '@/types/networkTraffic';
+import type { NetworkId, NetworkPilot, OnlineTrafficColor } from '@/types/networkTraffic';
 import { moveLayersToTop, safeAddGeoJSONSource, setLayersVisibility } from '../types';
 import { ensureAircraftIcons, ensureFallbackIcon, normalizeIcao } from './aircraftIcons';
 
-/** Line and icon colour per network: the --success and --cat-blue tokens. */
-export const NETWORK_COLORS: Record<NetworkId, string> = {
-  vatsim: '#22c55e',
-  ivao: '#60a5fa',
-};
+/** The --success and --cat-blue tokens. */
+const GREEN = '#22c55e';
+const BLUE = '#60a5fa';
+const NETWORKS: NetworkId[] = ['vatsim', 'ivao'];
+
+/**
+ * By default each network has its colour, VATSIM green and IVAO blue. A pilot can pick one
+ * colour for whichever network is on (Settings, Graphics): the two are never shown together.
+ */
+let trafficColor: OnlineTrafficColor = 'network';
+
+/** Line and icon colour of a network's traffic. */
+export function networkColor(network: NetworkId): string {
+  if (trafficColor === 'green') return GREEN;
+  if (trafficColor === 'blue') return BLUE;
+  return network === 'vatsim' ? GREEN : BLUE;
+}
+
+/** Sets the traffic colour and repaints the traffic already on `map`, when there is one. */
+export function setOnlineTrafficColor(map: maplibregl.Map | null, color: OnlineTrafficColor): void {
+  trafficColor = color;
+  if (!map?.getStyle()) return;
+  for (const network of NETWORKS) {
+    const { icons, labels } = ids(network);
+    if (map.getLayer(icons)) map.setPaintProperty(icons, 'icon-color', networkColor(network));
+    if (map.getLayer(labels)) map.setPaintProperty(labels, 'text-color', networkColor(network));
+  }
+}
 
 function ids(network: NetworkId) {
   return {
@@ -67,7 +90,7 @@ export async function addNetworkTrafficLayer(
 ): Promise<void> {
   if (!map.getStyle()) return;
   const { source, icons, labels } = ids(network);
-  const color = NETWORK_COLORS[network];
+  const color = networkColor(network);
 
   await ensureFallbackIcon(map);
   await ensureAircraftIcons(map, iconsOf(pilots));

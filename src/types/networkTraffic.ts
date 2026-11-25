@@ -6,6 +6,12 @@ import type { Degrees, Feet, Knots } from '@/types/units';
  */
 export type NetworkId = 'vatsim' | 'ivao';
 
+/**
+ * The colour online traffic is drawn in: one per network (VATSIM green, IVAO blue), or the
+ * pilot's pick for whichever network is on.
+ */
+export type OnlineTrafficColor = 'network' | 'green' | 'blue';
+
 export interface NetworkFlightPlan {
   flightRules: 'IFR' | 'VFR' | null;
   /** ICAO type designator ("A320"), when filed. */

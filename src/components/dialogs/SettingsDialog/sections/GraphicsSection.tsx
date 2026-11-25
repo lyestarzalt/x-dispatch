@@ -12,7 +12,9 @@ import { isRasterTileUrl } from '@/lib/map/tileUrlToStyle';
 import { cn } from '@/lib/utils/helpers';
 import { useMapStore } from '@/stores/mapStore';
 import { useSettingsStore } from '@/stores/settingsStore';
+import type { OnlineTrafficColor } from '@/types/networkTraffic';
 import {
+  SettingsChoiceRow,
   SettingsHeader,
   SettingsSectionBlock,
   SettingsSliderRow,
@@ -24,6 +26,13 @@ const AIRFIELD_LIGHT_OPTIONS: { value: AirfieldLightsMode; labelKey: string }[] 
   { value: 'auto', labelKey: 'settings.graphics.airfieldLightsAuto' },
   { value: 'on', labelKey: 'settings.graphics.airfieldLightsOn' },
   { value: 'off', labelKey: 'settings.graphics.airfieldLightsOff' },
+];
+
+/** Colour of VATSIM and IVAO traffic: each network its own, or one for both. */
+const TRAFFIC_COLOR_OPTIONS: { value: OnlineTrafficColor; labelKey: string }[] = [
+  { value: 'network', labelKey: 'settings.graphics.trafficColorNetwork' },
+  { value: 'green', labelKey: 'settings.graphics.trafficColorGreen' },
+  { value: 'blue', labelKey: 'settings.graphics.trafficColorBlue' },
 ];
 
 export function GraphicsSection() {
@@ -76,6 +85,15 @@ export function GraphicsSection() {
           onSelect={(url) => updateMapSettings({ mapStyleUrl: url })}
           onAdd={addUserMapStyle}
           onRemove={removeUserMapStyle}
+        />
+        <SettingsChoiceRow
+          title={t('settings.graphics.trafficColor')}
+          value={mapSettings.onlineTrafficColor}
+          options={TRAFFIC_COLOR_OPTIONS.map(({ value, labelKey }) => ({
+            value,
+            label: t(labelKey),
+          }))}
+          onChange={(onlineTrafficColor) => updateMapSettings({ onlineTrafficColor })}
         />
       </SettingsSectionBlock>
 

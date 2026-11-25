@@ -799,6 +799,10 @@
     },
     "graphics": {
       "title": "Graphismes",
+      "trafficColor": "Couleur du trafic en ligne",
+      "trafficColorNetwork": "Par réseau",
+      "trafficColorGreen": "Vert",
+      "trafficColorBlue": "Bleu",
       "description": "Contrôlez les effets visuels et les animations",
       "mapStyle": "Style de carte",
       "mapStyleDescription": "Sélectionnez un style de carte pour l'arrière-plan",
@@ -1265,6 +1269,7 @@
     },
     "noStartPositions": "Aucune position de départ disponible",
     "searchPlaceholder": "Rechercher...",
+    "gateSearchPlaceholder": "Porte, taille ou compagnie",
     "noMatchingGates": "Aucune porte correspondant à \"{{query}}\"",
     "runway": {
       "threshold": "Seuil",

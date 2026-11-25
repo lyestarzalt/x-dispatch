@@ -799,6 +799,10 @@
     },
     "graphics": {
       "title": "グラフィック",
+      "trafficColor": "オンライントラフィックの色",
+      "trafficColorNetwork": "ネットワーク別",
+      "trafficColorGreen": "緑",
+      "trafficColorBlue": "青",
       "description": "視覚効果とアニメーションを制御",
       "mapStyle": "マップスタイル",
       "mapStyleDescription": "背景のマップスタイルを選択",
@@ -1265,6 +1269,7 @@
     },
     "noStartPositions": "利用可能な開始位置がありません",
     "searchPlaceholder": "検索...",
+    "gateSearchPlaceholder": "ゲート、サイズ、航空会社",
     "noMatchingGates": "「{{query}}」に一致するゲートが見つかりません",
     "runway": {
       "threshold": "滑走路末端",

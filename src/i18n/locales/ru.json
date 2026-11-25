@@ -799,6 +799,10 @@
     },
     "graphics": {
       "title": "Графика",
+      "trafficColor": "Цвет онлайн-трафика",
+      "trafficColorNetwork": "По сети",
+      "trafficColorGreen": "Зелёный",
+      "trafficColorBlue": "Синий",
       "description": "Управление визуальными эффектами и анимациями",
       "mapStyle": "Стиль карты",
       "mapStyleDescription": "Выберите стиль карты для фона",
@@ -1265,6 +1269,7 @@
     },
     "noStartPositions": "Нет доступных стартовых позиций",
     "searchPlaceholder": "Поиск...",
+    "gateSearchPlaceholder": "Стоянка, размер или авиакомпания",
     "noMatchingGates": "Гейты для \"{{query}}\" не найдены",
     "runway": {
       "threshold": "Порог",

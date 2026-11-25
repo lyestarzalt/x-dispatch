@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { NetworkPilot } from '@/types/networkTraffic';
 import { createNetworkRouteGeoJSON } from './NetworkRouteLayer';
-import { createNetworkPilotGeoJSON, networkTrafficLayerIds } from './NetworkTrafficLayer';
+import {
+  createNetworkPilotGeoJSON,
+  networkColor,
+  networkTrafficLayerIds,
+  setOnlineTrafficColor,
+} from './NetworkTrafficLayer';
 
 const pilot: NetworkPilot = {
   network: 'ivao',
@@ -72,5 +77,34 @@ describe('createNetworkRouteGeoJSON', () => {
   it('draws only the leg whose airport is known', () => {
     const fc = createNetworkRouteGeoJSON(pilot, null, KJFK);
     expect(fc.features.map((f) => f.properties?.part)).toEqual(['remaining']);
+  });
+});
+
+// Each network has its own colour unless the pilot picks one for both.
+describe('network traffic colours', () => {
+  it('draws VATSIM green and IVAO blue by default', () => {
+    setOnlineTrafficColor(null, 'network');
+    expect(networkColor('vatsim')).toBe('#22c55e');
+    expect(networkColor('ivao')).toBe('#60a5fa');
+  });
+
+  it('draws both networks in the picked colour and repaints what is on the map', () => {
+    const painted: [string, string, unknown][] = [];
+    const map = {
+      getStyle: () => ({}),
+      getLayer: (id: string) => (id === 'vatsim-pilots' || id === 'vatsim-labels' ? {} : undefined),
+      setPaintProperty: (id: string, name: string, value: unknown) =>
+        painted.push([id, name, value]),
+    };
+    setOnlineTrafficColor(map as never, 'blue');
+    expect(networkColor('vatsim')).toBe('#60a5fa');
+    expect(networkColor('ivao')).toBe('#60a5fa');
+    expect(painted).toEqual([
+      ['vatsim-pilots', 'icon-color', '#60a5fa'],
+      ['vatsim-labels', 'text-color', '#60a5fa'],
+    ]);
+    setOnlineTrafficColor(null, 'green');
+    expect(networkColor('ivao')).toBe('#22c55e');
+    setOnlineTrafficColor(null, 'network');
   });
 });
