@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.19.0] - 2026-11-25
+
 ### Added
 
 - **FAA charts for US airports.** The airport card lists the airport diagram, departures, arrivals, approaches and minimums; a click opens the chart's PDF in your browser.
@@ -589,7 +591,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Releases up to 2.2.0 are listed on the [website changelog](https://x-dispatch.app/changelog/).
 
-[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.18.0...HEAD
+[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.19.0...HEAD
+[2.19.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.18.0...v2.19.0
 [2.18.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.17.0...v2.18.0
 [2.17.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.16.0...v2.17.0
 [2.16.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.15.0...v2.16.0
