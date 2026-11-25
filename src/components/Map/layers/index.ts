@@ -28,6 +28,7 @@ export {
   holdingPatternLayer,
   ilsLayer,
   navaidLayer,
+  procedureNavaidLayer,
 } from './navigation';
 
 // Dynamic layer functions

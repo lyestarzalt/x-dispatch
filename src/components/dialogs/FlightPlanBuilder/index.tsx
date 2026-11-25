@@ -800,8 +800,9 @@ function FlightPlanBuilder({
       data-testid="planner-dock"
       onPointerDownCapture={sendWidgetsBack}
       className={cn(
-        'absolute top-[var(--map-panel-top,4rem)] left-4 z-30 flex max-h-[calc(100%-var(--map-panel-top,4rem)-1rem)] flex-col',
-        folded ? 'w-12' : 'w-[26rem] max-w-[calc(75%-5rem)] max-sm:max-w-[calc(100%-6rem)]',
+        // left-12 leaves the map's own buttons in the bottom-left corner in reach (GitHub #425).
+        'absolute top-[var(--map-panel-top,4rem)] left-12 z-30 flex max-h-[calc(100%-var(--map-panel-top,4rem)-1rem)] flex-col',
+        folded ? 'w-12' : 'w-[26rem] max-w-[calc(75%-7rem)] max-sm:max-w-[calc(100%-8rem)]',
         !folded && panel === 'full' && 'bottom-4'
       )}
     >

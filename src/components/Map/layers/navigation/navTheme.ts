@@ -4,6 +4,7 @@ import type { BasemapTheme } from '@/lib/map/basemapTheme';
 /** Label layers of the around-airport nav overlays (navaids, ILS, airspaces). */
 const NAV_LABEL_LAYER_IDS = [
   'nav-navaids-labels',
+  'nav-procedure-navaids-labels',
   'nav-ils-labels',
   'nav-airspaces-labels',
 ] as const;

@@ -1,12 +1,25 @@
 import { useEffect } from 'react';
 import * as maplibregl from 'maplibre-gl';
+import { procedureNavaids } from '@/lib/flightplan/builder/procedureNavaids';
 import type { BasemapTheme } from '@/lib/map/basemapTheme';
 import type { NavigationData } from '@/queries/useNavDataQuery';
+import { useAppStore } from '@/stores/appStore';
 import type { NavLayerVisibility } from '@/types/layers';
-import { airspaceLayer, ensureNavLayerOrder, ilsLayer, navaidLayer } from '../layers';
+import {
+  airspaceLayer,
+  ensureNavLayerOrder,
+  ilsLayer,
+  navaidLayer,
+  procedureNavaidLayer,
+} from '../layers';
+import { PROCEDURE_ROUTE_LAYER_IDS } from '../layers/dynamic/ProcedureRouteLayer';
 import { applyNavLayerTheme } from '../layers/navigation/navTheme';
+import { isMapRemoved } from '../layers/types';
 import { runWhenStyleIsReady } from './styleReadiness';
 import type { MapRef } from './useMapSetup';
+
+/** The procedure's route and missed-approach lines come first in its layer list. */
+const PROCEDURE_LINE_LAYERS = 2;
 
 interface UseNavLayerSyncOptions {
   mapRef: MapRef;
@@ -66,6 +79,53 @@ export function useNavLayerSync({
       cleanupStyleWait();
     };
   }, [mapRef, navData, navVisibility, theme]);
+
+  // With the navaid layer off, the stations of the procedure on the map are still drawn: the
+  // VOR or NDB an approach is flown from (GitHub #430). With the layer on they are already
+  // there, so this one is emptied. Only navaids loaded around the airport can be found.
+  const selectedProcedure = useAppStore((s) => s.selectedProcedure);
+  const navaidsShown = navVisibility.navaids;
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !navData) return;
+    const wanted =
+      selectedProcedure && !navaidsShown
+        ? procedureNavaids(selectedProcedure.waypoints, [
+            ...navData.vors,
+            ...navData.ndbs,
+            ...navData.dmes,
+          ])
+        : [];
+
+    let cancelled = false;
+    const run = async () => {
+      if (cancelled) return;
+      try {
+        await procedureNavaidLayer.update(map, wanted);
+        if (cancelled || isMapRemoved(map)) return;
+        // Over the procedure's lines, which are wide enough to cover a beacon whole, and under
+        // its fixes and labels; whichever of the two was added first.
+        const aboveLines = PROCEDURE_ROUTE_LAYER_IDS.slice(PROCEDURE_LINE_LAYERS).find((id) =>
+          map.getLayer(id)
+        );
+        if (aboveLines) {
+          for (const id of procedureNavaidLayer.getAllLayerIds()) {
+            if (map.getLayer(id)) map.moveLayer(id, aboveLines);
+          }
+        }
+        applyNavLayerTheme(map, theme);
+      } catch (err) {
+        window.appAPI.log.error('Procedure navaid layer update failed', err);
+      }
+    };
+    const cleanupStyleWait = runWhenStyleIsReady(map, () => {
+      void run();
+    });
+    return () => {
+      cancelled = true;
+      cleanupStyleWait();
+    };
+  }, [mapRef, navData, navaidsShown, selectedProcedure, theme]);
 }
 
 // Helper to apply visibility changes for individual nav layers

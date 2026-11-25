@@ -8,19 +8,23 @@ export type WidgetPosition = { x: number; y: number } | null;
 /**
  * A widget's position kept inside the window and below the toolbar, so its drag bar is
  * always within reach (GitHub #419). `topInset` is the toolbar's bottom edge, 0 without one.
- * When the window is too short the top limit wins.
+ * `leftInset` is the right edge of the map's buttons down the left margin, 0 without them, so a
+ * widget never covers them (GitHub #425). When the window is too short or too narrow the top
+ * and left limits win.
  */
 export function clampWidgetPosition(
   p: { x: number; y: number },
   size: { width: number; height: number },
   viewport: { width: number; height: number },
-  topInset: number
+  topInset: number,
+  leftInset = 0
 ): { x: number; y: number } {
+  const minX = leftInset + EDGE_PADDING;
   const minY = topInset + EDGE_PADDING;
-  const maxX = Math.max(EDGE_PADDING, viewport.width - size.width - EDGE_PADDING);
+  const maxX = Math.max(minX, viewport.width - size.width - EDGE_PADDING);
   const maxY = Math.max(minY, viewport.height - size.height - EDGE_PADDING);
   return {
-    x: Math.max(EDGE_PADDING, Math.min(maxX, p.x)),
+    x: Math.max(minX, Math.min(maxX, p.x)),
     y: Math.max(minY, Math.min(maxY, p.y)),
   };
 }
@@ -31,6 +35,16 @@ const toolbarElement = () => document.querySelector('[data-map-dock="top"]');
 /** Bottom of the map toolbar, 0 in a window without one. */
 function toolbarBottom(): number {
   return toolbarElement()?.getBoundingClientRect().bottom ?? 0;
+}
+
+/** Right edge of the map's button column in the bottom-left corner, 0 in a window without it. */
+function leftRailRight(): number {
+  let right = 0;
+  document.querySelectorAll('.maplibregl-ctrl-bottom-left .maplibregl-ctrl-group').forEach((el) => {
+    const rect = el.getBoundingClientRect();
+    if (rect.width > 0) right = Math.max(right, rect.right);
+  });
+  return right;
 }
 
 const viewport = () => ({ width: window.innerWidth, height: window.innerHeight });
@@ -93,7 +107,8 @@ export function useDragPosition(
         { x: startPos.current.x + dx, y: startPos.current.y + dy },
         rect,
         viewport(),
-        toolbarBottom()
+        toolbarBottom(),
+        leftRailRight()
       );
       dragPositionRef.current = next;
       setDragPosition(next);
@@ -131,7 +146,8 @@ export function useDragPosition(
         savedPosition,
         element.getBoundingClientRect(),
         viewport(),
-        toolbarBottom()
+        toolbarBottom(),
+        leftRailRight()
       );
       if (x !== savedPosition.x || y !== savedPosition.y) setPosition({ x, y });
     };

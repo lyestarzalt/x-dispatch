@@ -57,7 +57,7 @@ function FlightInfoPanel() {
       data-map-dock="left"
       onPointerDownCapture={sendWidgetsBack}
       className={cn(
-        'absolute left-4 z-30 transition-all duration-300 ease-out',
+        'absolute left-12 z-30 transition-all duration-300 ease-out',
         isCollapsed ? 'top-28 w-12' : 'top-28 w-80'
       )}
     >
