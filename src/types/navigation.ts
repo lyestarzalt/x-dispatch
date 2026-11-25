@@ -366,6 +366,13 @@ export interface Procedure {
   approachType?: string;
   /** Approaches: ARINC 424 route qualifier 2 of the final approach ('P' marks an RNP AR). */
   approachQualifier2?: string;
+  /** A helicopter procedure (ARINC 424 route qualifier `H`, or any procedure of a heliport). */
+  helicopter?: boolean;
+  /**
+   * Read from the FAA's own coded procedures, not from X-Plane's data, so the simulator does
+   * not know it (GitHub #432).
+   */
+  faaOnly?: boolean;
   /** Approaches: an ILS the FAA charts as ILS OR LOC, from its chart list (d-tpp_Metafile.xml). */
   orLocalizer?: boolean;
   /** SIDs: one the FAA charts as an obstacle departure, from its chart list (d-tpp_Metafile.xml). */

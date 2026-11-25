@@ -904,7 +904,7 @@
         "title": "Cartas y etiquetas de procedimientos de EE. UU.",
         "description": "OBSTACLE, RNAV e ILS OR LOC en procedimientos de EE. UU., como los nombran las cartas de la FAA. Funciona con cualquier dato de navegación. También lista las cartas de la FAA de cada aeropuerto de EE. UU.",
         "toggle": "Descargar de la FAA",
-        "toggleDescription": "Solo la lista de cartas, unos 16 MB por ciclo AIRAC. El PDF de una carta se descarga cuando la muestras en el mapa.",
+        "toggleDescription": "La lista de cartas, unos 16 MB por ciclo AIRAC. El PDF de una carta se descarga cuando la muestras en el mapa. Los procedimientos de helicóptero (9 MB) se descargan una vez por ciclo, tras iniciar la aplicación.",
         "faaLabel": "FAA",
         "downloadedTooltip": "Descargado el {{date}}",
         "notYet": "Se descarga al abrir un aeropuerto de EE. UU.",
@@ -1418,6 +1418,7 @@
   },
   "procedures": {
     "obstacle": "OBSTACLE",
+    "copter": "COPTER",
     "rnav": "RNAV",
     "noData": "Sin procedimientos disponibles",
     "noTypeData": "Sin datos de {{type}} disponibles",

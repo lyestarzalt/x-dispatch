@@ -115,7 +115,13 @@ const FIELD_CLASS = 'h-9 w-full font-mono text-sm';
 
 /** The approach picker shows chart-style names; the chosen value stays the raw identifier. */
 const approachLabel = (p: ResolvedProcedure) =>
-  formatApproachName(p.name, p.approachType, p.approachQualifier2, p.orLocalizer);
+  formatApproachName(p.name, p.approachType, p.approachQualifier2, p.orLocalizer, p.helicopter);
+/** The procedures X-Plane's own data has; the same empty list every time there are none. */
+function inXPlane(list: readonly unknown[] | undefined): ResolvedProcedure[] {
+  const all = (list as ResolvedProcedure[] | undefined) ?? NO_PROCEDURES;
+  if (!all.some((p) => p.faaOnly)) return all;
+  return all.filter((p) => !p.faaOnly);
+}
 const CLASSES: RangeRingCategory[] = ['jet', 'turboprop', 'prop'];
 /** Explore flyout tabs, in header order. */
 const EXPLORE_TABS = [
@@ -259,10 +265,11 @@ function FlightPlanBuilder({
     isOpen ? (arrival?.icao ?? null) : null
   );
   // The IPC returns procedures already resolved to coordinates despite the narrower type.
-  const sids = (depProcedures?.sids as ResolvedProcedure[] | undefined) ?? NO_PROCEDURES;
-  const stars = (arrProcedures?.stars as ResolvedProcedure[] | undefined) ?? NO_PROCEDURES;
-  const approaches =
-    (arrProcedures?.approaches as ResolvedProcedure[] | undefined) ?? NO_PROCEDURES;
+  // The FAA's helicopter procedures are left out: X-Plane does not have them, so a plan saved
+  // with one named would not load in the simulator. They stay on the airport card.
+  const sids = useMemo(() => inXPlane(depProcedures?.sids), [depProcedures]);
+  const stars = useMemo(() => inXPlane(arrProcedures?.stars), [arrProcedures]);
+  const approaches = useMemo(() => inXPlane(arrProcedures?.approaches), [arrProcedures]);
 
   // Resolve a beat after the last edit, and once when the panel opens with a stored draft.
   useEffect(() => {

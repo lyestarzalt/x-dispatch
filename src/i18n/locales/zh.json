@@ -904,7 +904,7 @@
         "title": "美国航图和程序标签",
         "description": "在美国程序上显示与 FAA 航图一致的 OBSTACLE、RNAV 和 ILS OR LOC。适用于任何导航数据。同时列出每个美国机场的 FAA 航图。",
         "toggle": "从 FAA 下载",
-        "toggleDescription": "仅航图列表，每个 AIRAC 周期约 16 MB。在地图上显示航图时才会下载其 PDF。",
+        "toggleDescription": "航图列表，每个 AIRAC 周期约 16 MB。在地图上显示航图时才会下载其 PDF。直升机程序（9 MB）每个周期在启动后下载一次。",
         "faaLabel": "FAA",
         "downloadedTooltip": "{{date}} 下载",
         "notYet": "打开美国机场时下载",
@@ -1418,6 +1418,7 @@
   },
   "procedures": {
     "obstacle": "OBSTACLE",
+    "copter": "COPTER",
     "rnav": "RNAV",
     "noData": "无可用程序",
     "noTypeData": "无可用 {{type}}",

@@ -904,7 +904,7 @@
         "title": "US charts and procedure labels",
         "description": "OBSTACLE, RNAV and ILS OR LOC on US procedures, as FAA charts name them. Works with any nav data. Also lists each US airport's FAA charts.",
         "toggle": "Download from the FAA",
-        "toggleDescription": "The chart list only, about 16 MB per AIRAC cycle. A chart's PDF is fetched when you show it on the map.",
+        "toggleDescription": "The chart list, about 16 MB per AIRAC cycle. A chart's PDF is fetched when you show it on the map. Helicopter procedures (9 MB) are fetched once per cycle, after the app starts.",
         "faaLabel": "FAA",
         "downloadedTooltip": "Downloaded {{date}}",
         "notYet": "Downloads when you open a US airport",
@@ -1418,6 +1418,7 @@
   },
   "procedures": {
     "obstacle": "OBSTACLE",
+    "copter": "COPTER",
     "rnav": "RNAV",
     "noData": "No procedures available",
     "noTypeData": "No {{type}}s available",

@@ -290,6 +290,11 @@ export function getFaaChartCachePath(): string {
   return path.join(app.getPath('userData'), 'faa-charts.json');
 }
 
+/** Where the FAA's helicopter procedures for the cycle are kept. */
+export function getFaaCopterCachePath(): string {
+  return path.join(app.getPath('userData'), 'faa-copter-procedures.json');
+}
+
 /** Where the chart PDFs shown on the map are kept, one folder per cycle. */
 export function getFaaChartPdfCachePath(): string {
   return path.join(app.getPath('userData'), 'faa-chart-pdfs');

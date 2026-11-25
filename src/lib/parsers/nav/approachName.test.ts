@@ -87,3 +87,20 @@ describe('formatApproachName for ILS OR LOC', () => {
     expect(formatApproachName('R04L', 'R', null, true)).toBe('RNAV (GPS) RWY 04L');
   });
 });
+
+// The FAA's chart titles for the helicopter approaches it codes (GitHub #432): the number is the
+// final approach course unless the approach is to a runway.
+describe('formatApproachName for helicopter approaches', () => {
+  it('names a course-numbered approach as the chart does', () => {
+    expect(formatApproachName('R210', 'R', 'J', false, true)).toBe('COPTER RNAV (GPS) 210');
+    expect(formatApproachName('R250', 'R', 'J', false, true)).toBe('COPTER RNAV (GPS) 250');
+  });
+
+  it('keeps RWY for one flown to a runway', () => {
+    expect(formatApproachName('R26', 'R', 'J', false, true)).toBe('COPTER RNAV (GPS) RWY 26');
+  });
+
+  it('reads the identifier as before without the helicopter mark', () => {
+    expect(formatApproachName('R210', 'R', 'J')).toBe('RNAV (GPS) 0 RWY 21');
+  });
+});

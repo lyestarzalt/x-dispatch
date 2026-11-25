@@ -904,7 +904,7 @@
         "title": "US-Karten und Verfahrensbezeichnungen",
         "description": "OBSTACLE, RNAV und ILS OR LOC bei US-Verfahren, wie die FAA-Karten sie benennen. Funktioniert mit allen Navigationsdaten. Listet außerdem die FAA-Karten jedes US-Flughafens auf.",
         "toggle": "Von der FAA laden",
-        "toggleDescription": "Nur das Kartenverzeichnis, etwa 16 MB pro AIRAC-Zyklus. Die PDF einer Karte wird geladen, wenn Sie sie auf der Karte anzeigen.",
+        "toggleDescription": "Das Kartenverzeichnis, etwa 16 MB pro AIRAC-Zyklus. Die PDF einer Karte wird geladen, wenn Sie sie auf der Karte anzeigen. Die Hubschrauberverfahren (9 MB) werden einmal pro Zyklus nach dem Start geladen.",
         "faaLabel": "FAA",
         "downloadedTooltip": "Geladen am {{date}}",
         "notYet": "Wird beim Öffnen eines US-Flughafens geladen",
@@ -1418,6 +1418,7 @@
   },
   "procedures": {
     "obstacle": "OBSTACLE",
+    "copter": "COPTER",
     "rnav": "RNAV",
     "noData": "Keine Verfahren verfügbar",
     "noTypeData": "Keine {{type}} verfügbar",

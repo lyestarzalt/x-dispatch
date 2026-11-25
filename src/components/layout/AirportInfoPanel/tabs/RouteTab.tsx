@@ -46,7 +46,8 @@ function ProcedureName({
     proc.name,
     proc.approachType,
     proc.approachQualifier2,
-    proc.orLocalizer
+    proc.orLocalizer,
+    proc.helicopter
   );
   if (name === proc.name) return <span className="font-mono text-sm">{proc.name}</span>;
   return (

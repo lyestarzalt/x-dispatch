@@ -904,7 +904,7 @@
         "title": "US charts an' procedure labels",
         "description": "OBSTACLE, RNAV and ILS OR LOC on US procedures, as FAA charts name 'em. Works with any nav data. Also lists each US port's FAA charts.",
         "toggle": "Fetch from the FAA",
-        "toggleDescription": "The chart list only, about 16 MB per AIRAC cycle. A chart's PDF be fetched when ye lay it on the map.",
+        "toggleDescription": "The chart list, about 16 MB per AIRAC cycle. A chart's PDF be fetched when ye lay it on the map. Whirlybird procedures (9 MB) be fetched once a cycle, after we set sail.",
         "faaLabel": "FAA",
         "downloadedTooltip": "Fetched {{date}}",
         "notYet": "Fetched when ye open a US port",
@@ -1418,6 +1418,7 @@
   },
   "procedures": {
     "obstacle": "OBSTACLE",
+    "copter": "COPTER",
     "rnav": "RNAV",
     "noData": "No procedures available, matey",
     "noTypeData": "No {{type}}s available, matey",

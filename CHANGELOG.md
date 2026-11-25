@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **FAA charts for US airports.** The airport card lists the airport diagram, departures, arrivals, approaches and minimums; a click opens the chart's PDF in your browser.
 - **US approach charts on the map.** The layers button next to an approach in the airport card's Charts list lays the chart over the map where the FAA placed it, with a slider for how see-through it is.
 - **A one-time notice that X-Dispatch is for flight simulation only.** It appears once at launch, before the usage-data question.
+- **Helicopter procedures the FAA codes, at US heliports and airports.** West 30th Street's HUDSN ONE departure and COPTER RNAV (GPS) 210, and the COPTER approaches at LaGuardia, Southampton and Norfolk Chambers, show in the airport card and draw on the map; X-Plane has none of them, so the planner leaves them out.
 - **An approach shows its navaids with the navaid layer off.** The VOR, NDB or DME the selected procedure is flown from is drawn with it.
 - **A flight plan strip button in the map's left margin.** It sits above the vertical profile button while a plan is loaded.
 
