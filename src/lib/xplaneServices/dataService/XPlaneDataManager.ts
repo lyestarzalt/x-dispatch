@@ -8,7 +8,11 @@ import * as fs from 'fs';
 import { airports, aptFileMeta, closeDb, getDb, isDbReady } from '@/lib/db';
 import { runwayEndsFromApt } from '@/lib/flightplan/builder/runways';
 import { parseCIFP } from '@/lib/parsers/nav/cifpParser';
-import { markFaaChartNames } from '@/lib/parsers/nav/faaChartIndex';
+import { hasCopterChart, markFaaChartNames } from '@/lib/parsers/nav/faaChartIndex';
+import {
+  mergeAirportProcedures,
+  resolveFaaCopterProcedures,
+} from '@/lib/parsers/nav/faaCopterProcedures';
 import { isIlsDme } from '@/lib/parsers/nav/navaidParser';
 import {
   ResolvedAirportProcedures,
@@ -59,6 +63,7 @@ import {
 import { selectAtcForAirport } from './navdata/atcSelect';
 import { requestFaaCharts } from './navdata/faaChartDownload';
 import { loadFaaChartIndex } from './navdata/faaChartIndexLoader';
+import { faaCopterForAirport, requestFaaCopter } from './navdata/faaCopterDownload';
 import {
   type NavDataType,
   checkNavCacheValidity,
@@ -638,15 +643,11 @@ export class XPlaneDataManager {
     const xplanePath = this.getXPlanePath();
     if (!xplanePath) return null;
 
+    // A heliport has no CIFP file of its own; its procedures, if any, are the FAA's (below).
     const cifpPath = getCifpPath(xplanePath, icao);
-    if (!fs.existsSync(cifpPath)) {
-      return null;
-    }
+    const hasCifp = fs.existsSync(cifpPath);
 
     try {
-      const content = fs.readFileSync(cifpPath, 'utf-8');
-      const procedures = parseCIFP(content, icao);
-
       // Get airport coordinates for proximity-based fallback
       const airportCoords = this.getAirportCoordinates(icao);
 
@@ -665,12 +666,30 @@ export class XPlaneDataManager {
       });
 
       // Enrich procedures with resolved coordinates
-      const enriched = enrichProceduresWithCoordinates(procedures, resolver);
+      let enriched = hasCifp
+        ? enrichProceduresWithCoordinates(
+            parseCIFP(fs.readFileSync(cifpPath, 'utf-8'), icao),
+            resolver
+          )
+        : null;
 
       // US procedure labels from the FAA's chart list: OBSTACLE, RNAV, ILS OR LOC. The first US
       // airport of a cycle starts the download; its procedures get the labels once it is in.
       requestFaaCharts(icao);
       const chartIndex = loadFaaChartIndex();
+
+      // Helicopter procedures, which X-Plane's data lacks, from the FAA's coded procedures.
+      // The app fetches them at start; an airport with a COPTER chart asks again in case that
+      // failed, and they join the list once the download is in.
+      requestFaaCopter(chartIndex ? hasCopterChart(chartIndex, icao) : false);
+      const copter = faaCopterForAirport(icao);
+      if (copter) {
+        enriched = mergeAirportProcedures(
+          enriched,
+          resolveFaaCopterProcedures(icao, copter, resolver)
+        );
+      }
+      if (!enriched) return null;
       if (chartIndex) markFaaChartNames(enriched, chartIndex, icao);
 
       // Log resolution stats for debugging

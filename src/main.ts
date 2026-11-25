@@ -138,6 +138,7 @@ import {
   getFaaChartCachePath,
   getFaaChartDownload,
   getFaaChartPdfCachePath,
+  getFaaCopterCachePath,
   getInstallations,
   getSendCrashReports,
   getSimulationNoticeAcknowledged,
@@ -165,6 +166,15 @@ import {
   configureFaaChartPdf,
   loadFaaChartPdf,
 } from './lib/xplaneServices/dataService/navdata/faaChartPdf';
+import {
+  clearDownloadedFaaCopter,
+  configureFaaCopterDownload,
+  downloadFaaCopter,
+  faaCopterDownloadState,
+  faaFixNear,
+  onFaaCopterUpdated,
+  requestFaaCopter,
+} from './lib/xplaneServices/dataService/navdata/faaCopterDownload';
 import { loadRequiredStartupData } from './lib/xplaneServices/dataService/startupLoader';
 import type { AirportSource } from './lib/xplaneServices/dataService/types';
 import type { LaunchFailure, LaunchResult } from './lib/xplaneServices/launch';
@@ -1399,6 +1409,9 @@ function initAutoUpdater(): void {
   app.on('will-quit', applyDownloadedUpdate);
 }
 
+/** How long after start the FAA's helicopter procedures are fetched, when the cycle's are not kept. */
+const FAA_COPTER_START_DELAY_MS = 10_000;
+
 function registerIpcHandlers() {
   onVatsimSectorDataUpdated(() => {
     broadcast('vatsim-sectors:updated');
@@ -1411,6 +1424,15 @@ function registerIpcHandlers() {
     isEnabled: getFaaChartDownload,
   });
   onFaaChartsUpdated(() => broadcast('nav:faaChartsUpdated'));
+  // The FAA's coded procedures, for the helicopter procedures X-Plane's data lacks: a 9 MB
+  // archive, asked for only at an airport with a COPTER chart. The window reloads its
+  // procedures on the same signal as for the chart list.
+  configureFaaCopterDownload({
+    download: (url) => proxyDownload(url, { timeoutMs: 180_000 }),
+    cachePath: getFaaCopterCachePath(),
+    isEnabled: getFaaChartDownload,
+  });
+  onFaaCopterUpdated(() => broadcast('nav:faaChartsUpdated'));
   configureFaaChartPdf({
     download: (url) => proxyDownload(url, { timeoutMs: 60_000 }),
     cacheDir: getFaaChartPdfCachePath(),
@@ -2226,6 +2248,7 @@ function registerIpcHandlers() {
   const faaChartSettings = (): FaaChartSettings => ({
     enabled: getFaaChartDownload(),
     ...faaChartStatus(),
+    procedures: faaCopterDownloadState(),
   });
   handle('nav:getFaaChartStatus', () => faaChartSettings());
   handle('nav:getFaaCharts', (_, icao: string) => {
@@ -2237,11 +2260,15 @@ function registerIpcHandlers() {
   handle('nav:getFaaChartPdf', (_, url: string) => loadFaaChartPdf(url));
   handle('nav:setFaaChartDownload', (_, enabled: boolean) => {
     setFaaChartDownload(enabled === true);
-    if (enabled !== true) clearDownloadedFaaCharts();
+    if (enabled !== true) {
+      clearDownloadedFaaCharts();
+      clearDownloadedFaaCopter();
+    }
     return faaChartSettings();
   });
   handle('nav:downloadFaaCharts', async () => {
-    if (getFaaChartDownload()) await downloadFaaCharts();
+    // Both FAA files: the chart list, and the coded procedures with the fix list.
+    if (getFaaChartDownload()) await Promise.all([downloadFaaCharts(), downloadFaaCopter()]);
     return faaChartSettings();
   });
 
@@ -2386,7 +2413,9 @@ function registerIpcHandlers() {
       const resolution = resolveRoute(
         draft as import('./lib/flightplan/builder/types').PlanDraft,
         cycle,
-        (icao) => dataManager.getAirportElevation(icao)
+        (icao) => dataManager.getAirportElevation(icao),
+        // A fix X-Plane's database lacks is looked up in the FAA's list (US fixes).
+        faaFixNear
       );
       if (!resolution) return null;
       return { ...resolution, enriched: enrichFlightPlan(resolution.plan, cycle) };
@@ -3259,6 +3288,12 @@ async function bootstrap(): Promise<void> {
   });
   mainWindow = createWindow();
   reportDisplay(mainWindow);
+
+  // The FAA's helicopter procedures, once per cycle and by themselves (owner, 2026-11-25): a
+  // heliport's procedures are then there when it is first opened. Started after the window is
+  // up so it never delays the start; it does nothing when the cycle's file is already kept or
+  // the FAA download is switched off.
+  setTimeout(() => requestFaaCopter(true), FAA_COPTER_START_DELAY_MS);
 
   // Dev builds stay off the download host so HMR restarts do not hammer it.
   if (app.isPackaged) {

@@ -195,6 +195,15 @@ export function parseFaaChartIndex(xml: string): FaaChartIndex {
   return { cycle, obstacleDepartures, rnavDepartures, rnavArrivals, ilsOrLoc, charts };
 }
 
+/**
+ * Whether the FAA charts a helicopter procedure at the airport: a COPTER approach, or a
+ * departure titled (COPTER). Only then are its coded helicopter procedures worth asking for.
+ */
+export function hasCopterChart(index: FaaChartIndex, icao: string): boolean {
+  const charts = index.charts.get(icao.trim().toUpperCase());
+  return charts?.some((chart) => /\bCOPTER\b/.test(chart.name)) ?? false;
+}
+
 interface Markable {
   name: string;
   obstacle?: boolean;
@@ -303,8 +312,16 @@ export function faaChartIndexFromJson(json: unknown): FaaChartIndex | null {
 
 /**
  * The chart-title tags a SID or STAR carries, in the order a chart prints them:
- * "(OBSTACLE) (RNAV)". Each is a key under `procedures.` in the locales.
+ * "(OBSTACLE) (RNAV)", "(COPTER) (RNAV)". Each is a key under `procedures.` in the locales.
  */
-export function chartTitleTags(p: { obstacle?: boolean; rnav?: boolean }): ('obstacle' | 'rnav')[] {
-  return [...(p.obstacle ? (['obstacle'] as const) : []), ...(p.rnav ? (['rnav'] as const) : [])];
+export function chartTitleTags(p: {
+  obstacle?: boolean;
+  rnav?: boolean;
+  helicopter?: boolean;
+}): ('obstacle' | 'copter' | 'rnav')[] {
+  return [
+    ...(p.obstacle ? (['obstacle'] as const) : []),
+    ...(p.helicopter ? (['copter'] as const) : []),
+    ...(p.rnav ? (['rnav'] as const) : []),
+  ];
 }

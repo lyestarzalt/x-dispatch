@@ -1,0 +1,55 @@
+HDR01FAACIFP18      001P013203973042611  07-OCT-202615:55:03  U.S.A. DOT FAA                                                9D60747B
+HDR02                                 FEDERAL AVIATION ADMINISTRATION                                                               
+HDR03                                 AERONAUTICAL INFORMATION SERVICES                                                             
+HDR04                                 CODED INSTRUMENT FLIGHT PROCEDURES VOLUME 2611  EFFECTIVE 29 OCT 2026                         
+HDR05                                 REPORT DATA ERRORS TO FAA                 TEL 800 638 8972                                    
+SUSAEAENRT   CHNZO K60    W     N40535438W073543772                       W0126     NAR           CHNZO                    312422504
+SUSAEAENRT   HUDSN K60    W     N40472773W073590794                       W0125     NAR           HUDSN                    383072504
+SUSAEAENRT   JOTRE K60    W     N40561132W073494539                       W0126     NAR           JOTRE                    403512504
+SUSAEAENRT   ODALE K60    W     N40560429W073283603                       W0128     NAR           ODALE                    457822504
+SUSAEAENRT   RINNG K60    W     N40505408W073570124                       W0125     NAR           RINNG                    483192605
+SUSAEAENRT   YOMAN K60    C     N40561331W073444192                       W0126     NAR           YOMAN                    546992605
+SUSAP KLGAK6ALGA     0     070YHN40463807W073522138W012000021         1800018000C    MNAR    LAGUARDIA                     407292407
+SUSAP KLGAK6CNEUMN K60    W     N40534800W073383000                       W0127     NAR           NEUMN                    407732504
+SUSAP KLGAK6CWITKN K60    W     N40511200W073440000                       W0126     NAR           WITKN                    407912605
+SUSAP KLGAK6CYORCI K60    W     N41002290W073355530                       W0127     NAR           YORCI                    407922605
+SUSAP KLGAK6CZALAT K60    W     N40562569W073325367                       W0127     NAR           ZALAT                    407932605
+SUSAH KJRAK6AJRAH1   0     NARY N40451576W074002677W013000007         1800018000C    045045M WEST 30TH ST                  771922212
+SUSAH KJRAK6CERORE K60    W     N40571735W073535724                       W0126     NAR           ERORE                    771932504
+SUSAH KJRAK6CFEMDU K60    W     N41030971W073524689                       W0126     NAR           FEMDU                    771942504
+SUSAH KJRAK6CJEDIL K60    W     N41000954W073524731                       W0126     NAR           JEDIL                    771952504
+SUSAH KJRAK6CJORBA K60    W     N40531061W073553736                       W0125     NAR           JORBA                    771962605
+SUSAH KJRAK6CWUDGO K60    W     N40591672W073485722                       W0126     NAR           WUDGO                    771972605
+SUSAH KJRAK6CZABKI K60    W     N40540800W073551410                       W0125     NAR           ZABKI                    771982605
+SUSAH KJRAK6DHUDSN16YOMAN 010HUDSNK6EA0E       IF                                 + 00920     18000       HUDSN K6EA       771992502
+SUSAH KJRAK6DHUDSN16YOMAN 020RINNGK6EA0E       TF                                 + 02000                                  772002502
+SUSAH KJRAK6DHUDSN16YOMAN 030CHNZOK6EA0E       TF                                                                          772012502
+SUSAH KJRAK6DHUDSN16YOMAN 040JOTREK6EA0E       TF                                                                          772022502
+SUSAH KJRAK6DHUDSN16YOMAN 050YOMANK6EA0EE      TF                                                                          772032502
+SUSAH KJRAK6FR210  AFEMDU 010FEMDUK6HC0E  A    IF                                             18000090              B-JH   772041807
+SUSAH KJRAK6FR210  AFEMDU 020JEDILK6HC0EE B    TF                                 + 01700                           B JH   772051807
+SUSAH KJRAK6FR210  AWUDGO 010WUDGOK6HC0E  A    IF                                             18000090              B-JH   772061807
+SUSAH KJRAK6FR210  AWUDGO 020JEDILK6HC0EE B    TF                                 + 01700                           B JH   772071807
+SUSAH KJRAK6FR210  R      010JEDILK6HC0E  I    IF                                 + 01700     18000090              B-JH   772081807
+SUSAH KJRAK6FR210  R      020EROREK6HC0E  F 031TF                                 + 01500          070    JORBA K6HCB-JH   772091807
+SUSAH KJRAK6FR210  R      021ZABKIK6HC0E S  031TF                                 + 00860                           B JH   772102009
+SUSAH KJRAK6FR210  R      030JORBAK6HC0EY M 031TF                                   00780              000          B JH   772111807
+SUSAH KJRAK6FR210  R      040         0  M     CA                     2101        + 00780          070              B-JH   772121807
+SUSAH KJRAK6FR210  R      050JEDILK6HC0EY  L   DF                                 + 02000          090              B-JH   772131807
+SUSAH KJRAK6FR210  R      060JEDILK6HC0EE  R   HM                     19310040    + 02000          090              B JH   772141807
+SUSAH KJRAK6SHUDSNK6EA                0   18018002925                                                                  M   772152502
+SUSAH KJRAK6SJORBAK6HC                0   18018002925                                                                  M   772161807
+SUSAP KLGAK6FR250  AODALE 010ODALEK6EA0E  A    IF                                             18000                 B JH   410890804
+SUSAP KLGAK6FR250  AODALE 020ZALATK6PC0EE B 010TF                                 + 02000                           B JH   410901709
+SUSAP KLGAK6FR250  AYORCI 010YORCIK6PC0E  A    IF                                             18000                 B JH   410911310
+SUSAP KLGAK6FR250  AYORCI 020ZALATK6PC0EE B 010TF                                 + 02000                           B JH   410921709
+SUSAP KLGAK6FR250  R      010ZALATK6PC0E  I    IF                                 + 02000     18000                 B JH   410931310
+SUSAP KLGAK6FR250  R      020NEUMNK6PC0E  F 010TF                                 + 01200                 WITKN K6PCB JH   410941709
+SUSAP KLGAK6FR250  R      030WITKNK6PC0EY M 030TF                                   00520          070 000          B-JH   410951709
+SUSAP KLGAK6FR250  R      040         0  M     CA                     2501        + 00520                           B JH   410961709
+SUSAP KLGAK6FR250  R      050         0    L   VAY                    0700        + 01240          070              B-JH   410971709
+SUSAP KLGAK6FR250  R      060ZALATK6PC0EY      DF                                 + 02000                           B JH   410981310
+SUSAP KLGAK6FR250  R      070ZALATK6PC0EE  L   HM                     07030040    + 02000          090              B JH   410991709
+SUSAP KLGAK6FI04   AGGREG 010GGREGK6PC0E  A    IF                                             18000240              0-PS   409742113
+SUSAP KLGAK6FI04   AGGREG 020ZARIDK6PC0E    010TF                                 + 04000                           0 PS   409752113
+SUSAP KLGAK6FI04   AGGREG 030VADDRK6EA0E    010TF                                 + 04000                           0 PS   409762510

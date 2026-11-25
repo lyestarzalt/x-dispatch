@@ -50,6 +50,8 @@ const CIRCLING_CODES: Readonly<Record<string, string>> = {
 
 /** Type letter, two-digit runway, optional side (T is a true-heading runway), optional variant. */
 const RUNWAY_FORM = /^([A-Z])(\d{2})([LRCT]?)-?([A-Z0-9]?)$/;
+/** Type letter and a three-digit final approach course: a helicopter approach to no runway. */
+const COURSE_FORM = /^([A-Z])(\d{3})$/;
 /** Three-letter code plus optional variant (`VORA`, `NDB1`), or a `C`-prefixed circling code. */
 const CIRCLING_FORM = /^([A-Z]{3})([A-Z0-9]?)$/;
 
@@ -62,12 +64,16 @@ const CIRCLING_FORM = /^([A-Z]{3})([A-Z0-9]?)$/;
  *
  * `orLocalizer` marks an ILS the FAA charts as ILS OR LOC (see `faaChartIndex`); it has no
  * effect on any other type.
+ *
+ * `helicopter` marks a helicopter approach, charted with COPTER in front. One not flown to a
+ * runway is numbered by its final approach course (`R210`, COPTER RNAV (GPS) 210).
  */
 export function formatApproachName(
   identifier: string,
   routeType?: string | null,
   routeQualifier2?: string | null,
-  orLocalizer = false
+  orLocalizer = false,
+  helicopter = false
 ): string {
   const id = identifier.trim().toUpperCase();
   const typeFromRecord = routeType ? TYPE_NAMES[routeType.trim().toUpperCase()] : undefined;
@@ -78,12 +84,23 @@ export function formatApproachName(
     return type;
   };
 
+  const copter = helicopter ? 'COPTER ' : '';
+
+  // Before the runway form, which would read `R210` as runway 21, variant 0.
+  const course = helicopter ? COURSE_FORM.exec(id) : null;
+  if (course) {
+    const [, letter, digits] = course;
+    const type = withQualifier(typeFromRecord ?? TYPE_NAMES[letter!]);
+    if (!type) return identifier;
+    return `${copter}${type} ${digits}`;
+  }
+
   const runway = RUNWAY_FORM.exec(id);
   if (runway) {
     const [, letter, digits, side, variant] = runway;
     const type = withQualifier(typeFromRecord ?? TYPE_NAMES[letter!]);
     if (!type) return identifier;
-    return `${type}${variant ? ` ${variant}` : ''} RWY ${digits}${side}`;
+    return `${copter}${type}${variant ? ` ${variant}` : ''} RWY ${digits}${side}`;
   }
 
   const circling = CIRCLING_FORM.exec(id);

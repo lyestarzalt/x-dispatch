@@ -14,7 +14,7 @@ import type { SettingsSectionProps } from '../types';
 /**
  * US procedure labels (OBSTACLE, RNAV, ILS OR LOC) from the FAA's procedure index: the
  * download switch, then one line in the shape of the nav data source above it: source badge,
- * cycle, expiry, refresh.
+ * cycle, expiry, refresh. A second line shows the FAA's coded procedures the same way.
  */
 export default function FaaChartLabelsSection({ className }: SettingsSectionProps) {
   const { t } = useTranslation();
@@ -25,6 +25,8 @@ export default function FaaChartLabelsSection({ className }: SettingsSectionProp
 
   const downloading = !!status?.downloading || downloadNow.isPending;
   const showLine = !!status && status.enabled;
+  const procedures = status?.procedures;
+  const proceduresDownloading = !!procedures?.downloading || downloadNow.isPending;
 
   return (
     <SettingsSectionBlock
@@ -48,6 +50,9 @@ export default function FaaChartLabelsSection({ className }: SettingsSectionProp
 
       {showLine && (
         <div className="flex min-w-0 items-center gap-2">
+          <span className="xp-label min-w-0 truncate">
+            {t('settings.navigation.faaCharts.chartListLabel')}
+          </span>
           {status.source !== 'none' && (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -126,6 +131,51 @@ export default function FaaChartLabelsSection({ className }: SettingsSectionProp
               </TooltipContent>
             </Tooltip>
           )}
+        </div>
+      )}
+
+      {/* The second FAA file: coded procedures, for helicopter procedures and the fix list the
+          planner falls back on. It downloads by itself after the app starts. */}
+      {showLine && (
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="xp-label min-w-0 truncate">
+            {t('settings.navigation.faaCharts.proceduresLabel')}
+          </span>
+          {procedures?.cycle && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="text-muted-foreground shrink-0 cursor-help font-mono text-sm">
+                  AIRAC {procedures.cycle}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-xs">
+                <p className="text-xs">
+                  {t('settings.navigation.faaCharts.downloadedTooltip', {
+                    date: formatDate(procedures.fetchedAt),
+                  })}
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          )}
+          <span
+            className={
+              procedures?.error && !proceduresDownloading
+                ? 'text-warning min-w-0 truncate text-sm'
+                : 'text-muted-foreground min-w-0 truncate text-sm'
+            }
+          >
+            {proceduresDownloading
+              ? t('settings.navigation.faaCharts.downloading')
+              : procedures?.error
+                ? t(
+                    procedures.error === 'network'
+                      ? 'settings.navigation.faaCharts.errorNetwork'
+                      : 'settings.navigation.faaCharts.errorInvalid'
+                  )
+                : !procedures?.cycle
+                  ? t('settings.navigation.faaCharts.proceduresNotYet')
+                  : null}
+          </span>
         </div>
       )}
     </SettingsSectionBlock>

@@ -6,6 +6,7 @@ import {
   faaChartIndexToJson,
   faaChartUrl,
   groupFaaCharts,
+  hasCopterChart,
   ilsOrLocIdentifier,
   markFaaChartNames,
   parseFaaChartIndex,
@@ -184,6 +185,33 @@ describe('chartTitleTags', () => {
     expect(chartTitleTags({ rnav: true, obstacle: true })).toEqual(['obstacle', 'rnav']);
     expect(chartTitleTags({ rnav: true })).toEqual(['rnav']);
     expect(chartTitleTags({})).toEqual([]);
+  });
+
+  it('puts COPTER before RNAV, as HUDSN ONE (COPTER) (RNAV) is titled', () => {
+    expect(chartTitleTags({ rnav: true, helicopter: true })).toEqual(['copter', 'rnav']);
+  });
+});
+
+// The West 30th Street heliport as the FAA lists it (GitHub #432), beside an airport with no
+// helicopter chart.
+describe('hasCopterChart', () => {
+  const index = parseFaaChartIndex(`<digital_tpp cycle="2611">
+      <airport_name ID="WEST 30TH ST" military="N" apt_ident="JRA" icao_ident="KJRA" alnum="10972">
+${record('IAP', 'COPTER RNAV (GPS) 210', '', '10972COPTERR210.PDF')}
+${record('DP', 'HUDSN ONE (COPTER) (RNAV)', 'HUDSN1.YOMAN', '10972HUDSN.PDF')}
+      </airport_name>
+      <airport_name ID="SEATTLE-TACOMA INTL" military="N" apt_ident="SEA" icao_ident="KSEA" alnum="582">
+${record('IAP', 'ILS OR LOC RWY 16C', '', '00582IL16C.PDF')}
+      </airport_name>
+</digital_tpp>`);
+
+  it('is true where a chart is titled COPTER', () => {
+    expect(hasCopterChart(index, 'kjra')).toBe(true);
+  });
+
+  it('is false elsewhere and for an airport the list does not have', () => {
+    expect(hasCopterChart(index, 'KSEA')).toBe(false);
+    expect(hasCopterChart(index, 'EGLL')).toBe(false);
   });
 });
 

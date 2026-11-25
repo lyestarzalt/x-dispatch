@@ -384,6 +384,7 @@ export function parseCIFP(content: string, icao: string): AirportProcedures {
       finalApproach: string[];
       routeType?: string;
       qualifier2?: string;
+      helicopter?: boolean;
     }
   > = new Map();
 
@@ -423,6 +424,8 @@ export function parseCIFP(content: string, icao: string): AirportProcedures {
         // Route qualifier 2 is the second-to-last field (the last carries the line's ';').
         const qualifier2 = data[data.length - 2]?.trim();
         if (qualifier2?.length === 1) component.qualifier2 ??= qualifier2;
+        // The last field, before the line's ';', marks a helicopter procedure with an H.
+        if (data[data.length - 1]?.replace(';', '').trim() === 'H') component.helicopter = true;
       }
       if (routeType === 'A') {
         const transitionName = runway;
@@ -485,6 +488,7 @@ export function parseCIFP(content: string, icao: string): AirportProcedures {
           transition: null,
           approachType: component.routeType,
           approachQualifier2: component.qualifier2,
+          ...(component.helicopter && { helicopter: true }),
           waypoints: finalWaypoints,
         });
       }
@@ -500,6 +504,8 @@ export function parseCIFP(content: string, icao: string): AirportProcedures {
             transition: transitionName,
             approachType: component.routeType,
             approachQualifier2: component.qualifier2,
+            ...(component.helicopter && { helicopter: true }),
+            ...(component.helicopter && { helicopter: true }),
             waypoints: combined,
           });
         }
