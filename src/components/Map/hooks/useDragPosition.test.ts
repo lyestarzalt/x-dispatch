@@ -27,6 +27,15 @@ describe('clampWidgetPosition', () => {
     expect(clampWidgetPosition({ x: 20, y: 0 }, size, viewport, 0).y).toBe(16);
   });
 
+  // GitHub #425: the map's own buttons run down the left margin; a widget stops beside them.
+  it('keeps a widget to the right of the left-margin controls', () => {
+    expect(clampWidgetPosition({ x: 0, y: 300 }, size, viewport, 72, 39)).toEqual({
+      x: 55,
+      y: 300,
+    });
+    expect(clampWidgetPosition({ x: 200, y: 300 }, size, viewport, 72, 39).x).toBe(200);
+  });
+
   it('prefers the top limit when the window is too short for the widget', () => {
     expect(clampWidgetPosition({ x: 20, y: 0 }, size, { width: 1600, height: 200 }, 72).y).toBe(88);
   });

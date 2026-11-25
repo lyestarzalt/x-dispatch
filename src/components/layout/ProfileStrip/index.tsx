@@ -2,6 +2,7 @@ import { memo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GripVertical, Mountain, X } from 'lucide-react';
 import { useDragPosition } from '@/components/Map/hooks/useDragPosition';
+import { useFrontWidget } from '@/components/Map/hooks/useFrontWidget';
 import {
   VerticalProfileChart,
   type VerticalProfileRow,
@@ -37,6 +38,7 @@ function ProfileStrip({ airports }: ProfileStripProps) {
     storedPosition,
     setPosition
   );
+  const { isFront, bringToFront } = useFrontWidget('profile');
   const view = useRouteProfile(airports);
   const handleHover = useCallback(
     (row: VerticalProfileRow | null, next: VerticalProfileRow | null) => {
@@ -73,8 +75,11 @@ function ProfileStrip({ airports }: ProfileStripProps) {
       ref={stripRef}
       data-map-dock={isDefault ? 'bottom' : undefined}
       data-map-profile={isDefault ? '' : undefined}
+      onPointerDownCapture={bringToFront}
       className={cn(
-        'z-20 select-none',
+        'select-none',
+        // Clicked, it comes above the planner and the airport card (z-30), under the toolbar.
+        isFront ? 'z-35' : 'z-20',
         // The docked chart fits the available map width between the side panels.
         isDefault &&
           'absolute right-[var(--map-profile-right,1rem)] bottom-4 left-[var(--map-profile-left,1rem)] mx-auto max-w-[1200px]',

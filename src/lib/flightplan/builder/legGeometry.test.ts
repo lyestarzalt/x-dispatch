@@ -812,7 +812,8 @@ describe('procedureGeometry overlays', () => {
   it('shapes a procedure turn like LNM: 45-degree outbound, 3 NM straight, 180-degree turn, return', () => {
     // LNM processLegs + paintProcedureTurnWithText: from the fix along course-45 (left turn)
     // for max(distance - 3.5, 1) NM, then 3 NM parallel to the published course, a 180-degree
-    // turn of 1.5 NM diameter towards the turn side, and a return leg 0.8 x 3 NM back.
+    // turn of 1.5 NM diameter towards the turn side, and a return leg that stops 0.8 of the way
+    // back to the outbound course (1.2 NM).
     const fix = { latitude: 40, longitude: -80 };
     const outboundTrue = 180;
     const legs = [
@@ -844,9 +845,58 @@ describe('procedureGeometry overlays', () => {
     }
     const ret = pts[pts.length - 1]!;
     expect(bearingDeg(arcEnd, ret)).toBeCloseTo(outboundTrue - 180, 0);
-    expect(greatCircleNm(arcEnd, ret)).toBeCloseTo(2.4, 1);
+    expect(greatCircleNm(arcEnd, ret)).toBeCloseTo(1.2, 1);
     // The drawn leg itself runs fix -> turn point, and the next leg picks up 1.5 NM past it.
     expect(path).toEqual([fix, p1]);
+  });
+
+  // GitHub #431, PADU (Unalaska) NDB-A, transition DUT. Coded legs:
+  //   IF DUT (NDB, 53.905147 -166.547867)
+  //   PI DUT, course 306 magnetic, turn R, 10 NM
+  //   CF FN171 (54.021619 -166.547867, DUT 351/7.0), course 171 magnetic
+  // The aircraft flies out on 351, turns to 306, reverses to the right and comes back on 126 to
+  // meet the 171 inbound course. The return leg was drawn 2.4 NM long: it ran across the inbound
+  // course and stopped 0.9 NM on the far side of it, a line to nowhere.
+  it('PADU NDB-A: the return leg of the procedure turn stops short of the inbound course', () => {
+    const dut = { latitude: 53.905147222, longitude: -166.547866667 };
+    const fn171 = { latitude: 54.021619444, longitude: -166.547866667 };
+    const legs = [
+      wp({ fixId: 'DUT', fixRegion: 'PA', fixType: 'D', pathTerminator: 'IF', ...dut }),
+      wp({
+        fixId: 'DUT',
+        fixRegion: 'PA',
+        fixType: 'D',
+        pathTerminator: 'PI',
+        course: 306,
+        turnDirection: 'R',
+        distance: 10,
+        ...dut,
+      }),
+      wp({
+        fixId: 'FN171',
+        fixRegion: 'PA',
+        pathTerminator: 'CF',
+        course: 171,
+        distance: 3,
+        theta: 351,
+        rho: 7,
+        ...fn171,
+      }),
+    ];
+    const { overlays } = procedureGeometry(legs);
+    const pts = overlays[0]!.points;
+    // The outbound course is the line from the beacon through the turn point (351 magnetic).
+    const outboundTrue = bearingDeg(dut, pts[1]!) as Degrees;
+    const side = (p: { latitude: number; longitude: number }) =>
+      crossTrackStatus(p, dut, outboundTrue).crossTrackNm;
+    const turnSide = Math.sign(side(pts[2]!));
+    expect(turnSide).not.toBe(0);
+    // Every point of the turn, the return leg's end included, stays on the side it was flown on.
+    for (const p of pts.slice(2)) {
+      expect(Math.sign(side(p))).toBe(turnSide);
+    }
+    // And the end is close to the course it is about to join, not left hanging far from it.
+    expect(Math.abs(side(pts[pts.length - 1]!))).toBeLessThan(0.5);
   });
 
   it('produces a procedure-turn overlay anchored at the real fix for a PI leg', () => {

@@ -2559,7 +2559,7 @@
     "dontShowAgain": "Nie pokazuj ponownie"
   },
   "flightPlanBar": {
-    "clear": "Wyczyść plan lotu",
+    "clear": "Usuń plan lotu z mapy",
     "cleared": "Plan lotu wyczyszczony",
     "hide": "Ukryj pasek planu lotu",
     "show": "Pokaż pasek planu lotu",

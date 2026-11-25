@@ -2559,7 +2559,7 @@
     "dontShowAgain": "Nicht mehr anzeigen"
   },
   "flightPlanBar": {
-    "clear": "Flugplan löschen",
+    "clear": "Flugplan von der Karte entfernen",
     "cleared": "Flugplan gelöscht",
     "hide": "Flugplanleiste ausblenden",
     "show": "Flugplanleiste einblenden",

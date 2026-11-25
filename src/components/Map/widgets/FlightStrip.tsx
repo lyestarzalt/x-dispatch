@@ -35,6 +35,7 @@ import { useMapStore } from '@/stores/mapStore';
 import { usePlaneStore } from '@/stores/planeStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useDragPosition } from '../hooks/useDragPosition';
+import { useFrontWidget } from '../hooks/useFrontWidget';
 import TaxiGuidanceRow from './TaxiGuidanceRow';
 
 interface FlightStripProps {
@@ -207,6 +208,7 @@ export default function FlightStrip({
   const order = useSettingsStore((s) => s.flightStrip.order);
   const { stripRef, position, hasDragged, handleMouseDown, handleDoubleClick } =
     useStripDrag(detached);
+  const { isFront, bringToFront } = useFrontWidget('flightStrip');
   const units = useSettingsStore((s) => s.map.units);
   const settingsScale = useSettingsStore((s) => s.flightStrip.scale);
   // The detached window scales the strip to its own size instead.
@@ -427,8 +429,11 @@ export default function FlightStrip({
       {(detached || (connected && !stripWindowOpen)) && (
         <motion.div
           ref={stripRef}
+          onPointerDownCapture={detached ? undefined : bringToFront}
           className={cn(
-            'z-20 select-none',
+            'select-none',
+            // Clicked, it comes above the planner and the airport card (z-30), under the toolbar.
+            isFront && !detached ? 'z-35' : 'z-20',
             isDefault && !detached && 'absolute bottom-4 left-1/2',
             !isDefault && 'fixed'
           )}

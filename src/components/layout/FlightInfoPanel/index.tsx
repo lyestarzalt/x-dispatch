@@ -2,6 +2,7 @@ import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, ChevronLeft, ChevronRight, FileText, X } from 'lucide-react';
 import { IcaoLink } from '@/components/IcaoLink';
+import { useSendWidgetsBack } from '@/components/Map/hooks/useFrontWidget';
 import { StripToggle } from '@/components/layout/FlightPlanBar/StripToggle';
 import { SimbriefLogo } from '@/components/ui/SimbriefLogo';
 import { Button } from '@/components/ui/button';
@@ -21,6 +22,7 @@ import { useFlightPlanStore } from '@/stores/flightPlanStore';
  */
 function FlightInfoPanel() {
   const { t } = useTranslation();
+  const sendWidgetsBack = useSendWidgetsBack();
   const simbriefData = useFlightPlanStore((s) => s.simbriefData);
   const clearFlightPlan = useFlightPlanStore((s) => s.clearFlightPlan);
   const openSimbriefDialog = useFlightPlanStore((s) => s.openSimbriefDialog);
@@ -53,8 +55,9 @@ function FlightInfoPanel() {
   return (
     <div
       data-map-dock="left"
+      onPointerDownCapture={sendWidgetsBack}
       className={cn(
-        'absolute left-4 z-30 transition-all duration-300 ease-out',
+        'absolute left-12 z-30 transition-all duration-300 ease-out',
         isCollapsed ? 'top-28 w-12' : 'top-28 w-80'
       )}
     >

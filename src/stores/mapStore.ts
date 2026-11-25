@@ -73,6 +73,9 @@ export interface CursorElevation {
   valueM: Meters | null;
 }
 
+/** A floating map widget that a click can bring above the side cards. */
+export type FrontWidget = 'profile' | 'flightStrip';
+
 export type SurfaceTypeFilter = 'paved' | 'unpaved' | 'water' | 'other';
 
 export interface AirportFilterState {
@@ -139,6 +142,11 @@ interface MapState {
   profileStripOpen: boolean;
   /** Where the user dragged the profile strip; null means its default place along the bottom. */
   profileStripPosition: { x: number; y: number } | null;
+  /**
+   * The floating widget last clicked, drawn above the planner and the airport card until one of
+   * those is clicked (GitHub #424). Not kept across restarts.
+   */
+  frontWidget: FrontWidget | null;
   /** The route position under the cursor on the vertical profile, mirrored on the map. */
   profileHover: {
     latitude: number;
@@ -190,6 +198,7 @@ interface MapState {
   setLandingCardPosition: (pos: { x: number; y: number } | null) => void;
   setProfileStripOpen: (open: boolean) => void;
   setProfileStripPosition: (pos: { x: number; y: number } | null) => void;
+  setFrontWidget: (widget: FrontWidget | null) => void;
   setProfileHover: (
     hover: {
       latitude: number;
@@ -259,6 +268,7 @@ export const useMapStore = create<MapState>()(
       landingCardPosition: null as { x: number; y: number } | null,
       profileStripOpen: true,
       profileStripPosition: null as { x: number; y: number } | null,
+      frontWidget: null as FrontWidget | null,
       profileHover: null as {
         latitude: number;
         longitude: number;
@@ -366,6 +376,7 @@ export const useMapStore = create<MapState>()(
       setLandingCardPosition: (pos) => set({ landingCardPosition: pos }),
       setProfileStripOpen: (open) => set({ profileStripOpen: open }),
       setProfileStripPosition: (pos) => set({ profileStripPosition: pos }),
+      setFrontWidget: (widget) => set({ frontWidget: widget }),
       setProfileHover: (hover) => set({ profileHover: hover }),
       setTerrainShadingEnabled: (enabled) => set({ terrainShadingEnabled: enabled }),
       setTerrain3dEnabled: (enabled) => set({ terrain3dEnabled: enabled }),

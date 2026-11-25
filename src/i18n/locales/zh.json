@@ -2559,7 +2559,7 @@
     "dontShowAgain": "不再显示"
   },
   "flightPlanBar": {
-    "clear": "清除飞行计划",
+    "clear": "从地图上清除飞行计划",
     "cleared": "飞行计划已清除",
     "hide": "隐藏飞行计划条",
     "show": "显示飞行计划条",

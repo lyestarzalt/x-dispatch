@@ -1,7 +1,7 @@
 // Navigation layer singletons
 
 // Consolidated navaid layer (VOR, NDB, DME, TACAN)
-export { navaidLayer, NAVAID_LAYER_IDS } from './NavaidLayer';
+export { navaidLayer, procedureNavaidLayer, NAVAID_LAYER_IDS } from './NavaidLayer';
 
 // Airspace layers (local + FIR)
 export { airspaceLayer, firLayer, AIRSPACE_LAYER_IDS, FIR_LAYER_IDS } from './AirspaceLayer';

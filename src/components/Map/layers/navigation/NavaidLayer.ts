@@ -213,9 +213,17 @@ function formatFrequency(navaid: Navaid): string {
  * Renders VOR, VORTAC, VOR-DME, NDB, DME, and TACAN navaids
  */
 export class NavaidLayerRenderer extends NavLayerRenderer<Navaid> {
-  readonly layerId = 'nav-navaids';
-  readonly sourceId = 'nav-navaids-source';
-  readonly additionalLayerIds = ['nav-navaids-labels'];
+  readonly layerId: string;
+  readonly sourceId: string;
+  readonly additionalLayerIds: string[];
+
+  /** `id` names the layer, its source (`-source`) and its labels (`-labels`). */
+  constructor(id = 'nav-navaids') {
+    super();
+    this.layerId = id;
+    this.sourceId = `${id}-source`;
+    this.additionalLayerIds = [`${id}-labels`];
+  }
 
   private imagesLoaded = false;
 
@@ -348,3 +356,9 @@ export class NavaidLayerRenderer extends NavLayerRenderer<Navaid> {
 
 export const navaidLayer = new NavaidLayerRenderer();
 export const NAVAID_LAYER_IDS = navaidLayer.getAllLayerIds();
+
+/**
+ * The navaids of the procedure shown on the map, drawn while the navaid layer itself is off so
+ * the stations an approach is flown from are still there (GitHub #430). Same symbols and labels.
+ */
+export const procedureNavaidLayer = new NavaidLayerRenderer('nav-procedure-navaids');

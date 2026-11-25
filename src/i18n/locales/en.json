@@ -2559,7 +2559,7 @@
     "dontShowAgain": "Don't show again"
   },
   "flightPlanBar": {
-    "clear": "Clear flight plan",
+    "clear": "Clear flight plan from the map",
     "cleared": "Flight plan cleared",
     "hide": "Hide the flight plan strip",
     "show": "Show the flight plan strip",
