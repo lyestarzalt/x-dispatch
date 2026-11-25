@@ -169,6 +169,9 @@ import {
 import {
   clearDownloadedFaaCopter,
   configureFaaCopterDownload,
+  downloadFaaCopter,
+  faaCopterDownloadState,
+  faaFixNear,
   onFaaCopterUpdated,
   requestFaaCopter,
 } from './lib/xplaneServices/dataService/navdata/faaCopterDownload';
@@ -2245,6 +2248,7 @@ function registerIpcHandlers() {
   const faaChartSettings = (): FaaChartSettings => ({
     enabled: getFaaChartDownload(),
     ...faaChartStatus(),
+    procedures: faaCopterDownloadState(),
   });
   handle('nav:getFaaChartStatus', () => faaChartSettings());
   handle('nav:getFaaCharts', (_, icao: string) => {
@@ -2263,7 +2267,8 @@ function registerIpcHandlers() {
     return faaChartSettings();
   });
   handle('nav:downloadFaaCharts', async () => {
-    if (getFaaChartDownload()) await downloadFaaCharts();
+    // Both FAA files: the chart list, and the coded procedures with the fix list.
+    if (getFaaChartDownload()) await Promise.all([downloadFaaCharts(), downloadFaaCopter()]);
     return faaChartSettings();
   });
 
@@ -2408,7 +2413,9 @@ function registerIpcHandlers() {
       const resolution = resolveRoute(
         draft as import('./lib/flightplan/builder/types').PlanDraft,
         cycle,
-        (icao) => dataManager.getAirportElevation(icao)
+        (icao) => dataManager.getAirportElevation(icao),
+        // A fix X-Plane's database lacks is looked up in the FAA's list (US fixes).
+        faaFixNear
       );
       if (!resolution) return null;
       return { ...resolution, enriched: enrichFlightPlan(resolution.plan, cycle) };

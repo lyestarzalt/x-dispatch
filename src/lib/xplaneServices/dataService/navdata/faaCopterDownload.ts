@@ -8,13 +8,15 @@ import {
   parseFaaCopterProcedures,
 } from '@/lib/parsers/nav/faaCopterProcedures';
 import { errorMessage } from '@/lib/utils/errors';
+import { haversineDistance } from '@/lib/utils/geomath';
 import logger from '@/lib/utils/logger';
 import { airacCycleAt, getAiracCycleDates } from '../cycleInfo';
 
 /**
  * Downloads the FAA's coded procedures (FAACIFP18, a 9 MB archive) once per AIRAC cycle and
- * keeps the helicopter procedures out of it, a few kilobytes. X-Plane's data has none of them
- * (GitHub #432). The download starts by itself shortly after the app does, so the procedures
+ * keeps two things out of it: the helicopter procedures, a few kilobytes, which X-Plane's data
+ * has none of (GitHub #432), and the list of named fixes, about 2 MB, which the planner falls
+ * back on for a fix X-Plane's database lacks. The download starts by itself shortly after the app does, so the procedures
  * are there when a heliport is first opened; an airport whose FAA chart list names a COPTER
  * chart asks again if that attempt failed. It follows the same Settings switch as the chart
  * list; the data is the FAA's own public-domain publication.
@@ -59,8 +61,12 @@ const RETRY_AFTER_MS = 30 * 60_000;
 
 let deps: Deps | null = null;
 let cached: FaaCopterProcedures | null = null;
+/** `cached.fixes` by identifier, built the first time the planner asks for one. */
+let fixesById: Map<string, { latitude: number; longitude: number }[]> | null = null;
+let cachedFetchedAt: string | null = null;
 let inFlight: Promise<FaaCopterError | null> | null = null;
 let lastFailureAt: number | null = null;
+let lastError: FaaCopterError | null = null;
 const listeners = new Set<() => void>();
 
 const now = () => deps?.now?.() ?? new Date();
@@ -93,13 +99,40 @@ export function extractZipEntry(archive: Buffer, entryName: string): Promise<str
   });
 }
 
-function readCache(cachePath: string): FaaCopterProcedures | null {
+function readCache(
+  cachePath: string
+): { procedures: FaaCopterProcedures; fetchedAt: string } | null {
   try {
     const file = JSON.parse(fs.readFileSync(cachePath, 'utf-8')) as Partial<CacheFile>;
-    return faaCopterFromJson(file.procedures);
+    const procedures = faaCopterFromJson(file.procedures);
+    if (!procedures || typeof file.fetchedAt !== 'string') return null;
+    return { procedures, fetchedAt: file.fetchedAt };
   } catch {
     return null;
   }
+}
+
+/** The state of the download, as Settings shows it under the FAA switch. */
+export interface FaaCopterDownloadState {
+  /** AIRAC cycle of the file kept ("2611"), null when there is none. */
+  cycle: string | null;
+  /** When it was downloaded, ISO; null with no file. */
+  fetchedAt: string | null;
+  downloading: boolean;
+  /** Why the last download failed, if it did. */
+  error: FaaCopterError | null;
+  /** How many named fixes the planner can fall back on. */
+  fixCount: number;
+}
+
+export function faaCopterDownloadState(): FaaCopterDownloadState {
+  return {
+    cycle: cached?.cycle ?? null,
+    fetchedAt: cached ? cachedFetchedAt : null,
+    downloading: inFlight !== null,
+    error: lastError,
+    fixCount: cached?.fixes.length ?? 0,
+  };
 }
 
 /** Sets the downloader and the cache file (from main), and reads what a previous run left. */
@@ -107,7 +140,11 @@ export function configureFaaCopterDownload(next: Deps): void {
   deps = next;
   inFlight = null;
   lastFailureAt = null;
-  cached = readCache(next.cachePath);
+  lastError = null;
+  const kept = readCache(next.cachePath);
+  cached = kept?.procedures ?? null;
+  cachedFetchedAt = kept?.fetchedAt ?? null;
+  fixesById = null;
 }
 
 export function onFaaCopterUpdated(listener: () => void): () => void {
@@ -117,6 +154,30 @@ export function onFaaCopterUpdated(listener: () => void): () => void {
 
 function notifyUpdated(): void {
   for (const listener of listeners) listener();
+}
+
+/**
+ * The FAA's fix of that name nearest to `near`, while the download is on; null when the list
+ * has none. For the planner, when X-Plane's database does not know a typed fix.
+ */
+export function faaFixNear(
+  ident: string,
+  near: { latitude: number; longitude: number }
+): { latitude: number; longitude: number } | null {
+  if (!deps?.isEnabled() || !cached) return null;
+  if (!fixesById) {
+    fixesById = new Map();
+    for (const [id, latitude, longitude] of cached.fixes) {
+      const list = fixesById.get(id);
+      if (list) list.push({ latitude, longitude });
+      else fixesById.set(id, [{ latitude, longitude }]);
+    }
+  }
+  const candidates = fixesById.get(ident.trim().toUpperCase());
+  if (!candidates) return null;
+  const away = (p: { latitude: number; longitude: number }) =>
+    haversineDistance(near.latitude, near.longitude, p.latitude, p.longitude);
+  return candidates.reduce((best, p) => (away(p) < away(best) ? p : best));
 }
 
 /**
@@ -167,8 +228,10 @@ async function download(d: Deps): Promise<FaaCopterError | null> {
     );
   }
   cached = procedures;
+  cachedFetchedAt = file.fetchedAt;
+  fixesById = null;
   logger.data.info(
-    `FAA procedure file ${cycle} downloaded in ${Date.now() - startedAt} ms: helicopter procedures at ${procedures.airports.size} airports`
+    `FAA procedure file ${cycle} downloaded in ${Date.now() - startedAt} ms: helicopter procedures at ${procedures.airports.size} airports, ${procedures.fixes.length} fixes`
   );
   return null;
 }
@@ -184,6 +247,7 @@ export function downloadFaaCopter(): Promise<FaaCopterError | null> {
     })
     .then((error) => {
       lastFailureAt = error ? now().getTime() : null;
+      lastError = error;
       return error;
     })
     .finally(() => {
@@ -208,7 +272,10 @@ export function requestFaaCopter(hasCopterChart: boolean): void {
 /** Forgets the downloaded procedures, as when the user turns the download off. */
 export function clearDownloadedFaaCopter(): void {
   cached = null;
+  cachedFetchedAt = null;
+  fixesById = null;
   lastFailureAt = null;
+  lastError = null;
   if (deps) fs.rmSync(deps.cachePath, { force: true });
   notifyUpdated();
 }

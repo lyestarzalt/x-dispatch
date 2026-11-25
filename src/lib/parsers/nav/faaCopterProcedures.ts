@@ -38,11 +38,19 @@ export interface FaaCopterAirport {
   fixes: FaaFix[];
 }
 
+/** A named fix of the file: identifier, latitude [-90, 90], longitude [-180, 180]. */
+export type FaaNamedFix = [id: string, latitude: Degrees, longitude: Degrees];
+
 export interface FaaCopterProcedures {
   /** The AIRAC cycle of the file ("2611"), from its header; null when it has none. */
   cycle: string | null;
   /** Per airport or heliport identifier as the FAA writes it (`KJRA`, `87N`). */
   airports: ReadonlyMap<string, FaaCopterAirport>;
+  /**
+   * Every named fix of the file, enroute and terminal (about 70,000). The planner looks a typed
+   * fix up here when X-Plane's database has none by that name: stock data lacks some.
+   */
+  fixes: readonly FaaNamedFix[];
 }
 
 const LINE_TYPE: Readonly<Record<string, string>> = { D: 'SID', E: 'STAR', F: 'APPCH' };
@@ -64,6 +72,9 @@ function parsePosition(line: string, at: number): { latitude: number; longitude:
   const longitude = parseAngle(line.slice(at + 9, at + 19));
   return latitude === null || longitude === null ? null : { latitude, longitude };
 }
+
+/** Six decimals of a degree is a tenth of a metre; the file gives a hundredth of an arc second. */
+const round6 = (value: number): number => Math.round(value * 1e6) / 1e6;
 
 /** One primary procedure record as the X-Plane CIFP line with the same fields. */
 function toCifpLine(line: string): string {
@@ -157,25 +168,29 @@ export function parseFaaCopterProcedures(text: string): FaaCopterProcedures {
   // navaid of the same name.
   const terminal = new Map<string, { latitude: number; longitude: number }>();
   const anywhere = new Map<string, { latitude: number; longitude: number }>();
-  if (legs.size > 0) {
-    for (const line of lines) {
-      const section = line.charAt(4);
-      if (section === 'E' && line.charAt(5) === 'A') {
-        const position = parsePosition(line, 32);
-        if (position) anywhere.set(`${line.slice(13, 18).trim()}/${line.slice(19, 21)}`, position);
-      } else if ((section === 'P' || section === 'H') && 'CN'.includes(line.charAt(12))) {
-        const airport = line.slice(6, 10).trim();
-        if (!legs.has(airport)) continue;
-        const position = parsePosition(line, 32);
-        if (position) {
-          terminal.set(`${airport}/${line.slice(13, 18).trim()}/${line.slice(19, 21)}`, position);
-        }
-      } else if (section === 'D') {
-        // A VOR has its own position; a DME or TACAN alone has only the DME's.
-        const position = parsePosition(line, 32) ?? parsePosition(line, 55);
-        const key = `${line.slice(13, 17).trim()}/${line.slice(19, 21)}`;
-        if (position && !anywhere.has(key)) anywhere.set(key, position);
-      }
+  const namedFixes: FaaNamedFix[] = [];
+  const named = (id: string, position: { latitude: number; longitude: number }) =>
+    namedFixes.push([id, round6(position.latitude), round6(position.longitude)]);
+  for (const line of lines) {
+    const section = line.charAt(4);
+    if (section === 'E' && line.charAt(5) === 'A') {
+      const position = parsePosition(line, 32);
+      if (!position) continue;
+      const id = line.slice(13, 18).trim();
+      anywhere.set(`${id}/${line.slice(19, 21)}`, position);
+      named(id, position);
+    } else if ((section === 'P' || section === 'H') && 'CN'.includes(line.charAt(12))) {
+      const position = parsePosition(line, 32);
+      if (!position) continue;
+      const id = line.slice(13, 18).trim();
+      if (line.charAt(12) === 'C') named(id, position);
+      const airport = line.slice(6, 10).trim();
+      if (legs.has(airport)) terminal.set(`${airport}/${id}/${line.slice(19, 21)}`, position);
+    } else if (section === 'D') {
+      // A VOR has its own position; a DME or TACAN alone has only the DME's.
+      const position = parsePosition(line, 32) ?? parsePosition(line, 55);
+      const key = `${line.slice(13, 17).trim()}/${line.slice(19, 21)}`;
+      if (position && !anywhere.has(key)) anywhere.set(key, position);
     }
   }
 
@@ -190,12 +205,13 @@ export function parseFaaCopterProcedures(text: string): FaaCopterProcedures {
     }
     airports.set(airport, { lines: records.map(toCifpLine), fixes });
   }
-  return { cycle, airports };
+  return { cycle, airports, fixes: namedFixes };
 }
 
 export interface FaaCopterJson {
   cycle: string | null;
   airports: Record<string, { lines: string[]; fixes: [string, string, number, number][] }>;
+  fixes: FaaNamedFix[];
 }
 
 export function faaCopterToJson(data: FaaCopterProcedures): FaaCopterJson {
@@ -207,12 +223,13 @@ export function faaCopterToJson(data: FaaCopterProcedures): FaaCopterJson {
         { lines, fixes: fixes.map((f) => [f.id, f.region, f.latitude, f.longitude]) },
       ])
     ),
+    fixes: [...data.fixes],
   };
 }
 
 /** The procedures back from the download cache, or null when the cache is not one. */
 export function faaCopterFromJson(json: unknown): FaaCopterProcedures | null {
-  if (!isRecord(json) || !isRecord(json.airports)) return null;
+  if (!isRecord(json) || !isRecord(json.airports) || !Array.isArray(json.fixes)) return null;
   const { cycle } = json;
   if (cycle !== null && (typeof cycle !== 'string' || !/^\d{4}$/.test(cycle))) return null;
   const airports = new Map<string, FaaCopterAirport>();
@@ -235,7 +252,16 @@ export function faaCopterFromJson(json: unknown): FaaCopterProcedures | null {
     }
     airports.set(airport, { lines: entry.lines, fixes });
   }
-  return { cycle, airports };
+  const named: FaaNamedFix[] = [];
+  for (const fix of json.fixes as unknown[]) {
+    if (!Array.isArray(fix)) return null;
+    const [id, latitude, longitude] = fix as unknown[];
+    if (typeof id !== 'string' || typeof latitude !== 'number' || typeof longitude !== 'number') {
+      return null;
+    }
+    named.push([id, latitude, longitude]);
+  }
+  return { cycle, airports, fixes: named };
 }
 
 /**

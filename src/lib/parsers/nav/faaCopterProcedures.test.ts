@@ -86,10 +86,23 @@ describe('parseFaaCopterProcedures', () => {
     ]);
   });
 
+  it('lists every named fix of the file, enroute and terminal, for the planner to fall back on', () => {
+    const byId = new Map(data.fixes.map((f) => [f[0], f]));
+    // HUDSN is an enroute fix, ZABKI a terminal waypoint of the heliport.
+    expect(byId.get('HUDSN')).toEqual(['HUDSN', 40.791036, -73.985539]);
+    expect(byId.has('ZABKI')).toBe(true);
+    expect(byId.has('NEUMN')).toBe(true);
+  });
+
   it('survives the trip through the download cache', () => {
     const back = faaCopterFromJson(JSON.parse(JSON.stringify(faaCopterToJson(data))));
     expect(back?.cycle).toBe('2611');
     expect(back?.airports.get('KJRA')).toEqual(data.airports.get('KJRA'));
+    expect(back?.fixes).toEqual(data.fixes);
+    // A cache written before the fix list was kept is not one: it is downloaded again.
+    const old = JSON.parse(JSON.stringify(faaCopterToJson(data))) as Record<string, unknown>;
+    delete old.fixes;
+    expect(faaCopterFromJson(old)).toBeNull();
     expect(faaCopterFromJson({ cycle: 'x' })).toBeNull();
     expect(faaCopterFromJson(null)).toBeNull();
   });

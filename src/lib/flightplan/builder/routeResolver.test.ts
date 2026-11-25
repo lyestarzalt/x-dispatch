@@ -210,3 +210,38 @@ describe('resolveRoute airport rows', () => {
     ]);
   });
 });
+
+// GitHub #432: HUDSN, a fix of the West 30th Street heliport's departure, is not in X-Plane's
+// stock data. The planner then asks the FAA's fix list, and the point goes into the plan as
+// coordinates, which the simulator takes whatever its own data holds.
+describe('resolveRoute with a fix only the fallback list knows', () => {
+  const hudsn = { latitude: 50, longitude: -20 };
+  const fallback = (ident: string) => (ident === 'HUDSN' ? hudsn : null);
+
+  it('reports it unknown without the list', () => {
+    const res = resolveRoute(draft('AAAAA HUDSN BBBBB'))!;
+    expect(res.tokens[1]).toMatchObject({ status: 'unknown', issue: 'notFound' });
+  });
+
+  it('places it from the list and writes it as a coordinate waypoint', () => {
+    const res = resolveRoute(draft('AAAAA HUDSN BBBBB'), undefined, undefined, fallback)!;
+    expect(res.tokens[1]).toMatchObject({ text: 'HUDSN', kind: 'fix', status: 'ok' });
+    expect(res.plan.waypoints[2]).toMatchObject({ id: 'HUDSN', type: 28, via: 'DRCT', ...hudsn });
+  });
+
+  it('asks the list only when the database has no such fix', () => {
+    const asked: string[] = [];
+    const res = resolveRoute(draft('AAAAA BBBBB'), undefined, undefined, (ident) => {
+      asked.push(ident);
+      return hudsn;
+    })!;
+    expect(asked).toEqual([]);
+    expect(res.plan.waypoints[1]).toMatchObject({ id: 'AAAAA', type: 11 });
+  });
+
+  it('ignores a namesake too far from the route to be the one meant', () => {
+    const far = () => ({ latitude: -40, longitude: 150 });
+    const res = resolveRoute(draft('AAAAA HUDSN BBBBB'), undefined, undefined, far)!;
+    expect(res.tokens[1]).toMatchObject({ status: 'unknown', issue: 'notFound' });
+  });
+});

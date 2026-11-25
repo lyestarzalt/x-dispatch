@@ -13,7 +13,7 @@ import type { FMSFlightPlan, FMSWaypoint, FMSWaypointType } from '@/types/fms';
 import type { AirwaySegment } from '@/types/navigation';
 import type { Feet } from '@/types/units';
 import { narrowBand, pairBand, segmentAllowsDirection, segmentsForPair } from './airwayRules';
-import { type LatLon, pathDistanceNm } from './geometry';
+import { type LatLon, greatCircleNm, pathDistanceNm } from './geometry';
 import { getOceanicTracks, isTrackName, trackSegments } from './oceanicTracks';
 import { type LexedToken, isProcedureName, lexRoute, stripEndpoints } from './routeTokens';
 import type { LevelBand, PlanDraft, PlanEndpoint, RouteResolution, RouteToken } from './types';
@@ -44,6 +44,20 @@ function resolveIdent(ident: string, near: LatLon): ResolvedPoint | null {
   // Short idents are usually navaids, five letters are fixes; try the likely one first.
   return ident.length <= 3 ? (asNavaid() ?? asFix()) : (asFix() ?? asNavaid());
 }
+
+/**
+ * A second place to look for a fix the navigation database does not have: the FAA's fix list,
+ * which names US fixes X-Plane's stock data lacks (GitHub #432). Given the ident and the point
+ * before it on the route, it returns the nearest fix of that name.
+ */
+export type FixFallback = (
+  ident: string,
+  near: LatLon
+) => { latitude: number; longitude: number } | null;
+
+/** A point's token kind: a coordinate waypoint (28) stands for a fix placed by the fallback. */
+const kindOf = (point: ResolvedPoint): 'fix' | 'navaid' =>
+  point.type === 11 || point.type === 28 ? 'fix' : 'navaid';
 
 /** Published airways from the database; NAT tracks from the current track message. */
 function airwaySegments(name: string): AirwaySegment[] {
@@ -157,10 +171,22 @@ function airportAltitude(endpoint: PlanEndpoint, elevationOf?: ElevationLookup):
 export function resolveRoute(
   draft: PlanDraft,
   cycle?: string,
-  elevationOf?: ElevationLookup
+  elevationOf?: ElevationLookup,
+  fallbackFix?: FixFallback
 ): RouteResolution | null {
   const { departure, arrival } = draft;
   if (!departure || !arrival) return null;
+
+  // The database first. A fix only the fallback knows goes into the plan as a coordinate
+  // waypoint under its name: X-Plane flies the coordinates whatever its own data holds, where
+  // a named fix it does not know would stop the plan from loading.
+  const findIdent = (ident: string, near: LatLon): ResolvedPoint | null => {
+    const known = resolveIdent(ident, near);
+    if (known) return known;
+    const position = fallbackFix?.(ident, near);
+    if (!position || greatCircleNm(near, position) > SEARCH_RADIUS_NM) return null;
+    return { id: ident, type: 28, latitude: position.latitude, longitude: position.longitude };
+  };
 
   const cruise = draft.cruiseAltitudeFt ?? 0;
   const waypoints: FMSWaypoint[] = [
@@ -224,9 +250,9 @@ export function resolveRoute(
       tokens.push(token);
       if (airwaySegments(lexedToken.text).length === 0) {
         // Not an airway after all: some fixes carry digits. Try it as a point.
-        const point = resolveIdent(lexedToken.text, cursor);
+        const point = findIdent(lexedToken.text, cursor);
         if (point) {
-          token.kind = point.type === 11 ? 'fix' : 'navaid';
+          token.kind = kindOf(point);
           push(point, 'DRCT');
         } else {
           token.status = 'unknown';
@@ -253,16 +279,16 @@ export function resolveRoute(
     if (between) {
       const via = pendingAirway!.name;
       for (const midId of between) {
-        const mid = resolveIdent(midId, cursor);
+        const mid = findIdent(midId, cursor);
         if (mid) push(mid, via);
       }
     }
 
-    const point = resolveIdent(lexedToken.text, cursor);
+    const point = findIdent(lexedToken.text, cursor);
     const token = withOriginal(
       {
         text: lexedToken.text,
-        kind: point ? (point.type === 11 ? 'fix' : 'navaid') : 'fix',
+        kind: point ? kindOf(point) : 'fix',
         status: point ? 'ok' : 'unknown',
       },
       lexedToken

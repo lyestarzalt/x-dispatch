@@ -12,7 +12,9 @@ const {
   configureFaaCopterDownload,
   downloadFaaCopter,
   faaCifpUrl,
+  faaCopterDownloadState,
   faaCopterForAirport,
+  faaFixNear,
   onFaaCopterUpdated,
   requestFaaCopter,
 } = await import('./faaCopterDownload');
@@ -138,5 +140,43 @@ describe('FAA helicopter procedure download', () => {
     await downloadFaaCopter();
     enabled = false;
     expect(faaCopterForAirport('KJRA')).toBeNull();
+  });
+
+  // GitHub #432: HUDSN typed into the planner's route on stock X-Plane data, which lacks it.
+  it('finds a fix by name for the planner, the nearest when the name is used twice', async () => {
+    await downloadFaaCopter();
+    const newYork = { latitude: 40.75, longitude: -74 };
+    const hudsn = faaFixNear('hudsn', newYork)!;
+    expect(hudsn.latitude).toBeCloseTo(40.791036, 5);
+    expect(hudsn.longitude).toBeCloseTo(-73.985539, 5);
+    expect(faaFixNear('NOSUCH', newYork)).toBeNull();
+    enabled = false;
+    expect(faaFixNear('HUDSN', newYork)).toBeNull();
+  });
+
+  it('reports what Settings shows: nothing yet, then the cycle, its date and the fix count', async () => {
+    expect(faaCopterDownloadState()).toEqual({
+      cycle: null,
+      fetchedAt: null,
+      downloading: false,
+      error: null,
+      fixCount: 0,
+    });
+    const pending = downloadFaaCopter();
+    expect(faaCopterDownloadState().downloading).toBe(true);
+    await pending;
+    const state = faaCopterDownloadState();
+    expect(state).toMatchObject({ cycle: '2611', downloading: false, error: null });
+    expect(state.fetchedAt).toBe(NOW.toISOString());
+    expect(state.fixCount).toBeGreaterThan(10);
+    // The date survives a restart.
+    configure();
+    expect(faaCopterDownloadState().fetchedAt).toBe(NOW.toISOString());
+  });
+
+  it('reports why the last download failed', async () => {
+    download.mockResolvedValue({ data: null, error: 'Timeout' });
+    await downloadFaaCopter();
+    expect(faaCopterDownloadState().error).toBe('network');
   });
 });

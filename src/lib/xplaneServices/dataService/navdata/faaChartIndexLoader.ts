@@ -5,6 +5,7 @@ import {
   downloadedFaaChartIndex,
   faaChartDownloadState,
 } from './faaChartDownload';
+import type { FaaCopterDownloadState } from './faaCopterDownload';
 
 /**
  * The FAA chart index behind the US procedure labels (OBSTACLE, RNAV, ILS OR LOC) and the
@@ -73,6 +74,8 @@ export interface FaaChartStatus {
 /** The status with the user's download choice, as Settings shows it. */
 export interface FaaChartSettings extends FaaChartStatus {
   enabled: boolean;
+  /** The FAA's coded procedures: helicopter procedures and the planner's fallback fixes. */
+  procedures: FaaCopterDownloadState;
 }
 
 export function faaChartStatus(now = new Date()): FaaChartStatus {
