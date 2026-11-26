@@ -7,10 +7,10 @@ import type { Degrees, Feet, Knots } from '@/types/units';
 export type NetworkId = 'vatsim' | 'ivao';
 
 /**
- * The colour online traffic is drawn in: one per network (VATSIM green, IVAO blue), or the
- * pilot's pick for whichever network is on.
+ * The colour online traffic is drawn in, VATSIM and IVAO alike: blue, as most other network
+ * maps draw it, or green.
  */
-export type OnlineTrafficColor = 'network' | 'green' | 'blue';
+export type OnlineTrafficColor = 'blue' | 'green';
 
 export interface NetworkFlightPlan {
   flightRules: 'IFR' | 'VFR' | null;

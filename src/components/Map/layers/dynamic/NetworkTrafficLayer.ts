@@ -17,16 +17,14 @@ const BLUE = '#60a5fa';
 const NETWORKS: NetworkId[] = ['vatsim', 'ivao'];
 
 /**
- * By default each network has its colour, VATSIM green and IVAO blue. A pilot can pick one
- * colour for whichever network is on (Settings, Graphics): the two are never shown together.
+ * VATSIM and IVAO traffic share one colour: the two are never shown together. Blue unless the
+ * pilot picks green (Settings, Graphics).
  */
-let trafficColor: OnlineTrafficColor = 'network';
+let trafficColor: OnlineTrafficColor = 'blue';
 
-/** Line and icon colour of a network's traffic. */
-export function networkColor(network: NetworkId): string {
-  if (trafficColor === 'green') return GREEN;
-  if (trafficColor === 'blue') return BLUE;
-  return network === 'vatsim' ? GREEN : BLUE;
+/** Line and icon colour of a network's traffic; the same for both networks. */
+export function networkColor(_network: NetworkId): string {
+  return trafficColor === 'green' ? GREEN : BLUE;
 }
 
 /** Sets the traffic colour and repaints the traffic already on `map`, when there is one. */

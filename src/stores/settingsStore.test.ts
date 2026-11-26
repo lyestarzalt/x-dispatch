@@ -683,9 +683,9 @@ describe('flight strip settings', () => {
 });
 
 describe('online traffic colour at v46', () => {
-  it('keeps a colour per network for existing installs', () => {
+  it('starts existing installs on blue for both networks', () => {
     const result = migrateSettings({ map: { userMapStyles: [], vatsimRefreshInterval: 30 } }, 45);
-    expect(result.map.onlineTrafficColor).toBe('network');
+    expect(result.map.onlineTrafficColor).toBe('blue');
     expect(result.map.vatsimRefreshInterval).toBe(30);
   });
 });

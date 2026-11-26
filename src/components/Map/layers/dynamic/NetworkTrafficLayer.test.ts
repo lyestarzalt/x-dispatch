@@ -80,15 +80,15 @@ describe('createNetworkRouteGeoJSON', () => {
   });
 });
 
-// Each network has its own colour unless the pilot picks one for both.
+// VATSIM and IVAO traffic share one colour: blue, or green when the pilot picks it.
 describe('network traffic colours', () => {
-  it('draws VATSIM green and IVAO blue by default', () => {
-    setOnlineTrafficColor(null, 'network');
-    expect(networkColor('vatsim')).toBe('#22c55e');
+  it('draws both networks blue by default', () => {
+    setOnlineTrafficColor(null, 'blue');
+    expect(networkColor('vatsim')).toBe('#60a5fa');
     expect(networkColor('ivao')).toBe('#60a5fa');
   });
 
-  it('draws both networks in the picked colour and repaints what is on the map', () => {
+  it('draws both networks green on request and repaints what is on the map', () => {
     const painted: [string, string, unknown][] = [];
     const map = {
       getStyle: () => ({}),
@@ -96,15 +96,13 @@ describe('network traffic colours', () => {
       setPaintProperty: (id: string, name: string, value: unknown) =>
         painted.push([id, name, value]),
     };
-    setOnlineTrafficColor(map as never, 'blue');
-    expect(networkColor('vatsim')).toBe('#60a5fa');
-    expect(networkColor('ivao')).toBe('#60a5fa');
-    expect(painted).toEqual([
-      ['vatsim-pilots', 'icon-color', '#60a5fa'],
-      ['vatsim-labels', 'text-color', '#60a5fa'],
-    ]);
-    setOnlineTrafficColor(null, 'green');
+    setOnlineTrafficColor(map as never, 'green');
+    expect(networkColor('vatsim')).toBe('#22c55e');
     expect(networkColor('ivao')).toBe('#22c55e');
-    setOnlineTrafficColor(null, 'network');
+    expect(painted).toEqual([
+      ['vatsim-pilots', 'icon-color', '#22c55e'],
+      ['vatsim-labels', 'text-color', '#22c55e'],
+    ]);
+    setOnlineTrafficColor(null, 'blue');
   });
 });

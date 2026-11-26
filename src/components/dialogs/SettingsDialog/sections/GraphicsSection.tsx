@@ -28,11 +28,10 @@ const AIRFIELD_LIGHT_OPTIONS: { value: AirfieldLightsMode; labelKey: string }[] 
   { value: 'off', labelKey: 'settings.graphics.airfieldLightsOff' },
 ];
 
-/** Colour of VATSIM and IVAO traffic: each network its own, or one for both. */
+/** Colour of VATSIM and IVAO traffic. */
 const TRAFFIC_COLOR_OPTIONS: { value: OnlineTrafficColor; labelKey: string }[] = [
-  { value: 'network', labelKey: 'settings.graphics.trafficColorNetwork' },
-  { value: 'green', labelKey: 'settings.graphics.trafficColorGreen' },
   { value: 'blue', labelKey: 'settings.graphics.trafficColorBlue' },
+  { value: 'green', labelKey: 'settings.graphics.trafficColorGreen' },
 ];
 
 export function GraphicsSection() {

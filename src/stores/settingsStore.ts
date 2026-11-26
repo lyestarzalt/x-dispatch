@@ -89,7 +89,7 @@ const DEFAULT_MAP_STYLE_URL =
 export interface MapSettings {
   navDataRadiusNm: NauticalMiles;
   vatsimRefreshInterval: number;
-  /** Colour of VATSIM and IVAO traffic on the map: one per network, or one picked for both. */
+  /** Colour of VATSIM and IVAO traffic on the map. */
   onlineTrafficColor: OnlineTrafficColor;
   mapStyleUrl: string;
   /** User-added custom map styles, rendered alongside MAP_STYLE_PRESETS in the picker. */
@@ -270,7 +270,7 @@ interface SettingsState {
 const DEFAULT_MAP_SETTINGS: MapSettings = {
   navDataRadiusNm: 100,
   vatsimRefreshInterval: 15,
-  onlineTrafficColor: 'network',
+  onlineTrafficColor: 'blue',
   mapStyleUrl: DEFAULT_MAP_STYLE_URL,
   userMapStyles: [],
   idleOrbitEnabled: false,
@@ -895,10 +895,11 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
     }
   }
   if (version < 46) {
-    // Online traffic keeps its colour per network; one colour for both is a choice in Settings.
+    // VATSIM traffic was green and IVAO's blue. Both are blue now, as most other network maps
+    // draw them; green is a choice in Settings.
     state = {
       ...state,
-      map: { ...state.map!, onlineTrafficColor: 'network' },
+      map: { ...state.map!, onlineTrafficColor: 'blue' },
     };
   }
 

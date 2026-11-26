@@ -800,7 +800,6 @@
     "graphics": {
       "title": "Графика",
       "trafficColor": "Цвет онлайн-трафика",
-      "trafficColorNetwork": "По сети",
       "trafficColorGreen": "Зелёный",
       "trafficColorBlue": "Синий",
       "description": "Управление визуальными эффектами и анимациями",

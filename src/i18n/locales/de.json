@@ -800,7 +800,6 @@
     "graphics": {
       "title": "Grafik",
       "trafficColor": "Farbe des Online-Verkehrs",
-      "trafficColorNetwork": "Nach Netzwerk",
       "trafficColorGreen": "Grün",
       "trafficColorBlue": "Blau",
       "description": "Visuelle Effekte und Animationen steuern",

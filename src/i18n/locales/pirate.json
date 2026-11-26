@@ -800,7 +800,6 @@
     "graphics": {
       "title": "Visual Rigging",
       "trafficColor": "Colour o' ships on the wire",
-      "trafficColorNetwork": "By fleet",
       "trafficColorGreen": "Green",
       "trafficColorBlue": "Blue",
       "description": "Control visual tricks an' animations",

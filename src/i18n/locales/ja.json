@@ -800,7 +800,6 @@
     "graphics": {
       "title": "グラフィック",
       "trafficColor": "オンライントラフィックの色",
-      "trafficColorNetwork": "ネットワーク別",
       "trafficColorGreen": "緑",
       "trafficColorBlue": "青",
       "description": "視覚効果とアニメーションを制御",
