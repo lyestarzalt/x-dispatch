@@ -15,7 +15,6 @@ function fakeWindow() {
   const calls: string[] = [];
   const win: FlightStripWindowLike = {
     isDestroyed: () => false,
-    setOpacity: (opacity) => calls.push(`opacity ${opacity}`),
     setAlwaysOnTop: (flag, level) => calls.push(`top ${flag}${level ? ` ${level}` : ''}`),
     moveTop: () => calls.push('moveTop'),
     setIgnoreMouseEvents: (ignore, options) =>
@@ -25,10 +24,10 @@ function fakeWindow() {
 }
 
 describe('parseFlightStripWindowOptions', () => {
-  it('keeps valid values and clamps the opacity', () => {
+  it('keeps the window lock and stacking options', () => {
     expect(
       parseFlightStripWindowOptions({ locked: true, opacity: 0.1, alwaysOnTop: false })
-    ).toEqual({ locked: true, opacity: 0.3, alwaysOnTop: false });
+    ).toEqual({ locked: true, alwaysOnTop: false });
   });
 
   it('falls back to the defaults for anything unreadable', () => {
@@ -59,12 +58,7 @@ describe('applyFlightStripWindowOptions', () => {
   it('locks with forwarded mouse moves so the grip can still appear', () => {
     const { win, calls } = fakeWindow();
     applyFlightStripWindowOptions(win, locked, { capture: false, platform: 'win32' });
-    expect(calls).toEqual([
-      'opacity 0.8',
-      'top true screen-saver',
-      'moveTop',
-      'ignore true forward',
-    ]);
+    expect(calls).toEqual(['top true screen-saver', 'moveTop', 'ignore true forward']);
   });
 
   it('takes clicks again while the pointer is on the grip', () => {
@@ -77,13 +71,13 @@ describe('applyFlightStripWindowOptions', () => {
     const { win, calls } = fakeWindow();
     applyFlightStripWindowOptions(
       win,
-      { locked: false, opacity: 1, alwaysOnTop: false },
+      { locked: false, alwaysOnTop: false },
       { capture: false, platform: 'win32' }
     );
-    expect(calls).toEqual(['opacity 1', 'top false', 'ignore false']);
+    expect(calls).toEqual(['top false', 'ignore false']);
   });
 
-  it('leaves opacity alone on Linux, where Electron cannot set it', () => {
+  it('locks without forwarding mouse moves on Linux', () => {
     const { win, calls } = fakeWindow();
     applyFlightStripWindowOptions(win, locked, { capture: false, platform: 'linux' });
     expect(calls).toEqual(['top true screen-saver', 'moveTop', 'ignore true']);

@@ -186,7 +186,8 @@ interface PlanBuilderState extends PlanDraft {
   /** Loads a previous plan (by its `savedAt`) into the planner, keeping the current one. */
   restorePreviousPlan: (savedAt: number) => void;
   removePreviousPlan: (savedAt: number) => void;
-  /** Empties the planner and returns what it held, for an undo. */
+  /** A cleared draft can be recovered until a replacement has both endpoints. */
+  undoDraft: SavedDraft | null;
   reset: () => SavedDraft;
   /** Puts back a draft that `reset` returned. */
   restoreDraft: (draft: SavedDraft) => void;
@@ -268,6 +269,7 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
         resolvedDraft = null;
         set({
           isOpen: true,
+          undoDraft: null,
           departure: draft.departure,
           arrival: draft.arrival,
           alternate: null,
@@ -297,6 +299,7 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
           if (!endpoint) clearDrawnPlan(state.departure, state.arrival);
           return {
             departure: endpoint,
+            undoDraft: endpoint && state.arrival ? null : state.undoDraft,
             ...(endpoint?.icao !== state.departure?.icao
               ? {
                   previousPlans: withPreviousPlan(state.previousPlans, draftOf(state), Date.now()),
@@ -315,6 +318,7 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
           if (!endpoint) clearDrawnPlan(state.departure, state.arrival);
           return {
             arrival: endpoint,
+            undoDraft: endpoint && state.departure ? null : state.undoDraft,
             ...(endpoint?.icao !== state.arrival?.icao
               ? {
                   previousPlans: withPreviousPlan(state.previousPlans, draftOf(state), Date.now()),
@@ -540,6 +544,7 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
         set({ panel: 'half', explore: null });
       },
 
+      undoDraft: null,
       reset: () => {
         const { departure, arrival, alternate, routeText, cruiseAltitudeFt, aircraftClass } = get();
         const previous = {
@@ -554,6 +559,7 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
         clearDrawnPlan(departure, arrival);
         resolvedDraft = null;
         set({
+          undoDraft: departure || arrival || routeText ? previous : null,
           departure: null,
           arrival: null,
           alternate: null,
@@ -594,6 +600,7 @@ export const usePlanBuilderStore = create<PlanBuilderState>()(
         resolvedDraft = null;
         set({
           ...draft,
+          undoDraft: null,
           status: 'idle',
           result: null,
           procedures: {},

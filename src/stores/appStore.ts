@@ -27,7 +27,7 @@ interface AppState {
    */
   pendingAirportSelectionIcao: string | null;
   /** A link asked for a tab of the airport panel; the panel switches and clears. */
-  pendingAirportTab: AirportPanelTab | null;
+  pendingAirportTab: { icao: string; tab: AirportPanelTab } | null;
   /** The airport panel asked the map to frame the selected airport again; the Map clears it. */
   pendingFrameAirport: boolean;
   /** A link asked for a runway end as the start position; the Map resolves it once the airport is loaded. */
@@ -55,7 +55,7 @@ interface AppState {
   requestSelectAirport: (icao: string) => void;
   /** Consumer: clears the pending request once handled (or to drop it). */
   clearPendingAirportSelection: () => void;
-  requestAirportTab: (tab: AirportPanelTab) => void;
+  requestAirportTab: (icao: string, tab: AirportPanelTab) => void;
   clearPendingAirportTab: () => void;
   /** Producer: bring the selected airport back into view, camera only. */
   requestFrameAirport: () => void;
@@ -100,7 +100,7 @@ export const useAppStore = create<AppState>()(
     selectedProcedure: null as SelectedProcedure | null,
     startPosition: null as StartPosition | null,
     pendingAirportSelectionIcao: null as string | null,
-    pendingAirportTab: null as AirportPanelTab | null,
+    pendingAirportTab: null as { icao: string; tab: AirportPanelTab } | null,
     pendingFrameAirport: false,
     pendingStartRunway: null as { icao: string; runway: string } | null,
     showAddonManager: false,
@@ -140,11 +140,12 @@ export const useAppStore = create<AppState>()(
 
     setStartPosition: (position) => set({ startPosition: position }),
 
-    requestSelectAirport: (icao) => set({ pendingAirportSelectionIcao: icao.toUpperCase() }),
+    requestSelectAirport: (icao) =>
+      set({ pendingAirportSelectionIcao: icao.toUpperCase(), pendingAirportTab: null }),
 
     clearPendingAirportSelection: () => set({ pendingAirportSelectionIcao: null }),
 
-    requestAirportTab: (tab) => set({ pendingAirportTab: tab }),
+    requestAirportTab: (icao, tab) => set({ pendingAirportTab: { icao: icao.toUpperCase(), tab } }),
     clearPendingAirportTab: () => set({ pendingAirportTab: null }),
     requestFrameAirport: () => set({ pendingFrameAirport: true }),
     clearPendingFrameAirport: () => set({ pendingFrameAirport: false }),

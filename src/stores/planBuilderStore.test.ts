@@ -54,6 +54,17 @@ describe('planBuilderStore — starting over', () => {
     expect(useFlightPlanStore.getState().fmsData).toBeNull();
   });
 
+  it('keeps Undo through a partial route and expires it once both endpoints are selected', () => {
+    drawnPlan();
+    const state = usePlanBuilderStore.getState();
+    const previous = state.reset();
+    state.setArrival(LFMC);
+    expect(usePlanBuilderStore.getState().undoDraft).toEqual(previous);
+    state.setDeparture(LFLN);
+    state.setArrival(null);
+    expect(usePlanBuilderStore.getState().undoDraft).toBeNull();
+  });
+
   it('reset hands back the draft so the user can undo it', () => {
     drawnPlan();
     usePlanBuilderStore.setState({ alternate: LFMC as PlanEndpoint, aircraftClass: 'prop' });

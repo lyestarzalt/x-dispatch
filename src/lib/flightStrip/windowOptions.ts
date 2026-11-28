@@ -6,15 +6,12 @@
 export interface FlightStripWindowOptions {
   /** Clicks pass through to the simulator; only the lock grip still takes them. */
   locked: boolean;
-  /** 0.3 to 1. Electron cannot change window opacity on Linux. */
-  opacity: number;
   /** Stays above a fullscreen simulator. */
   alwaysOnTop: boolean;
 }
 
 export const DEFAULT_FLIGHT_STRIP_WINDOW_OPTIONS: FlightStripWindowOptions = {
   locked: false,
-  opacity: 1,
   alwaysOnTop: true,
 };
 
@@ -36,9 +33,6 @@ export function parseFlightStripWindowOptions(input: unknown): FlightStripWindow
   const out = { ...DEFAULT_FLIGHT_STRIP_WINDOW_OPTIONS };
   if (typeof source.locked === 'boolean') out.locked = source.locked;
   if (typeof source.alwaysOnTop === 'boolean') out.alwaysOnTop = source.alwaysOnTop;
-  if (typeof source.opacity === 'number' && Number.isFinite(source.opacity)) {
-    out.opacity = clampFlightStripOpacity(source.opacity);
-  }
   return out;
 }
 
@@ -119,7 +113,6 @@ export function ignoresMouse(options: FlightStripWindowOptions, capture: boolean
 /** The part of BrowserWindow the options touch, so tests can stand in for it. */
 export interface FlightStripWindowLike {
   isDestroyed(): boolean;
-  setOpacity(opacity: number): void;
   setAlwaysOnTop(flag: boolean, level?: 'screen-saver'): void;
   moveTop(): void;
   setIgnoreMouseEvents(ignore: boolean, options?: { forward?: boolean }): void;
@@ -135,7 +128,6 @@ export function applyFlightStripWindowOptions(
   { capture, platform }: { capture: boolean; platform: NodeJS.Platform }
 ): void {
   if (win.isDestroyed()) return;
-  if (platform !== 'linux') win.setOpacity(options.opacity);
   if (options.alwaysOnTop) {
     // The default level sits below a fullscreen simulator.
     win.setAlwaysOnTop(true, 'screen-saver');

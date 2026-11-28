@@ -178,6 +178,22 @@ function stackMap() {
 }
 
 describe('addProcedureRouteLayer', () => {
+  it('colors helicopter labels with their route', () => {
+    const { map } = stackMap();
+    const added = vi.spyOn(map, 'addLayer');
+    addProcedureRouteLayer(map as never, {
+      type: 'SID',
+      name: 'COPTER',
+      waypoints: [wp(gilon), wp(luc)],
+    });
+    const layers = added.mock.calls.map(
+      ([layer]) => layer as unknown as { type: string; paint: Record<string, unknown> }
+    );
+    const line = layers.find((layer) => layer.type === 'line')!.paint['line-color'];
+    for (const layer of layers.filter((layer) => layer.type === 'symbol'))
+      expect(layer.paint['text-color']).toBe(line);
+  });
+
   // MapLibre places the top symbol layer first, so the top one wins a collision. A course label
   // on top hid the hold fix's name (GitHub #394); fix names must sit above the course labels.
   it('stacks fix names above the leg course labels', () => {

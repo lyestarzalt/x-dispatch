@@ -1,13 +1,11 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronDown, ChevronRight, ExternalLink, Layers } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { type FaaChartGroup, groupFaaCharts } from '@/lib/parsers/nav/faaChartIndex';
 import { cn } from '@/lib/utils/helpers';
-import { openExternalLink } from '@/lib/utils/openExternal';
-import type { FaaChartLink } from '@/lib/xplaneServices/dataService/navdata/faaChartIndexLoader';
-import { trackEvent, useFaaAirportCharts } from '@/queries';
-import { useChartOverlayStore } from '@/stores/chartOverlayStore';
+import { useFaaAirportCharts } from '@/queries';
+import { ChartControls } from './ChartControls';
 
 /**
  * The FAA's charts for a US airport, grouped as a flight uses them. Each row opens the chart's
@@ -17,8 +15,6 @@ import { useChartOverlayStore } from '@/stores/chartOverlayStore';
 export function ChartsSection({ icao }: { icao: string }) {
   const { t } = useTranslation();
   const { data } = useFaaAirportCharts(icao);
-  const overlayUrl = useChartOverlayStore((s) => s.chart?.url ?? null);
-  const toggleOverlay = useChartOverlayStore((s) => s.toggle);
   const groups = useMemo(() => (data ? groupFaaCharts(data.charts) : []), [data]);
   // The airport diagram is what most pilots open first; the long lists wait for a click.
   const [open, setOpen] = useState<ReadonlySet<FaaChartGroup>>(new Set(['airport']));
@@ -29,17 +25,6 @@ export function ChartsSection({ icao }: { icao: string }) {
       else next.add(group);
       return next;
     });
-
-  const openPdf = (chart: FaaChartLink, group: FaaChartGroup) => {
-    trackEvent('faa_chart_opened', { action: 'pdf', group, airport: icao });
-    openExternalLink(chart.url);
-  };
-  const toggleOnMap = (chart: FaaChartLink, group: FaaChartGroup) => {
-    if (overlayUrl !== chart.url) {
-      trackEvent('faa_chart_opened', { action: 'map', group, airport: icao });
-    }
-    toggleOverlay({ url: chart.url, name: chart.name, icao });
-  };
 
   if (!data || groups.length === 0) return null;
 
@@ -85,42 +70,7 @@ export function ChartsSection({ icao }: { icao: string }) {
                 <ul>
                   {charts.map((chart) => (
                     <li key={`${chart.url}-${chart.name}`} className="flex items-center">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => openPdf(chart, group)}
-                        title={chart.name}
-                        className="hover:bg-secondary h-7 min-w-0 flex-1 justify-between gap-2 pr-1 pl-5 text-xs font-normal"
-                      >
-                        <span className="min-w-0 truncate">{chart.name}</span>
-                        <ExternalLink className="text-muted-foreground h-3.5 w-3.5 shrink-0" />
-                      </Button>
-                      {chart.overlay && (
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={() => toggleOnMap(chart, group)}
-                          aria-pressed={overlayUrl === chart.url}
-                          aria-label={
-                            overlayUrl === chart.url
-                              ? t('airportInfo.charts.hideFromMap')
-                              : t('airportInfo.charts.showOnMap')
-                          }
-                          tooltip={
-                            overlayUrl === chart.url
-                              ? t('airportInfo.charts.hideFromMap')
-                              : t('airportInfo.charts.showOnMap')
-                          }
-                          className={cn(
-                            'shrink-0',
-                            overlayUrl === chart.url
-                              ? 'text-primary'
-                              : 'text-muted-foreground hover:text-foreground'
-                          )}
-                        >
-                          <Layers className="h-3.5 w-3.5" />
-                        </Button>
-                      )}
+                      <ChartControls chart={chart} icao={icao} group={group} showName />
                     </li>
                   ))}
                 </ul>

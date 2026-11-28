@@ -911,7 +911,8 @@ function openFlightStripWindow(): void {
     frame: false,
     autoHideMenuBar: true,
     show: false,
-    backgroundColor: '#06090D',
+    transparent: true,
+    backgroundColor: '#00000000',
     icon: iconPath,
     webPreferences: {
       contextIsolation: true,

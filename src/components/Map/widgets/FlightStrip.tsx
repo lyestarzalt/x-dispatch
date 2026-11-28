@@ -210,6 +210,7 @@ export default function FlightStrip({
     useStripDrag(detached);
   const { isFront, bringToFront } = useFrontWidget('flightStrip');
   const units = useSettingsStore((s) => s.map.units);
+  const opacity = useSettingsStore((s) => s.flightStrip.opacity);
   const settingsScale = useSettingsStore((s) => s.flightStrip.scale);
   // The detached window scales the strip to its own size instead.
   const scale = detached ? 1 : settingsScale;
@@ -449,98 +450,102 @@ export default function FlightStrip({
           onMouseDown={detached ? undefined : handleMouseDown}
           onDoubleClick={detached ? undefined : handleDoubleClick}
         >
-          <div
-            className={cn(
-              'flex flex-col rounded-lg border',
-              'border-border/50 bg-card/90',
-              'backdrop-blur-xl',
-              !detached && 'cursor-grab active:cursor-grabbing'
-            )}
-            style={{ zoom: scale }}
-          >
-            <div className="flex items-center">
-              {detached && leadingActions && (
-                <div className="self-start py-0.5 pl-0.5">{leadingActions}</div>
+          <div style={{ zoom: scale }}>
+            <div
+              data-strip-opacity="strip"
+              className={cn(
+                'flex flex-col rounded-lg border',
+                'border-border/50 bg-card/90',
+                'backdrop-blur-xl',
+                !detached && 'cursor-grab active:cursor-grabbing'
               )}
-
-              {/* Status indicator */}
-              <div
-                className={cn(
-                  'flex items-center gap-1.5 py-2 pr-3',
-                  detached && leadingActions ? 'pl-1.5' : 'pl-3'
+              style={{ opacity, ...(detached ? noDragStyle : {}) }}
+            >
+              <div className="flex items-center">
+                {detached && leadingActions && (
+                  <div className="self-start py-0.5 pl-0.5">{leadingActions}</div>
                 )}
-              >
-                <div className="bg-success h-2 w-2 animate-pulse rounded-full" />
-                <Plane className="text-primary h-3.5 w-3.5" />
-                {fields.aircraft && (planeState?.icaoType || planeState?.tailNumber) && (
-                  <div
-                    className="flex flex-col leading-tight"
-                    title={planeState?.aircraftName || undefined}
-                  >
-                    <span className="text-foreground font-mono text-xs font-medium">
-                      {planeState?.icaoType}
-                    </span>
-                    <span className="text-muted-foreground text-2xs font-mono">
-                      {planeState?.tailNumber}
-                    </span>
+
+                {/* The aircraft identity doubles as the detached window’s native drag handle. */}
+                <div
+                  style={detached ? ({ WebkitAppRegion: 'drag' } as CSSProperties) : undefined}
+                  className={cn(
+                    'flex items-center gap-1.5 py-2 pr-3',
+                    detached && leadingActions ? 'pl-1.5' : 'pl-3'
+                  )}
+                >
+                  <div className="bg-success h-2 w-2 animate-pulse rounded-full" />
+                  <Plane className="text-primary h-3.5 w-3.5" />
+                  {fields.aircraft && (planeState?.icaoType || planeState?.tailNumber) && (
+                    <div
+                      className="flex flex-col leading-tight"
+                      title={planeState?.aircraftName || undefined}
+                    >
+                      <span className="text-foreground font-mono text-xs font-medium">
+                        {planeState?.icaoType}
+                      </span>
+                      <span className="text-muted-foreground text-2xs font-mono">
+                        {planeState?.tailNumber}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <GroupSeparator />
+
+                {/* The readouts in the pilot's order: the values you fly with are
+                large, related secondary readings sit underneath in a muted line. */}
+                {columns.length > 0 && (
+                  <div className="flex items-center gap-4 px-4 py-1.5">
+                    {columns.map(({ key, node }, index) => (
+                      <Fragment key={key}>
+                        {index > 0 && <GroupSeparator />}
+                        {node}
+                      </Fragment>
+                    ))}
+                  </div>
+                )}
+
+                {!detached && <GroupSeparator />}
+
+                {/* Small window buttons stacked in the top-right corner */}
+                {detached && actions && <div className="self-start py-0.5 pr-0.5">{actions}</div>}
+
+                {/* Center / Follow and pop-out buttons; the detached window has neither */}
+                {!detached && (
+                  <div className="flex items-center gap-0.5 px-1.5 py-1.5">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleCenter}
+                      className={cn('h-8 rounded-lg px-2.5', followPlane && 'bg-info/20 text-info')}
+                      tooltip={
+                        followPlane
+                          ? t('flightStrip.followingTooltip')
+                          : t('flightStrip.centerTooltip')
+                      }
+                    >
+                      <Crosshair className={cn('h-3.5 w-3.5', followPlane && 'animate-pulse')} />
+                      {followPlane ? t('flightStrip.following') : t('flightStrip.center')}
+                    </Button>
+                    <DesktopOnly>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-muted-foreground h-8 rounded-lg px-2"
+                        onClick={() => void window.appAPI.openFlightStripWindow()}
+                        tooltip={t('flightStrip.detach')}
+                      >
+                        <PictureInPicture2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </DesktopOnly>
                   </div>
                 )}
               </div>
 
-              <GroupSeparator />
-
-              {/* The readouts in the pilot's order: the values you fly with are
-                large, related secondary readings sit underneath in a muted line. */}
-              {columns.length > 0 && (
-                <div className="flex items-center gap-4 px-4 py-1.5">
-                  {columns.map(({ key, node }, index) => (
-                    <Fragment key={key}>
-                      {index > 0 && <GroupSeparator />}
-                      {node}
-                    </Fragment>
-                  ))}
-                </div>
-              )}
-
-              {!detached && <GroupSeparator />}
-
-              {/* Small window buttons stacked in the top-right corner */}
-              {detached && actions && <div className="self-start py-0.5 pr-0.5">{actions}</div>}
-
-              {/* Center / Follow and pop-out buttons; the detached window has neither */}
-              {!detached && (
-                <div className="flex items-center gap-0.5 px-1.5 py-1.5">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleCenter}
-                    className={cn('h-8 rounded-lg px-2.5', followPlane && 'bg-info/20 text-info')}
-                    tooltip={
-                      followPlane
-                        ? t('flightStrip.followingTooltip')
-                        : t('flightStrip.centerTooltip')
-                    }
-                  >
-                    <Crosshair className={cn('h-3.5 w-3.5', followPlane && 'animate-pulse')} />
-                    {followPlane ? t('flightStrip.following') : t('flightStrip.center')}
-                  </Button>
-                  <DesktopOnly>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-muted-foreground h-8 rounded-lg px-2"
-                      onClick={() => void window.appAPI.openFlightStripWindow()}
-                      tooltip={t('flightStrip.detach')}
-                    >
-                      <PictureInPicture2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </DesktopOnly>
-                </div>
-              )}
+              {/* Turn-by-turn taxi guidance, on the ground with a planned route */}
+              <TaxiGuidanceRow />
             </div>
-
-            {/* Turn-by-turn taxi guidance, on the ground with a planned route */}
-            <TaxiGuidanceRow />
             {footer}
           </div>
         </motion.div>
