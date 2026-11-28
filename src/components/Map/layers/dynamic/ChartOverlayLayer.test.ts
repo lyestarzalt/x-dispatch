@@ -3,20 +3,34 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   CHART_OVERLAY_LAYER_ID,
   CHART_OVERLAY_SOURCE_ID,
+  removeChartOverlay,
   setChartOverlayOpacity,
   showChartOverlay,
 } from './ChartOverlayLayer';
 
-function fakeMap() {
+/**
+ * `tilesLoading` is the map just after the camera moved to a chart: the style is in
+ * (`style._loaded`) but `isStyleLoaded()` stays false until the tiles arrive, so
+ * `safeRemove` holds a removal back until `idle`.
+ */
+function fakeMap({ tilesLoading = false } = {}) {
   const layers = new Map<string, { paint: Record<string, unknown> }>();
   const sources = new Map<string, unknown>();
+  const idle: Array<() => void> = [];
   const map = {
-    style: {},
-    isStyleLoaded: () => true,
+    style: { _loaded: true },
+    isStyleLoaded: () => !tilesLoading,
     getStyle: () => ({ layers: [] }),
+    once: (event: string, fn: () => void) => {
+      if (event === 'idle') idle.push(fn);
+    },
     getLayer: (id: string) => layers.get(id),
     getSource: (id: string) => sources.get(id),
-    addSource: vi.fn((id: string, spec: unknown) => sources.set(id, spec)),
+    // MapLibre refuses a second source under the same id.
+    addSource: vi.fn((id: string, spec: unknown) => {
+      if (sources.has(id)) throw new Error(`Source "${id}" already exists.`);
+      sources.set(id, spec);
+    }),
     addLayer: vi.fn((layer: { id: string; paint: Record<string, unknown> }, _beforeId?: string) =>
       layers.set(layer.id, layer)
     ),
@@ -26,7 +40,8 @@ function fakeMap() {
       layers.get(id)!.paint[key] = value;
     },
   };
-  return { map: map as unknown as maplibregl.Map, layers, sources, raw: map };
+  const goIdle = () => idle.splice(0).forEach((fn) => fn());
+  return { map: map as unknown as maplibregl.Map, layers, sources, raw: map, goIdle };
 }
 
 const canvas = {} as HTMLCanvasElement;
@@ -70,5 +85,35 @@ describe('ChartOverlayLayer', () => {
     showChartOverlay(map, canvas, corners, 0.7);
     showChartOverlay(map, canvas, corners, 0.7);
     expect(raw.addSource).toHaveBeenCalledTimes(2);
+  });
+
+  // KJFK ILS OR LOC RWY 31R removed from the card and shown again from the airport dock, in
+  // the packaged app: "Source "chart-overlay-source" already exists", and the card said the
+  // chart could not be placed.
+  it('replaces the chart while the map is still loading tiles', () => {
+    const { map, raw, sources } = fakeMap({ tilesLoading: true });
+    showChartOverlay(map, canvas, corners, 0.7);
+    expect(() => showChartOverlay(map, canvas, corners, 0.7)).not.toThrow();
+    expect(raw.addSource).toHaveBeenCalledTimes(2);
+    expect(sources.has(CHART_OVERLAY_SOURCE_ID)).toBe(true);
+  });
+
+  it('a removal held back until idle leaves a chart shown after it on the map', () => {
+    const { map, layers, sources, goIdle } = fakeMap({ tilesLoading: true });
+    showChartOverlay(map, canvas, corners, 0.7);
+    removeChartOverlay(map);
+    showChartOverlay(map, canvas, corners, 0.7);
+    goIdle();
+    expect(layers.has(CHART_OVERLAY_LAYER_ID)).toBe(true);
+    expect(sources.has(CHART_OVERLAY_SOURCE_ID)).toBe(true);
+  });
+
+  it('a removal held back until idle still takes the chart off', () => {
+    const { map, layers, sources, goIdle } = fakeMap({ tilesLoading: true });
+    showChartOverlay(map, canvas, corners, 0.7);
+    removeChartOverlay(map);
+    goIdle();
+    expect(layers.has(CHART_OVERLAY_LAYER_ID)).toBe(false);
+    expect(sources.has(CHART_OVERLAY_SOURCE_ID)).toBe(false);
   });
 });

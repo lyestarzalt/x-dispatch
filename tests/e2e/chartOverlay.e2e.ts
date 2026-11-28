@@ -142,13 +142,13 @@ test('the detached strip adjusts its own opacity without dimming the taxi map', 
 test('the open taxi map follows takeoff and landing with independent opacity', async () => {
   const search = mainWindow.getByPlaceholder('Search airports...');
   await expect(search).toBeVisible({ timeout: 30000 });
-  await mainWindow.evaluate(() => {
-    const settings = JSON.parse(localStorage.getItem('xplane-viz-settings')!);
-    settings.state.flightStrip.flightMapOnTakeoff = true;
-    localStorage.setItem('xplane-viz-settings', JSON.stringify(settings));
-  });
-  await mainWindow.reload();
-  await expect(search).toBeVisible({ timeout: 30000 });
+  // A fresh profile stores no settings until one changes, so the pilot's switch turns it on.
+  await mainWindow.getByRole('button', { name: 'Open settings' }).click();
+  await mainWindow.getByRole('tab', { name: 'Flight Strip' }).click();
+  const flightMap = mainWindow.getByRole('switch', { name: 'In-flight map' });
+  await flightMap.click();
+  await expect(flightMap).toBeChecked();
+  await mainWindow.keyboard.press('Escape');
   await mainWindow.evaluate(() =>
     window.appAPI.setFlightStripGuidance({
       departure: {
