@@ -1,9 +1,18 @@
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, ArrowRight, Folder, Fuel, Plane, Scale, Tag } from 'lucide-react';
+import {
+  ArrowLeft,
+  ArrowRight,
+  Folder,
+  Fuel,
+  Image as ImageIcon,
+  Plane,
+  Scale,
+  Tag,
+} from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Slider } from '@/components/ui/slider';
 import { aircraftStudio, aircraftVersionLabel } from '@/lib/utils/aircraftStudio';
 import { formatWeight } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/helpers';
@@ -11,13 +20,14 @@ import { useAircraftImage } from '@/queries';
 import { useLaunchStore } from '@/stores/launchStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { Livery } from '@/types/aircraft';
+import {
+  LIVERY_GAP,
+  LIVERY_PADDING,
+  LIVERY_THUMB_WIDTH,
+  liveryCardHeight,
+  liveryGridHeight,
+} from './liveryGrid';
 
-// Livery grid layout constants (in pixels)
-const LIVERY_CARD_HEIGHT = 80;
-const LIVERY_GAP = 12;
-const LIVERY_PADDING = 12;
-const LIVERY_VISIBLE_ROWS = 2;
-const LIVERY_COLUMNS = 4;
 const LIVERY_VIEWPORT_CLASS = 'snap-y snap-mandatory scroll-p-3';
 
 // Main preview image for selected livery
@@ -51,11 +61,14 @@ function LiveryCard({
   livery,
   isSelected,
   fallbackImage,
+  height,
   onClick,
 }: {
   livery: Livery;
   isSelected: boolean;
   fallbackImage: string | undefined;
+  /** Card height in CSS pixels; the picture takes what the name leaves. */
+  height: number;
   onClick: () => void;
 }) {
   const { data: liveryImage } = useAircraftImage(livery.previewImage);
@@ -66,14 +79,15 @@ function LiveryCard({
       variant="ghost"
       onClick={onClick}
       tooltip={livery.displayName}
+      style={{ height }}
       className={cn(
-        'group h-20 flex-col overflow-hidden border p-0',
+        'group snap-start flex-col overflow-hidden border p-0',
         isSelected
           ? 'border-primary bg-primary/5'
           : 'bg-secondary hover:border-border hover:bg-accent border-transparent'
       )}
     >
-      <div className="relative flex-1 overflow-hidden">
+      <div className="relative min-h-0 w-full flex-1 overflow-hidden">
         {displayImage ? (
           <img src={displayImage} alt={livery.displayName} className="h-full w-full object-cover" />
         ) : (
@@ -82,7 +96,7 @@ function LiveryCard({
           </div>
         )}
       </div>
-      <div className="flex-shrink-0 px-2 py-1">
+      <div className="w-full min-w-0 flex-shrink-0 px-2 py-1">
         <span
           className={cn(
             'block truncate text-center text-sm',
@@ -104,6 +118,8 @@ export function AircraftPreview() {
   const selectedAircraft = useLaunchStore((s) => s.selectedAircraft);
   const selectedLivery = useLaunchStore((s) => s.selectedLivery);
   const setSelectedLivery = useLaunchStore((s) => s.setSelectedLivery);
+  const thumbWidth = useLaunchStore((s) => s.liveryThumbWidth);
+  const setThumbWidth = useLaunchStore((s) => s.setLiveryThumbWidth);
 
   // TanStack Query for main aircraft image (fallback)
   const { data: aircraftImage } = useAircraftImage(selectedAircraft?.previewImage ?? null);
@@ -136,21 +152,6 @@ export function AircraftPreview() {
     if (!livery) return;
     setSelectedLivery(livery.name);
   };
-
-  // Group liveries into rows for scroll-snap
-  const liveryRows = useMemo(() => {
-    if (!selectedAircraft) return [];
-    const rows: { livery: Livery; index: number }[][] = [];
-    for (let i = 0; i < selectedAircraft.liveries.length; i += LIVERY_COLUMNS) {
-      rows.push(
-        selectedAircraft.liveries.slice(i, i + LIVERY_COLUMNS).map((livery, j) => ({
-          livery,
-          index: i + j,
-        }))
-      );
-    }
-    return rows;
-  }, [selectedAircraft]);
 
   if (!selectedAircraft) {
     return (
@@ -284,38 +285,52 @@ export function AircraftPreview() {
 
       {/* Livery Selection Grid - Shows 2 rows, scrolls if more */}
       <div className="bg-card/50 flex flex-shrink-0 flex-col">
-        <div className="border-border/30 flex flex-shrink-0 items-center justify-between border-b px-4 py-2">
-          <span className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
+        <div className="border-border/30 flex flex-shrink-0 items-center justify-between gap-4 border-b px-4 py-2">
+          <span className="text-muted-foreground min-w-0 truncate text-xs font-medium tracking-wider uppercase">
             {t('launcher.liveries.title')}
+            <span className="ml-2 font-mono">{selectedAircraft.liveries.length}</span>
           </span>
-          <span className="text-muted-foreground text-sm">{selectedAircraft.liveries.length}</span>
+          <div
+            className="flex shrink-0 items-center gap-2"
+            title={t('launcher.liveries.thumbnailSize')}
+          >
+            <ImageIcon className="text-muted-foreground h-3 w-3" aria-hidden />
+            <Slider
+              aria-label={t('launcher.liveries.thumbnailSize')}
+              className="w-28"
+              min={LIVERY_THUMB_WIDTH.min}
+              max={LIVERY_THUMB_WIDTH.max}
+              step={LIVERY_THUMB_WIDTH.step}
+              value={[thumbWidth]}
+              onValueChange={([width]) => {
+                if (width !== undefined) setThumbWidth(width);
+              }}
+            />
+            <ImageIcon className="text-muted-foreground h-4 w-4" aria-hidden />
+          </div>
         </div>
+        {/* Two rows at the chosen size, but never more than the preview above can spare. */}
         <ScrollArea
           viewportClassName={LIVERY_VIEWPORT_CLASS}
-          style={{
-            maxHeight:
-              LIVERY_CARD_HEIGHT * LIVERY_VISIBLE_ROWS +
-              LIVERY_GAP * (LIVERY_VISIBLE_ROWS - 1) +
-              LIVERY_PADDING * 2,
-          }}
+          style={{ maxHeight: `min(${liveryGridHeight(thumbWidth)}px, 45vh)` }}
         >
-          <div className="flex flex-col p-3" style={{ gap: LIVERY_GAP }}>
-            {liveryRows.map((row, rowIndex) => (
-              <div
-                key={rowIndex}
-                className="grid snap-start grid-cols-4"
-                style={{ gap: LIVERY_GAP }}
-              >
-                {row.map(({ livery, index }) => (
-                  <LiveryCard
-                    key={livery.name}
-                    livery={livery}
-                    isSelected={selectedLivery === livery.name}
-                    fallbackImage={aircraftImage ?? undefined}
-                    onClick={() => selectLivery(index)}
-                  />
-                ))}
-              </div>
+          <div
+            className="grid"
+            style={{
+              gap: LIVERY_GAP,
+              padding: LIVERY_PADDING,
+              gridTemplateColumns: `repeat(auto-fill, minmax(${thumbWidth}px, 1fr))`,
+            }}
+          >
+            {selectedAircraft.liveries.map((livery, index) => (
+              <LiveryCard
+                key={livery.name}
+                livery={livery}
+                isSelected={selectedLivery === livery.name}
+                fallbackImage={aircraftImage ?? undefined}
+                height={liveryCardHeight(thumbWidth)}
+                onClick={() => selectLivery(index)}
+              />
             ))}
           </div>
         </ScrollArea>

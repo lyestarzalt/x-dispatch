@@ -709,6 +709,12 @@
       "ownshipPreviewDark": "ダークマップ",
       "ownshipPreviewSatellite": "衛星",
       "ownshipPreviewLight": "ライトマップ",
+      "networkTraffic": "オンライントラフィック",
+      "networkTrafficColor": "色",
+      "networkTrafficColorDesc": "両方に同じ色を選ばない限り、VATSIMは緑、IVAOは青で表示されます。",
+      "networkTrafficColorNetwork": "ネットワーク別",
+      "networkTrafficColorGreen": "緑",
+      "networkTrafficColorBlue": "青",
       "desktop": "デスクトップウィンドウ",
       "desktopDescription": "このコンピューター上でのウィンドウとしての X-Dispatch の動作。",
       "keepRunningOnClose": "ウィンドウを閉じても実行を続ける",
@@ -1534,7 +1540,8 @@
       "count": "塗装（{{count}}）",
       "default": "デフォルト",
       "previousLivery": "前の塗装",
-      "nextLivery": "次の塗装"
+      "nextLivery": "次の塗装",
+      "thumbnailSize": "サムネイルのサイズ"
     },
     "specs": {
       "emptyWeight": "空虚重量",

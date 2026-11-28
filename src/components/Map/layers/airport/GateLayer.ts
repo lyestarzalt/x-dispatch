@@ -89,6 +89,101 @@ const GATE_ICONS: Record<string, string> = {
   </svg>`,
 };
 
+type Expr = maplibregl.ExpressionSpecification;
+
+const RING_LAYER_ID = 'airport-gates-ring';
+const ICON_LAYER_ID = 'airport-gates';
+const LABEL_LAYER_ID = 'airport-gate-labels';
+
+/** Opacity of a gate the panel's gate search leaves out; matches keep their normal look. */
+const SEARCH_FADE = { ring: 0.15, icon: 0.25, label: 0.25 } as const;
+
+/**
+ * Gate indices the gate search matches, per map. Kept here so drawing the airport again
+ * (a style change) keeps the fade without the hook having to notice.
+ */
+const searchMatches = new WeakMap<maplibregl.Map, readonly number[]>();
+
+const IS_SELECTED: Expr = ['boolean', ['feature-state', 'selected'], false];
+const IS_HOVERED: Expr = ['boolean', ['feature-state', 'hover'], false];
+
+function isMatch(matches: readonly number[]): Expr {
+  return ['in', ['id'], ['literal', [...matches]]];
+}
+
+/** `normal` for the selected gate, the matches and every helipad; `faded` for the rest. */
+function fadeUnlessMatch(
+  matches: readonly number[] | undefined,
+  normal: Expr | number,
+  faded: number
+): Expr | number {
+  if (!matches) return normal;
+  return [
+    'case',
+    IS_SELECTED,
+    normal,
+    ['==', ['get', 'locationType'], 'helipad'],
+    normal,
+    isMatch(matches),
+    normal,
+    faded,
+  ];
+}
+
+/** The paint values the gate search changes, for one set of matches (undefined: no search). */
+export function gateSearchPaint(matches: readonly number[] | undefined) {
+  const ringOpacity: Expr = ['case', IS_SELECTED, 0.95, IS_HOVERED, 0.85, 0.7];
+  const strokeWidth: Expr = matches
+    ? ['case', IS_SELECTED, 2.5, IS_HOVERED, 1.5, isMatch(matches), 1.5, 1]
+    : ['case', IS_SELECTED, 2.5, IS_HOVERED, 1.5, 1];
+  const strokeColor: Expr = matches
+    ? [
+        'case',
+        IS_SELECTED,
+        GATE_COLORS.selected,
+        IS_HOVERED,
+        '#ffffff',
+        isMatch(matches),
+        '#ffffff',
+        GATE_COLORS.hover,
+      ]
+    : ['case', IS_SELECTED, GATE_COLORS.selected, IS_HOVERED, '#ffffff', GATE_COLORS.hover];
+  return {
+    ring: {
+      'circle-opacity': fadeUnlessMatch(matches, ringOpacity, SEARCH_FADE.ring),
+      'circle-stroke-opacity': fadeUnlessMatch(matches, 1, SEARCH_FADE.ring),
+      'circle-stroke-width': strokeWidth,
+      'circle-stroke-color': strokeColor,
+    },
+    icon: { 'icon-opacity': fadeUnlessMatch(matches, 1, SEARCH_FADE.icon) },
+    label: { 'text-opacity': fadeUnlessMatch(matches, 1, SEARCH_FADE.label) },
+  } as const;
+}
+
+/**
+ * Fades the gates a search leaves out and rings the ones it matches, like a browser's find.
+ * `null` ends the search and puts every gate back.
+ */
+export function setGateSearchMatches(map: maplibregl.Map, matches: readonly number[] | null): void {
+  if (matches) searchMatches.set(map, matches);
+  else searchMatches.delete(map);
+  if (!map.getStyle()) return;
+
+  const paint = gateSearchPaint(matches ?? undefined);
+  type PaintArgs = Parameters<maplibregl.Map['setPaintProperty']>;
+  const byLayer: [string, Record<string, unknown>][] = [
+    [RING_LAYER_ID, paint.ring],
+    [ICON_LAYER_ID, paint.icon],
+    [LABEL_LAYER_ID, paint.label],
+  ];
+  for (const [layerId, properties] of byLayer) {
+    if (!map.getLayer(layerId)) continue;
+    for (const [name, value] of Object.entries(properties)) {
+      map.setPaintProperty(layerId, name as PaintArgs[1], value as PaintArgs[2]);
+    }
+  }
+}
+
 export class GateLayer extends BaseLayerRenderer {
   layerId = 'airport-gates';
   sourceId = 'airport-gates';
@@ -109,6 +204,7 @@ export class GateLayer extends BaseLayerRenderer {
     this.addSource(map, geoJSON);
 
     const minZoom = ZOOM_BEHAVIORS.startupLocations.minZoom;
+    const searchPaint = gateSearchPaint(searchMatches.get(map));
 
     // Ring layer with unified colors (bottom) — excludes helipads
     this.addLayer(map, {
@@ -149,30 +245,7 @@ export class GateLayer extends BaseLayerRenderer {
             GATE_COLORS.default,
           ],
         ],
-        'circle-opacity': [
-          'case',
-          ['boolean', ['feature-state', 'selected'], false],
-          0.95,
-          ['boolean', ['feature-state', 'hover'], false],
-          0.85,
-          0.7,
-        ],
-        'circle-stroke-width': [
-          'case',
-          ['boolean', ['feature-state', 'selected'], false],
-          2.5,
-          ['boolean', ['feature-state', 'hover'], false],
-          1.5,
-          1,
-        ],
-        'circle-stroke-color': [
-          'case',
-          ['boolean', ['feature-state', 'selected'], false],
-          GATE_COLORS.selected,
-          ['boolean', ['feature-state', 'hover'], false],
-          '#ffffff',
-          GATE_COLORS.hover,
-        ],
+        ...searchPaint.ring,
       },
     });
 
@@ -247,7 +320,7 @@ export class GateLayer extends BaseLayerRenderer {
       },
       paint: {
         'icon-color': '#ffffff',
-        'icon-opacity': 1,
+        ...searchPaint.icon,
       },
     });
 
@@ -274,6 +347,7 @@ export class GateLayer extends BaseLayerRenderer {
         ],
         'text-halo-color': '#0f172a',
         'text-halo-width': 1.5,
+        ...searchPaint.label,
       },
     });
   }

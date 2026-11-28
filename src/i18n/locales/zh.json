@@ -709,6 +709,12 @@
       "ownshipPreviewDark": "深色地图",
       "ownshipPreviewSatellite": "卫星",
       "ownshipPreviewLight": "浅色地图",
+      "networkTraffic": "在线交通",
+      "networkTrafficColor": "颜色",
+      "networkTrafficColorDesc": "VATSIM 为绿色，IVAO 为蓝色，除非你为两者选择同一种颜色。",
+      "networkTrafficColorNetwork": "按网络",
+      "networkTrafficColorGreen": "绿色",
+      "networkTrafficColorBlue": "蓝色",
       "desktop": "桌面窗口",
       "desktopDescription": "X-Dispatch 作为窗口在这台电脑上的行为方式。",
       "keepRunningOnClose": "关闭窗口后继续运行",
@@ -1534,7 +1540,8 @@
       "count": "涂装 ({{count}})",
       "default": "默认",
       "previousLivery": "上一个涂装",
-      "nextLivery": "下一个涂装"
+      "nextLivery": "下一个涂装",
+      "thumbnailSize": "缩略图大小"
     },
     "specs": {
       "emptyWeight": "空重",

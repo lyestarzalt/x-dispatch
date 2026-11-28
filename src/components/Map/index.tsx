@@ -54,6 +54,7 @@ import {
   useCursorElevation,
   useFlightReplay,
   useFlightTrail,
+  useGateSearchHighlight,
   useGroundWeather,
   // useIdleOrbit, // disabled for GPU perf (#59)
   useMapContextMenu,
@@ -384,6 +385,8 @@ export default function Map({ airports }: MapProps) {
     navVisibility,
     theme: basemapTheme,
   });
+
+  useGateSearchHighlight(mapRef);
 
   // Online network traffic, and the selected pilot's route
   useNetworkTrafficSync({ mapRef, network: activeNetwork, pilots: networkPilots });

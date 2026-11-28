@@ -1,7 +1,9 @@
 import { useEffect } from 'react';
 import { pilotsInBounds } from '@/lib/networkTraffic/normalize';
+import { useSettingsStore } from '@/stores/settingsStore';
 import type { NetworkId, NetworkPilot } from '@/types/networkTraffic';
 import {
+  networkTrafficColor,
   removeNetworkTrafficLayer,
   setupNetworkTrafficClickHandler,
   updateNetworkTrafficLayer,
@@ -23,6 +25,8 @@ interface UseNetworkTrafficSyncOptions {
  * refresh queued behind a style reload cannot bring it back.
  */
 export function useNetworkTrafficSync({ mapRef, network, pilots }: UseNetworkTrafficSyncOptions) {
+  const colorChoice = useSettingsStore((s) => s.graphics.networkTrafficColor);
+
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -44,7 +48,12 @@ export function useNetworkTrafficSync({ mapRef, network, pilots }: UseNetworkTra
         east: b.getNorthEast().lng,
         west: b.getSouthWest().lng,
       });
-      void updateNetworkTrafficLayer(map, network, inView);
+      void updateNetworkTrafficLayer(
+        map,
+        network,
+        inView,
+        networkTrafficColor(network, colorChoice)
+      );
       setupNetworkTrafficClickHandler(map, network);
     };
 
@@ -54,7 +63,7 @@ export function useNetworkTrafficSync({ mapRef, network, pilots }: UseNetworkTra
       map.off('moveend', update);
       map.off('styledata', update);
     };
-  }, [mapRef, network, pilots]);
+  }, [mapRef, network, pilots, colorChoice]);
 
   // Nothing left on the map once the overlay goes.
   useEffect(() => {

@@ -17,6 +17,26 @@ export const NETWORK_COLORS: Record<NetworkId, string> = {
   ivao: '#60a5fa',
 };
 
+/**
+ * What the pilot can pick for online traffic: each network's own colour, or one of the two
+ * for both. Other colours stay with the own aircraft and sim traffic.
+ */
+export const NETWORK_TRAFFIC_COLOR_CHOICES = ['network', 'green', 'blue'] as const;
+export type NetworkTrafficColorChoice = (typeof NETWORK_TRAFFIC_COLOR_CHOICES)[number];
+
+const TRAFFIC_COLOR_HEX: Record<Exclude<NetworkTrafficColorChoice, 'network'>, string> = {
+  green: NETWORK_COLORS.vatsim,
+  blue: NETWORK_COLORS.ivao,
+};
+
+/** Icon, label and route colour for a network's pilots under the pilot's choice. */
+export function networkTrafficColor(
+  network: NetworkId,
+  choice: NetworkTrafficColorChoice = 'network'
+): string {
+  return choice === 'network' ? NETWORK_COLORS[network] : TRAFFIC_COLOR_HEX[choice];
+}
+
 function ids(network: NetworkId) {
   return {
     source: `${network}-pilots-source`,
@@ -63,11 +83,11 @@ export function createNetworkPilotGeoJSON(pilots: NetworkPilot[]): GeoJSON.Featu
 export async function addNetworkTrafficLayer(
   map: maplibregl.Map,
   network: NetworkId,
-  pilots: NetworkPilot[]
+  pilots: NetworkPilot[],
+  color: string = NETWORK_COLORS[network]
 ): Promise<void> {
   if (!map.getStyle()) return;
   const { source, icons, labels } = ids(network);
-  const color = NETWORK_COLORS[network];
 
   await ensureFallbackIcon(map);
   await ensureAircraftIcons(map, iconsOf(pilots));
@@ -125,14 +145,22 @@ export async function addNetworkTrafficLayer(
 export async function updateNetworkTrafficLayer(
   map: maplibregl.Map,
   network: NetworkId,
-  pilots: NetworkPilot[]
+  pilots: NetworkPilot[],
+  color: string = NETWORK_COLORS[network]
 ): Promise<void> {
-  const { source } = ids(network);
+  const { source, icons, labels } = ids(network);
   const existing = map.getSource(source) as maplibregl.GeoJSONSource | undefined;
-  if (!existing) return addNetworkTrafficLayer(map, network, pilots);
+  if (!existing) return addNetworkTrafficLayer(map, network, pilots, color);
   await ensureAircraftIcons(map, iconsOf(pilots));
   if (!map.getStyle()) return;
   existing.setData(createNetworkPilotGeoJSON(pilots));
+  // The colour is a setting; repaint only when it changed.
+  if (map.getLayer(icons) && map.getPaintProperty(icons, 'icon-color') !== color) {
+    map.setPaintProperty(icons, 'icon-color', color);
+  }
+  if (map.getLayer(labels) && map.getPaintProperty(labels, 'text-color') !== color) {
+    map.setPaintProperty(labels, 'text-color', color);
+  }
 }
 
 export function removeNetworkTrafficLayer(map: maplibregl.Map, network: NetworkId): void {

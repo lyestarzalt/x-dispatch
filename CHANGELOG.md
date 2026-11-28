@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Copy coordinates for an INS.** The map's right-click menu shows and copies the point as `N45°59.9' E007°59.9'`, the format a CIVA INS takes.
+- **Gate search shows on the map.** Gates matching the search are ringed and the others fade.
+- **Livery thumbnail size.** A slider above the liveries makes their pictures larger or smaller.
+- **Online traffic colour.** Settings → Appearance draws VATSIM and IVAO pilots green, blue or each in its own colour.
+
+### Changed
+
+- **Staffed centre sectors are tinted.** A VATSIM centre that is online is filled, not only outlined.
 
 ### Fixed
 

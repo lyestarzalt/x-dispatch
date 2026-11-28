@@ -709,6 +709,12 @@
       "ownshipPreviewDark": "Carte sombre",
       "ownshipPreviewSatellite": "Satellite",
       "ownshipPreviewLight": "Carte claire",
+      "networkTraffic": "Trafic en ligne",
+      "networkTrafficColor": "Couleur",
+      "networkTrafficColorDesc": "VATSIM est en vert et IVAO en bleu, sauf si vous choisissez une couleur pour les deux.",
+      "networkTrafficColorNetwork": "Par réseau",
+      "networkTrafficColorGreen": "Vert",
+      "networkTrafficColorBlue": "Bleu",
       "desktop": "Fenêtre de bureau",
       "desktopDescription": "Comment X-Dispatch se comporte en tant que fenêtre sur cet ordinateur.",
       "keepRunningOnClose": "Rester ouvert quand la fenêtre est fermée",
@@ -1534,7 +1540,8 @@
       "count": "Livrées ({{count}})",
       "default": "Par défaut",
       "previousLivery": "Livrée précédente",
-      "nextLivery": "Livrée suivante"
+      "nextLivery": "Livrée suivante",
+      "thumbnailSize": "Taille des vignettes"
     },
     "specs": {
       "emptyWeight": "Masse à vide",

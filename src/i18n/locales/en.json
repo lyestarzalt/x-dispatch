@@ -709,6 +709,12 @@
       "ownshipPreviewDark": "Dark map",
       "ownshipPreviewSatellite": "Satellite",
       "ownshipPreviewLight": "Light map",
+      "networkTraffic": "Online traffic",
+      "networkTrafficColor": "Colour",
+      "networkTrafficColorDesc": "VATSIM is green and IVAO blue unless you pick one colour for both.",
+      "networkTrafficColorNetwork": "By network",
+      "networkTrafficColorGreen": "Green",
+      "networkTrafficColorBlue": "Blue",
       "desktop": "Desktop window",
       "desktopDescription": "How X-Dispatch behaves as a window on this computer.",
       "keepRunningOnClose": "Keep running when the window is closed",
@@ -1534,7 +1540,8 @@
       "count": "Liveries ({{count}})",
       "default": "Default",
       "previousLivery": "Previous livery",
-      "nextLivery": "Next livery"
+      "nextLivery": "Next livery",
+      "thumbnailSize": "Thumbnail size"
     },
     "specs": {
       "emptyWeight": "Empty",

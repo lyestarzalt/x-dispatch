@@ -34,16 +34,19 @@ const TRACON_SOURCE_ID = 'vatsim-tracon-active-source';
 const LABEL_SOURCE_ID = 'vatsim-sector-label-source';
 
 const INACTIVE_LAYER_ID = 'vatsim-sectors-inactive';
+const ACTIVE_FILL_LAYER_ID = 'vatsim-sectors-active-fill';
 const ACTIVE_LAYER_ID = 'vatsim-sectors-active';
 const LABEL_LAYER_ID = 'vatsim-sectors-labels';
 const TRACON_FILL_LAYER_ID = 'vatsim-tracon-active-fill';
 const TRACON_OUTLINE_LAYER_ID = 'vatsim-tracon-active-outline';
 
 /** Centre sectors in the CTR role colour, approach sectors in the APP role colour, so the
- * map, the label strip and the panel speak one ATC palette. */
+ * map, the label strip and the panel speak one ATC palette. A staffed centre is tinted
+ * inside too: the outline alone is easy to miss on a busy map. */
 const SECTOR_STYLE = {
   inactiveLine: '#717880',
   activeLine: ATC_ROLE_COLORS.CTR,
+  activeFillOpacity: 0.1,
   labelBg: '#0d131a',
   traconFill: 'rgba(139, 92, 246, 0.10)',
   traconOutline: ATC_ROLE_COLORS.APP,
@@ -304,6 +307,22 @@ export function updateVatsimSectorLayer(
     });
   }
 
+  if (!map.getLayer(ACTIVE_FILL_LAYER_ID)) {
+    map.addLayer(
+      {
+        id: ACTIVE_FILL_LAYER_ID,
+        type: 'fill',
+        source: ACTIVE_SOURCE_ID,
+        paint: {
+          'fill-color': SECTOR_STYLE.activeLine,
+          'fill-opacity': SECTOR_STYLE.activeFillOpacity,
+        },
+      },
+      // Under the outline, also on a map that already has it.
+      map.getLayer(ACTIVE_LAYER_ID) ? ACTIVE_LAYER_ID : undefined
+    );
+  }
+
   if (!map.getLayer(ACTIVE_LAYER_ID)) {
     map.addLayer({
       id: ACTIVE_LAYER_ID,
@@ -366,6 +385,7 @@ export function removeVatsimSectorLayer(map: maplibregl.Map): void {
   if (map.getLayer(TRACON_OUTLINE_LAYER_ID)) map.removeLayer(TRACON_OUTLINE_LAYER_ID);
   if (map.getLayer(TRACON_FILL_LAYER_ID)) map.removeLayer(TRACON_FILL_LAYER_ID);
   if (map.getLayer(ACTIVE_LAYER_ID)) map.removeLayer(ACTIVE_LAYER_ID);
+  if (map.getLayer(ACTIVE_FILL_LAYER_ID)) map.removeLayer(ACTIVE_FILL_LAYER_ID);
   if (map.getLayer(INACTIVE_LAYER_ID)) map.removeLayer(INACTIVE_LAYER_ID);
 
   if (map.getSource(LABEL_SOURCE_ID)) map.removeSource(LABEL_SOURCE_ID);
@@ -377,6 +397,7 @@ export function removeVatsimSectorLayer(map: maplibregl.Map): void {
 export function bringVatsimSectorLayersToTop(map: maplibregl.Map): void {
   moveLayersToTop(map, [
     INACTIVE_LAYER_ID,
+    ACTIVE_FILL_LAYER_ID,
     ACTIVE_LAYER_ID,
     TRACON_FILL_LAYER_ID,
     TRACON_OUTLINE_LAYER_ID,
@@ -386,6 +407,7 @@ export function bringVatsimSectorLayersToTop(map: maplibregl.Map): void {
 
 export const VATSIM_SECTOR_LAYER_IDS = [
   INACTIVE_LAYER_ID,
+  ACTIVE_FILL_LAYER_ID,
   ACTIVE_LAYER_ID,
   LABEL_LAYER_ID,
   TRACON_FILL_LAYER_ID,

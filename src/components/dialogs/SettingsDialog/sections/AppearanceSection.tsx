@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Palette, RotateCcw } from 'lucide-react';
+import {
+  NETWORK_TRAFFIC_COLOR_CHOICES,
+  type NetworkTrafficColorChoice,
+} from '@/components/Map/layers/dynamic/NetworkTrafficLayer';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -14,11 +18,22 @@ import { changeLanguage, languages } from '@/i18n';
 import { cn } from '@/lib/utils/helpers';
 import type { FontSize } from '@/stores/settingsStore';
 import { ZOOM_LEVEL_RANGE, useSettingsStore } from '@/stores/settingsStore';
-import { SettingsHeader, SettingsSectionBlock, SettingsToggleRow } from '../primitives';
+import {
+  SettingsChoiceRow,
+  SettingsHeader,
+  SettingsSectionBlock,
+  SettingsToggleRow,
+} from '../primitives';
 import type { SettingsSectionProps } from '../types';
 import { OwnshipSymbolSettings } from './OwnshipSymbolSettings';
 
 const FONT_SIZES = ['small', 'medium', 'large'] as const;
+
+const TRAFFIC_COLOR_LABEL: Record<NetworkTrafficColorChoice, string> = {
+  network: 'settings.appearance.networkTrafficColorNetwork',
+  green: 'settings.appearance.networkTrafficColorGreen',
+  blue: 'settings.appearance.networkTrafficColorBlue',
+};
 
 const isLinux = window.appAPI?.platform === 'linux';
 const isMac = window.appAPI?.platform === 'darwin';
@@ -83,6 +98,8 @@ export default function AppearanceSection({ className }: SettingsSectionProps) {
   const { t, i18n } = useTranslation();
   const { appearance, setFontSize, setZoomLevel, setDebugOverlay, desktop, updateDesktopSettings } =
     useSettingsStore();
+  const networkTrafficColor = useSettingsStore((s) => s.graphics.networkTrafficColor);
+  const updateGraphics = useSettingsStore((s) => s.updateGraphicsSettings);
 
   const handleLanguageChange = (langCode: string) => {
     changeLanguage(langCode);
@@ -149,6 +166,20 @@ export default function AppearanceSection({ className }: SettingsSectionProps) {
       </SettingsSectionBlock>
 
       <OwnshipSymbolSettings />
+
+      {/* VATSIM and IVAO pilots on the map */}
+      <SettingsSectionBlock title={t('settings.appearance.networkTraffic')}>
+        <SettingsChoiceRow
+          title={t('settings.appearance.networkTrafficColor')}
+          description={t('settings.appearance.networkTrafficColorDesc')}
+          value={networkTrafficColor}
+          options={NETWORK_TRAFFIC_COLOR_CHOICES.map((choice) => ({
+            value: choice,
+            label: t(TRAFFIC_COLOR_LABEL[choice]),
+          }))}
+          onChange={(choice) => updateGraphics({ networkTrafficColor: choice })}
+        />
+      </SettingsSectionBlock>
 
       {/* Desktop window behaviour; main applies these */}
       <SettingsSectionBlock

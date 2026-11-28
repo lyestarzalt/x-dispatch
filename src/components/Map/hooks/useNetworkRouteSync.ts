@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
 import type { Airport } from '@/lib/xplaneServices/dataService';
 import { useMapStore } from '@/stores/mapStore';
+import { useSettingsStore } from '@/stores/settingsStore';
 import type { NetworkPilot } from '@/types/networkTraffic';
-import { removeNetworkRouteLayer, updateNetworkRouteLayer } from '../layers';
+import { networkTrafficColor, removeNetworkRouteLayer, updateNetworkRouteLayer } from '../layers';
 import type { MapRef } from './useMapSetup';
 
 interface UseNetworkRouteSyncOptions {
@@ -14,6 +15,7 @@ interface UseNetworkRouteSyncOptions {
 /** Draws the selected network pilot's city pair on the map and takes it off on deselect. */
 export function useNetworkRouteSync({ mapRef, airports, pilots }: UseNetworkRouteSyncOptions) {
   const selection = useMapStore((s) => s.networkSelection);
+  const colorChoice = useSettingsStore((s) => s.graphics.networkTrafficColor);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -39,14 +41,15 @@ export function useNetworkRouteSync({ mapRef, airports, pilots }: UseNetworkRout
         map,
         pilot,
         airportAt(pilot.flightPlan?.departure ?? null),
-        airportAt(pilot.flightPlan?.arrival ?? null)
+        airportAt(pilot.flightPlan?.arrival ?? null),
+        networkTrafficColor(pilot.network, colorChoice)
       );
     };
     draw();
     return () => {
       map.off('styledata', draw);
     };
-  }, [mapRef, selection, pilots, airports]);
+  }, [mapRef, selection, pilots, airports, colorChoice]);
 
   useEffect(() => {
     const map = mapRef.current;

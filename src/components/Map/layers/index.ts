@@ -17,6 +17,8 @@ import {
 } from './airport';
 import type { LayerRenderer } from './airport/BaseLayerRenderer';
 
+export { setGateSearchMatches } from './airport/GateLayer';
+
 // Re-export base types
 export { type LayerRenderer } from './airport/BaseLayerRenderer';
 
@@ -65,9 +67,12 @@ export {
 } from './dynamic/MeasureLayer';
 export {
   NETWORK_COLORS,
+  NETWORK_TRAFFIC_COLOR_CHOICES,
+  type NetworkTrafficColorChoice,
   addNetworkTrafficLayer,
   bringNetworkTrafficLayersToTop,
   networkTrafficLayerIds,
+  networkTrafficColor,
   removeNetworkTrafficLayer,
   setNetworkTrafficLayerVisibility,
   setupNetworkTrafficClickHandler,

@@ -1,5 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import {
+  LIVERY_THUMB_WIDTH,
+  clampLiveryThumbWidth,
+} from '@/components/dialogs/LaunchDialog/components/liveryGrid';
 import type {
   AircraftType,
   EngineType,
@@ -54,6 +58,9 @@ interface LaunchState {
   // Favorites (persisted to localStorage)
   favorites: string[];
 
+  /** Width of a livery thumbnail in the picker, in CSS pixels (persisted). */
+  liveryThumbWidth: number;
+
   // UI State
   isLaunching: boolean;
   launchError: string | null;
@@ -89,6 +96,7 @@ interface LaunchState {
   setFilterEngineType: (value: EngineType) => void;
   setShowFavoritesOnly: (value: boolean) => void;
   toggleFavorite: (path: string) => void;
+  setLiveryThumbWidth: (width: number) => void;
   setIsLaunching: (value: boolean) => void;
   setLaunchError: (error: string | null) => void;
   resetConfig: () => void;
@@ -123,6 +131,7 @@ export const useLaunchStore = create<LaunchState>()(
       lastLiveryByAircraft: {},
       lastAircraftByType: {},
       favorites: [],
+      liveryThumbWidth: LIVERY_THUMB_WIDTH.default,
 
       addLogbookEntry: (entry) =>
         set((state) => ({
@@ -379,6 +388,8 @@ export const useLaunchStore = create<LaunchState>()(
             : [...state.favorites, path],
         })),
 
+      setLiveryThumbWidth: (width) => set({ liveryThumbWidth: clampLiveryThumbWidth(width) }),
+
       setIsLaunching: (value) => set({ isLaunching: value }),
 
       setLaunchError: (error) => set({ launchError: error }),
@@ -392,6 +403,7 @@ export const useLaunchStore = create<LaunchState>()(
         lastLiveryByAircraft: state.lastLiveryByAircraft,
         lastAircraftByType: state.lastAircraftByType,
         favorites: state.favorites,
+        liveryThumbWidth: state.liveryThumbWidth,
         selectedAircraftPath: state.selectedAircraftPath,
         selectedLivery: state.selectedLivery,
         tankPercentages: state.tankPercentages,
@@ -532,9 +544,14 @@ export const useLaunchStore = create<LaunchState>()(
           if (!('lastAircraftByType' in state)) state.lastAircraftByType = {};
         }
 
+        // v9 → v10: livery thumbnail size
+        if (version < 10) {
+          state.liveryThumbWidth = clampLiveryThumbWidth(state.liveryThumbWidth);
+        }
+
         return state as unknown as LaunchState;
       },
-      version: 9,
+      version: 10,
     }
   )
 );

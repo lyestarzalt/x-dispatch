@@ -709,6 +709,12 @@
       "ownshipPreviewDark": "Mapa escuro",
       "ownshipPreviewSatellite": "Satélite",
       "ownshipPreviewLight": "Mapa claro",
+      "networkTraffic": "Tráfego online",
+      "networkTrafficColor": "Cor",
+      "networkTrafficColorDesc": "VATSIM é verde e IVAO azul, a menos que escolha uma cor para ambos.",
+      "networkTrafficColorNetwork": "Por rede",
+      "networkTrafficColorGreen": "Verde",
+      "networkTrafficColorBlue": "Azul",
       "desktop": "Janela do computador",
       "desktopDescription": "Como o X-Dispatch se comporta como janela neste computador.",
       "keepRunningOnClose": "Continuar em execução ao fechar a janela",
@@ -1534,7 +1540,8 @@
       "count": "Pinturas ({{count}})",
       "default": "Predefinida",
       "previousLivery": "Pintura anterior",
-      "nextLivery": "Próxima pintura"
+      "nextLivery": "Próxima pintura",
+      "thumbnailSize": "Tamanho das miniaturas"
     },
     "specs": {
       "emptyWeight": "Peso vazio",

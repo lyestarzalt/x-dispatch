@@ -1,10 +1,12 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useUnits } from '@/hooks/useUnits';
+import { matchGateIndices } from '@/lib/airports/gateSearch';
 import { type Degrees } from '@/lib/utils/geomath';
 import { cn } from '@/lib/utils/helpers';
+import { useGateSearchStore } from '@/stores/gateSearchStore';
 import type { StartupLocation } from '@/types/apt';
 import { NamedPosition } from '@/types/geo';
 import TaxiRouteInline from '../TaxiRouteInline';
@@ -60,24 +62,25 @@ export function GateList({ gates, searchQuery, onSelect, selectedIndex }: GateLi
 
   // Filter gates by search (also search by operation type, size, and airlines)
   const filteredGates = useMemo(() => {
-    if (!searchQuery.trim()) return gates.map((g, i) => ({ gate: g, originalIndex: i }));
-    const query = searchQuery.toLowerCase();
-    return gates
-      .map((g, i) => ({ gate: g, originalIndex: i }))
-      .filter((item) => {
-        const gate = item.gate;
-        const sizeLabelKey = gate.icaoWidthCode ? SIZE_LABELS[gate.icaoWidthCode]?.labelKey : '';
-        const opLabelKey = gate.operationType ? OP_TYPE_LABELS[gate.operationType]?.labelKey : '';
-        const sizeLabel = sizeLabelKey ? t(sizeLabelKey) : '';
-        const opLabel = opLabelKey ? t(opLabelKey) : '';
-        return (
-          gate.name.toLowerCase().includes(query) ||
-          sizeLabel.toLowerCase().includes(query) ||
-          opLabel.toLowerCase().includes(query) ||
-          gate.airlines?.some((a) => a.toLowerCase().includes(query))
-        );
-      });
+    const shownLabels = (gate: StartupLocation) => {
+      const sizeLabelKey = gate.icaoWidthCode ? SIZE_LABELS[gate.icaoWidthCode]?.labelKey : '';
+      const opLabelKey = gate.operationType ? OP_TYPE_LABELS[gate.operationType]?.labelKey : '';
+      return [sizeLabelKey ? t(sizeLabelKey) : '', opLabelKey ? t(opLabelKey) : ''];
+    };
+    return matchGateIndices(gates, searchQuery, shownLabels).map((originalIndex) => ({
+      gate: gates[originalIndex]!,
+      originalIndex,
+    }));
   }, [gates, searchQuery, t]);
+
+  // The map fades the gates the search leaves out, for as long as this list shows a search.
+  const setSearchMatches = useGateSearchStore((s) => s.setMatches);
+  const searching = searchQuery.trim().length > 0;
+  useEffect(() => {
+    if (!searching) return;
+    setSearchMatches(filteredGates.map((item) => item.originalIndex));
+    return () => setSearchMatches(null);
+  }, [searching, filteredGates, setSearchMatches]);
 
   if (gates.length === 0) {
     return (

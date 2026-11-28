@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { NetworkPilot } from '@/types/networkTraffic';
 import { createNetworkRouteGeoJSON } from './NetworkRouteLayer';
-import { createNetworkPilotGeoJSON, networkTrafficLayerIds } from './NetworkTrafficLayer';
+import {
+  NETWORK_COLORS,
+  createNetworkPilotGeoJSON,
+  networkTrafficColor,
+  networkTrafficLayerIds,
+} from './NetworkTrafficLayer';
 
 const pilot: NetworkPilot = {
   network: 'ivao',
@@ -72,5 +77,16 @@ describe('createNetworkRouteGeoJSON', () => {
   it('draws only the leg whose airport is known', () => {
     const fc = createNetworkRouteGeoJSON(pilot, null, KJFK);
     expect(fc.features.map((f) => f.properties?.part)).toEqual(['remaining']);
+  });
+});
+
+describe('networkTrafficColor', () => {
+  it('keeps each network its own colour by default', () => {
+    expect(networkTrafficColor('vatsim')).toBe(NETWORK_COLORS.vatsim);
+    expect(networkTrafficColor('ivao', 'network')).toBe(NETWORK_COLORS.ivao);
+  });
+  it('draws either network in the colour the pilot picked', () => {
+    expect(networkTrafficColor('vatsim', 'blue')).toBe(NETWORK_COLORS.ivao);
+    expect(networkTrafficColor('ivao', 'green')).toBe(NETWORK_COLORS.vatsim);
   });
 });
