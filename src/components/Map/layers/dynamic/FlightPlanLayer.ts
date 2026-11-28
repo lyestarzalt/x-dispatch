@@ -699,6 +699,8 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
     layout: {
       'text-font': labelFont(map, 'semibold'),
       'text-size': ROUTE_LINE_WIDTH,
+      // One line always: wrapped text would leave the line it is written in.
+      'text-max-width': 100,
       'text-anchor': 'center',
       'text-rotate': ['get', 'rotate'],
       'text-rotation-alignment': 'map',
