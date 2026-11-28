@@ -141,6 +141,7 @@ describe('migrateSettings', () => {
       ownshipSize: 'medium',
       ownshipColor: 'magenta',
       ownshipAltitudeCues: true,
+      networkTrafficColor: 'network',
     });
   });
 
@@ -174,6 +175,7 @@ describe('migrateSettings', () => {
       ownshipSize: 'medium',
       ownshipColor: 'magenta',
       ownshipAltitudeCues: true,
+      networkTrafficColor: 'network',
     });
     expect('surfaceDetail' in result.graphics).toBe(false);
   });
@@ -203,6 +205,7 @@ describe('migrateSettings', () => {
       ownshipSize: 'medium',
       ownshipColor: 'magenta',
       ownshipAltitudeCues: true,
+      networkTrafficColor: 'network',
     });
   });
 
@@ -679,6 +682,17 @@ describe('flight strip settings', () => {
     setFlightStripScale(5);
     setFlightStripOpacity(0);
     expect(useSettingsStore.getState().flightStrip).toMatchObject({ scale: 2, opacity: 0.3 });
+  });
+});
+
+describe('online traffic colour at v46', () => {
+  it('starts on the per-network colours and keeps the other graphics settings', () => {
+    const result = migrateSettings({ graphics: { ownshipSize: 'large', cityLights: false } }, 45);
+    expect(result.graphics).toMatchObject({
+      networkTrafficColor: 'network',
+      ownshipSize: 'large',
+      cityLights: false,
+    });
   });
 });
 

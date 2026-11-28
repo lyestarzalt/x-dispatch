@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { NetworkTrafficColorChoice } from '@/components/Map/layers/dynamic/NetworkTrafficLayer';
 import {
   DEFAULT_OWNSHIP_STYLE,
   type OwnshipColorScheme,
@@ -173,6 +174,8 @@ export interface GraphicsSettings {
   ownshipColor: OwnshipColorScheme;
   /** Ground shadow and drop line under the own-aircraft symbol, growing with height above ground. */
   ownshipAltitudeCues: boolean;
+  /** Colour of VATSIM and IVAO pilots: each network's own, or one colour for both. */
+  networkTrafficColor: NetworkTrafficColorChoice;
 }
 
 export interface FlightsSettings {
@@ -309,6 +312,7 @@ const DEFAULT_GRAPHICS_SETTINGS: GraphicsSettings = {
   ownshipSize: DEFAULT_OWNSHIP_STYLE.size,
   ownshipColor: DEFAULT_OWNSHIP_STYLE.color,
   ownshipAltitudeCues: DEFAULT_OWNSHIP_STYLE.altitudeCues,
+  networkTrafficColor: 'network',
 };
 
 const DEFAULT_LAUNCHER_SETTINGS: LauncherSettings = {
@@ -569,7 +573,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'xplane-viz-settings',
-      version: 45,
+      version: 46,
       migrate: (persistedState, version) => migrateSettings(persistedState, version),
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -889,6 +893,12 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
         map: { ...state.map!, units: { ...units, length: units.altitude ?? 'ft' } },
       };
     }
+  }
+  if (version < 46) {
+    state = {
+      ...state,
+      graphics: { ...DEFAULT_GRAPHICS_SETTINGS, ...state.graphics, networkTrafficColor: 'network' },
+    };
   }
 
   return state as SettingsState;

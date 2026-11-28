@@ -85,6 +85,65 @@ describe('createLegLabelGeoJSON', () => {
     expect(features).toHaveLength(2);
   });
 
+  // DAAG BJA1A off runway 23: the 4 DME leg from ALR and the heading leg after it.
+  it('writes the distance and course on each procedure leg, in a chip of the procedure colour', () => {
+    const paths = [
+      {
+        via: 'BJA1A',
+        kind: 'sid' as const,
+        path: [],
+        legLabels: [
+          {
+            from: { latitude: 36.691, longitude: 3.21548 },
+            to: { latitude: 36.65104, longitude: 3.14893 },
+            distanceNm: 4,
+            courseTrue: 233,
+          },
+          {
+            from: { latitude: 36.65934, longitude: 3.14805 },
+            to: { latitude: 36.63505, longitude: 3.18774 },
+            distanceNm: 2.4,
+            courseTrue: null,
+          },
+          // A climb to an altitude: course only.
+          {
+            from: { latitude: 36.7, longitude: 3.3 },
+            to: { latitude: 36.68, longitude: 3.27 },
+            distanceNm: null,
+            courseTrue: 233,
+          },
+          // Nothing to say: no chip.
+          {
+            from: { latitude: 36.7, longitude: 3.4 },
+            to: { latitude: 36.68, longitude: 3.37 },
+            distanceNm: null,
+            courseTrue: null,
+          },
+        ],
+      },
+    ];
+    const { features } = createLegLabelGeoJSON([], paths);
+    expect(features).toHaveLength(3);
+    const [dme, heading, climb] = features.map((f) => f.properties!);
+    // Distance first, then the course (the unit text comes from the translations).
+    expect(dme!.detail).toMatch(/^4\.0\b.*\d{3}°/);
+    expect(dme!.chip).toBe('route-chip-sid');
+    expect(dme!.showAirway).toBe(false);
+    expect(heading!.detail).toMatch(/^2\.4\b/);
+    expect(heading!.detail).not.toContain('°');
+    expect(climb!.detail).toMatch(/^\d{3}°/);
+    // South-west bound, so the text is turned upright and the arrow leads it.
+    expect(dme!.arrow).toBe('back');
+    expect(heading!.arrow).toBe('forward');
+    // Each chip waits for the zoom at which its leg is as long as its text.
+    expect(dme!.minZoom).toBeGreaterThan(5);
+    expect(heading!.minZoom).toBeGreaterThanOrEqual(dme!.minZoom as number);
+    // The chip sits at the middle of its leg.
+    const [lon, lat] = (features[0]!.geometry as GeoJSON.Point).coordinates;
+    expect(lat).toBeCloseTo((36.691 + 36.65104) / 2, 3);
+    expect(lon).toBeCloseTo((3.21548 + 3.14893) / 2, 3);
+  });
+
   it('writes each procedure name along its drawn path', () => {
     const paths = [
       {
@@ -364,6 +423,18 @@ describe('addFlightPlanLayer', () => {
     expect(holds.map((f) => [f.properties?.kind, f.properties?.missed ?? false])).toEqual([
       ['approach', false],
       ['missed', true],
+    ]);
+  });
+
+  // A right-click on a plan fix reads its position from these properties, not the tile geometry.
+  it('carries each waypoint position as properties for exact snapping', () => {
+    const { map, sources } = fakeMap();
+    addFlightPlanLayer(map as never, plan(['EGLL', 'A', 'KJFK']));
+    const fixes = sources.get('flightplan-waypoints-source')!.data!.features;
+    expect(fixes.map((f) => [f.properties?.latitude, f.properties?.longitude])).toEqual([
+      [50, -0],
+      [50, -1],
+      [50, -2],
     ]);
   });
 

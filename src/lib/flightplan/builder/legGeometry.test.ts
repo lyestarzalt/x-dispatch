@@ -1100,3 +1100,104 @@ describe('a heading-to-intercept leg after a published course reversal', () => {
     expect(intercept.latitude).toBeGreaterThan(dhp.latitude + 0.02);
   });
 });
+
+// DAAG BJA1A off runway 23, as coded in the CIFP: direct ALR, track 231 from ALR to 4 DME, right
+// turn to heading 115 to intercept the 085 course to BNA, then BJA. Each drawn leg carries the
+// distance and course a chart writes on it, also the legs that have no fix of their own.
+describe('the distance and course written on each drawn procedure leg', () => {
+  const ALR = { latitude: 36.690997222, longitude: 3.215480556 };
+  const BNA = { latitude: 36.651297222, longitude: 3.591522222 };
+  const BJA = { latitude: 36.714569444, longitude: 5.080397222 };
+  const rec = {
+    recNavaid: 'ALR',
+    recNavaidLatitude: ALR.latitude,
+    recNavaidLongitude: ALR.longitude,
+  };
+  const BJA1A = [
+    wp({ fixId: 'ALR', fixType: 'D', pathTerminator: 'DF', ...ALR }),
+    wp({
+      fixId: 'ALR',
+      fixType: 'D',
+      pathTerminator: 'FD',
+      course: 231,
+      distance: 4,
+      ...rec,
+      ...ALR,
+    }),
+    wp({ fixId: '', pathTerminator: 'VI', course: 115, turnDirection: 'R', resolved: false }),
+    wp({
+      fixId: 'BNA',
+      fixType: 'D',
+      pathTerminator: 'CF',
+      course: 85,
+      distance: 16,
+      ...rec,
+      ...BNA,
+    }),
+    wp({ fixId: 'BJA', fixType: 'D', pathTerminator: 'TF', ...BJA }),
+  ];
+  // The far end of runway 23 (the 05 threshold), where the departure line starts.
+  const start = { position: { latitude: 36.693875, longitude: 3.220206 }, trackDeg: 233 };
+
+  it('labels every straight leg of DAAG BJA1A with its drawn length', () => {
+    const { legLabels, path } = procedureGeometry(BJA1A, { start, runwayElevationFt: 81 });
+    expect(legLabels).toHaveLength(5);
+    const [toAlr, toDme, heading, toBna, toBja] = legLabels;
+    // Direct to a fix: a distance, no course of its own.
+    expect(toAlr!.courseTrue).toBeNull();
+    expect(toAlr!.distanceNm).toBeCloseTo(greatCircleNm(start.position, ALR), 2);
+    // Track 231 from ALR to 4 DME.
+    expect(toDme!.distanceNm).toBeCloseTo(4, 1);
+    expect(trueToMagnetic(toDme!.courseTrue as Degrees, ALR.latitude, ALR.longitude)).toBeCloseTo(
+      231,
+      0
+    );
+    // The heading leg has no fix; its label is measured from the line as drawn.
+    // Its course is the published heading, not the bearing from the end of the turn marker.
+    expect(heading!.distanceNm).toBeGreaterThan(2);
+    expect(heading!.distanceNm).toBeLessThan(3);
+    expect(
+      trueToMagnetic(heading!.courseTrue as Degrees, toDme!.to.latitude, toDme!.to.longitude)
+    ).toBeCloseTo(115, 0);
+    expect(greatCircleNm(heading!.to, path[path.length - 3]!)).toBeLessThan(0.001);
+    // Then onto the 085 course to BNA, and on to BJA.
+    expect(greatCircleNm(toBna!.to, BNA)).toBeLessThan(0.001);
+    expect(trueToMagnetic(toBna!.courseTrue as Degrees, BNA.latitude, BNA.longitude)).toBeCloseTo(
+      85,
+      0
+    );
+    expect(toBja!.distanceNm).toBeCloseTo(greatCircleNm(BNA, BJA), 1);
+  });
+
+  it('labels start where the small turn marker ends, never across it', () => {
+    const { legLabels } = procedureGeometry(BJA1A, { start, runwayElevationFt: 81 });
+    const heading = legLabels[2]!;
+    // The marker curls 0.5 NM off the end of the 4 DME leg before the heading line begins.
+    const dme = legLabels[1]!.to;
+    expect(greatCircleNm(dme, heading.from)).toBeCloseTo(0.5, 1);
+  });
+
+  it('writes no distance on a climb to an altitude, whose length is not published', () => {
+    const climb = [
+      wp({
+        fixId: '',
+        pathTerminator: 'VA',
+        course: 231,
+        resolved: false,
+        altitude: { descriptor: '+', altitude1: 1500, altitude2: null, isFlightLevel: false },
+      }),
+      wp({ fixId: 'BNA', pathTerminator: 'DF', ...BNA }),
+    ];
+    const { legLabels } = procedureGeometry(climb, { start, runwayElevationFt: 81 });
+    expect(legLabels[0]!.distanceNm).toBeNull();
+    expect(legLabels[0]!.courseTrue).not.toBeNull();
+    expect(legLabels[1]!.distanceNm).not.toBeNull();
+  });
+
+  it('changes nothing about the drawn line', () => {
+    const { path } = procedureGeometry(BJA1A, { start, runwayElevationFt: 81 });
+    expect(path).toHaveLength(13);
+    expect(path[10]!.latitude).toBeCloseTo(36.63505, 4);
+    expect(path[10]!.longitude).toBeCloseTo(3.18774, 4);
+  });
+});

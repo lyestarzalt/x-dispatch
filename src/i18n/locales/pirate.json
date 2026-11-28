@@ -709,6 +709,12 @@
       "ownshipPreviewDark": "Dark chart",
       "ownshipPreviewSatellite": "Satellite",
       "ownshipPreviewLight": "Light chart",
+      "networkTraffic": "Ships on the wire",
+      "networkTrafficColor": "Colour",
+      "networkTrafficColorDesc": "VATSIM flies green an' IVAO blue, unless ye pick one colour fer both.",
+      "networkTrafficColorNetwork": "By fleet",
+      "networkTrafficColorGreen": "Green",
+      "networkTrafficColorBlue": "Blue",
       "desktop": "Deck window",
       "desktopDescription": "How X-Dispatch behaves as a window on this here vessel.",
       "keepRunningOnClose": "Keep sailin’ when the window be closed",
@@ -1534,7 +1540,8 @@
       "count": "{{count}} liveries",
       "default": "Standard",
       "previousLivery": "Previous paint",
-      "nextLivery": "Next paint"
+      "nextLivery": "Next paint",
+      "thumbnailSize": "Size o' the wee pictures"
     },
     "specs": {
       "emptyWeight": "Bare",
@@ -2534,6 +2541,7 @@
   "mapContextMenu": {
     "startHere": "Set sail from here",
     "copyCoordinates": "Copy the bearings",
+    "copyForIns": "Copy fer th' INS",
     "coordinatesCopied": "Bearings copied, arr!",
     "centerHere": "Steer the chart here",
     "elevation": "Height o' land {{value}}",

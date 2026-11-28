@@ -709,6 +709,12 @@
       "ownshipPreviewDark": "Mapa oscuro",
       "ownshipPreviewSatellite": "Satélite",
       "ownshipPreviewLight": "Mapa claro",
+      "networkTraffic": "Tráfico en línea",
+      "networkTrafficColor": "Color",
+      "networkTrafficColorDesc": "VATSIM es verde e IVAO azul, salvo que elijas un color para ambos.",
+      "networkTrafficColorNetwork": "Por red",
+      "networkTrafficColorGreen": "Verde",
+      "networkTrafficColorBlue": "Azul",
       "desktop": "Ventana de escritorio",
       "desktopDescription": "Cómo se comporta X-Dispatch como ventana en este equipo.",
       "keepRunningOnClose": "Seguir en ejecución al cerrar la ventana",
@@ -1534,7 +1540,8 @@
       "count": "Libreas ({{count}})",
       "default": "Por defecto",
       "previousLivery": "Librea anterior",
-      "nextLivery": "Siguiente librea"
+      "nextLivery": "Siguiente librea",
+      "thumbnailSize": "Tamaño de miniaturas"
     },
     "specs": {
       "emptyWeight": "Peso vacío",
@@ -2534,6 +2541,7 @@
   "mapContextMenu": {
     "startHere": "Iniciar aquí",
     "copyCoordinates": "Copiar coordenadas",
+    "copyForIns": "Copiar para INS",
     "coordinatesCopied": "Coordenadas copiadas",
     "centerHere": "Centrar mapa aquí",
     "elevation": "Elevación {{value}}",

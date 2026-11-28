@@ -244,6 +244,9 @@ export class NavaidLayerRenderer extends NavLayerRenderer<Navaid> {
           properties: {
             id: navaid.id,
             name: navaid.name,
+            // Exact position for snapping; rendered geometry is rounded to the tile grid.
+            latitude: navaid.latitude,
+            longitude: navaid.longitude,
             type: navaid.type,
             frequency: navaid.frequency,
             freqDisplay: formatFrequency(navaid),

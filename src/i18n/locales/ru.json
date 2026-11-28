@@ -709,6 +709,12 @@
       "ownshipPreviewDark": "Тёмная карта",
       "ownshipPreviewSatellite": "Спутник",
       "ownshipPreviewLight": "Светлая карта",
+      "networkTraffic": "Онлайн-трафик",
+      "networkTrafficColor": "Цвет",
+      "networkTrafficColorDesc": "VATSIM зелёный, IVAO синий, пока вы не выберете один цвет для обеих сетей.",
+      "networkTrafficColorNetwork": "По сети",
+      "networkTrafficColorGreen": "Зелёный",
+      "networkTrafficColorBlue": "Синий",
       "desktop": "Окно приложения",
       "desktopDescription": "Как X-Dispatch ведёт себя как окно на этом компьютере.",
       "keepRunningOnClose": "Продолжать работу при закрытии окна",
@@ -1534,7 +1540,8 @@
       "count": "Ливреи ({{count}})",
       "default": "По умолчанию",
       "previousLivery": "Предыдущая ливрея",
-      "nextLivery": "Следующая ливрея"
+      "nextLivery": "Следующая ливрея",
+      "thumbnailSize": "Размер миниатюр"
     },
     "specs": {
       "emptyWeight": "Пустая масса",
@@ -2534,6 +2541,7 @@
   "mapContextMenu": {
     "startHere": "Начать здесь",
     "copyCoordinates": "Копировать координаты",
+    "copyForIns": "Копировать для INS",
     "coordinatesCopied": "Координаты скопированы",
     "centerHere": "Центрировать карту здесь",
     "elevation": "Высота {{value}}",

@@ -45,23 +45,24 @@ export function createNetworkRouteGeoJSON(
   return { type: 'FeatureCollection', features };
 }
 
-const colorByNetwork: maplibregl.ExpressionSpecification = [
-  'match',
-  ['get', 'network'],
-  'ivao',
-  NETWORK_COLORS.ivao,
-  NETWORK_COLORS.vatsim,
-];
-
 export function updateNetworkRouteLayer(
   map: maplibregl.Map,
   pilot: NetworkPilot,
   departure: LatLon | null,
-  arrival: LatLon | null
+  arrival: LatLon | null,
+  color: string = NETWORK_COLORS[pilot.network]
 ): void {
   if (!map.getStyle()) return;
   safeAddGeoJSONSource(map, SOURCE_ID, createNetworkRouteGeoJSON(pilot, departure, arrival));
-  if (map.getLayer(FLOWN_LAYER_ID)) return;
+  if (map.getLayer(FLOWN_LAYER_ID)) {
+    // Another pilot, the other network or a new colour setting: repaint only on a change.
+    for (const id of NETWORK_ROUTE_LAYER_IDS) {
+      if (map.getLayer(id) && map.getPaintProperty(id, 'line-color') !== color) {
+        map.setPaintProperty(id, 'line-color', color);
+      }
+    }
+    return;
+  }
 
   map.addLayer({
     id: FLOWN_LAYER_ID,
@@ -70,7 +71,7 @@ export function updateNetworkRouteLayer(
     filter: ['==', ['get', 'part'], 'flown'],
     layout: { 'line-cap': 'round', 'line-join': 'round' },
     paint: {
-      'line-color': colorByNetwork,
+      'line-color': color,
       'line-width': 1.5,
       'line-opacity': 0.5,
       'line-dasharray': [2, 3],
@@ -83,7 +84,7 @@ export function updateNetworkRouteLayer(
     filter: ['==', ['get', 'part'], 'remaining'],
     layout: { 'line-cap': 'round', 'line-join': 'round' },
     paint: {
-      'line-color': colorByNetwork,
+      'line-color': color,
       'line-width': 2,
       'line-opacity': 0.9,
     },

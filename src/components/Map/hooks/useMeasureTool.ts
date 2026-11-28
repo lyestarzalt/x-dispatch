@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import type * as maplibregl from 'maplibre-gl';
-import { MEASURE_SNAP_LAYER_IDS, snapFromFeature } from '@/lib/measure/snap';
+import { MEASURE_SNAP_LAYER_IDS, snapAt } from '@/lib/measure/snap';
 import { useMeasureStore } from '@/stores/measureStore';
 import {
   MEASURE_VERTEX_HITBOX_LAYER_ID,
@@ -14,22 +14,20 @@ import type { MapRef } from './useMapSetup';
 const SNAP_PADDING_PX = 6;
 
 /** The anchor under a screen point, with its position, or null. */
-function snapAt(map: maplibregl.Map, point: maplibregl.Point) {
+function snapUnder(map: maplibregl.Map, point: maplibregl.Point) {
   const box: [[number, number], [number, number]] = [
     [point.x - SNAP_PADDING_PX, point.y - SNAP_PADDING_PX],
     [point.x + SNAP_PADDING_PX, point.y + SNAP_PADDING_PX],
   ];
-  for (const layerId of MEASURE_SNAP_LAYER_IDS) {
-    if (!map.getLayer(layerId)) continue;
-    const feature = map.queryRenderedFeatures(box, { layers: [layerId] })[0];
-    if (!feature || feature.geometry.type !== 'Point') continue;
-    const snap = snapFromFeature(layerId, feature.properties ?? {});
-    const [lon, lat] = feature.geometry.coordinates;
-    if (snap && lon !== undefined && lat !== undefined) {
-      return { snap, point: { latitude: lat, longitude: lon } };
-    }
-  }
-  return null;
+  const layers = MEASURE_SNAP_LAYER_IDS.filter((id) => map.getLayer(id));
+  if (!layers.length) return null;
+  const cursor = map.unproject(point);
+  return snapAt(
+    map
+      .queryRenderedFeatures(box, { layers })
+      .map((feature) => ({ layerId: feature.layer.id, feature })),
+    { latitude: cursor.lat, longitude: cursor.lng }
+  );
 }
 
 /**
@@ -152,7 +150,7 @@ export function useMeasureTool(mapRef: MapRef): void {
       map.off('mousemove', onMove);
       if (map.dragPan) map.dragPan.enable();
       if (index === 0) {
-        const hit = snapAt(map, e.point);
+        const hit = snapUnder(map, e.point);
         if (hit) store.setPoint(0, hit.point);
         store.setSnap(hit?.snap ?? null);
       }

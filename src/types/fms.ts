@@ -141,6 +141,14 @@ export interface EnrichedFlightPlan {
       points: { latitude: number; longitude: number }[];
       missed?: boolean;
     }[];
+    /** The distance and course written on each drawn leg; absent on paths with no coded legs. */
+    legLabels?: {
+      from: { latitude: number; longitude: number };
+      to: { latitude: number; longitude: number };
+      distanceNm: NauticalMiles | null;
+      courseTrue: TrueDegrees | null;
+      missed?: boolean;
+    }[];
   }[];
 
   // Resolution summary

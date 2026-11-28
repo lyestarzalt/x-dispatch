@@ -39,3 +39,10 @@ describe('NavaidLayer rose rotation', () => {
     expect(fc.features.map((f) => f.properties!.roseRotation)).toEqual([0, 0, 0]);
   });
 });
+
+describe('NavaidLayer positions', () => {
+  it('carries the station position as properties for exact snapping', () => {
+    const fc = createGeoJSON([navaid({ latitude: 43.6653, longitude: 7.215 })]);
+    expect(fc.features[0]?.properties).toMatchObject({ latitude: 43.6653, longitude: 7.215 });
+  });
+});

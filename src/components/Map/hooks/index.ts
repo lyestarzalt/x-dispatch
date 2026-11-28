@@ -7,6 +7,7 @@ export { useNetworkRouteSync } from './useNetworkRouteSync';
 export { useVatsimSectorSync } from './useVatsimSectorSync';
 export { useNetworkAtcSync } from './useNetworkAtcSync';
 export { useAirportInteractions } from './useAirportInteractions';
+export { useGateSearchHighlight } from './useGateSearchHighlight';
 export { useRouteLineSync } from './useRouteLineSync';
 export { useProcedureRouteSync } from './useProcedureRouteSync';
 export { useNatTracksSync } from './useNatTracksSync';

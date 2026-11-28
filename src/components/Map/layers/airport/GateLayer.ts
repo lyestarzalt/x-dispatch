@@ -89,6 +89,165 @@ const GATE_ICONS: Record<string, string> = {
   </svg>`,
 };
 
+type Expr = maplibregl.ExpressionSpecification;
+
+const RING_LAYER_ID = 'airport-gates-ring';
+const ICON_LAYER_ID = 'airport-gates';
+const LABEL_LAYER_ID = 'airport-gate-labels';
+
+/**
+ * A gate the panel's gate search leaves out is all but gone (its name hidden), and a match
+ * is a larger white disc with a dark aircraft and a dark rim: an apron is full of lines
+ * and lights, so anything subtler cannot be told apart.
+ */
+const SEARCH_FADE = { ring: 0.07, icon: 0.1, label: 0 } as const;
+const SEARCH_MATCH = {
+  fill: '#ffffff',
+  ink: '#0f172a',
+  strokeWidth: 3,
+  extraRadius: 5,
+} as const;
+
+const OPERATION_TINT: Expr = [
+  'match',
+  ['get', 'operation'],
+  'airline',
+  STAND_TINT.airline,
+  'cargo',
+  STAND_TINT.cargo,
+  'general_aviation',
+  STAND_TINT.general_aviation,
+  'military',
+  STAND_TINT.military,
+  GATE_COLORS.default,
+];
+
+/**
+ * Gate indices the gate search matches, per map. Kept here so drawing the airport again
+ * (a style change) keeps the fade without the hook having to notice.
+ */
+const searchMatches = new WeakMap<maplibregl.Map, readonly number[]>();
+
+const IS_SELECTED: Expr = ['boolean', ['feature-state', 'selected'], false];
+const IS_HOVERED: Expr = ['boolean', ['feature-state', 'hover'], false];
+
+function isMatch(matches: readonly number[]): Expr {
+  return ['in', ['id'], ['literal', [...matches]]];
+}
+
+/** `normal` for the selected gate, the matches and every helipad; `faded` for the rest. */
+function fadeUnlessMatch(
+  matches: readonly number[] | undefined,
+  normal: Expr | number,
+  faded: number
+): Expr | number {
+  if (!matches) return normal;
+  return [
+    'case',
+    IS_SELECTED,
+    normal,
+    ['==', ['get', 'locationType'], 'helipad'],
+    normal,
+    isMatch(matches),
+    normal,
+    faded,
+  ];
+}
+
+/** Ring radius by zoom; a search match is drawn larger. */
+function gateRingRadius(matches: readonly number[] | undefined): Expr {
+  const minZoom = ZOOM_BEHAVIORS.startupLocations.minZoom;
+  const at = (radius: number): Expr | number =>
+    matches ? ['case', isMatch(matches), radius + SEARCH_MATCH.extraRadius, radius] : radius;
+  return ['interpolate', ['linear'], ['zoom'], minZoom, at(10), minZoom + 2, at(14), 19, at(22)];
+}
+
+/** The paint values the gate search changes, for one set of matches (undefined: no search). */
+export function gateSearchPaint(matches: readonly number[] | undefined) {
+  const ringOpacity: Expr = matches
+    ? ['case', IS_SELECTED, 0.95, isMatch(matches), 1, IS_HOVERED, 0.85, 0.7]
+    : ['case', IS_SELECTED, 0.95, IS_HOVERED, 0.85, 0.7];
+  const strokeWidth: Expr = matches
+    ? ['case', IS_SELECTED, 2.5, isMatch(matches), SEARCH_MATCH.strokeWidth, IS_HOVERED, 1.5, 1]
+    : ['case', IS_SELECTED, 2.5, IS_HOVERED, 1.5, 1];
+  const strokeColor: Expr = matches
+    ? [
+        'case',
+        IS_SELECTED,
+        GATE_COLORS.selected,
+        isMatch(matches),
+        SEARCH_MATCH.ink,
+        IS_HOVERED,
+        '#ffffff',
+        GATE_COLORS.hover,
+      ]
+    : ['case', IS_SELECTED, GATE_COLORS.selected, IS_HOVERED, '#ffffff', GATE_COLORS.hover];
+  const ringColor: Expr = matches
+    ? [
+        'case',
+        IS_SELECTED,
+        GATE_COLORS.selected,
+        isMatch(matches),
+        SEARCH_MATCH.fill,
+        IS_HOVERED,
+        GATE_COLORS.hover,
+        OPERATION_TINT,
+      ]
+    : ['case', IS_SELECTED, GATE_COLORS.selected, IS_HOVERED, GATE_COLORS.hover, OPERATION_TINT];
+  // The aircraft inside the disc: dark on a white match, white everywhere else.
+  const iconColor: Expr | string = matches
+    ? [
+        'case',
+        IS_SELECTED,
+        '#ffffff',
+        ['==', ['get', 'locationType'], 'helipad'],
+        '#ffffff',
+        isMatch(matches),
+        SEARCH_MATCH.ink,
+        '#ffffff',
+      ]
+    : '#ffffff';
+  return {
+    ring: {
+      'circle-color': ringColor,
+      'circle-opacity': fadeUnlessMatch(matches, ringOpacity, SEARCH_FADE.ring),
+      'circle-stroke-opacity': fadeUnlessMatch(matches, 1, SEARCH_FADE.ring),
+      'circle-stroke-width': strokeWidth,
+      'circle-stroke-color': strokeColor,
+      'circle-radius': gateRingRadius(matches),
+    },
+    icon: {
+      'icon-color': iconColor,
+      'icon-opacity': fadeUnlessMatch(matches, 1, SEARCH_FADE.icon),
+    },
+    label: { 'text-opacity': fadeUnlessMatch(matches, 1, SEARCH_FADE.label) },
+  } as const;
+}
+
+/**
+ * Fades the gates a search leaves out and rings the ones it matches, like a browser's find.
+ * `null` ends the search and puts every gate back.
+ */
+export function setGateSearchMatches(map: maplibregl.Map, matches: readonly number[] | null): void {
+  if (matches) searchMatches.set(map, matches);
+  else searchMatches.delete(map);
+  if (!map.getStyle()) return;
+
+  const paint = gateSearchPaint(matches ?? undefined);
+  type PaintArgs = Parameters<maplibregl.Map['setPaintProperty']>;
+  const byLayer: [string, Record<string, unknown>][] = [
+    [RING_LAYER_ID, paint.ring],
+    [ICON_LAYER_ID, paint.icon],
+    [LABEL_LAYER_ID, paint.label],
+  ];
+  for (const [layerId, properties] of byLayer) {
+    if (!map.getLayer(layerId)) continue;
+    for (const [name, value] of Object.entries(properties)) {
+      map.setPaintProperty(layerId, name as PaintArgs[1], value as PaintArgs[2]);
+    }
+  }
+}
+
 export class GateLayer extends BaseLayerRenderer {
   layerId = 'airport-gates';
   sourceId = 'airport-gates';
@@ -109,6 +268,7 @@ export class GateLayer extends BaseLayerRenderer {
     this.addSource(map, geoJSON);
 
     const minZoom = ZOOM_BEHAVIORS.startupLocations.minZoom;
+    const searchPaint = gateSearchPaint(searchMatches.get(map));
 
     // Ring layer with unified colors (bottom) — excludes helipads
     this.addLayer(map, {
@@ -118,61 +278,7 @@ export class GateLayer extends BaseLayerRenderer {
       minzoom: minZoom,
       filter: ['!=', ['get', 'locationType'], 'helipad'],
       paint: {
-        'circle-radius': [
-          'interpolate',
-          ['linear'],
-          ['zoom'],
-          minZoom,
-          10,
-          minZoom + 2,
-          14,
-          19,
-          22,
-        ],
-        'circle-color': [
-          'case',
-          ['boolean', ['feature-state', 'selected'], false],
-          GATE_COLORS.selected,
-          ['boolean', ['feature-state', 'hover'], false],
-          GATE_COLORS.hover,
-          [
-            'match',
-            ['get', 'operation'],
-            'airline',
-            STAND_TINT.airline,
-            'cargo',
-            STAND_TINT.cargo,
-            'general_aviation',
-            STAND_TINT.general_aviation,
-            'military',
-            STAND_TINT.military,
-            GATE_COLORS.default,
-          ],
-        ],
-        'circle-opacity': [
-          'case',
-          ['boolean', ['feature-state', 'selected'], false],
-          0.95,
-          ['boolean', ['feature-state', 'hover'], false],
-          0.85,
-          0.7,
-        ],
-        'circle-stroke-width': [
-          'case',
-          ['boolean', ['feature-state', 'selected'], false],
-          2.5,
-          ['boolean', ['feature-state', 'hover'], false],
-          1.5,
-          1,
-        ],
-        'circle-stroke-color': [
-          'case',
-          ['boolean', ['feature-state', 'selected'], false],
-          GATE_COLORS.selected,
-          ['boolean', ['feature-state', 'hover'], false],
-          '#ffffff',
-          GATE_COLORS.hover,
-        ],
+        ...searchPaint.ring,
       },
     });
 
@@ -246,8 +352,7 @@ export class GateLayer extends BaseLayerRenderer {
         'icon-ignore-placement': true,
       },
       paint: {
-        'icon-color': '#ffffff',
-        'icon-opacity': 1,
+        ...searchPaint.icon,
       },
     });
 
@@ -274,6 +379,7 @@ export class GateLayer extends BaseLayerRenderer {
         ],
         'text-halo-color': '#0f172a',
         'text-halo-width': 1.5,
+        ...searchPaint.label,
       },
     });
   }
