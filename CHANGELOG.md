@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Deleting or switching off a plugin X-Plane has loaded says to close X-Plane.** It used to name the plugin's folder as open in another program.
+- **The vertical profile's hover card keeps its size near the right edge.** It no longer squeezes its values onto two lines.
 - **Right-clicking a fix gives its exact coordinates.** SID, STAR and approach fixes now snap too, the position no longer shifts with zoom, and minutes never read 60.
 
 ## [2.19.0] - 2026-11-25

@@ -30,7 +30,7 @@ import { initMainAnalytics, setAnalyticsUpdateContext } from './lib/analytics/ma
 import { recordWindowShown, withStartupTiming } from './lib/analytics/startupTiming';
 import { getCliFlags, parseAndApply, printHelpAndExit, printVersionAndExit } from './lib/cli';
 import { registerCompanionAppsIPC } from './lib/companionApps/ipc';
-import { getDbPath, getSqlite, initDb, recoverFromCorruption } from './lib/db';
+import { getDbPath, getSqlite, initDb, isDbReady, recoverFromCorruption } from './lib/db';
 import { registerFlightRecorderIPC } from './lib/flightRecorder/ipc';
 import { type SimPresence, createSimPresence } from './lib/flightStrip/simPresence';
 import { type Size, fitWindowToContent, parseContentSize } from './lib/flightStrip/windowFit';
@@ -2463,8 +2463,12 @@ function registerIpcHandlers() {
       const { getWaypointNearestById } =
         await import('./lib/xplaneServices/dataService/navdata/navCache');
       await refreshOceanicTracks();
+      // The download can finish after a quit has closed the database (Sentry X-DISPATCH-A3):
+      // the window is gone by then, so the fixes are left unplaced.
       return resolvedFeed((id, near) =>
-        getWaypointNearestById(id, near.latitude, near.longitude, TRACK_FIX_SEARCH_NM)
+        isDbReady()
+          ? getWaypointNearestById(id, near.latitude, near.longitude, TRACK_FIX_SEARCH_NM)
+          : null
       );
     } catch (err) {
       logger.main.error('Failed to load NAT tracks', err);

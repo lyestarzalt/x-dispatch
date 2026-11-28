@@ -93,6 +93,10 @@ describe('errorCode', () => {
     expect(errorCode({ error: { code: 'CONFLICT' } })).toBe('conflict');
   });
 
+  it('keeps a file held open by another program apart from other add-on failures', () => {
+    expect(errorCode({ code: 'FILE_IN_USE' })).toBe('file_in_use');
+  });
+
   it('never lets free text through', () => {
     expect(errorCode('C:\\Users\\bob\\x.zip is locked')).toBe('other');
     expect(errorCode(new Error('whatever'))).toBe('other');

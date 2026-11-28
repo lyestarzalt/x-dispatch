@@ -186,3 +186,21 @@ export function nearestRowIndex<T>(
   }
   return lo;
 }
+
+/** Gap between the pointer line and the hover card, in pixels. */
+const TOOLTIP_GAP = 12;
+
+/**
+ * Where the hover card goes: right of the pointer on the left half, left of it on the
+ * right half. The left-side card is anchored by its right edge; a left edge pulled back
+ * with translateX(-100%) is sized to the space after that edge and squeezes near the side.
+ */
+export function tooltipPlacement(
+  hoverX: number,
+  width: number,
+  top: number
+): { top: number; left: number } | { top: number; right: number } {
+  return hoverX > width / 2
+    ? { top, right: width - hoverX + TOOLTIP_GAP }
+    : { top, left: hoverX + TOOLTIP_GAP };
+}
