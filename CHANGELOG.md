@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.20.0] - 2026-11-28
+
 ### Added
 
 - **Copy coordinates for an INS.** The map's right-click menu shows and copies the point as `N45°59.9' E007°59.9'`, the format a CIVA INS takes.
@@ -618,7 +620,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Releases up to 2.2.0 are listed on the [website changelog](https://x-dispatch.app/changelog/).
 
-[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.19.0...HEAD
+[unreleased]: https://github.com/lyestarzalt/x-dispatch/compare/v2.20.0...HEAD
+[2.20.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.19.0...v2.20.0
 [2.19.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.18.0...v2.19.0
 [2.18.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.17.0...v2.18.0
 [2.17.0]: https://github.com/lyestarzalt/x-dispatch/compare/v2.16.0...v2.17.0
