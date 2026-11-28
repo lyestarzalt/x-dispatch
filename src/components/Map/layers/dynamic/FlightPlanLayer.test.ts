@@ -367,6 +367,18 @@ describe('addFlightPlanLayer', () => {
     ]);
   });
 
+  // A right-click on a plan fix reads its position from these properties, not the tile geometry.
+  it('carries each waypoint position as properties for exact snapping', () => {
+    const { map, sources } = fakeMap();
+    addFlightPlanLayer(map as never, plan(['EGLL', 'A', 'KJFK']));
+    const fixes = sources.get('flightplan-waypoints-source')!.data!.features;
+    expect(fixes.map((f) => [f.properties?.latitude, f.properties?.longitude])).toEqual([
+      [50, -0],
+      [50, -1],
+      [50, -2],
+    ]);
+  });
+
   it('takes the plan off the map when it has fewer than two waypoints', () => {
     const { map, removeLayer } = fakeMap();
     addFlightPlanLayer(map as never, plan(['EGLL', 'A', 'KJFK']));

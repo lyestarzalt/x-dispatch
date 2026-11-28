@@ -431,6 +431,9 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
     properties: {
       id: wp.id,
       index,
+      // Exact position for snapping; rendered geometry is rounded to the tile grid.
+      latitude: wp.latitude,
+      longitude: wp.longitude,
       navType: wp.type,
       frequency: wp.frequency ?? 0,
       // Station data from enrichment, for the info card; empty when the plan has none.

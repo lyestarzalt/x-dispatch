@@ -2534,6 +2534,7 @@
   "mapContextMenu": {
     "startHere": "Начать здесь",
     "copyCoordinates": "Копировать координаты",
+    "copyForIns": "Копировать для INS",
     "coordinatesCopied": "Координаты скопированы",
     "centerHere": "Центрировать карту здесь",
     "elevation": "Высота {{value}}",

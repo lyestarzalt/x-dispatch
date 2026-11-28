@@ -52,6 +52,7 @@ export const ANALYTICS_WIDGETS = [
 export const ANALYTICS_CONTEXT_MENU_ACTIONS = [
   'start_here',
   'copy_coordinates',
+  'copy_ins_coordinates',
   'measure',
   'clear_measurement',
   'center_map',
@@ -547,7 +548,7 @@ const EVENT_SCHEMA = {
   },
   /** A SID, STAR or approach chosen by the user or by the auto router; the name is never sent. */
   procedure_selected: { type: oneOf(['sid', 'star', 'app']), source: oneOf(['manual', 'auto']) },
-  /** An item picked in the map's right-click menu. */
+  /** An item picked in the map's right-click menu. `copy_ins_coordinates` since 2.20. */
   context_menu_used: { action: oneOf(ANALYTICS_CONTEXT_MENU_ACTIONS) },
   /**
    * An FAA chart opened from the airport panel: its PDF in the browser, or laid over the map.

@@ -36,6 +36,12 @@ describe('buildContextPointLabels', () => {
     expect(labels.coordinates).toBe('N48°51\'30" W2°17\'40"');
   });
 
+  // The CIVA INS rejects the display formats; it takes degrees and minutes to a tenth.
+  it('gives the point in INS notation whatever the display format', () => {
+    const labels = buildContextPointLabels(43.6653, -7.215, null, units('decimal', 'ft'));
+    expect(labels.ins).toBe(`N43°39.9' W007°12.9'`);
+  });
+
   it('omits the elevation line when terrain gives no value', () => {
     const labels = buildContextPointLabels(48.8584, 2.2945, null, units('decimal', 'ft'));
     expect(labels.elevation).toBeNull();

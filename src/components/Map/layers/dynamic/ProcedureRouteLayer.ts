@@ -250,7 +250,7 @@ export function createRouteGeoJSON(
   return { type: 'FeatureCollection', features };
 }
 
-function createWaypointGeoJSON(waypoints: RouteWaypoint[]): GeoJSON.FeatureCollection {
+export function createWaypointGeoJSON(waypoints: RouteWaypoint[]): GeoJSON.FeatureCollection {
   // Include waypoints with coordinates, but track resolution status
   const waypointsWithCoords = waypoints.filter(
     (wp) => wp.latitude !== undefined && wp.longitude !== undefined
@@ -281,6 +281,9 @@ function createWaypointGeoJSON(waypoints: RouteWaypoint[]): GeoJSON.FeatureColle
         },
         properties: {
           id: wp.fixId,
+          // Exact position for snapping; rendered geometry is rounded to the tile grid.
+          latitude: wp.latitude!,
+          longitude: wp.longitude!,
           sequence: idx + 1,
           flyover: wp.flyover ?? false,
           pathTerminator: wp.pathTerminator ?? '',

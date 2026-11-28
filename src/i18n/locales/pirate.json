@@ -2534,6 +2534,7 @@
   "mapContextMenu": {
     "startHere": "Set sail from here",
     "copyCoordinates": "Copy the bearings",
+    "copyForIns": "Copy fer th' INS",
     "coordinatesCopied": "Bearings copied, arr!",
     "centerHere": "Steer the chart here",
     "elevation": "Height o' land {{value}}",

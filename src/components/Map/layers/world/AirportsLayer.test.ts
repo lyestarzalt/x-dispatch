@@ -16,6 +16,11 @@ const baseAirport: Airport = {
 } as Airport;
 
 describe('buildFeatures', () => {
+  it('carries the airport position as properties for exact snapping', () => {
+    const [feature] = buildFeatures([baseAirport], new Set(), null);
+    expect(feature?.properties).toMatchObject({ latitude: 40.6398, longitude: -73.7787 });
+  });
+
   it('marks the home airport as both home and favourite (so the star layer renders it)', () => {
     const features = buildFeatures([baseAirport], new Set(), 'KJFK');
     expect(features).toHaveLength(1);

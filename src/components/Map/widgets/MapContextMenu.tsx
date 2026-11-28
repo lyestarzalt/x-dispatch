@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useUnits } from '@/hooks/useUnits';
@@ -48,6 +49,13 @@ export default function MapContextMenu({ mapRef, onStartHere }: MapContextMenuPr
     if (!labels) return;
     trackEvent('context_menu_used', { action: 'copy_coordinates' });
     await window.appAPI.clipboardWrite(labels.coordinates);
+    toast.success(t('mapContextMenu.coordinatesCopied'));
+  }, [labels, t]);
+
+  const handleCopyIns = useCallback(async () => {
+    if (!labels) return;
+    trackEvent('context_menu_used', { action: 'copy_ins_coordinates' });
+    await window.appAPI.clipboardWrite(labels.ins);
     toast.success(t('mapContextMenu.coordinatesCopied'));
   }, [labels, t]);
 
@@ -110,6 +118,13 @@ export default function MapContextMenu({ mapRef, onStartHere }: MapContextMenuPr
         <DropdownMenuItem onSelect={handleCopy}>
           <Copy />
           {t('mapContextMenu.copyCoordinates')}
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={handleCopyIns}>
+          <Copy />
+          <span className="min-w-0 truncate">{t('mapContextMenu.copyForIns')}</span>
+          <DropdownMenuShortcut className="shrink-0 pl-4 font-mono tracking-normal">
+            {labels.ins}
+          </DropdownMenuShortcut>
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={handleMeasure}>
           <Ruler />

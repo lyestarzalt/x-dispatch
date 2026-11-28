@@ -238,6 +238,9 @@ export function buildFeatures(
       properties: {
         icao: airport.icao,
         name: airport.name,
+        // Exact position for snapping; rendered geometry is rounded to the tile grid.
+        latitude: airport.lat,
+        longitude: airport.lon,
         isCustom: airport.isCustom ? 1 : 0,
         isFavorite: isStarred ? 1 : 0,
         isHome: isHome ? 1 : 0,

@@ -2534,6 +2534,7 @@
   "mapContextMenu": {
     "startHere": "ここから開始",
     "copyCoordinates": "座標をコピー",
+    "copyForIns": "INS用にコピー",
     "coordinatesCopied": "座標をコピーしました",
     "centerHere": "ここを中心に表示",
     "elevation": "標高 {{value}}",

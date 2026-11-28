@@ -4,6 +4,7 @@ import {
   addProcedureRouteLayer,
   createLegLabelGeoJSON,
   createRouteGeoJSON,
+  createWaypointGeoJSON,
   omitFlightPlanWaypoints,
 } from './ProcedureRouteLayer';
 
@@ -214,5 +215,17 @@ describe('addProcedureRouteLayer', () => {
       { planFixes: [{ id: 'LUC', latitude: luc.latitude, longitude: luc.longitude }] }
     );
     expect(order.slice(-2)).toEqual(['flightplan-labels', 'flightplan-altitude-labels']);
+  });
+});
+
+// A right-click on a fix reads its position from these properties: the rendered
+// geometry is rounded to the tile grid and an INS rejects the result.
+describe('createWaypointGeoJSON', () => {
+  it('carries each fix position as properties for exact snapping', () => {
+    const fc = createWaypointGeoJSON([wp({ ...gilon, pathTerminator: 'IF' }), wp(luc)]);
+    expect(fc.features.map((f) => [f.properties?.latitude, f.properties?.longitude])).toEqual([
+      [43.91, 5.42],
+      [43.62, 6.12],
+    ]);
   });
 });

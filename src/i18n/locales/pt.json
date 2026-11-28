@@ -2534,6 +2534,7 @@
   "mapContextMenu": {
     "startHere": "Iniciar aqui",
     "copyCoordinates": "Copiar coordenadas",
+    "copyForIns": "Copiar para INS",
     "coordinatesCopied": "Coordenadas copiadas",
     "centerHere": "Centralizar mapa aqui",
     "elevation": "Elevação {{value}}",

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Copy coordinates for an INS.** The map's right-click menu shows and copies the point as `N45°59.9' E007°59.9'`, the format a CIVA INS takes.
+
+### Fixed
+
+- **Right-clicking a fix gives its exact coordinates.** SID, STAR and approach fixes now snap too, the position no longer shifts with zoom, and minutes never read 60.
+
 ## [2.19.0] - 2026-11-25
 
 ### Added

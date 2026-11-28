@@ -1,4 +1,5 @@
 import { type Feet, metersToFeet } from '@/lib/utils/geomath';
+import { formatInsCoordinates } from '@/lib/utils/units';
 import type { Meters } from '@/types/units';
 
 /** The two `useUnits()` formatters the context menu header needs. */
@@ -10,6 +11,8 @@ export interface ContextPointFormatters {
 export interface ContextPointLabels {
   /** Right-clicked point in the user's coordinate format. */
   coordinates: string;
+  /** Same point as an INS keypad takes it (`N45°59.9' E007°59.9'`), whatever the display format. */
+  ins: string;
   /** Terrain elevation in the user's altitude unit, or null when terrain is off. */
   elevation: string | null;
 }
@@ -28,6 +31,7 @@ export function buildContextPointLabels(
 ): ContextPointLabels {
   return {
     coordinates: units.coordinates(lat, lon),
+    ins: formatInsCoordinates(lat, lon),
     elevation: elevationM == null ? null : units.altitude(metersToFeet(elevationM)),
   };
 }

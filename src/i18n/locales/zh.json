@@ -2534,6 +2534,7 @@
   "mapContextMenu": {
     "startHere": "从此处开始",
     "copyCoordinates": "复制坐标",
+    "copyForIns": "复制为 INS 格式",
     "coordinatesCopied": "坐标已复制",
     "centerHere": "将地图居中于此",
     "elevation": "海拔 {{value}}",
