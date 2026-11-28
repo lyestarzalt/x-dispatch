@@ -206,7 +206,9 @@ export function browserErrorText(error: BrowserError): AddonErrorText {
       return { key: `${family}.SCAN_FAILED`, params: { reason: error.reason } };
     case 'FILE_IN_USE':
       // X-Plane is the program holding a plugin; saying so is more use than the file name.
-      if (isPluginFile(error.fileName)) return { key: `${family}.PLUGIN_IN_USE`, params: {} };
+      if (isPluginFile(error.fileName) || isInPluginsFolder(error.path)) {
+        return { key: `${family}.PLUGIN_IN_USE`, params: {} };
+      }
       return { key: `${family}.FILE_IN_USE`, params: { fileName: error.fileName } };
     case 'TOGGLE_FAILED':
       if (isPermissionDenied(error.reason))
@@ -227,6 +229,11 @@ function isPermissionDenied(reason: string): boolean {
 /** A plugin binary, enabled (.xpl) or switched off (.xfmp). */
 function isPluginFile(fileName: string): boolean {
   return /\.(xpl|xfmp)$/i.test(fileName);
+}
+
+/** Inside `Resources/plugins`, where a locked file or folder is one X-Plane has loaded. */
+function isInPluginsFolder(filePath: string): boolean {
+  return /[\\/]Resources[\\/]plugins[\\/]/i.test(filePath);
 }
 
 /**
