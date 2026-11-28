@@ -205,14 +205,8 @@ export default function RouteTab() {
                 <ChartControls chart={chart} icao={icao} group={APPROACH_CHART_GROUP} />
               ) : null;
 
-            const name = chart ? (
-              <span
-                title={chart.name}
-                className="min-w-0 text-left font-mono text-xs whitespace-normal"
-              >
-                {chart.name}
-              </span>
-            ) : (
+            // One look for every row, with or without a chart: the procedure's own name.
+            const name = (
               <ProcedureName proc={first} type={activeType} withCode={!hasMultipleVariants} />
             );
 
