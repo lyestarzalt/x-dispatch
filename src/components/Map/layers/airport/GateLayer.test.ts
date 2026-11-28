@@ -5,6 +5,7 @@ describe('gateSearchPaint', () => {
   it('leaves every gate at full strength while there is no search', () => {
     const paint = gateSearchPaint(undefined);
     expect(paint.icon['icon-opacity']).toBe(1);
+    expect(paint.icon['icon-color']).toBe('#ffffff');
     expect(paint.label['text-opacity']).toBe(1);
     expect(paint.ring['circle-stroke-opacity']).toBe(1);
     expect(JSON.stringify(paint.ring)).not.toContain('"in"');
@@ -21,10 +22,14 @@ describe('gateSearchPaint', () => {
       1,
       match,
       1,
-      0.25,
+      0.1,
     ]);
-    // A matching gate gets the white ring a hovered gate has.
-    expect(paint.ring['circle-stroke-color']).toContainEqual(match);
+    // A match is a larger white disc with a dark aircraft; the rest lose their names.
+    expect(paint.ring['circle-color']).toEqual(expect.arrayContaining([match, '#ffffff']));
+    expect(paint.icon['icon-color']).toEqual(expect.arrayContaining([match, '#0f172a']));
+    expect(paint.ring['circle-stroke-width']).toEqual(expect.arrayContaining([match, 3]));
+    expect(JSON.stringify(paint.ring['circle-radius'])).toContain(JSON.stringify(match));
+    expect((paint.label['text-opacity'] as unknown[]).at(-1)).toBe(0);
   });
 
   it('fades every gate when the search matches none', () => {
