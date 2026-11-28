@@ -5,6 +5,7 @@ import {
   faaChartIndexFromJson,
   faaChartIndexToJson,
   faaChartUrl,
+  findApproachChart,
   groupFaaCharts,
   hasCopterChart,
   ilsOrLocIdentifier,
@@ -54,6 +55,21 @@ ${record('DP', 'OTHER TWO', 'OTHER2.OTHER')}
     </city_name>
   </state_code>
 </digital_tpp>`;
+
+describe('approach row charts', () => {
+  const plates = [
+    'COPTER RNAV (GPS) 210',
+    'ILS Y OR LOC Y RWY 4R',
+    'RNAV (GPS) RWY 01',
+    'RNAV (GPS) RWY 01, CONT.1',
+  ].map((name) => ({ code: 'IAP', name }));
+  it('matches course, variant and runway without selecting a continuation or a different approach', () => {
+    expect(findApproachChart(plates, 'R210', 'COPTER RNAV (GPS) 210')).toBe(plates[0]);
+    expect(findApproachChart(plates, 'I04RY', 'ILS OR LOC Y RWY 04R')).toBe(plates[1]);
+    expect(findApproachChart(plates, 'R01', 'RNAV (GPS) RWY 1')).toBe(plates[2]);
+    expect(findApproachChart(plates, 'I04RZ', 'ILS Z RWY 04R')).toBeUndefined();
+  });
+});
 
 describe('parseFaaChartIndex', () => {
   it('lists the obstacle departures per airport by their computer code', () => {

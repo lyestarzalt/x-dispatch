@@ -4,11 +4,11 @@ import type { GuidanceRoutes } from '@/lib/taxiGuidance/windowRoutes';
 import { usePlaneStore } from '@/stores/planeStore';
 import { type FlightStripSettings, useSettingsStore } from '@/stores/settingsStore';
 import { useTaxiGuidanceStore } from '@/stores/taxiGuidanceStore';
+import { useFlightStripOpacity } from './useFlightStripOpacity';
 
 function windowOptions(settings: FlightStripSettings): FlightStripWindowOptions {
   return {
     locked: settings.locked,
-    opacity: settings.opacity,
     alwaysOnTop: settings.alwaysOnTop,
   };
 }
@@ -19,6 +19,7 @@ function windowOptions(settings: FlightStripSettings): FlightStripWindowOptions 
  * opens when X-Plane connects.
  */
 export function useFlightStripWindowSync(): void {
+  useFlightStripOpacity(false);
   useEffect(() => {
     if (window.appAPI.isRemoteClient) return;
     const push = (settings: FlightStripSettings) =>
@@ -27,11 +28,7 @@ export function useFlightStripWindowSync(): void {
     return useSettingsStore.subscribe((state, previous) => {
       const next = state.flightStrip;
       const prev = previous.flightStrip;
-      if (
-        next.locked !== prev.locked ||
-        next.opacity !== prev.opacity ||
-        next.alwaysOnTop !== prev.alwaysOnTop
-      ) {
+      if (next.locked !== prev.locked || next.alwaysOnTop !== prev.alwaysOnTop) {
         push(next);
       }
     });

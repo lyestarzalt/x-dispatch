@@ -163,6 +163,7 @@ function FlightPlanBuilder({
   const folded = panel === 'rail' || foldForSpace;
   // Compact: a read-out of the plan for flying, sized to its content. Only the swap stays.
   const compact = panel === 'half';
+  const undoDraft = usePlanBuilderStore((s) => s.undoDraft);
   const reset = usePlanBuilderStore((s) => s.reset);
   const restoreDraft = usePlanBuilderStore((s) => s.restoreDraft);
   const showOnMap = usePlanBuilderStore((s) => s.showOnMap);
@@ -760,12 +761,10 @@ function FlightPlanBuilder({
     }
   };
 
-  // Starting over and clearing the route are one click, so each offers an undo instead of a prompt.
+  // The New plan button holds the cleared draft until both new endpoints are selected.
   const handleNewPlan = () => {
-    const previous = reset();
-    toast(t('planBuilder.planCleared'), {
-      action: { label: t('common.undo'), onClick: () => restoreDraft(previous) },
-    });
+    if (undoDraft) restoreDraft(undoDraft);
+    else reset();
   };
   const handleClearRoute = () => {
     const previous = routeText;
@@ -808,7 +807,8 @@ function FlightPlanBuilder({
       onPointerDownCapture={sendWidgetsBack}
       className={cn(
         // left-12 leaves the map's own buttons in the bottom-left corner in reach (GitHub #425).
-        'absolute top-[var(--map-panel-top,4rem)] left-12 z-30 flex max-h-[calc(100%-var(--map-panel-top,4rem)-1rem)] flex-col',
+        'absolute top-[var(--map-panel-top,4rem)] z-30 flex max-h-[calc(100%-var(--map-panel-top,4rem)-1rem)] flex-col',
+        folded || compact ? 'left-2 sm:left-4' : 'left-12',
         folded ? 'w-12' : 'w-[26rem] max-w-[calc(75%-7rem)] max-sm:max-w-[calc(100%-8rem)]',
         !folded && panel === 'full' && 'bottom-4'
       )}
@@ -864,13 +864,24 @@ function FlightPlanBuilder({
               <Button
                 variant="ghost"
                 size="xs"
-                className="text-muted-foreground hover:text-foreground max-sm:px-1.5"
+                className={cn(
+                  'max-sm:px-1.5',
+                  undoDraft
+                    ? 'text-primary bg-primary/10'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
                 onClick={handleNewPlan}
-                disabled={!departure && !arrival && !routeText}
-                tooltip={t('planBuilder.newPlan')}
+                disabled={!undoDraft && !departure && !arrival && !routeText}
+                tooltip={t(undoDraft ? 'common.undo' : 'planBuilder.newPlan')}
               >
-                <RotateCcw className="h-3.5 w-3.5" />
-                <span className="max-sm:hidden">{t('planBuilder.newPlan')}</span>
+                {undoDraft ? (
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                ) : (
+                  <RotateCcw className="h-3.5 w-3.5" />
+                )}
+                <span className="max-sm:hidden">
+                  {t(undoDraft ? 'common.undo' : 'planBuilder.newPlan')}
+                </span>
               </Button>
               <Button
                 variant="ghost"

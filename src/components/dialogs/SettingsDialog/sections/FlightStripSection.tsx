@@ -157,7 +157,6 @@ export default function FlightStripSection({ className }: SettingsSectionProps) 
   const flightStrip = useSettingsStore((s) => s.flightStrip);
   const updateFlightStripSettings = useSettingsStore((s) => s.updateFlightStripSettings);
   const setFlightStripScale = useSettingsStore((s) => s.setFlightStripScale);
-  const setFlightStripOpacity = useSettingsStore((s) => s.setFlightStripOpacity);
   const setFlightStripField = useSettingsStore((s) => s.setFlightStripField);
   const setFlightStripOrder = useSettingsStore((s) => s.setFlightStripOrder);
   const sensors = useSensors(
@@ -172,13 +171,6 @@ export default function FlightStripSection({ className }: SettingsSectionProps) 
     if (from < 0 || to < 0) return;
     setFlightStripOrder(arrayMove(order, from, to));
   };
-
-  const previewOpacity = (percent: number) =>
-    window.appAPI.setFlightStripWindowOptions({
-      locked: flightStrip.locked,
-      alwaysOnTop: flightStrip.alwaysOnTop,
-      opacity: percent / 100,
-    });
 
   return (
     <div className={cn('space-y-6', className)}>
@@ -212,6 +204,14 @@ export default function FlightStripSection({ className }: SettingsSectionProps) 
               onCheckedChange={(alwaysOnTop) => updateFlightStripSettings({ alwaysOnTop })}
             />
             <SettingsToggleRow
+              title={t('settings.flightStrip.flightMap')}
+              description={t('settings.flightStrip.flightMapDescription')}
+              checked={flightStrip.flightMapOnTakeoff}
+              onCheckedChange={(flightMapOnTakeoff) =>
+                updateFlightStripSettings({ flightMapOnTakeoff })
+              }
+            />
+            <SettingsToggleRow
               title={t('settings.flightStrip.autoOpen')}
               description={t('settings.flightStrip.autoOpenDescription')}
               checked={flightStrip.autoOpen}
@@ -234,21 +234,9 @@ export default function FlightStripSection({ className }: SettingsSectionProps) 
             onCommit={(percent) => setFlightStripScale(percent / 100)}
             resetLabel={t('settings.flightStrip.reset')}
           />
-          {/* Electron cannot change window opacity on Linux */}
-          {!isLinux && !isRemote && (
-            <SettingsSliderRow
-              title={t('settings.flightStrip.opacity')}
-              description={t('settings.flightStrip.opacityDescription')}
-              value={Math.round(flightStrip.opacity * 100)}
-              defaultValue={100}
-              min={30}
-              max={100}
-              step={5}
-              onCommit={(percent) => setFlightStripOpacity(percent / 100)}
-              onPreview={previewOpacity}
-              resetLabel={t('settings.flightStrip.reset')}
-            />
-          )}
+          <p className="text-muted-foreground text-xs">
+            {t('settings.flightStrip.opacityGesture')}
+          </p>
         </div>
       </SettingsSectionBlock>
 

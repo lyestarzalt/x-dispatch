@@ -10,16 +10,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Copy coordinates for an INS.** The map's right-click menu shows and copies the point as `N45°59.9' E007°59.9'`, the format a CIVA INS takes.
-- **Gate search shows on the map.** Gates matching the search are ringed and the others fade.
+- **Gate search shows on the map.** Gates matching the search become white discs and the others fade.
 - **Livery thumbnail size.** A slider above the liveries makes their pictures larger or smaller.
 - **Distance and course on every SID, STAR and approach leg.** Each drawn leg of a loaded plan carries its length and course, also the legs that have no fix of their own.
 - **Direction arrows on leg labels.** The arrow points the way the leg is flown.
 - **Online traffic colour.** Settings → Appearance draws VATSIM and IVAO pilots green, blue or each in its own colour.
+- **Cockpit flight map.** Keep the taxi map open at takeoff to follow your aircraft north-up, then return to taxi guidance on landing.
+- **Approach chart shortcuts.** Open a matching FAA plate or overlay it directly from the approach list.
 
 ### Changed
 
 - **Leg distance and course are written inside the route line.** No box around them, and a label shows only once its leg is long enough on screen to hold it.
 - **Staffed centre sectors are tinted.** A VATSIM centre that is online is filled, not only outlined.
+- **Panel opacity.** Hold Ctrl and scroll over the strip, its map, or a chart on the main map to adjust each independently.
+- **Flight planner.** Undo a new plan until both endpoints are set. Compact and folded cards align with the clock, and Previous Plans drops the unused gate filter.
+- **Airport card.** Switching airports opens Info. Arrival and departure ATIS broadcasts have explicit labels, runway chips stay on the right, and chart buttons keep their columns.
+- **Procedure preview.** Fix, constraint and course labels use their route's color.
 
 ### Fixed
 

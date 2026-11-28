@@ -139,7 +139,9 @@ export interface AppearanceSettings {
 export interface FlightStripSettings {
   /** Size of the strip on the map, 1 to 2 times its base size. */
   scale: number;
-  /** Opacity of the detached strip window, 0.3 to 1. */
+  /** Per-panel opacity, 0.3 to 1. */
+  taxiMapOpacity: number;
+  flightMapOnTakeoff: boolean;
   opacity: number;
   /** The detached window lets clicks through to the simulator. */
   locked: boolean;
@@ -257,7 +259,15 @@ interface SettingsState {
   setFlightStripOpacity: (opacity: number) => void;
   updateFlightStripSettings: (
     settings: Partial<
-      Pick<FlightStripSettings, 'alwaysOnTop' | 'autoOpen' | 'locked' | 'wheelAdjust'>
+      Pick<
+        FlightStripSettings,
+        | 'alwaysOnTop'
+        | 'autoOpen'
+        | 'locked'
+        | 'wheelAdjust'
+        | 'taxiMapOpacity'
+        | 'flightMapOnTakeoff'
+      >
     >
   ) => void;
   toggleFlightStripLock: () => void;
@@ -341,7 +351,9 @@ const DEFAULT_DESKTOP_SETTINGS: DesktopSettings = {
 
 const DEFAULT_FLIGHT_STRIP_SETTINGS: FlightStripSettings = {
   scale: 1,
-  opacity: DEFAULT_FLIGHT_STRIP_WINDOW_OPTIONS.opacity,
+  opacity: 1,
+  taxiMapOpacity: 1,
+  flightMapOnTakeoff: false,
   locked: DEFAULT_FLIGHT_STRIP_WINDOW_OPTIONS.locked,
   alwaysOnTop: DEFAULT_FLIGHT_STRIP_WINDOW_OPTIONS.alwaysOnTop,
   autoOpen: false,
@@ -573,7 +585,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'xplane-viz-settings',
-      version: 46,
+      version: 47,
       migrate: (persistedState, version) => migrateSettings(persistedState, version),
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -901,6 +913,17 @@ export function migrateSettings(persistedState: unknown, version: number): Setti
     };
   }
 
+  if (version < 47) {
+    state = {
+      ...state,
+      flightStrip: {
+        ...DEFAULT_FLIGHT_STRIP_SETTINGS,
+        ...state.flightStrip,
+        taxiMapOpacity: clampFlightStripOpacity(state.flightStrip?.opacity ?? 1),
+        flightMapOnTakeoff: false,
+      },
+    };
+  }
   return state as SettingsState;
 }
 

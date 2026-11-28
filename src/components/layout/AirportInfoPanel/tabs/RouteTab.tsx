@@ -7,12 +7,15 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { runwayMatches } from '@/lib/flightplan/builder/procedures';
 import { formatApproachName } from '@/lib/parsers/nav/approachName';
-import { chartTitleTags } from '@/lib/parsers/nav/faaChartIndex';
+import { chartTitleTags, findApproachChart } from '@/lib/parsers/nav/faaChartIndex';
 import { cn } from '@/lib/utils/helpers';
-import { trackEvent, useAirportProcedures } from '@/queries';
+import { trackEvent, useAirportProcedures, useFaaAirportCharts } from '@/queries';
 import { useAppStore } from '@/stores/appStore';
 import type { ResolvedProcedure as Procedure } from '@/types/navigation';
+import { ChartControls } from './info/ChartControls';
 import { groupProcedures, variantSpread } from './route/procedureGroups';
+
+const APPROACH_CHART_GROUP = 'approaches';
 
 type ProcedureType = 'SID' | 'STAR' | 'APP';
 
@@ -68,6 +71,7 @@ export default function RouteTab() {
 
   const { data: procedures, isLoading } = useAirportProcedures(icao);
   const [activeType, setActiveType] = useState<ProcedureType>('SID');
+  const { data: chartList } = useFaaAirportCharts(activeType === 'APP' ? icao : null);
   const [expandedProcedure, setExpandedProcedure] = useState<string | null>(null);
   const [onlyStartRunway, setOnlyStartRunway] = useState(true);
 
@@ -180,10 +184,41 @@ export default function RouteTab() {
                 selectedProcedure?.runway === v.runway
             );
 
+            const first = group.variants[0];
+            if (!first) return null;
+            const chart =
+              activeType === 'APP' &&
+              chartList &&
+              findApproachChart(
+                chartList.charts,
+                first.name,
+                formatApproachName(
+                  first.name,
+                  first.approachType,
+                  first.approachQualifier2,
+                  first.orLocalizer,
+                  first.helicopter
+                )
+              );
+            const actions =
+              chart && icao ? (
+                <ChartControls chart={chart} icao={icao} group={APPROACH_CHART_GROUP} />
+              ) : null;
+
+            const name = chart ? (
+              <span
+                title={chart.name}
+                className="min-w-0 text-left font-mono text-xs whitespace-normal"
+              >
+                {chart.name}
+              </span>
+            ) : (
+              <ProcedureName proc={first} type={activeType} withCode={!hasMultipleVariants} />
+            );
+
             // Single variant - direct selection
             if (!hasMultipleVariants) {
-              const proc = group.variants[0];
-              if (!proc) return null;
+              const proc = first;
               const isSelected =
                 selectedProcedure?.name === proc.name &&
                 selectedProcedure?.transition === proc.transition &&
@@ -197,25 +232,27 @@ export default function RouteTab() {
                   : null;
 
               return (
-                <Button
-                  key={group.name}
-                  variant="ghost"
-                  onClick={() => handleSelect(proc)}
-                  className={cn(
-                    'h-auto w-full justify-between px-3 py-2.5 text-left',
-                    isSelected
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-foreground/80 hover:bg-muted/50'
-                  )}
-                >
-                  <ProcedureName proc={proc} type={activeType} />
-                  <div className="flex items-center gap-2">
-                    {subtitle && (
-                      <span className="text-muted-foreground/50 text-xs">{subtitle}</span>
+                <div key={group.name} className="flex items-center">
+                  <Button
+                    variant="ghost"
+                    onClick={() => handleSelect(proc)}
+                    className={cn(
+                      'h-auto min-w-0 flex-1 justify-between px-2 py-2.5 text-left',
+                      isSelected
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-foreground/80 hover:bg-muted/50'
                     )}
-                    {isSelected && <Check className="h-4 w-4" />}
-                  </div>
-                </Button>
+                  >
+                    {name}
+                    <div className="flex items-center gap-2">
+                      {subtitle && (
+                        <span className="text-muted-foreground/50 text-xs">{subtitle}</span>
+                      )}
+                      {isSelected && <Check className="h-4 w-4" />}
+                    </div>
+                  </Button>
+                  {actions}
+                </div>
               );
             }
 
@@ -231,9 +268,7 @@ export default function RouteTab() {
 
             let variantLabel: string;
             if (spread.transitions > 0) {
-              variantLabel = t('airportInfo.routeTab.transitionCount', {
-                count: spread.transitions,
-              });
+              variantLabel = String(spread.transitions);
             } else if (spread.runways > 0) {
               variantLabel = t('airportInfo.routeTab.runwayVariantCount', {
                 count: spread.runways,
@@ -246,30 +281,44 @@ export default function RouteTab() {
 
             return (
               <div key={group.name}>
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    if (isExpanded && isAnyVariantSelected) selectProcedure(null);
-                    setExpandedProcedure(isExpanded ? null : group.name);
-                  }}
-                  className={cn(
-                    'h-auto w-full justify-between px-3 py-2.5 text-left',
-                    isAnyVariantSelected
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-foreground/80 hover:bg-muted/50'
-                  )}
-                >
-                  <ProcedureName proc={group.variants[0]!} type={activeType} withCode={false} />
-                  <div className="flex shrink-0 items-center gap-2">
-                    <span className="text-muted-foreground/50 text-xs">{variantLabel}</span>
-                    <ChevronRight
-                      className={cn(
-                        'text-muted-foreground h-4 w-4 transition-transform',
-                        isExpanded && 'rotate-90'
-                      )}
-                    />
-                  </div>
-                </Button>
+                <div className="flex items-center">
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      if (isExpanded && isAnyVariantSelected) selectProcedure(null);
+                      setExpandedProcedure(isExpanded ? null : group.name);
+                    }}
+                    className={cn(
+                      'h-auto min-w-0 flex-1 justify-between px-2 py-2.5 text-left',
+                      isAnyVariantSelected
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-foreground/80 hover:bg-muted/50'
+                    )}
+                  >
+                    {name}
+                    <div className="flex shrink-0 items-center gap-2">
+                      <span
+                        title={
+                          spread.transitions
+                            ? t('airportInfo.routeTab.transitionCount', {
+                                count: spread.transitions,
+                              })
+                            : undefined
+                        }
+                        className="text-muted-foreground/50 text-xs"
+                      >
+                        {variantLabel}
+                      </span>
+                      <ChevronRight
+                        className={cn(
+                          'text-muted-foreground h-4 w-4 transition-transform',
+                          isExpanded && 'rotate-90'
+                        )}
+                      />
+                    </div>
+                  </Button>
+                  {actions}
+                </div>
 
                 {/* Variants: transitions for approaches, runways for SID/STAR */}
                 {isExpanded && (

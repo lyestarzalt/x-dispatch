@@ -6,12 +6,14 @@ import FlightStrip from '@/components/Map/widgets/FlightStrip';
 import TaxiMiniMap from '@/components/Map/widgets/TaxiMiniMap';
 import { Button } from '@/components/ui/button';
 import { useFlightStripGuidance } from '@/hooks/useFlightStripGuidance';
+import { useFlightStripOpacity } from '@/hooks/useFlightStripOpacity';
 import { useSettingsStorageSync } from '@/hooks/useSettingsStorageSync';
 import { aspectChanged } from '@/lib/flightStrip/windowFit';
 import { cn } from '@/lib/utils/helpers';
 import { useFlightStripWindowOptions } from '@/queries';
 import { usePlaneStateStream } from '@/queries/useXPlaneWebSocket';
 import { usePlaneStore } from '@/stores/planeStore';
+import { useSettingsStore } from '@/stores/settingsStore';
 import { useTaxiGuidanceStore } from '@/stores/taxiGuidanceStore';
 
 const dragStyle = { WebkitAppRegion: 'drag' } as CSSProperties;
@@ -112,12 +114,14 @@ function StripControls({
   locked,
   taxiMap,
   onToggleTaxiMap,
+  inFlight,
 }: {
   gripRef: React.RefObject<HTMLDivElement | null>;
   /** The second set: faint until the pointer is on it, so the strip does not show six buttons. */
   quiet?: boolean;
   locked: boolean;
   taxiMap: boolean;
+  inFlight: boolean;
   onToggleTaxiMap: () => void;
 }) {
   const { t } = useTranslation();
@@ -162,8 +166,8 @@ function StripControls({
         className={cn('h-5 w-5', taxiMap ? 'text-primary' : 'text-muted-foreground')}
         onClick={onToggleTaxiMap}
         aria-pressed={taxiMap}
-        aria-label={t('flightStrip.taxiMap')}
-        tooltip={t('flightStrip.taxiMap')}
+        aria-label={t(inFlight ? 'settings.flightStrip.flightMap' : 'flightStrip.taxiMap')}
+        tooltip={t(inFlight ? 'settings.flightStrip.flightMap' : 'flightStrip.taxiMap')}
       >
         <MapIcon className="h-3 w-3" />
       </Button>
@@ -180,6 +184,10 @@ function StripControls({
 export function FlightStripWindow() {
   usePlaneStateStream();
   useSettingsStorageSync();
+  useFlightStripOpacity(true);
+  const keepMap = useSettingsStore((s) => s.flightStrip.flightMapOnTakeoff);
+  const airborne = usePlaneStore((s) => s.state?.onGround === false);
+  const mapOpacity = useSettingsStore((s) => s.flightStrip.taxiMapOpacity);
   useFlightStripGuidance();
   const { t } = useTranslation();
   const { locked } = useFlightStripWindowOptions();
@@ -187,20 +195,20 @@ export function FlightStripWindow() {
   const stripRef = useRef<HTMLDivElement>(null);
   const leadingGripRef = useRef<HTMLDivElement>(null);
   const trailingGripRef = useRef<HTMLDivElement>(null);
-  // EXPERIMENT (exp/taxi-mini-map): the taxi map panel under the strip.
+  // Map visibility follows the pilot’s toggle; its content follows the flight phase.
   const [taxiMap, setTaxiMap] = useState(false);
-  // Closed at takeoff, so it never springs open over the view at touchdown: the
-  // pilot opens it again after landing.
+  // With automatic switching off, takeoff closes the panel until the pilot reopens it.
   useEffect(
     () =>
       usePlaneStore.subscribe((s, prev) => {
-        if (s.state?.onGround === false && prev.state?.onGround === true) setTaxiMap(false);
+        if (!keepMap && s.state?.onGround === false && prev.state?.onGround === true)
+          setTaxiMap(false);
       }),
-    []
+    [keepMap]
   );
   const hasRoute = useTaxiGuidanceStore((s) => !!(s.departure ?? s.arrival));
   const toggleTaxiMap = () => {
-    if (!taxiMap && !hasRoute) {
+    if (!taxiMap && !hasRoute && !(airborne && keepMap)) {
       toast.info(t('flightStrip.taxiMapNoRoute'));
       return;
     }
@@ -212,7 +220,7 @@ export function FlightStripWindow() {
 
   return (
     // The padding stays outside the drag region so the window edges keep resizing.
-    <div className="bg-background relative h-screen w-screen overflow-hidden p-1">
+    <div className="relative h-screen w-screen overflow-hidden p-1">
       <div
         ref={frameRef}
         className="flex h-full w-full items-center justify-center overflow-hidden"
@@ -232,6 +240,7 @@ export function FlightStripWindow() {
                 gripRef={leadingGripRef}
                 locked={locked}
                 taxiMap={taxiMap}
+                inFlight={keepMap && airborne}
                 onToggleTaxiMap={toggleTaxiMap}
               />
             }
@@ -240,16 +249,22 @@ export function FlightStripWindow() {
                 gripRef={trailingGripRef}
                 locked={locked}
                 taxiMap={taxiMap}
+                inFlight={keepMap && airborne}
                 onToggleTaxiMap={toggleTaxiMap}
               />
             }
             footer={
               taxiMap && (
                 <div
-                  className="border-border/50 h-56 w-0 min-w-full overflow-hidden rounded-b-xl border-t"
-                  style={noDragStyle}
+                  role="region"
+                  aria-label={t(
+                    keepMap && airborne ? 'settings.flightStrip.flightMap' : 'flightStrip.taxiMap'
+                  )}
+                  data-strip-opacity="map"
+                  className="bg-card border-border/50 h-56 w-0 min-w-full overflow-hidden rounded-b-xl border-t"
+                  style={{ ...noDragStyle, opacity: mapOpacity }}
                 >
-                  <TaxiMiniMap scale={scale} />
+                  <TaxiMiniMap scale={scale} airborne={airborne && keepMap} />
                 </div>
               )
             }

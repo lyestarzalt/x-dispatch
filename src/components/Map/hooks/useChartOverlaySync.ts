@@ -2,8 +2,10 @@ import { useEffect, useRef } from 'react';
 import type * as maplibregl from 'maplibre-gl';
 import type { ChartInk } from '@/lib/chartOverlay/pixels';
 import { type RenderedChart, renderChart } from '@/lib/chartOverlay/renderChart';
+import { listenOpacityWheel } from '@/lib/flightStrip/opacityWheel';
 import type { BasemapTheme } from '@/lib/map/basemapTheme';
 import { errorMessage } from '@/lib/utils/errors';
+import { isPointInPolygon } from '@/lib/utils/geomath/polygon';
 import logger from '@/lib/utils/loggerRenderer';
 import { useFaaChartPdf } from '@/queries';
 import { useChartOverlayStore } from '@/stores/chartOverlayStore';
@@ -112,6 +114,22 @@ export function useChartOverlaySync({ mapRef, theme }: UseChartOverlaySyncOption
       stopWaiting?.();
     };
   }, [mapRef, url, data, dataUpdatedAt, ink, setShown, setError]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !url) return;
+    const canvas = map.getCanvas();
+    return listenOpacityWheel(map.getCanvasContainer(), (event, delta) => {
+      const chart = shownRef.current;
+      const state = useChartOverlayStore.getState();
+      if (!chart || state.status !== 'shown' || event.target !== canvas) return false;
+      const rect = canvas.getBoundingClientRect();
+      const pos = map.unproject([event.clientX - rect.left, event.clientY - rect.top]);
+      if (!isPointInPolygon([pos.lng, pos.lat], chart.corners)) return false;
+      state.setOpacity(state.opacity + delta);
+      return true;
+    });
+  }, [mapRef, url]);
 
   // The slider writes straight to the layer. Reading the opacity as React state here would
   // render the whole map component on every step of a drag, and the chart lagged behind.

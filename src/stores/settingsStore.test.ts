@@ -360,6 +360,17 @@ describe('migrateSettings', () => {
     expect(result.graphics.followSimTime).toBe(false);
   });
 
+  it('upgrades v46 strip opacity without changing the saved traffic color', () => {
+    const saved = { flightStrip: { opacity: 0.55 }, map: { onlineTrafficColor: 'green' } };
+    const result = migrateSettings(saved, 46);
+    expect(result.map.onlineTrafficColor).toBe('green');
+    expect(result.flightStrip).toMatchObject({
+      opacity: 0.55,
+      taxiMapOpacity: 0.55,
+      flightMapOnTakeoff: false,
+    });
+  });
+
   it('moves the strip size and opacity into their own settings at v37', () => {
     const v36Blob = {
       appearance: {
@@ -376,6 +387,8 @@ describe('migrateSettings', () => {
     expect(result.flightStrip).toEqual({
       scale: 1.4,
       opacity: 0.6,
+      taxiMapOpacity: 0.6,
+      flightMapOnTakeoff: false,
       locked: false,
       alwaysOnTop: true,
       autoOpen: false,

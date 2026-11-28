@@ -68,6 +68,13 @@ test.beforeEach(async () => {
   const pdfCache = path.join(fixture.userDataDir, 'faa-chart-pdfs', CYCLE);
   fs.mkdirSync(pdfCache, { recursive: true });
   fs.copyFileSync(CHART_PDF, path.join(pdfCache, PDF_NAME));
+  const cifp = path.join(fixture.xplaneRoot, 'Resources', 'default data', 'CIFP');
+  fs.mkdirSync(cifp, { recursive: true });
+  fs.writeFileSync(
+    path.join(cifp, 'KJFK.dat'),
+    'RWY:RW31R, , , ,00013, , , ,   ;N40380000,W073460000\n' +
+      'APPCH:010,A,I31R,KILMA,KILMA,K6,E,A,EE B, ,   ,IF, , , , , ,      ,    ;\n'
+  );
   const { executablePath, cwd } = resolveAppEntry();
   app = await electron.launch({
     executablePath,
@@ -103,4 +110,94 @@ test('an approach chart from the airport card is drawn and laid on the map', asy
 
   await card.getByRole('button', { name: 'Remove the chart' }).click();
   await expect(card).toBeHidden();
+  const dock = mainWindow.getByTestId('airport-dock');
+  await dock.getByRole('tab', { name: 'Proc', exact: true }).click();
+  await dock.getByRole('tab', { name: /approach/i }).click();
+  await expect(dock.getByRole('button', { name: /PDF.*ILS OR LOC RWY 31R/ })).toBeVisible();
+  await dock.getByRole('button', { name: 'Show on the map' }).click();
+  await expect(card.getByRole('slider')).toBeVisible();
+});
+
+test('the detached strip adjusts its own opacity without dimming the taxi map', async () => {
+  await expect(mainWindow.getByPlaceholder('Search airports...')).toBeVisible({ timeout: 30000 });
+  const opening = app.waitForEvent('window');
+  await mainWindow.evaluate(() => window.appAPI.showFlightStripWindow());
+  const strip = await opening;
+  const panel = strip.locator('[data-strip-opacity="strip"]');
+  await expect(panel).toBeVisible();
+  await panel.dispatchEvent('wheel', {
+    ctrlKey: true,
+    deltaY: 100,
+    bubbles: true,
+    cancelable: true,
+  });
+  await expect(panel).toHaveCSS('opacity', '0.95');
+  const settings = await mainWindow.evaluate(
+    () => JSON.parse(localStorage.getItem('xplane-viz-settings')!).state.flightStrip
+  );
+  expect(settings.opacity).toBe(0.95);
+  expect(settings.taxiMapOpacity).toBe(1);
+});
+
+test('the open taxi map follows takeoff and landing with independent opacity', async () => {
+  const search = mainWindow.getByPlaceholder('Search airports...');
+  await expect(search).toBeVisible({ timeout: 30000 });
+  await mainWindow.evaluate(() => {
+    const settings = JSON.parse(localStorage.getItem('xplane-viz-settings')!);
+    settings.state.flightStrip.flightMapOnTakeoff = true;
+    localStorage.setItem('xplane-viz-settings', JSON.stringify(settings));
+  });
+  await mainWindow.reload();
+  await expect(search).toBeVisible({ timeout: 30000 });
+  await mainWindow.evaluate(() =>
+    window.appAPI.setFlightStripGuidance({
+      departure: {
+        icao: 'KJFK',
+        direction: 'departure',
+        source: 'planned',
+        runway: '31R',
+        gateName: 'G1',
+        points: [
+          { lat: 40.64, lon: -73.78 },
+          { lat: 40.65, lon: -73.77 },
+        ],
+        legs: [{ name: 'A', isRunway: false, runways: [] }],
+        anchorNodeIds: [],
+        nodeIds: [],
+      },
+      arrival: null,
+    })
+  );
+  const opening = app.waitForEvent('window');
+  await mainWindow.evaluate(() => window.appAPI.showFlightStripWindow());
+  const strip = await opening;
+  await strip.getByRole('button', { name: 'Taxi map' }).last().click();
+  const taxiMap = strip.getByRole('region', { name: 'Taxi map' });
+  await expect(taxiMap).toBeVisible();
+  await taxiMap.dispatchEvent('wheel', {
+    ctrlKey: true,
+    deltaY: 100,
+    bubbles: true,
+    cancelable: true,
+  });
+  await expect(taxiMap).toHaveCSS('opacity', '0.95');
+  await expect(strip.locator('[data-strip-opacity="strip"]')).toHaveCSS('opacity', '1');
+  const ground = (onGround: boolean) =>
+    app.evaluate(({ BrowserWindow }, landed) => {
+      const win = BrowserWindow.getAllWindows().find((w) =>
+        w.webContents.getURL().includes('view=flight-strip')
+      )!;
+      win.webContents.send('xplaneService:stateUpdate', {
+        latitude: 40.65,
+        longitude: -73.77,
+        heading: 90,
+        onGround: landed,
+      });
+    }, onGround);
+  await ground(true);
+  await ground(false);
+  await expect(strip.getByRole('region', { name: 'In-flight map' })).toBeVisible();
+  await ground(true);
+  await expect(taxiMap).toBeVisible();
+  await expect(taxiMap).toHaveCSS('opacity', '0.95');
 });
