@@ -361,9 +361,12 @@ describe('migrateSettings', () => {
   });
 
   it('upgrades v46 strip opacity without changing the saved traffic color', () => {
-    const saved = { flightStrip: { opacity: 0.55 }, map: { onlineTrafficColor: 'green' } };
+    const saved = {
+      flightStrip: { opacity: 0.55 },
+      graphics: { networkTrafficColor: 'blue' as const },
+    };
     const result = migrateSettings(saved, 46);
-    expect(result.map.onlineTrafficColor).toBe('green');
+    expect(result.graphics.networkTrafficColor).toBe('blue');
     expect(result.flightStrip).toMatchObject({
       opacity: 0.55,
       taxiMapOpacity: 0.55,
