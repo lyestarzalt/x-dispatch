@@ -178,8 +178,50 @@ function loadStretchImage(map: maplibregl.Map, id: string, svg: string): void {
   img.src = svgToDataUrl(svg);
 }
 
-/** Register the waypoint label badges and the in-line leg chips (idempotent; they appear when loaded). */
+/** The route line's width at a zoom, in pixels: `ROUTE_LINE_WIDTH` read at one zoom. */
+export function routeLineWidthAt(zoom: number): number {
+  const stops = (ROUTE_LINE_WIDTH as unknown[]).slice(3) as number[];
+  if (zoom <= stops[0]!) return stops[1]!;
+  for (let i = 2; i < stops.length; i += 2) {
+    if (zoom <= stops[i]!) {
+      const t = (zoom - stops[i - 2]!) / (stops[i]! - stops[i - 2]!);
+      return stops[i - 1]! + t * (stops[i + 1]! - stops[i - 1]!);
+    }
+  }
+  return stops[stops.length - 1]!;
+}
+
+/** The arrowhead written beside a leg's text: `forward` points the way the text reads. */
+export function legArrowImageId(direction: 'forward' | 'back'): string {
+  return `route-leg-arrow-${direction}`;
+}
+
+// Drawn at 2x; 5 x 6 css px stays inside the line at the zoom the text first shows.
+const ARROW_W = 10;
+const ARROW_H = 12;
+
+function arrowSvg(direction: 'forward' | 'back'): string {
+  const points =
+    direction === 'forward'
+      ? `1,2 ${ARROW_W - 1},${ARROW_H / 2} 1,${ARROW_H - 2}`
+      : `${ARROW_W - 1},2 1,${ARROW_H / 2} ${ARROW_W - 1},${ARROW_H - 2}`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${ARROW_W}" height="${ARROW_H}" viewBox="0 0 ${ARROW_W} ${ARROW_H}"><polygon points="${points}" fill="#ffffff"/></svg>`;
+}
+
+function loadArrowImage(map: maplibregl.Map, direction: 'forward' | 'back'): void {
+  const id = legArrowImageId(direction);
+  if (map.hasImage(id)) return;
+  const img = new Image();
+  img.onload = () => {
+    if (!map.hasImage(id)) map.addImage(id, img, { pixelRatio: 2 });
+  };
+  img.src = svgToDataUrl(arrowSvg(direction));
+}
+
+/** Register the waypoint label badges, the in-line leg chips and their direction arrows (idempotent; they appear when loaded). */
 export function loadRouteLabelImages(map: maplibregl.Map): void {
+  loadArrowImage(map, 'forward');
+  loadArrowImage(map, 'back');
   for (const kind of Object.keys(LABEL_BADGE_COLORS) as WaypointLabelKind[]) {
     loadStretchImage(map, labelBadgeImageId(kind), badgeSvg(LABEL_BADGE_COLORS[kind], 6, 0.95));
   }

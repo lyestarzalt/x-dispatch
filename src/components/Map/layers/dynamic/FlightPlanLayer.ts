@@ -16,9 +16,11 @@ import { NAT_TRACK_RE } from '@/lib/flightplan/builder/routeTokens';
 import { labelFont } from '@/lib/map/labelFonts';
 import type { Degrees, NauticalMiles } from '@/lib/utils/geomath';
 import { svgToDataUrl } from '@/lib/utils/helpers';
+import { METERS_PER_NM } from '@/lib/utils/units/constants';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { EnrichedFlightPlan, EnrichedWaypoint } from '@/types/fms';
-import { zoomScaledTextSize } from '../labelSize';
+import type { TrueDegrees } from '@/types/units';
+import { minZoomForTextOnLine, zoomScaledTextSize } from '../labelSize';
 import { safeAddGeoJSONSource } from '../types';
 import {
   ROUTE_CASING_WIDTH,
@@ -26,8 +28,10 @@ import {
   ROUTE_LINE_OPACITY,
   ROUTE_LINE_WIDTH,
   kindColorExpression,
+  legArrowImageId,
   legChipImageId,
   loadRouteLabelImages,
+  routeLineWidthAt,
   waypointBadgeId,
   widthByKindExpression,
 } from './routeStyle';
@@ -165,7 +169,18 @@ function buildLabel(wp: EnrichedWaypoint): string {
   return wp.id;
 }
 
-type ProcedurePathInfo = { via: string; kind?: 'sid' | 'star' | 'approach'; path: LatLon[] };
+type ProcedurePathInfo = {
+  via: string;
+  kind?: 'sid' | 'star' | 'approach';
+  path: LatLon[];
+  legLabels?: {
+    from: LatLon;
+    to: LatLon;
+    distanceNm: NauticalMiles | null;
+    courseTrue: TrueDegrees | null;
+    missed?: boolean;
+  }[];
+};
 type LatLon = { latitude: number; longitude: number };
 
 const mercatorY = (lat: number): number => Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360));
@@ -180,7 +195,7 @@ const latFromMercatorY = (y: number): number =>
 export function legLabelPlacement(
   a: LatLon,
   b: LatLon
-): { lon: number; lat: number; rotate: number } {
+): { lon: number; lat: number; rotate: number; reversed: boolean } {
   const ya = mercatorY(a.latitude);
   const yb = mercatorY(b.latitude);
   // Both axes in radians of Web Mercator, so the angle is the one on screen. The longitude
@@ -192,11 +207,46 @@ export function legLabelPlacement(
   // Screen angle of the line, clockwise from north, then rotated so text runs along it.
   const screenBearing = ((Math.atan2(dx, dy) * 180) / Math.PI + 360) % 360;
   let rotate = screenBearing - 90;
-  if (screenBearing >= 180) rotate = screenBearing - 270; // west/southbound: keep the text upright
+  // West/southbound: the text is turned to stay upright, so it reads against the leg.
+  const reversed = screenBearing >= 180;
+  if (reversed) rotate = screenBearing - 270;
   return {
+    reversed,
     lon: ((a.longitude + dLon / 2 + 540) % 360) - 180,
     lat: latFromMercatorY((ya + yb) / 2),
     rotate: ((rotate + 180) % 360) - 180,
+  };
+}
+
+/** Characters the direction arrow and its space add to a chip's text. */
+const ARROW_CHARS = 2;
+
+/**
+ * The point feature for one leg's chip: at the middle of the stretch `a`-`b`, turned along it,
+ * with an arrow on the side the leg is flown towards, and hidden until that stretch is as long
+ * on screen as the chip (`minZoom`), so a chip never sticks out past the ends of its leg.
+ */
+function legChipFeature(
+  a: LatLon,
+  b: LatLon,
+  detail: string,
+  stretchNm: number
+): GeoJSON.Feature<GeoJSON.Point> & { properties: Record<string, unknown> } {
+  const { lon, lat, rotate, reversed } = legLabelPlacement(a, b);
+  return {
+    type: 'Feature',
+    geometry: { type: 'Point', coordinates: [lon, lat] },
+    properties: {
+      detail,
+      rotate,
+      arrow: reversed ? 'back' : 'forward',
+      minZoom: minZoomForTextOnLine(
+        stretchNm * METERS_PER_NM,
+        lat,
+        detail.length + ARROW_CHARS,
+        routeLineWidthAt
+      ),
+    },
   };
 }
 
@@ -206,8 +256,9 @@ const NOT_AN_AIRWAY = new Set(['', 'DRCT', 'ADEP', 'ADES']);
  * One label point per enroute leg at the leg's midpoint, turned to lie along it: the airway
  * name (shown zoomed out, once per run of legs on the same airway, on the longest of them) and
  * "46.0 NM 085°M" (shown zoomed in). Distance and course are the great-circle values between
- * the fixes. Procedure legs carry their procedure's name instead (see
- * `createProcedureNameGeoJSON`), and the leg from the approach runway to the airport is skipped
+ * the fixes. A procedure's legs are labelled from its drawn geometry instead: the length of
+ * each drawn leg and the course along it, in a chip of the procedure's colour, also where the
+ * leg has no fix of its own. The leg from the approach runway to the airport is skipped
  * because no line is drawn there.
  */
 export function createLegLabelGeoJSON(
@@ -263,21 +314,42 @@ export function createLegLabelGeoJSON(
   }
 
   const features: GeoJSON.Feature[] = legs.map((leg) => {
-    const { lon, lat, rotate } = legLabelPlacement(leg.a, leg.b);
+    // Zoomed in, the airway leads the leg's distance and course; a direct leg has none.
+    const detail = leg.airway ? `${leg.airway} ${leg.label}` : leg.label;
+    const chip = legChipFeature(leg.a, leg.b, detail, leg.distanceNm);
     return {
-      type: 'Feature',
-      geometry: { type: 'Point', coordinates: [lon, lat] },
+      ...chip,
       properties: {
+        ...chip.properties,
         label: leg.label,
-        // Zoomed in, the airway leads the leg's distance and course; a direct leg has none.
-        detail: leg.airway ? `${leg.airway} ${leg.label}` : leg.label,
         airway: leg.airway,
         showAirway: leg.showAirway,
-        rotate,
         chip: legChipImageId(NAT_TRACK_RE.test(leg.airway) ? 'track' : 'enroute'),
       },
     };
   });
+  for (const proc of procedurePaths ?? []) {
+    for (const leg of proc.legLabels ?? []) {
+      const parts: string[] = [];
+      if (leg.distanceNm !== null) parts.push(units.distance(leg.distanceNm));
+      if (leg.courseTrue !== null) {
+        parts.push(units.course(leg.courseTrue, leg.from.latitude, leg.from.longitude));
+      }
+      if (parts.length === 0) continue;
+      const label = parts.join(' ');
+      const chip = legChipFeature(leg.from, leg.to, label, greatCircleNm(leg.from, leg.to));
+      features.push({
+        ...chip,
+        properties: {
+          ...chip.properties,
+          label,
+          airway: '',
+          showAirway: false,
+          chip: legChipImageId(leg.missed ? 'missed' : (proc.kind ?? 'enroute')),
+        },
+      });
+    }
+  }
   return { type: 'FeatureCollection', features };
 }
 
@@ -614,13 +686,53 @@ export function addFlightPlanLayer(map: maplibregl.Map, fmsData: EnrichedFlightP
     layout: { ...chipLayout, 'text-field': ['get', 'airway'] },
     paint: { 'text-color': COLORS.labelText },
   });
+  // A leg's distance and course are written inside the line itself, with no box: the text is
+  // as tall as the line is wide, so nothing sticks out of it, and it shows once the leg is as
+  // long on screen as the text. The arrow leads or trails, whichever way the leg is flown.
+  const CENTRED = { 'vertical-align': 'center' } as const;
   map.addLayer({
     id: LEG_LABELS_ID,
     type: 'symbol',
     source: LEG_LABEL_SOURCE_ID,
     minzoom: 8,
-    layout: { ...chipLayout, 'text-field': ['get', 'detail'] },
-    paint: { 'text-color': COLORS.labelText },
+    filter: ['>=', ['zoom'], ['get', 'minZoom']],
+    layout: {
+      'text-font': labelFont(map, 'semibold'),
+      'text-size': ROUTE_LINE_WIDTH,
+      'text-anchor': 'center',
+      'text-rotate': ['get', 'rotate'],
+      'text-rotation-alignment': 'map',
+      'text-allow-overlap': false,
+      'text-ignore-placement': false,
+      // Every part is centred on the line, the arrow too: an image otherwise sits on the baseline.
+      'text-field': [
+        'case',
+        ['==', ['get', 'arrow'], 'back'],
+        [
+          'format',
+          ['image', legArrowImageId('back')],
+          CENTRED,
+          ' ',
+          CENTRED,
+          ['get', 'detail'],
+          CENTRED,
+        ],
+        [
+          'format',
+          ['get', 'detail'],
+          CENTRED,
+          ' ',
+          CENTRED,
+          ['image', legArrowImageId('forward')],
+          CENTRED,
+        ],
+      ],
+    },
+    paint: {
+      'text-color': COLORS.labelText,
+      'text-halo-color': COLORS.labelHalo,
+      'text-halo-width': 0.75,
+    },
   });
 
   // Procedure names in a chip of their line's colour, on the longest straight stretch of the line.

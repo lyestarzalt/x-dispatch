@@ -27,7 +27,13 @@ import type {
   ResolvedProcedureWaypoint,
 } from '@/types/navigation';
 import type { Feet, TrueDegrees } from '@/types/units';
-import { type LatLon, bearingDeg, destinationPoint, greatCircleNm } from './geometry';
+import {
+  type LatLon,
+  bearingDeg,
+  destinationPoint,
+  greatCircleNm,
+  pathDistanceNm,
+} from './geometry';
 
 /** Planning climb gradient for altitude-terminated legs (LNM's figure; ours was 300, half real). */
 const CLIMB_FT_PER_NM = 600;
@@ -342,8 +348,26 @@ export interface ProcedurePathOptions {
   runwayElevationFt?: Feet;
 }
 
+/**
+ * What a chart writes on one drawn leg: where the leg's straight line runs (after any small
+ * turn marker), how long it is and the course along it. Measured from the line as drawn, so a
+ * leg with no fix of its own (a heading to an intercept, a course to a DME distance) has one too.
+ */
+export interface ProcedureLegLabel {
+  from: LatLon;
+  to: LatLon;
+  /** Null on a climb to an altitude, whose length is not published, and after a procedure turn. */
+  distanceNm: NauticalMiles | null;
+  /** Null direct to a fix and on an arc, which have no one course. */
+  courseTrue: TrueDegrees | null;
+  /** Part of the missed approach. */
+  missed?: boolean;
+}
+
 export interface ProcedurePathResult {
   path: LatLon[];
+  /** One entry per labelled leg, in the order flown. */
+  legLabels: ProcedureLegLabel[];
   /** The missed-approach portion, kept separate so it can be drawn distinctly (e.g. dashed) - it
    * repeats `path`'s last point first, so the two connect with no visual gap. */
   missedPath: LatLon[];
@@ -361,8 +385,12 @@ export function procedureGeometry(
   const out: LatLon[] = [];
   const missedOut: LatLon[] = [];
   const overlays: ProcedureOverlay[] = [];
+  const legLabels: ProcedureLegLabel[] = [];
   let state: PathState | null = options.start ?? null;
   let currentIsMissed = false;
+  let term: PathTerminator = 'IF';
+  // The leg after a procedure turn starts from the turn symbol, so its length says nothing.
+  let afterProcedureTurn = false;
   // Where the aircraft is, and where it was before the last leg that moved it.
   let here: LatLon | null = state?.position ?? null;
   let before: LatLon | null = null;
@@ -386,6 +414,26 @@ export function procedureGeometry(
   };
 
   /**
+   * Records what is written on the leg being drawn. `from`-`to` is the straight stretch the
+   * text lies along; the values are those of the leg's own line from `lineStart`, so a small
+   * turn marker at the start neither shortens the leg nor skews its course.
+   */
+  const labelLeg = (from: LatLon, to: LatLon, lineStart: LatLon = from, arcNm?: NauticalMiles) => {
+    if (greatCircleNm(from, to) < 0.001) return;
+    const circular = arcNm !== undefined;
+    legLabels.push({
+      from,
+      to,
+      distanceNm:
+        TO_ALTITUDE.has(term) || afterProcedureTurn
+          ? null
+          : ((arcNm ?? greatCircleNm(lineStart, to)) as NauticalMiles),
+      courseTrue: circular || term === 'DF' ? null : (bearingDeg(lineStart, to) as TrueDegrees),
+      ...(currentIsMissed && { missed: true }),
+    });
+  };
+
+  /**
    * Run from the current state to `end` the way LNM paints a leg: one straight line from the
    * previous leg's end, preceded only by the small published-turn hint when the leg has one.
    * Leaves the track pointing along the final straight segment unless `trackAfterDeg` says
@@ -395,7 +443,8 @@ export function procedureGeometry(
     end: LatLon,
     wp: ResolvedProcedureWaypoint,
     trackAfterDeg?: Degrees,
-    legStart?: LatLon
+    legStart?: LatLon,
+    labelled = true
   ) => {
     if (!state) {
       append([end]);
@@ -412,6 +461,7 @@ export function procedureGeometry(
     append(lead);
     append([end]);
     const before = lead[lead.length - 1] ?? state.position;
+    if (labelled) labelLeg(before, end, legStart && gap > 0.02 ? legStart : state.position);
     state = { position: end, trackDeg: trackAfterDeg ?? bearingDeg(before, end) };
   };
 
@@ -442,7 +492,8 @@ export function procedureGeometry(
     const wp = waypoints[i]!;
     if (wp.fixType === 'C' || wp.fixType === 'A') continue;
     currentIsMissed = wp.isMissedApproach;
-    const term = wp.pathTerminator;
+    afterProcedureTurn = term === 'PI';
+    term = wp.pathTerminator;
     if (state && (!here || greatCircleNm(here, state.position) > 0.001)) {
       before = here;
       here = state.position;
@@ -474,6 +525,10 @@ export function procedureGeometry(
         : [];
       if (arc.length > 0) {
         append(arc);
+        // The arc's length, written on the chord at its middle.
+        const drawn = [arcStart, ...arc];
+        const middle = Math.max(1, Math.floor(drawn.length / 2));
+        labelLeg(drawn[middle - 1]!, drawn[middle]!, undefined, pathDistanceNm(drawn));
         const before = arc[arc.length - 2] ?? arcStart;
         state = { position: fix, trackDeg: bearingDeg(before, fix) };
         continue;
@@ -541,7 +596,8 @@ export function procedureGeometry(
           }
         }
         if (intercept) {
-          runTo(intercept, wp);
+          // The label goes on the course into the fix, not on the cut onto it.
+          runTo(intercept, wp, undefined, undefined, false);
           runTo(fix, wp);
         } else {
           runTo(fix, wp, undefined, legStart);
@@ -585,6 +641,7 @@ export function procedureGeometry(
       // LNM draws the leg line fix -> turn point and hands the next leg a position 1.5 NM
       // further out along the same 45-degree line.
       append([shape.turnPoint]);
+      labelLeg(fix, shape.turnPoint);
       state = {
         position: destinationPoint(shape.turnPoint, shape.course45, 1.5),
         trackDeg: shape.course45,
@@ -831,12 +888,13 @@ export function procedureGeometry(
         onCourse.alongTrackNm >= 0 &&
         onCourse.alongTrackNm <= lengthNm;
       append(alreadyOnCourse ? [end] : [anchor, end]);
+      labelLeg(alreadyOnCourse ? state.position : anchor, end);
       state = { position: end, trackDeg: anchorCourseTrue };
       continue;
     }
   }
 
-  return { path: out, missedPath: missedOut, overlays };
+  return { path: out, missedPath: missedOut, overlays, legLabels };
 }
 
 /** `procedureGeometry`'s flattened path only - the shape most callers want. */
@@ -854,6 +912,8 @@ export interface ProcedurePathHint {
   /** The missed-approach portion, if any - drawn distinctly from `path`, not spliced into it. */
   missedPath: LatLon[];
   overlays: ProcedureOverlay[];
+  /** The distance and course written on each drawn leg. */
+  legLabels: ProcedureLegLabel[];
   /** Which procedure this is; an approach ends on the runway, so no line continues to the airport. */
   kind: 'sid' | 'star' | 'approach';
 }
@@ -867,12 +927,19 @@ export function builtProcedurePaths(
   if (parts.sid && departureEnd) {
     const threshold = { latitude: departureEnd.latitude, longitude: departureEnd.longitude };
     const farEnd = destinationPoint(threshold, departureEnd.headingDeg, departureEnd.lengthNm);
-    const { path, missedPath, overlays } = procedureGeometry(parts.sid.waypoints, {
+    const { path, missedPath, overlays, legLabels } = procedureGeometry(parts.sid.waypoints, {
       start: { position: farEnd, trackDeg: departureEnd.headingDeg },
       runwayElevationFt: departureEnd.elevationFt,
     });
     if (path.length > 0) {
-      out.push({ via: parts.sid.name, path: [farEnd, ...path], missedPath, overlays, kind: 'sid' });
+      out.push({
+        via: parts.sid.name,
+        path: [farEnd, ...path],
+        missedPath,
+        overlays,
+        legLabels,
+        kind: 'sid',
+      });
     }
   }
   for (const [kind, p] of [
@@ -880,8 +947,8 @@ export function builtProcedurePaths(
     ['approach', parts.approach],
   ] as const) {
     if (!p) continue;
-    const { path, missedPath, overlays } = procedureGeometry(p.waypoints);
-    if (path.length > 1) out.push({ via: p.name, path, missedPath, overlays, kind });
+    const { path, missedPath, overlays, legLabels } = procedureGeometry(p.waypoints);
+    if (path.length > 1) out.push({ via: p.name, path, missedPath, overlays, legLabels, kind });
   }
   return out;
 }
