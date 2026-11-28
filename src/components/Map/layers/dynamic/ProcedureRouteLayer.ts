@@ -128,7 +128,6 @@ const LEG_LABEL_SOURCE_ID = 'procedure-leg-labels-source';
 const COLORS = {
   waypoint: '#717880', // --muted-foreground design token
   waypointStroke: '#000000',
-  label: '#ffffff',
 };
 
 // Line widths
@@ -457,7 +456,7 @@ export function addProcedureRouteLayer(
     },
   });
 
-  // Waypoint ID labels - white text with thick black outline
+  // Waypoint IDs follow the route color and keep a dark halo on light charts.
   map.addLayer({
     id: LABEL_LAYER_ID,
     type: 'symbol',
@@ -471,13 +470,13 @@ export function addProcedureRouteLayer(
       'text-allow-overlap': false,
     },
     paint: {
-      'text-color': '#ffffff',
+      'text-color': lineColor,
       'text-halo-color': '#000000',
       'text-halo-width': 2,
     },
   });
 
-  // Altitude/Speed constraint labels (below waypoint) - white text with black outline
+  // Altitude and speed constraints sit below the waypoint.
   map.addLayer({
     id: CONSTRAINT_LAYER_ID,
     type: 'symbol',
@@ -493,7 +492,7 @@ export function addProcedureRouteLayer(
       'text-line-height': 1.2,
     },
     paint: {
-      'text-color': '#ffffff',
+      'text-color': lineColor,
       'text-halo-color': '#000000',
       'text-halo-width': 2,
     },
@@ -515,7 +514,7 @@ export function addProcedureRouteLayer(
         'text-allow-overlap': false,
       },
       paint: {
-        'text-color': COLORS.waypoint,
+        'text-color': lineColor,
         'text-halo-color': '#000000',
         'text-halo-width': 1.5,
       },

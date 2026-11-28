@@ -151,6 +151,25 @@ export function ilsOrLocIdentifier(title: string): string | null {
   return `I${runway[1].padStart(2, '0')}${side}${suffix}`;
 }
 
+/** Find a single primary approach plate. Keep different variants and COPTER plates distinct. */
+export function findApproachChart<T extends { code: string; name: string }>(
+  charts: readonly T[],
+  identifier: string,
+  displayName: string
+): T | undefined {
+  const normalize = (name: string) =>
+    name
+      .toUpperCase()
+      .replace(/\bRWY 0(?=\d)/g, 'RWY ')
+      .trim();
+  const wanted = normalize(displayName);
+  const plates = charts.filter((c) => c.code === 'IAP' && !/, CONT\.\s*\d+$/i.test(c.name));
+  const exact = plates.filter((c) => normalize(c.name) === wanted);
+  if (exact.length) return exact.length === 1 ? exact[0] : undefined;
+  const combined = plates.filter((c) => ilsOrLocIdentifier(c.name) === identifier);
+  return combined.length === 1 ? combined[0] : undefined;
+}
+
 /** What the chart list says about each airport's procedures, by their CIFP names. */
 export function parseFaaChartIndex(xml: string): FaaChartIndex {
   const obstacleDepartures: NamesByAirport = new Map();

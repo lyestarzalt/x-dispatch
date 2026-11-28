@@ -17,14 +17,15 @@ import {
 } from '@/components/Map/layers/dynamic/TaxiRouteLayer';
 import { bearingDeg } from '@/lib/flightplan/builder/geometry';
 import '@/lib/map/maplibreWorker';
+import { resolveMapStyleArg } from '@/lib/map/tileUrlToStyle';
 import { AirportParser } from '@/lib/parsers/apt';
 import { type GuidanceRoute, createGuidanceTracker } from '@/lib/taxiGuidance';
 import { signedAngleDelta } from '@/lib/utils/math';
 import { usePlaneStore } from '@/stores/planeStore';
+import { useSettingsStore } from '@/stores/settingsStore';
 import { guidanceRoutes, useTaxiGuidanceStore } from '@/stores/taxiGuidanceStore';
 
-// EXPERIMENT (exp/taxi-mini-map): a heading-up taxi map under the detached strip,
-// Apple Maps navigation style. Throwaway until the look is settled.
+// The detached strip tracks heading on the taxi map and true north on the flight map.
 
 const GLYPHS = 'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf';
 const FOLLOW_ZOOM = 16.6;
@@ -107,28 +108,32 @@ function currentPose(route: GuidanceRoute | null): Pose | null {
 interface TaxiMiniMapProps {
   /** CSS scale the strip window applies; the map renders sharper to match. */
   scale: number;
+  airborne: boolean;
 }
 
-export default function TaxiMiniMap({ scale }: TaxiMiniMapProps) {
+export default function TaxiMiniMap({ scale, airborne }: TaxiMiniMapProps) {
+  const flightStyle = useSettingsStore((s) => (airborne ? s.map.mapStyleUrl : null));
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
+    const initialPose = currentPose(null);
     const map = new maplibregl.Map({
       container,
-      style: EMPTY_STYLE,
-      center: [0, 0],
-      zoom: FOLLOW_ZOOM,
-      pitch: FOLLOW_PITCH,
-      minZoom: 13,
+      style: flightStyle ? resolveMapStyleArg(flightStyle) : EMPTY_STYLE,
+      center: initialPose ? [initialPose.lon, initialPose.lat] : [0, 0],
+      zoom: airborne ? 9 : FOLLOW_ZOOM,
+      pitch: airborne ? 0 : FOLLOW_PITCH,
+      minZoom: airborne ? 2 : 13,
       maxZoom: 19,
-      attributionControl: false,
+      attributionControl: airborne ? { compact: true } : false,
       dragPan: false,
       dragRotate: false,
-      touchZoomRotate: false,
+      boxZoom: false,
       doubleClickZoom: false,
+      touchZoomRotate: false,
       keyboard: false,
       scrollZoom: { around: 'center' },
       fadeDuration: 0,
@@ -159,11 +164,12 @@ export default function TaxiMiniMap({ scale }: TaxiMiniMapProps) {
     const draw = (pose: Pose) => {
       shown = pose;
       marker.setLngLat([pose.lon, pose.lat]);
+      marker.setRotation(airborne ? pose.heading : 0);
       map.jumpTo({
         center: [pose.lon, pose.lat],
-        bearing: pose.heading,
+        bearing: airborne ? 0 : pose.heading,
         padding: {
-          top: container.clientHeight * AIRCRAFT_FROM_TOP * 0.9,
+          top: airborne ? 0 : container.clientHeight * AIRCRAFT_FROM_TOP * 0.9,
           bottom: 0,
           left: 0,
           right: 0,
@@ -191,9 +197,11 @@ export default function TaxiMiniMap({ scale }: TaxiMiniMapProps) {
 
     const follow = (jump = false) => {
       if (!ready) return;
-      const active = activeRoute(tracker, guidanceRoutes(useTaxiGuidanceStore.getState()));
+      const active = airborne
+        ? null
+        : activeRoute(tracker, guidanceRoutes(useTaxiGuidanceStore.getState()));
       // Taxiing from one planned route onto the other moves the labels with it.
-      if (active !== drawnActive) void syncRoute();
+      if (!airborne && active !== drawnActive) void syncRoute();
       const pose = currentPose(active);
       if (!pose) return;
       if (
@@ -217,19 +225,20 @@ export default function TaxiMiniMap({ scale }: TaxiMiniMapProps) {
     // The followed route's airport once per airport: pavement, runways, hold lines.
     const loadAirport = async (route: GuidanceRoute) => {
       const result = await window.airportAPI.getAirportData(route.icao);
-      if (!result) return;
+      if (!result || !ready) return;
       const { data: airport } = new AirportParser(result.data).parse();
       airport.longitude = route.points[0]?.lon ?? 0;
       airport.latitude = route.points[0]?.lat ?? 0;
       for (const layer of [new PavementLayer(), new RunwayLayer(), new LinearFeatureLayer()]) {
+        if (!ready) return;
         if (layer.hasData(airport)) await layer.render(map, airport);
       }
-      setTaxiMapAirportLabels(map, airport);
+      if (ready) setTaxiMapAirportLabels(map, airport);
     };
 
     // Every planned route, with the followed one labelled; cleared when the plan goes.
     const syncRoute = async () => {
-      if (!ready) return;
+      if (!ready || airborne) return;
       const routes = guidanceRoutes(useTaxiGuidanceStore.getState());
       const active = activeRoute(tracker, routes);
       if (sameRoutes(routes, drawnRoutes) && active === drawnActive) return;
@@ -259,8 +268,10 @@ export default function TaxiMiniMap({ scale }: TaxiMiniMapProps) {
     map.on('load', () => {
       // Only here is the style certain to be loaded: addTaxiRouteLayer quietly does
       // nothing while the airport layers are still loading.
-      addTaxiRouteLayer(map);
-      addTaxiMapLabelLayers(map);
+      if (!airborne) {
+        addTaxiRouteLayer(map);
+        addTaxiMapLabelLayers(map);
+      }
       ready = true;
       void syncRoute();
       follow(true);
@@ -269,6 +280,7 @@ export default function TaxiMiniMap({ scale }: TaxiMiniMapProps) {
     const unsubscribeRoute = useTaxiGuidanceStore.subscribe(() => void syncRoute());
 
     return () => {
+      ready = false;
       unsubscribePlane();
       unsubscribeRoute();
       if (frame) cancelAnimationFrame(frame);
@@ -276,13 +288,13 @@ export default function TaxiMiniMap({ scale }: TaxiMiniMapProps) {
       map.remove();
       mapRef.current = null;
     };
-  }, []);
+  }, [airborne, flightStyle]);
 
   useEffect(() => {
     mapRef.current?.setPixelRatio(
       Math.min(MAX_PIXEL_RATIO, (window.devicePixelRatio || 1) * Math.max(1, scale))
     );
-  }, [scale]);
+  }, [scale, airborne, flightStyle]);
 
   return <div ref={containerRef} className="h-full w-full" />;
 }

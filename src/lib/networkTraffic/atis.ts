@@ -242,7 +242,7 @@ export interface AirportRunwayUse extends AtisRunwayUse {
 }
 
 /** KDFW_A_ATIS is the arrival broadcast, KDFW_D_ATIS the departure one. */
-function stationUse(callsign: string): RunwayUse | null {
+export function stationUse(callsign: string): RunwayUse | null {
   if (/_A_ATIS$/i.test(callsign)) return 'arrival';
   if (/_D_ATIS$/i.test(callsign)) return 'departure';
   return null;

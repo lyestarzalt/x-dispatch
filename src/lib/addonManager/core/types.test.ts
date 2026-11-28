@@ -22,6 +22,20 @@ describe('a file another program holds open', () => {
     });
   });
 
+  it('says to close X-Plane when the held file is a plugin folder', () => {
+    // Sentry X-DISPATCH-A4: deleting a plugin X-Plane had loaded named the folder instead.
+    const error: BrowserError = {
+      code: 'FILE_IN_USE',
+      path: 'D:\\Steam\\steamapps\\common\\X-Plane 12\\Resources\\plugins\\SimLoadManager',
+      fileName: 'SimLoadManager',
+      reason: 'EPERM',
+    };
+    expect(browserErrorText(error)).toEqual({
+      key: 'addonManager.browser.errors.PLUGIN_IN_USE',
+      params: {},
+    });
+  });
+
   it('names any other file', () => {
     const error: BrowserError = {
       code: 'FILE_IN_USE',

@@ -100,11 +100,20 @@ function AirportInfoPanel({
     trackEvent('airport_tab_opened', { tab: value as TabId });
   };
 
+  useEffect(
+    () =>
+      useAppStore.subscribe(
+        (s) => s.selectedICAO,
+        () => setActiveTab('info')
+      ),
+    []
+  );
+
   // A link asked for a tab (xdispatch://airport/ICAO?tab=start).
   useEffect(
     () =>
       useAppStore.subscribe(
-        (s) => s.pendingAirportTab,
+        (s) => (s.pendingAirportTab?.icao === s.selectedICAO ? s.pendingAirportTab.tab : null),
         (tab) => {
           if (!tab) return;
           setActiveTab(tab);

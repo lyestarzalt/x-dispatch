@@ -85,9 +85,9 @@ export async function runAppAction(action: AppAction, ctx: ActionContext): Promi
       if (!selectAirportOrWarn(action.icao, ctx)) return;
       if (action.runway) {
         app.requestStartRunway(action.icao, action.runway);
-        app.requestAirportTab('start');
+        app.requestAirportTab(action.icao, 'start');
       } else if (action.tab) {
-        app.requestAirportTab(action.tab);
+        app.requestAirportTab(action.icao, action.tab);
       }
       return;
     }

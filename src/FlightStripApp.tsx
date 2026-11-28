@@ -8,6 +8,7 @@ import { QueryProvider } from './queries';
 import { initializeFontSize } from './stores/settingsStore';
 import { initializeTheme } from './stores/themeStore';
 
+document.body.style.background = 'transparent';
 initializeTheme();
 initializeFontSize();
 

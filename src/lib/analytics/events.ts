@@ -269,6 +269,8 @@ export const ANALYTICS_ERROR_CODES = [
   'folder_not_found',
   'aircraft_not_found',
   'not_installed',
+  // From 2.20; before that a file another program held open was sent as `other`.
+  'file_in_use',
   'eacces',
   'eperm',
   'enoent',

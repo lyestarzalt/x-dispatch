@@ -48,8 +48,8 @@ export function ActiveRunwayLine({
       <div className="flex items-baseline justify-between gap-3 py-0.5">
         <span className="xp-label min-w-0 truncate">{name}</span>
         <span className="flex shrink-0 items-baseline gap-2">
-          {letter && <AtisBadge letter={letter} />}
           <span className="text-cat-emerald font-mono text-sm font-medium">{ends.join(', ')}</span>
+          {letter && <AtisBadge letter={letter} />}
         </span>
       </div>
     );

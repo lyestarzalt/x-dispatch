@@ -10,19 +10,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Copy coordinates for an INS.** The map's right-click menu shows and copies the point as `N45°59.9' E007°59.9'`, the format a CIVA INS takes.
-- **Gate search shows on the map.** Gates matching the search are ringed and the others fade.
+- **Gate search shows on the map.** Gates matching the search become white discs and the others fade.
 - **Livery thumbnail size.** A slider above the liveries makes their pictures larger or smaller.
 - **Distance and course on every SID, STAR and approach leg.** Each drawn leg of a loaded plan carries its length and course, also the legs that have no fix of their own.
 - **Direction arrows on leg labels.** The arrow points the way the leg is flown.
 - **Online traffic colour.** Settings → Appearance draws VATSIM and IVAO pilots green, blue or each in its own colour.
+- **Cockpit flight map.** Off by default: turn on Settings → Flight Strip → In-flight map and the strip's map follows your aircraft north-up after takeoff, then returns to taxi guidance on landing.
+- **Approach chart shortcuts.** Open a matching FAA plate or overlay it directly from the approach list.
 
 ### Changed
 
 - **Leg distance and course are written inside the route line.** No box around them, and a label shows only once its leg is long enough on screen to hold it.
 - **Staffed centre sectors are tinted.** A VATSIM centre that is online is filled, not only outlined.
+- **Panel opacity.** Hold Ctrl and scroll over the strip, its map, or a chart on the main map to adjust each independently.
+- **Flight planner.** Undo a new plan until both endpoints are set. Compact and folded cards align with the clock, and Previous Plans drops the unused gate filter.
+- **Airport card.** Switching airports opens Info. Arrival and departure ATIS broadcasts have explicit labels, runway chips stay on the right, and chart buttons keep their columns.
+- **Procedure preview.** Fix, constraint and course labels use their route's colour.
 
 ### Fixed
 
+- **Deleting or switching off a plugin X-Plane has loaded says to close X-Plane.** It used to name the plugin's folder as open in another program.
+- **The vertical profile's hover card keeps its size near the right edge.** It no longer squeezes its values onto two lines.
 - **Right-clicking a fix gives its exact coordinates.** SID, STAR and approach fixes now snap too, the position no longer shifts with zoom, and minutes never read 60.
 
 ## [2.19.0] - 2026-11-25

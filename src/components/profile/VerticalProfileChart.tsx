@@ -28,6 +28,7 @@ import {
   stepAfterPath,
   ticks,
   ticksBetween,
+  tooltipPlacement,
   zoomDomain,
 } from './profileChartGeometry';
 
@@ -433,7 +434,6 @@ function VerticalProfileChartInner({
 
   const hovered = hoverIndex >= 0 ? rows[hoverIndex] : undefined;
   const hoverX = hovered && chart ? chart.scales.x(hovered.distance) : null;
-  const tooltipOnLeft = hoverX !== null && chart ? hoverX > chart.box.width / 2 : false;
 
   return (
     <div className={cn('flex flex-col', className)} style={{ minHeight: 100 }}>
@@ -632,12 +632,8 @@ function VerticalProfileChartInner({
         )}
         {hovered && hoverX !== null && chart && (
           <div
-            className="pointer-events-none absolute z-10"
-            style={{
-              top: chart.box.top,
-              left: tooltipOnLeft ? hoverX - 12 : hoverX + 12,
-              transform: tooltipOnLeft ? 'translateX(-100%)' : undefined,
-            }}
+            className="pointer-events-none absolute z-10 w-max"
+            style={tooltipPlacement(hoverX, chart.box.width, chart.box.top)}
           >
             <PointTooltip point={hovered} />
           </div>

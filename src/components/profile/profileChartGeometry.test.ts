@@ -11,6 +11,7 @@ import {
   stepAfterPath,
   ticks,
   ticksBetween,
+  tooltipPlacement,
   zoomDomain,
 } from './profileChartGeometry';
 
@@ -114,5 +115,16 @@ describe('zoom and seek', () => {
     expect(panDomain([100, 200], 1000, -150)).toEqual([0, 100]);
     expect(panDomain([100, 200], 1000, 2000)).toEqual([900, 1000]);
     expect(centerDomain([100, 200], 1000, 500)).toEqual([450, 550]);
+  });
+});
+
+describe('tooltipPlacement', () => {
+  it('sits right of the pointer on the left half', () => {
+    expect(tooltipPlacement(100, 1000, 20)).toEqual({ top: 20, left: 112 });
+  });
+
+  it('anchors its right edge near the right side, so its width never depends on the space left', () => {
+    // A left edge plus translateX(-100%) squeezed the card against the chart's right edge.
+    expect(tooltipPlacement(950, 1000, 20)).toEqual({ top: 20, right: 62 });
   });
 });

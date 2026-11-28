@@ -3,6 +3,7 @@ import { ChevronDown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { AtcBadgeVariant } from '@/lib/networkTraffic/atcRoles';
+import { stationUse } from '@/lib/networkTraffic/atis';
 import { cn } from '@/lib/utils/helpers';
 import { TuneStrip } from './TuneStrip';
 
@@ -17,6 +18,7 @@ export function FrequencyRow({
 }) {
   const { t } = useTranslation();
   const live = row.live;
+  const broadcast = live && stationUse(live.callsign);
   const displayFreq = live?.frequency ?? row.staticFreq ?? '';
   const showName =
     !!row.staticName && row.staticName.trim().toUpperCase() !== row.label.toUpperCase();
@@ -50,6 +52,15 @@ export function FrequencyRow({
             >
               {live?.badgeLabel ?? row.label}
             </Badge>
+            {broadcast && (
+              <span className="text-foreground truncate text-xs font-semibold uppercase">
+                {t(
+                  broadcast === 'arrival'
+                    ? 'airportInfo.conditions.arrivals'
+                    : 'airportInfo.conditions.departures'
+                )}
+              </span>
+            )}
             {live?.atisLetter && (
               <Badge
                 variant="cat-emerald"
