@@ -24,16 +24,31 @@ export function isChartOverlayOnMap(map: maplibregl.Map): boolean {
   return map.getLayer(CHART_OVERLAY_LAYER_ID) !== undefined;
 }
 
+/** Counts the charts shown on each map, so a removal held back until idle can tell it is stale. */
+const shownCount = new WeakMap<maplibregl.Map, number>();
+
+function takeOff(map: maplibregl.Map): void {
+  if (map.getLayer(CHART_OVERLAY_LAYER_ID)) map.removeLayer(CHART_OVERLAY_LAYER_ID);
+  if (map.getSource(CHART_OVERLAY_SOURCE_ID)) map.removeSource(CHART_OVERLAY_SOURCE_ID);
+}
+
+/**
+ * Takes the chart off the map. While tiles load, `safeRemove` waits for `idle`; by then a
+ * chart shown since is the one the pilot wants, so the held-back removal leaves it.
+ */
 export function removeChartOverlay(map: maplibregl.Map): void {
+  const count = shownCount.get(map) ?? 0;
   safeRemove(map, () => {
-    if (map.getLayer(CHART_OVERLAY_LAYER_ID)) map.removeLayer(CHART_OVERLAY_LAYER_ID);
-    if (map.getSource(CHART_OVERLAY_SOURCE_ID)) map.removeSource(CHART_OVERLAY_SOURCE_ID);
+    if ((shownCount.get(map) ?? 0) === count) takeOff(map);
   });
 }
 
 /**
  * Shows the chart, replacing the one on the map. Corners run clockwise from the top-left.
  * `beforeId` is the lowest layer that must stay above the chart; without one it goes on top.
+ * Call it once the style takes layer updates (`runWhenStyleIsReady`): the old chart comes off
+ * at once, since right after the camera moves the tiles are still loading and a removal held
+ * back until `idle` would leave its source in the way of the new one.
  */
 export function showChartOverlay(
   map: maplibregl.Map,
@@ -42,7 +57,8 @@ export function showChartOverlay(
   opacity: number,
   beforeId?: string
 ): void {
-  removeChartOverlay(map);
+  shownCount.set(map, (shownCount.get(map) ?? 0) + 1);
+  takeOff(map);
   map.addSource(CHART_OVERLAY_SOURCE_ID, {
     type: 'canvas',
     canvas,
